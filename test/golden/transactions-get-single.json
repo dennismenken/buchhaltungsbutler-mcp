@@ -1,0 +1,27 @@
+{
+  "_herkunft": "Endpunkt /transactions/get/{wert} (Einzelabruf, interpolierter Pfad) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L1, L2 und L3, docs/api/live-befunde-orchestrator.md Befund 1 und 2 | Struktur gemessen, Geschäftsdaten erfunden | Feldmenge und Typen am 2026-09-12 in AP09 erneut live gegen die Produktivumgebung geprüft (lesend, 5 Aufrufe): Umschlag, Feldzahl und Typen stimmen (13 Felder, account als JSON-Zahl, data als Objekt ohne rows)",
+  "_zweck": "die 13 Felder des Einzelabrufs gegen die 6 der Liste, account als JSON-Zahl, data als Objekt ohne rows",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "data": {
+      "id_by_customer": 1002,
+      "account": 1200,
+      "to_from": "Erfundene Bürobedarf GmbH",
+      "booking_date": "2026-01-09 09:12:00",
+      "value_date": "2026-01-09 09:12:00",
+      "amount": "-884.65",
+      "currency": "EUR",
+      "account_number": "DE02120300000000202051",
+      "bank_code": "BYLADEM1001",
+      "bank_name": "Erfundene Bank",
+      "purpose": "ER-2026-0001 Erfundener Verwendungszweck",
+      "type": "Überweisung",
+      "booking_text": "SEPA-Überweisung"
+    }
+  }
+}

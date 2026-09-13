@@ -1,0 +1,35 @@
+{
+  "_herkunft": "Endpunkt /accounts/get | gemessen 2026-09-12 (Feldmenge und Zeilenzahl), Quelle: docs/api/stammdaten.md, Live-Beleg zur Abgrenzung | Struktur gemessen, Geschäftsdaten erfunden",
+  "_zweck": "dass /accounts/get genau name und postingaccount_number liefert, keine Paginierung kennt (Umsetzungsplan 7.5 Regel 4) und NIE zwischengespeichert wird (7.8)",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "rows": 5,
+    "data": [
+      {
+        "name": "Kasse (erfunden)",
+        "postingaccount_number": "1000"
+      },
+      {
+        "name": "Bank (erfunden)",
+        "postingaccount_number": "1200"
+      },
+      {
+        "name": "Bank zwei (erfunden)",
+        "postingaccount_number": "1201"
+      },
+      {
+        "name": "Verrechnung (erfunden)",
+        "postingaccount_number": "1730"
+      },
+      {
+        "name": "Kreditkarte (erfunden)",
+        "postingaccount_number": "1792"
+      }
+    ]
+  }
+}

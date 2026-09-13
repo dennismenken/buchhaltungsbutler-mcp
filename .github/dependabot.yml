@@ -1,0 +1,62 @@
+version: 2
+
+# Wöchentlich für npm und für GitHub Actions (Plan 2, AP21).
+#
+# Zwei Pull-Requests sind ausdrücklich NICHT automatisch zu übernehmen, und es gibt dafür
+# bewusst keinen ignore-Eintrag:
+#
+#   typescript auf 7.x — abzulehnen, solange typescript-eslint die Peer-Range
+#     '>=4.8.4 <6.1.0' führt und typescript@7.x keine programmatische Compiler-API mehr
+#     liefert. Ohne diese API fällt das typgestützte Linting stumm aus (Plan 13.4). Der Grund
+#     steht als Kommentar in package.json.
+#   @modelcontextprotocol/server und -client — beide stehen exakt und ohne Caret; sie werden
+#     nur gemeinsam und nur nach einem Blick in die Änderungsliste angehoben (Plan 13.2).
+#
+# Warum kein ignore: Ein ignorierter Pull-Request ist ein Zustand, den niemand mehr sieht.
+# Der Sinn des wöchentlichen Laufs ist gerade, dass der Konflikt sichtbar bleibt, bis er
+# aufgelöst werden kann. Abgelehnt wird von Hand, mit einem Satz zur Begründung.
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+    labels:
+      - "abhängigkeiten"
+
+  # Pflege der SHA-Pinnung in .github/workflows (Plan 13.3). Die Workflows nennen keine
+  # Tags, sondern 40-stellige Commit-SHAs; dahinter steht als Kommentar der Tag des
+  # geprüften Releases, etwa `actions/checkout@3d3c42e5… # v7.0.1`.
+  #
+  # Dieser Kommentar ist die Bedingung dafür, dass dieser Eintrag überhaupt etwas tut:
+  # Dependabot liest aus ihm die eingesetzte Fassung, sucht die nächste und hebt SHA und
+  # Kommentar gemeinsam an. Ohne den Kommentar erkennt Dependabot einen nackten SHA nicht
+  # als Version und lässt die Zeile stillschweigend stehen — die Pinnung wäre dann
+  # dauerhaft eingefroren, ohne dass es jemand bemerkte.
+  #
+  # `directory: "/"` ist auch für dieses Ökosystem richtig: Dependabot sucht die Workflows
+  # von der Wurzel aus unter .github/workflows, nicht relativ zu einem Unterverzeichnis.
+  #
+  # Ein Pull-Request von hier wird gelesen und nicht durchgewinkt: Zu prüfen ist, dass der
+  # neue SHA zum genannten Tag gehört und dass der Tag auf der Release-Seite des jeweiligen
+  # Projekts steht. Das gilt besonders für publish.yml, dessen Lauf über `id-token: write`
+  # ein Veröffentlichungsrecht auf npm hält.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "abhängigkeiten"

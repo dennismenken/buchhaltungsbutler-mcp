@@ -1,0 +1,51 @@
+{
+  "_herkunft": "Endpunkt /receipts/get (Liste) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L2, L3 und L5 sowie docs/api/belege.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden | Feldmenge und Typen am 2026-09-12 in AP09 erneut live gegen die Produktivumgebung geprüft (lesend, 5 Aufrufe): Umschlag, Feldzahl und Typen stimmen (16 Felder, id_by_customer str, amount str, deleted str, delivery_date/due_date null, rows vorhanden)",
+  "_zweck": "die Listenform: 16 Felder, id_by_customer als String, amount als String mit Punkt, deleted als \"0\", delivery_date und due_date als null, rows gleich der Zeilenzahl",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "rows": 2,
+    "data": [
+      {
+        "filename": "2026-01-04_Eingangsrechnung_ER-2026-0001",
+        "id_by_customer": "4711",
+        "type": "invoice inbound",
+        "date": "2026-01-04",
+        "delivery_date": null,
+        "date_uploaded": "2026-01-05",
+        "counterparty": "Erfundene Bürobedarf GmbH",
+        "invoicenumber": "ER-2026-0001",
+        "amount": "884.65",
+        "payment_date": "2026-01-09",
+        "due_date": null,
+        "account": "1200",
+        "amount_paid": "0.00",
+        "amount_paid_fixed": "0.00",
+        "deleted": "0",
+        "link_to_receipt_id_by_customer": null
+      },
+      {
+        "filename": "2026-01-11_Gutschrift_GS-2026-0007",
+        "id_by_customer": "4712",
+        "type": "credit inbound",
+        "date": "2026-01-11",
+        "delivery_date": "2026-01-02",
+        "date_uploaded": "2026-01-12",
+        "counterparty": "Erfundene Telekommunikation AG",
+        "invoicenumber": "GS-2026-0007",
+        "amount": "-192.44",
+        "payment_date": null,
+        "due_date": "2026-02-03",
+        "account": "1200",
+        "amount_paid": "0.00",
+        "amount_paid_fixed": "0.00",
+        "deleted": "0",
+        "link_to_receipt_id_by_customer": null
+      }
+    ]
+  }
+}

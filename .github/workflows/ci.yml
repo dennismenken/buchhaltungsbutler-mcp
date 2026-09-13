@@ -1,0 +1,62 @@
+name: CI
+
+# Die Matrix nennt genau die beiden Untergrenzen, die tsdown@0.23.0 zulässt
+# (engines: ^22.18.0 || ^24.11.0 || >=26.0.0, Plan 13.1). Node 23.x, 24.0 bis 24.10
+# und 25.x stehen ausdrücklich nicht in der Matrix, weil der Bau dort scheitert.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["22.19.0", "24.11.0"]
+    steps:
+      # Fremd-Actions stehen auf dem Commit-SHA des geprüften Releases, nicht auf dem Tag
+      # (Plan 13.3). Ein Tag ist verschiebbar, ein SHA nicht. Der Tag hinter dem SHA ist
+      # nicht bloß Beschriftung: Dependabot liest genau diesen Kommentar, um die
+      # eingesetzte Fassung zu bestimmen, und hebt SHA und Kommentar gemeinsam an
+      # (.github/dependabot.yml). Wer den Kommentar entfernt, schaltet die Pflege ab.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+
+      # Die eingecheckten Generate müssen zum Stand der Spezifikation passen.
+      # src/registry/index.generated.ts ist nicht versioniert und kann hier bauartbedingt
+      # nicht auftauchen (Plan 4.2).
+      - name: Generatordifferenz
+        run: |
+          pnpm generate
+          git diff --exit-code
+
+      - name: Typprüfung
+        run: pnpm typecheck
+      - name: Linting
+        run: pnpm lint
+      - name: Formatierung
+        run: pnpm format --check
+      # Der Bau steht VOR den Tests: test/integration/server.test.ts und
+      # test/integration/package-smoke.test.ts prüfen das gebaute Paket und brechen ohne
+      # dist/cli.js ab. `pnpm test` baut inzwischen selbst, dieser Schritt meldet einen
+      # Baufehler aber als Baufehler und nicht als Testfehlschlag.
+      - name: Bau
+        run: pnpm build
+      - name: Tests
+        run: pnpm test
+      # Die Abdeckungsschwellen aus vitest.config.ts (Plan 9.5) prüft vitest ausschließlich in
+      # einem Lauf mit --coverage. Ohne diesen eigenen Schritt stünden sie in der Konfiguration,
+      # ohne dass eine Unterschreitung je einen Lauf rot machte.
+      - name: Abdeckung
+        run: pnpm test:coverage

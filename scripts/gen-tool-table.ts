@@ -1,0 +1,284 @@
+// Erzeugt die beiden Werkzeugtabellen der README aus dem Register (Plan 2, AP20).
+//
+// **Warum erzeugt und nicht von Hand gepflegt.** Die README nennt 54 Werkzeuge mit Wirkung
+// und Kurzbeschreibung. Eine von Hand gepflegte Tabelle wäre eine zweite Wahrheit neben
+// src/registry/tools/ und liefe genau dann auseinander, wenn es darauf ankommt: beim
+// Nachrüsten eines Endpunkts. Der CI-Schritt „pnpm generate, danach git diff --exit-code"
+// (.github/workflows/ci.yml) prüft die eingecheckte README damit gegen das Register; ein
+// vergessener Lauf ist rot und nicht unsichtbar.
+//
+// **Warum hier dynamisch importiert wird.** Node führt TypeScript aus, löst aber einen
+// Spezifizierer `./x.js` nicht auf `./x.ts` auf — und genau so importiert dieses Projekt
+// (verbatimModuleSyntax, NodeNext). Ein statischer Import von `src/**` würde deshalb zur
+// Laufzeit scheitern, obwohl er typprüft. Der Auflösungshaken unten holt das nach; die Typen
+// kommen über `typeof import(...)` trotzdem aus den echten Dateien. Dasselbe Muster benutzt
+// scripts/measure-tokens.ts.
+//
+// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst; ab der in 13.1
+// festgelegten Untergrenze >=22.19.0 braucht es dafür keinen TypeScript-Starter.
+
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { registerHooks } from "node:module";
+import { fileURLToPath } from "node:url";
+
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    try {
+      return nextResolve(specifier, context);
+    } catch (error) {
+      if (!specifier.endsWith(".js")) throw error;
+      return nextResolve(`${specifier.slice(0, -".js".length)}.ts`, context);
+    }
+  },
+});
+
+const ROOT = new URL("../", import.meta.url);
+
+/** Die URL einer Projektdatei, aus der dieses Skript lädt. */
+function moduleUrl(relativePath: string): string {
+  return new URL(relativePath, ROOT).href;
+}
+
+/** Ein Projektpfad im Dateisystem. */
+function filePath(relativePath: string): string {
+  return fileURLToPath(new URL(relativePath, ROOT));
+}
+
+const REGISTRY_INDEX = "src/registry/index.generated.ts";
+const README = "README.md";
+
+// Der Registerindex wird nicht eingecheckt (Plan 4.2) und von gen-registry-index.ts erzeugt.
+// Dieses Skript läuft alphabetisch danach, die Datei ist also da. Fehlt sie trotzdem, sagt
+// die Meldung, was zu tun ist, statt einen Modulpfad zu melden, den niemand deutet.
+if (!existsSync(filePath(REGISTRY_INDEX))) {
+  console.error(
+    `${REGISTRY_INDEX} fehlt. Die Datei wird erzeugt und nicht eingecheckt (Plan 4.2): ` +
+      "zuerst scripts/gen-registry-index.ts ausführen, dann diesen Generator. " +
+      "Über pnpm generate geschieht das von selbst.",
+  );
+  process.exit(1);
+}
+
+const registry = (await import(
+  moduleUrl(REGISTRY_INDEX)
+)) as typeof import("../src/registry/index.generated.js");
+
+type Entry = (typeof registry.TOOL_ENTRIES)[number];
+
+// --- Bereiche --------------------------------------------------------------------------
+
+/**
+ * Die sieben Bereiche der README-Gliederung (Plan 10, Punkte 1 und 11), zugeordnet über den
+ * Ressourcenteil des Werkzeugnamens.
+ *
+ * Der Ressourcenteil steht nach Plan 3.1 immer zwischen `bb_` und dem Verb, ist also aus dem
+ * Namen ablesbar. Die Zuordnung zu einer deutschen Überschrift ist es nicht; sie steht
+ * deshalb hier. Eine unbekannte Ressource lässt diesen Generator **nicht** scheitern,
+ * sondern landet unter „Weitere": Das Nachrüsten eines Endpunkts bleibt damit bei den fünf
+ * Schritten aus Plan 10, Abschnitt 18, und niemand muss eine Liste an zweiter Stelle pflegen,
+ * damit `pnpm generate` überhaupt durchläuft. Die Zeile auf stderr sagt trotzdem, dass hier
+ * ein Wort fehlt.
+ */
+const AREA_BY_RESOURCE: ReadonlyMap<string, string> = new Map([
+  ["receipts", "Belege"],
+  ["comments", "Belege"],
+  ["transactions", "Zahlungen"],
+  ["invoices", "Rechnungen"],
+  ["postings", "Buchungen"],
+  ["debtors", "Stammdaten"],
+  ["creditors", "Stammdaten"],
+  ["postingaccounts", "Stammdaten"],
+  ["payment_accounts", "Stammdaten"],
+  ["cost_locations", "Kostenstellen"],
+  ["reports", "Berichte"],
+]);
+
+/** Die Reihenfolge der Bereiche in der README. „Weitere" steht immer am Ende. */
+const AREA_ORDER: readonly string[] = [
+  "Belege",
+  "Zahlungen",
+  "Rechnungen",
+  "Buchungen",
+  "Stammdaten",
+  "Kostenstellen",
+  "Berichte",
+];
+
+const FALLBACK_AREA = "Weitere";
+
+/**
+ * Der Bereich eines Werkzeugs. Geprüft wird vom längsten Ressourcennamen zum kürzesten, damit
+ * `payment_accounts` nicht an einem kürzeren Präfix hängen bleibt.
+ */
+function areaOf(name: string): string {
+  for (const [resource, area] of AREA_BY_RESOURCE) {
+    if (name.startsWith(`bb_${resource}_`)) return area;
+  }
+  return FALLBACK_AREA;
+}
+
+// --- Wirkung ---------------------------------------------------------------------------
+
+/** Die deutschen Wirkungsbezeichnungen aus grundlagen.md 7.3, wie in Plan 3.8 verwendet. */
+const EFFECT_LABELS: Readonly<Record<Entry["effect"], string>> = {
+  read: "lesend",
+  create: "anlegend",
+  modify: "ändernd",
+  delete: "löschend",
+};
+
+// --- Der erste Satz --------------------------------------------------------------------
+
+/**
+ * Abkürzungen, nach deren Punkt kein Satz endet. Die Registereinträge führen derzeit keine
+ * einzige davon; die Liste steht hier, damit ein später ergänztes „z. B." die Tabelle nicht
+ * still zerschneidet.
+ */
+const ABBREVIATIONS = new Set([
+  "z",
+  "B",
+  "bzw",
+  "ggf",
+  "u",
+  "a",
+  "d",
+  "h",
+  "Nr",
+  "vgl",
+  "ca",
+  "inkl",
+  "etc",
+  "Abs",
+  "S",
+]);
+
+/**
+ * Der erste Satz einer Werkzeugbeschreibung. Er ist nach Plan 4.9 der Zwecksatz und damit
+ * genau das „ein Satz" der README-Gliederung (Plan 10, Punkt 11).
+ */
+function firstSentence(description: string): string {
+  const text = description.trim();
+  for (let index = 0; index < text.length; index++) {
+    if (text[index] !== ".") continue;
+    const next = text[index + 1];
+    if (next !== undefined && next !== " ") continue;
+    const after = text.slice(index + 2).trimStart();
+    if (after.length > 0 && after[0] !== after[0]?.toUpperCase()) continue;
+    const word = /([A-Za-zÄÖÜäöüß]+)$/.exec(text.slice(0, index));
+    if (word !== null && ABBREVIATIONS.has(word[1] ?? "")) continue;
+    return text.slice(0, index + 1);
+  }
+  return text;
+}
+
+// --- Tabellen --------------------------------------------------------------------------
+
+/** Senkrechte Striche würden die Tabellenzelle zerbrechen. In den Texten kommt keiner vor. */
+function cell(text: string): string {
+  return text.replaceAll("|", "\\|");
+}
+
+function groupByArea(entries: readonly Entry[]): Map<string, Entry[]> {
+  const groups = new Map<string, Entry[]>();
+  for (const area of AREA_ORDER) groups.set(area, []);
+  for (const entry of entries) {
+    const area = areaOf(entry.name);
+    const bucket = groups.get(area);
+    if (bucket === undefined) {
+      groups.set(area, [entry]);
+    } else {
+      bucket.push(entry);
+    }
+  }
+  for (const [area, bucket] of groups) {
+    if (bucket.length === 0) groups.delete(area);
+  }
+  return groups;
+}
+
+/** Die Übersicht nach Bereichen (Plan 10, Punkt 1). */
+function renderAreaTable(groups: ReadonlyMap<string, readonly Entry[]>, total: number): string {
+  const lines = ["| Bereich | Werkzeuge | davon lesend |", "| --- | --- | --- |"];
+  let readTotal = 0;
+  for (const [area, bucket] of groups) {
+    const reading = bucket.filter((entry) => entry.effect === "read").length;
+    readTotal += reading;
+    lines.push(`| ${cell(area)} | ${String(bucket.length)} | ${String(reading)} |`);
+  }
+  lines.push(`| **Zusammen** | **${String(total)}** | **${String(readTotal)}** |`);
+  return lines.join("\n");
+}
+
+/** Die vollständige Werkzeugtabelle nach Bereichen (Plan 10, Punkt 11). */
+function renderToolTable(groups: ReadonlyMap<string, readonly Entry[]>): string {
+  const blocks: string[] = [];
+  for (const [area, bucket] of groups) {
+    const lines = [`### ${area}`, "", "| Werkzeug | Wirkung | Was es tut |", "| --- | --- | --- |"];
+    for (const entry of bucket) {
+      lines.push(
+        `| \`${cell(entry.name)}\` | ${EFFECT_LABELS[entry.effect]} | ` +
+          `${cell(firstSentence(entry.description))} |`,
+      );
+    }
+    blocks.push(lines.join("\n"));
+  }
+  return blocks.join("\n\n");
+}
+
+// --- Einsetzen -------------------------------------------------------------------------
+
+/**
+ * Ersetzt den Inhalt zwischen zwei Markierungen. Fehlt eine Markierung, ist das ein Fehler:
+ * Eine stillschweigend nicht eingesetzte Tabelle wäre eine README, die 54 Werkzeuge
+ * verschweigt, und niemand merkte es.
+ */
+function replaceBlock(source: string, marker: string, content: string): string {
+  const begin = `<!-- ${marker}:anfang -->`;
+  const end = `<!-- ${marker}:ende -->`;
+  const beginAt = source.indexOf(begin);
+  const endAt = source.indexOf(end);
+  if (beginAt < 0 || endAt < 0 || endAt < beginAt) {
+    console.error(
+      `${README}: Die Markierungen ${begin} und ${end} fehlen oder stehen in der falschen ` +
+        "Reihenfolge. Die erzeugte Werkzeugtabelle gehört genau zwischen sie (Plan 10).",
+    );
+    process.exit(1);
+  }
+  return `${source.slice(0, beginAt + begin.length)}\n\n${content}\n\n${source.slice(endAt)}`;
+}
+
+const entries = [...registry.TOOL_ENTRIES].sort((a, b) => (a.name < b.name ? -1 : 1));
+
+if (entries.length === 0) {
+  // Vor den Registerpaketen gibt es keinen Eintrag. Eine leere Tabelle einzusetzen wäre
+  // schlechter als nichts zu tun: Sie erzeugte eine Differenz im Diff, die keine Aussage hat.
+  process.stderr.write("gen-tool-table: das Register ist leer; README.md bleibt unverändert.\n");
+  process.exitCode = 0;
+} else {
+  const groups = groupByArea(entries);
+  const unknown = groups.get(FALLBACK_AREA);
+  if (unknown !== undefined) {
+    process.stderr.write(
+      `gen-tool-table: ohne Bereich und deshalb unter "${FALLBACK_AREA}": ` +
+        `${unknown.map((entry) => entry.name).join(", ")}. ` +
+        "Eine Zeile in AREA_BY_RESOURCE ordnet sie ein.\n",
+    );
+  }
+
+  const readmePath = filePath(README);
+  const current = readFileSync(readmePath, "utf8");
+  let next = replaceBlock(current, "werkzeuge-bereiche", renderAreaTable(groups, entries.length));
+  next = replaceBlock(next, "werkzeuge-tabelle", renderToolTable(groups));
+
+  if (current === next) {
+    process.stderr.write(
+      `${README}: Werkzeugtabelle ist aktuell (${String(entries.length)} Werkzeuge).\n`,
+    );
+  } else {
+    writeFileSync(readmePath, next, "utf8");
+    process.stderr.write(
+      `${README}: Werkzeugtabelle geschrieben (${String(entries.length)} Werkzeuge).\n`,
+    );
+  }
+  process.exitCode = 0;
+}

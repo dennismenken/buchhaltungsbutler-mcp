@@ -1,0 +1,26 @@
+# Ergänzung zu "files": ["dist"] in der package.json. Die Positivliste entscheidet;
+# diese Datei ist die zweite Sicherung gegen Verzeichnisse, die nie in ein Tarball
+# gehören, falls "files" einmal erweitert wird (Plan 2, 13.7).
+
+docs/
+test/
+src/
+scripts/
+
+.github/
+.mcpb/
+
+tsconfig.json
+tsconfig.test.json
+tsdown.config.ts
+vitest.config.ts
+eslint.config.js
+biome.json
+pnpm-lock.yaml
+.env.example
+
+coverage/
+*.tsbuildinfo
+*.mcpb
+*.log
+.DS_Store

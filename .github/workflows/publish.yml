@@ -1,0 +1,263 @@
+name: Veröffentlichung
+
+# Ausgelöst wird dieser Workflow ausschließlich durch einen Tag der Form v*.*.*, den allein
+# der Projektinhaber setzt (Plan 11.2, AP21). Es gibt bewusst KEIN workflow_dispatch: Die
+# Veröffentlichung auf npm ist einer der beiden unumkehrbaren Schritte des Vorhabens, und ein
+# Knopf in der Weboberfläche ist genau ein Klick zu wenig Widerstand. Wer veröffentlichen
+# will, setzt einen Tag; das ist ein bewusster, nachvollziehbarer Schritt mit einem Namen.
+#
+# Die Reihenfolge der Schritte ist nicht beliebig. Alles, was den Lauf abbrechen kann, liegt
+# VOR `npm publish`:
+#
+#   1. Tag gegen package.json,
+#   2. Bestätigung des Vertragslaufs aus der Tag-Nachricht (Plan 9.7),
+#   3. Abschnitt aus CHANGELOG.md,
+#   4. Generatordifferenz, Typprüfung, Linting, Formatierung, Tests, Abdeckung,
+#   5. Bau, Größenbudget (Plan 9.10), Bau des .mcpb-Bundles.
+#
+# Erst danach wird veröffentlicht. Ein Verpackungsfehler, ein zu großes Paket oder eine
+# fehlende Bestätigung blockiert damit denselben Schritt, den niemand zurücknehmen kann.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  veroeffentlichen:
+    runs-on: ubuntu-latest
+
+    # Die Umgebung ist der Ort, an dem der Projektinhaber bei Bedarf eine Freigabe von Hand
+    # einhängen kann (Settings, Environments, Required reviewers). Ohne eine solche Regel
+    # verhält sie sich wie keine Umgebung. Wird beim Einrichten von Trusted Publishing im
+    # npm-Konto ein Environment verlangt, ist dort genau dieser Name einzutragen.
+    environment: npm
+
+    permissions:
+      # Für das GitHub-Release samt .mcpb-Anhang.
+      contents: write
+      # Für OIDC Trusted Publishing gegen npm. Dadurch liegt in diesem Repository kein
+      # langlebiges npm-Token, weder als Secret noch sonst wo.
+      id-token: write
+
+    steps:
+      # SHA-Pinnung wie in ci.yml (Plan 13.3), hier aber mit dem größten Gewicht: Dieser
+      # Lauf bekommt über `id-token: write` ein Veröffentlichungsrecht auf npm. Ein
+      # verschobener Tag einer Fremd-Action liefe mit genau diesem Recht. Der Tag hinter
+      # dem SHA ist der Anker für Dependabot (.github/dependabot.yml).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Ohne die vollständige Historie samt Tags ist die Nachricht des annotierten Tags
+          # nicht lesbar, und genau daraus kommt die Bestätigung des Vertragslaufs.
+          fetch-depth: 0
+
+      - name: Tag gegen die Version in package.json abgleichen
+        id: version
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          PAKET="$(node -p "require('./package.json').version")"
+          if [ "$VERSION" != "$PAKET" ]; then
+            echo "::error::Der Tag ${TAG} nennt die Version ${VERSION}, package.json nennt ${PAKET}. Entweder ist der Tag falsch gesetzt oder die Versionserhöhung fehlt. Es wird nichts veröffentlicht."
+            exit 1
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "bundle=bbutler-mcp-${VERSION}.mcpb" >> "$GITHUB_OUTPUT"
+          echo "Tag und package.json nennen übereinstimmend ${VERSION}."
+
+      # Plan 9.7: Der Vertragslauf gegen die echte API ist Pflicht vor jeder Veröffentlichung.
+      # Hier kann er nicht laufen — er braucht echte Zugangsdaten, und die öffentliche CI
+      # bekommt keine (Plan 9.1). Verlangt wird deshalb die ausdrückliche Bestätigung, dass er
+      # gelaufen ist, mit Datum und Ergebnis. Eine Zusage, die nirgends abgefragt wird, ist
+      # keine.
+      #
+      # Abgefragt wird sie in der Nachricht des annotierten Tags. Das ist derselbe Handgriff,
+      # mit dem der Projektinhaber die Veröffentlichung auslöst, und er ist unveränderlich
+      # aufgezeichnet. Ein leichtgewichtiger Tag trägt keine Nachricht und wird abgelehnt.
+      #
+      # Verlangte Form, genau eine Zeile der Tag-Nachricht:
+      #
+      #   Vertragslauf: JJJJ-MM-TT ohne Abweichungen
+      #   Vertragslauf: JJJJ-MM-TT mit Abweichungen: <was abweicht und warum es trotzdem geht>
+      #
+      # Das Datum darf nicht in der Zukunft liegen und nicht älter als 30 Tage sein. Eine
+      # Bestätigung von vor einem halben Jahr sagt über den heutigen Stand der API nichts.
+      - name: Bestätigung des Vertragslaufs prüfen
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          # actions/checkout legt für einen Tag-Push unter Umständen eine lokale Referenz an,
+          # die direkt auf den Commit zeigt. Ein annotierter Tag sähe dann wie ein
+          # leichtgewichtiger aus, und die Prüfung unten schlüge fälschlich fehl. Deshalb wird
+          # die lokale Referenz verworfen und das Tag-Objekt selbst neu geholt.
+          git tag -d "${TAG}" >/dev/null 2>&1 || true
+          git fetch --force origin "refs/tags/${TAG}:refs/tags/${TAG}"
+
+          TYP="$(git cat-file -t "refs/tags/${TAG}")"
+          if [ "$TYP" != "tag" ]; then
+            echo "::error::${TAG} ist ein leichtgewichtiger Tag und trägt keine Nachricht. Die Bestätigung des Vertragslaufs steht in der Tag-Nachricht (Plan 9.7). Tag löschen und mit 'git tag -a' neu setzen. Es wird nichts veröffentlicht."
+            exit 1
+          fi
+
+          NACHRICHT="$(git tag -l --format='%(contents)' "${TAG}")"
+          MUSTER='^Vertragslauf: [0-9]{4}-[0-9]{2}-[0-9]{2} (ohne Abweichungen|mit Abweichungen: .+)$'
+          ZEILE="$(printf '%s\n' "$NACHRICHT" | grep -E "$MUSTER" | head -n 1 || true)"
+
+          if [ -z "$ZEILE" ]; then
+            echo "::error::Die Nachricht von ${TAG} enthält keine gültige Bestätigung des Vertragslaufs. Verlangt ist genau eine Zeile der Form 'Vertragslauf: JJJJ-MM-TT ohne Abweichungen' oder 'Vertragslauf: JJJJ-MM-TT mit Abweichungen: <Text>'. Zuerst 'pnpm run contract:read' gegen die echte API ausführen (Plan 9.7). Es wird nichts veröffentlicht."
+            exit 1
+          fi
+
+          DATUM="$(printf '%s\n' "$ZEILE" | sed -E 's/^Vertragslauf: ([0-9-]{10}).*$/\1/')"
+          if ! LAUF="$(date -u -d "$DATUM" +%s 2>/dev/null)"; then
+            echo "::error::'${DATUM}' ist kein gültiges Datum. Es wird nichts veröffentlicht."
+            exit 1
+          fi
+          HEUTE="$(date -u +%s)"
+          ALTER=$(( (HEUTE - LAUF) / 86400 ))
+
+          if [ "$ALTER" -lt 0 ]; then
+            echo "::error::Die Bestätigung nennt das Datum ${DATUM} und liegt damit in der Zukunft. Es wird nichts veröffentlicht."
+            exit 1
+          fi
+          if [ "$ALTER" -gt 30 ]; then
+            echo "::error::Der Vertragslauf vom ${DATUM} ist ${ALTER} Tage alt. Verlangt sind höchstens 30 Tage: Die Spezifikation der API wird nicht gepflegt, und was zurückkommt, ist das, was zählt (Plan 9.7). Lauf wiederholen und den Tag neu setzen. Es wird nichts veröffentlicht."
+            exit 1
+          fi
+
+          echo "Vertragslauf bestätigt: ${ZEILE} (${ALTER} Tage alt)."
+
+      - name: Abschnitt aus CHANGELOG.md schneiden
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          cat > changelog-abschnitt.mjs <<"JS"
+          import { readFileSync } from "node:fs";
+
+          const version = process.argv[2];
+          const zeilen = readFileSync("CHANGELOG.md", "utf8").split("\n");
+          const kopf = zeilen.findIndex((zeile) => zeile.startsWith(`## [${version}]`));
+
+          if (kopf === -1) {
+            console.error(
+              `CHANGELOG.md führt keinen Abschnitt "## [${version}]". Jede Veröffentlichung ` +
+                "bekommt einen Eintrag (Plan 2). Es wird nichts veröffentlicht.",
+            );
+            process.exit(1);
+          }
+
+          let ende = zeilen.length;
+          for (let index = kopf + 1; index < zeilen.length; index += 1) {
+            if (zeilen[index].startsWith("## ")) {
+              ende = index;
+              break;
+            }
+          }
+
+          const abschnitt = zeilen.slice(kopf + 1, ende).join("\n").trim();
+          if (abschnitt === "") {
+            console.error(`Der Abschnitt "## [${version}]" in CHANGELOG.md ist leer.`);
+            process.exit(1);
+          }
+          process.stdout.write(`${abschnitt}\n`);
+          JS
+          node changelog-abschnitt.mjs "$VERSION" > release-notes.md
+          rm changelog-abschnitt.mjs
+          echo "Freigabetext aus CHANGELOG.md, $(wc -l < release-notes.md) Zeilen."
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          # Die Untergrenze aus engines.node (Plan 13.1). Was hier baut, baut überall, wo das
+          # Paket laufen darf.
+          node-version: "22.19.0"
+          cache: "pnpm"
+          # Bewusst ohne registry-url: setup-node schriebe dann eine .npmrc mit einem Verweis
+          # auf NODE_AUTH_TOKEN. Veröffentlicht wird über OIDC Trusted Publishing, und in
+          # diesem Repository liegt deshalb kein npm-Token.
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generatordifferenz
+        run: |
+          pnpm generate
+          git diff --exit-code
+
+      - name: Typprüfung
+        run: pnpm typecheck
+      - name: Linting
+        run: pnpm lint
+      - name: Formatierung
+        run: pnpm format --check
+      - name: Tests
+        run: pnpm test
+      # Wie in ci.yml: Nur ein Lauf mit --coverage wertet die Schwellen aus Plan 9.5 aus. Er
+      # steht hier vor dem unumkehrbaren Schritt, damit eine Unterschreitung die
+      # Veröffentlichung blockiert und nicht erst danach auffällt.
+      - name: Abdeckung
+        run: pnpm test:coverage
+      - name: Bau
+        run: pnpm build
+
+      # Plan 9.10: dasselbe Budget wie im Paketprobelauf, hier aber vor dem unumkehrbaren
+      # Schritt. Ein zu großes Paket blockiert die Veröffentlichung, statt sie zu überleben.
+      - name: Größenbudget
+        run: pnpm check-size
+
+      # Plan 11.2 AP21: Das Bundle wird VOR npm publish gebaut, damit ein Verpackungsfehler
+      # den unumkehrbaren Schritt blockiert. Das Werkzeug kommt aus node_modules, nie über npx
+      # (Plan 13.5).
+      - name: .mcpb-Bundle bauen
+        env:
+          BUNDLE: ${{ steps.version.outputs.bundle }}
+        run: |
+          set -euo pipefail
+          pnpm build-mcpb
+          test -f "$BUNDLE"
+          ls -l "$BUNDLE"
+
+      # Node 22.19.0 bringt npm 10 mit; OIDC Trusted Publishing verlangt npm 11.5.1 oder
+      # neuer. Ohne diesen Schritt scheiterte die Veröffentlichung mit einer Meldung über
+      # fehlende Zugangsdaten, obwohl in Wahrheit die npm-Fassung zu alt ist.
+      - name: npm auf eine Fassung mit Trusted Publishing bringen
+        run: |
+          set -euo pipefail
+          npm install -g npm@latest
+          npm --version
+
+      - name: Auf npm veröffentlichen
+        run: npm publish --provenance --access public
+
+      - name: GitHub-Release mit dem .mcpb-Bundle erzeugen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          BUNDLE: ${{ steps.version.outputs.bundle }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file release-notes.md \
+            --verify-tag \
+            "$BUNDLE"
+
+      # Berichtet, prüft aber nicht scharf: Veröffentlicht ist zu diesem Zeitpunkt bereits,
+      # und ein roter Lauf hinter einem erfolgreichen `npm publish` behauptete etwas Falsches.
+      # Die verbindliche Prüfung steht als abzuhakender Punkt in
+      # docs/entwicklung/veroeffentlichungs-checkliste.md.
+      - name: Provenance nachsehen
+        continue-on-error: true
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -uo pipefail
+          PAKET="$(node -p "require('./package.json').name")"
+          echo "Attestierungen zu ${PAKET}@${VERSION}:"
+          npm view "${PAKET}@${VERSION}" dist.attestations || true

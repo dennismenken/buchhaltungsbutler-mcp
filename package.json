@@ -1,0 +1,83 @@
+{
+  "name": "@dennismenken/buchhaltungsbutler-mcp",
+  "version": "0.1.0",
+  "description": "Unofficial MCP server for the BuchhaltungsButler API",
+  "type": "module",
+  "license": "MIT",
+  "author": "Dennis Menken",
+  "homepage": "https://github.com/dennismenken/buchhaltungsbutler-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dennismenken/buchhaltungsbutler-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dennismenken/buchhaltungsbutler-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "buchhaltungsbutler",
+    "accounting",
+    "buchhaltung",
+    "unofficial"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "packageManager": "pnpm@10.34.3",
+  "bin": {
+    "bbutler-mcp": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "generate": "node scripts/generate.ts",
+    "build": "pnpm generate && tsdown",
+    "test": "pnpm build && vitest run",
+    "test:coverage": "pnpm build && vitest run --coverage",
+    "typecheck": "pnpm generate && tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "lint": "eslint .",
+    "format": "node -e \"const a=process.argv.slice(1);const c=a.includes('--check');const r=require('node:child_process').spawnSync('biome',c?['format','.']:['format','--write','.'],{stdio:'inherit',shell:true});process.exit(r.status===null?1:r.status)\" --",
+    "measure-tokens": "node -e \"if(!require('node:fs').existsSync('scripts/measure-tokens.ts')){console.error('scripts/measure-tokens.ts fehlt noch; die Datei entsteht in AP14 (Tokenmessung mit gpt-tokenizer).');process.exit(1)}\" && node scripts/measure-tokens.ts",
+    "check-size": "node -e \"if(!require('node:fs').existsSync('scripts/check-size.ts')){console.error('scripts/check-size.ts fehlt noch; die Datei entsteht in AP16 (Größenbudget aus Abschnitt 9.10).');process.exit(1)}\" && node scripts/check-size.ts",
+    "contract:read": "node -e \"if(!require('node:fs').existsSync('scripts/contract-read.ts')){console.error('scripts/contract-read.ts fehlt noch; die Datei entsteht in AP17 (Vertragslauf gegen die 15 lesenden Pfade).');process.exit(1)}\" && node scripts/contract-read.ts",
+    "build-mcpb": "node -e \"if(!require('node:fs').existsSync('scripts/build-mcpb.ts')){console.error('scripts/build-mcpb.ts fehlt noch; die Datei entsteht in AP21 (Bundle-Bau über @anthropic-ai/mcpb aus node_modules).');process.exit(1)}\" && node scripts/build-mcpb.ts",
+    "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build"
+  },
+  "//format": "pnpm format formatiert, pnpm format --check prüft nur. Der Umweg über node -e ist nötig, weil biome format den Schalter --check nicht kennt und pnpm angehängte Argumente unverändert weiterreicht; das abschließende -- trennt die Skriptargumente von den Optionen von node selbst.",
+  "//generate": "build und typecheck rufen pnpm generate als ersten Schritt im Skript selbst auf, nicht über pre-Lebenszyklusskripte: pnpm führt pre- und post-Skripte nur bei gesetztem enable-pre-post-scripts aus (Plan 4.2, AP01). src/registry/index.generated.ts wird nicht eingecheckt und muss vor jedem Lauf entstehen. test ruft pnpm build statt pnpm generate, weil test/integration/server.test.ts und test/integration/package-smoke.test.ts das GEBAUTE Paket prüfen (Plan 9.6) und in einem frischen Klon sonst mit 'dist/cli.js fehlt' abbrechen. test:coverage baut aus demselben Grund ebenfalls selbst.",
+  "//coverage": "test:coverage ist der einzige Lauf, in dem die Abdeckungsschwellen aus vitest.config.ts (Plan 9.5) überhaupt geprüft werden: vitest wertet coverage.thresholds nur mit --coverage aus. Deshalb steht es als eigener Schritt in .github/workflows/ci.yml und .github/workflows/publish.yml hinter den Tests. Ohne diesen Schritt wären die Schwellen tote Konfiguration.",
+  "//scripts": "measure-tokens, check-size, contract:read und build-mcpb zeigen bereits auf ihre künftigen Zielskripte und melden bis dahin, welches Arbeitspaket sie liefert. package.json gehört ausschließlich AP01; kein späteres Paket ändert diese Datei.",
+  "//typescript": "typescript ist exakt auf 6.0.3 gepinnt. typescript-eslint@8.70.0 führt die Peer-Range '>=4.8.4 <6.1.0', und typescript@7.x liefert keine programmatische Compiler-API mehr, auf die typgestütztes Linting angewiesen ist (Plan 13.4). Aktualisierungs-Pull-Requests auf 7.x werden abgelehnt, solange die Peer-Range sie ausschließt.",
+  "//mcp": "Die MCP-Pakete stehen exakt ohne Caret (Plan 13.2, 13.3). Bei einem Rückfall auf die v1-Linie (AP02) wird @modelcontextprotocol/server und -client durch @modelcontextprotocol/sdk@1.30.0 ersetzt, ohne jede Mischung; zod bleibt in beiden Fällen direkte Laufzeitabhängigkeit.",
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "undici": "^8.10.2",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
+    "@biomejs/biome": "^2.5.13",
+    "@modelcontextprotocol/client": "2.0.0",
+    "@types/node": "^22.20.2",
+    "@vitest/coverage-v8": "^5.0.0",
+    "eslint": "^10.10.0",
+    "gpt-tokenizer": "4.0.0",
+    "tsdown": "0.23.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

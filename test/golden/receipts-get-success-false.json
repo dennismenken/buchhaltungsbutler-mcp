@@ -1,0 +1,13 @@
+{
+  "_herkunft": "Endpunkt /receipts/get | konstruiert aus Umsetzungsplan 5.5 Stufe 4 | Quelle: Umsetzungsplan 5.5",
+  "_zweck": "dass wirklich success ausgewertet wird und nicht nur der HTTP-Status: HTTP 200 mit success false ist ein Fehler",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": false,
+    "error_code": 6,
+    "message": "receipt not found"
+  }
+}

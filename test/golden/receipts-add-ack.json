@@ -1,0 +1,13 @@
+{
+  "_herkunft": "Endpunkt /receipts/add | dokumentiert | Quelle: Spezifikation ReceiptsAdd_Success (id_by_customer auf oberster Ebene des Umschlags, nicht unter data) | Struktur gemessen, Geschäftsdaten erfunden",
+  "_zweck": "dass ein Antwortvertrag mit container \"none\" die Felder vom Umschlag selbst liest",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "id_by_customer": "4716"
+  }
+}

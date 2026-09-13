@@ -1,0 +1,32 @@
+{
+  "_herkunft": "Endpunkt /receipts/get | konstruiert aus Umsetzungsplan 5.5 Stufe 3 | Quelle: Umsetzungsplan 5.5, 7.3 zweite Zeile",
+  "_zweck": "dass ein Umschlag ohne success als Umschlagbruch gilt und nicht als Erfolg durchgeht",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "message": "",
+    "rows": 1,
+    "data": [
+      {
+        "filename": "2026-01-04_Eingangsrechnung_ER-2026-0001",
+        "id_by_customer": "4711",
+        "type": "invoice inbound",
+        "date": "2026-01-04",
+        "delivery_date": null,
+        "date_uploaded": "2026-01-05",
+        "counterparty": "Erfundene Bürobedarf GmbH",
+        "invoicenumber": "ER-2026-0001",
+        "amount": "884.65",
+        "payment_date": "2026-01-09",
+        "due_date": null,
+        "account": "1200",
+        "amount_paid": "0.00",
+        "amount_paid_fixed": "0.00",
+        "deleted": "0",
+        "link_to_receipt_id_by_customer": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "_herkunft": "Endpunkt /invoices/create | dokumentiert | Quelle: Spezifikation InvoicesCreate_Success | Struktur gemessen, Geschäftsdaten erfunden",
+  "_zweck": "die Schreibantwort mit drei Feldern auf oberster Ebene und den ausdrücklichen Hinweis, dass es keinen Weg zurück gibt (Umsetzungsplan 7.6, next-step.ts)",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "id_by_customer": "88",
+    "invoicenumber": "RE-2026-0004",
+    "file_name": "RE-2026-0004.pdf"
+  }
+}

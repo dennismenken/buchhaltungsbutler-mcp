@@ -1,0 +1,37 @@
+{
+  "_herkunft": "Endpunkt /receipts/get/{wert} (Einzelabruf, interpolierter Pfad) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L1, L2 und L3, docs/api/live-befunde-orchestrator.md Befund 1 und 2 | Struktur gemessen, Geschäftsdaten erfunden | Feldmenge und Typen am 2026-09-12 in AP09 erneut live gegen die Produktivumgebung geprüft (lesend, 5 Aufrufe): Umschlag, Feldzahl und Typen stimmen (23 Felder, data als Objekt OHNE rows, date_delivery/date_payment_due, amount_original/currency_original vorhanden, e_invoice_type als JSON-Zahl)",
+  "_zweck": "den getrennten Antwortvertrag je Endpunkt: data als Objekt OHNE rows, date_delivery und date_payment_due statt delivery_date und due_date, amount_original und currency_original vorhanden, e_invoice_type als JSON-Zahl (Befund L3)",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "data": {
+      "filename": "2026-01-04_Eingangsrechnung_ER-2026-0001",
+      "id_by_customer": "4711",
+      "type": "invoice inbound",
+      "date": "2026-01-04",
+      "counterparty": "Erfundene Bürobedarf GmbH",
+      "invoicenumber": "ER-2026-0001",
+      "amount": "884.65",
+      "amount_original": "950.00",
+      "currency": "EUR",
+      "currency_original": "CHF",
+      "exchangerate": "0.9312",
+      "vat": "19.00",
+      "payment_date": "2026-01-09",
+      "account": "1200",
+      "e_invoice_type": 0,
+      "list_direction": "inbound",
+      "payment_reference": "1a2B3c4D5e6F-12345",
+      "date_delivery": "2026-01-02",
+      "date_payment_due": "2026-02-03",
+      "amount_paid": "0.00",
+      "amount_paid_fixed": "0.00",
+      "deleted": "0",
+      "link_to_receipt_id_by_customer": null
+    }
+  }
+}

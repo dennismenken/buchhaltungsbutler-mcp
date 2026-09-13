@@ -1,0 +1,14 @@
+{
+  "_herkunft": "Endpunkt /receipts/get (Liste) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L2, L3 und L5 sowie docs/api/belege.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden",
+  "_zweck": "die leere Seite: rows 0 und data als leeres Array. Grundlage der dritten Bestandszeile aus Umsetzungsplan 7.5; kein Absturz, kein Folgehinweis",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "rows": 0,
+    "data": []
+  }
+}
