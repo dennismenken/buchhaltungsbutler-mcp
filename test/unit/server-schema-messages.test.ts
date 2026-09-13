@@ -285,6 +285,7 @@ describe("Guard 3 bei mehreren Befunden zugleich", () => {
 const UNION_ENTRY: ToolEntry = {
   name: "bb_union_probe",
   title: "Probe mit einer Vereinigung",
+  group: "receipts",
   path: { literal: "/receipts/get" },
   effect: "read",
   toolClass: "R",

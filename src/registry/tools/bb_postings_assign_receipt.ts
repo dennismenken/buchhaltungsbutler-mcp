@@ -55,6 +55,7 @@ const POSTING_ID_DESCRIPTION =
 export const bb_postings_assign_receipt: ToolEntry = {
   name: "bb_postings_assign_receipt",
   title: "Beleg an freie Buchung binden",
+  group: "postings",
   path: { literal: "/postings/assign/receipt-to-free-posting" },
   effect: "modify",
   toolClass: "B",

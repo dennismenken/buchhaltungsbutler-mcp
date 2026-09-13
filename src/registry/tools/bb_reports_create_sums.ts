@@ -41,6 +41,7 @@ const BASE_DESCRIPTION =
 export const bb_reports_create_sums: ToolEntry = {
   name: "bb_reports_create_sums",
   title: "Summen- und Saldenliste anfordern",
+  group: "reports",
   path: { literal: "/reports/create/sums" },
   effect: "create",
   toolClass: "AR",

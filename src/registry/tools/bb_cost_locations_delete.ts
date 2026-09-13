@@ -22,6 +22,7 @@ const CODE_DESCRIPTION =
 export const bb_cost_locations_delete: ToolEntry = {
   name: "bb_cost_locations_delete",
   title: "Kostenstelle löschen",
+  group: "cost_locations",
   path: { literal: "/cost-locations/delete" },
   effect: "delete",
   toolClass: "D",

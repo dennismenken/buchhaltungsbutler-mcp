@@ -48,6 +48,7 @@ function entry(name: string, literal: string, fields: FieldSpec[]): ToolEntry {
   return {
     name,
     title: "Beispielwerkzeug",
+    group: "receipts",
     path: { literal },
     effect: "create",
     toolClass: "A",

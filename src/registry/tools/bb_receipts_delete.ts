@@ -22,6 +22,7 @@ import type { ToolEntry } from "../types.js";
 export const bb_receipts_delete: ToolEntry = {
   name: "bb_receipts_delete",
   title: "Beleg als gelöscht markieren",
+  group: "receipts",
   path: {
     template: "/receipts/delete/{receipt_id_by_customer}",
     params: ["receipt_id_by_customer"],

@@ -306,19 +306,40 @@ export function fitRows(
  * und dieselbe Antwort brächte — bezahlt mit einem Request aus dem Minutenkontingent. Eine
  * Antwort dieses Servers behauptet nichts Unzutreffendes, auch nicht in einem Ratschlag.
  */
+export interface TruncationNoteOptions {
+  /**
+   * `true`, wenn der gekürzte Bestand selbst unvollständig ist, also bei einem Bündel mit
+   * `bundle.complete` = false (Bauvorlage Bündelwerkzeuge, Abschnitt 3).
+   *
+   * Der Satz „Auf Seiten der API ist nichts verloren gegangen" ist richtig, solange eine
+   * vollständig gelesene Liste für die Anzeige gekürzt wird. Kürzt ein Bündel einen ohnehin
+   * unvollständigen Präfix, wird er zur Unwahrheit. Er entfällt dann und wird durch zwei
+   * getrennte Sätze ersetzt: einen über die Anzeige und einen über den Bestand. Kürzen und
+   * Nichtholen sind zwei verschiedene Aussagen und bekommen zwei verschiedene Sätze.
+   */
+  readonly stockIncomplete?: boolean;
+}
+
 export function truncationNote(
   shown: number,
   total: number,
   budgetTokens: number,
   projection: Projection,
+  options: TruncationNoteOptions = {},
 ): string {
   const remedy =
     projection === "detailed"
       ? 'enger filtern oder response_format="concise" setzen.'
       : "enger filtern.";
+  const stock =
+    options.stockIncomplete === true
+      ? "Diese Kürzung betrifft allein die Anzeige; die gelesenen Zeilen sind vollständig " +
+        "ausgewertet. Der Bestand selbst ist davon unabhängig unvollständig: Es wurden nicht " +
+        "alle Zeilen geholt, siehe die Lückenliste oben."
+      : "Auf Seiten der API ist nichts verloren gegangen.";
   return (
     `${String(shown)} von ${String(total)} gelieferten Zeilen werden angezeigt; der Rest wurde ` +
-    `weggelassen, um im Antwortbudget zu bleiben (rund ${String(budgetTokens)} Token). Auf ` +
-    `Seiten der API ist nichts verloren gegangen. Um den Rest zu sehen, ${remedy}`
+    `weggelassen, um im Antwortbudget zu bleiben (rund ${String(budgetTokens)} Token). ${stock} ` +
+    `Um den Rest zu sehen, ${remedy}`
   );
 }

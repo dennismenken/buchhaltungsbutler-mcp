@@ -20,6 +20,12 @@
 // Platzhalter nicht mehr trägt. `test/contract/mcpb-tools.test.ts` prüft das Ergebnis
 // anschließend gegen das Register.
 //
+// **Die Liste führt beide Werkzeugmengen: die 54 Endpunktwerkzeuge und die 5 Bündelwerkzeuge**
+// (N1). Das Manifest trägt `tools_generated: false` und behauptet damit eine vollständige
+// Liste; führte sie nur `TOOL_ENTRIES`, läse der Nutzer im Installationsdialog von Claude
+// Desktop 54 Werkzeuge, während der Server 59 anmeldet. Registriert werden beide Mengen in
+// `src/server/create-server.ts`, und `dist/index.js` führt beide aus.
+//
 // Aufruf:
 //
 //   node scripts/build-mcpb.ts [--out <datei>] [--keep-staging]
@@ -84,8 +90,9 @@ export type Manifest = Record<string, unknown>;
  * Liest `.mcpb/manifest.template.json` und prüft, dass die Vorlage noch Vorlage ist.
  *
  * Die beiden Platzhalter sind der ganze Schutz dieser Datei: Wer die Werkzeugliste von Hand
- * einträgt, hat eine zweite Quelle geschaffen, die zwangsläufig von 54 Registerdateien
- * abdriftet. Ein Abbruch hier ist billiger als ein Bundle, dessen Liste nicht stimmt.
+ * einträgt, hat eine zweite Quelle geschaffen, die zwangsläufig von den Registerdateien und
+ * dem Bündelverzeichnis abdriftet. Ein Abbruch hier ist billiger als ein Bundle, dessen Liste
+ * nicht stimmt.
  */
 export function readManifestTemplate(file: string = TEMPLATE_FILE): Manifest {
   const raw = readFileSync(file, "utf8");
@@ -387,11 +394,16 @@ async function main(argv: readonly string[]): Promise<number> {
   // werden.
   const builtModule = (await import(pathToFileURL(join(ROOT, "dist", "index.js")).href)) as {
     TOOL_ENTRIES?: readonly ToolListSource[];
+    BUNDLE_ENTRIES?: readonly ToolListSource[];
     VERSION?: string;
   };
   const entries = builtModule.TOOL_ENTRIES;
   if (entries === undefined) {
     throw new Error("dist/index.js exportiert kein TOOL_ENTRIES. Der Bau ist unvollständig.");
+  }
+  const bundleEntries = builtModule.BUNDLE_ENTRIES;
+  if (bundleEntries === undefined) {
+    throw new Error("dist/index.js exportiert kein BUNDLE_ENTRIES. Der Bau ist unvollständig.");
   }
   if (builtModule.VERSION !== version) {
     throw new Error(
@@ -400,7 +412,11 @@ async function main(argv: readonly string[]): Promise<number> {
     );
   }
 
-  const manifest = renderManifest(readManifestTemplate(), version, buildToolList(entries));
+  const manifest = renderManifest(
+    readManifestTemplate(),
+    version,
+    buildToolList([...entries, ...bundleEntries]),
+  );
 
   const outputPath = options.out ?? join(ROOT, `${BUNDLE_FILE_PREFIX}-${version}.mcpb`);
   const staging = mkdtempSync(join(tmpdir(), "bbutler-mcpb-"));

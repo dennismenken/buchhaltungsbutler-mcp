@@ -26,6 +26,7 @@ afterEach(() => {
 const READ_ENTRY: ToolEntry = {
   name: "bb_receipts_search",
   title: "Belege suchen",
+  group: "receipts",
   path: { literal: "/receipts/get" },
   effect: "read",
   toolClass: "R",

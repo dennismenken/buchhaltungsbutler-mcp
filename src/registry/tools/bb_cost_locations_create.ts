@@ -20,6 +20,7 @@ const NAME_DESCRIPTION =
 export const bb_cost_locations_create: ToolEntry = {
   name: "bb_cost_locations_create",
   title: "Kostenstelle anlegen",
+  group: "cost_locations",
   path: { literal: "/cost-locations/add" },
   effect: "create",
   toolClass: "A",

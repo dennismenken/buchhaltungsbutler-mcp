@@ -127,6 +127,7 @@ const RECEIPTS_CONTAINER = batchContainer(
 export const bb_postings_create_for_receipt_batch: ToolEntry = {
   name: "bb_postings_create_for_receipt_batch",
   title: "Buchungen zu Belegen anlegen",
+  group: "postings",
   path: { literal: "/postings/add-batch/receipts" },
   effect: "create",
   toolClass: "B",

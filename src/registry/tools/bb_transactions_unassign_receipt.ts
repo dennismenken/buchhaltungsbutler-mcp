@@ -19,6 +19,7 @@ const RECEIPT_ID = idByCustomer("des Belegs", "bb_receipts_search");
 export const bb_transactions_unassign_receipt: ToolEntry = {
   name: "bb_transactions_unassign_receipt",
   title: "Zuordnung Beleg zu Zahlung lösen",
+  group: "transactions",
   path: { literal: "/transactions/unassign/receipt" },
   effect: "delete",
   toolClass: "D",

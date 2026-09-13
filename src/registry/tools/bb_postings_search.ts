@@ -140,6 +140,7 @@ const POSTINGS_LIST_FIELDS: Readonly<Record<string, ContractFieldType>> = Object
 export const bb_postings_search: ToolEntry = {
   name: "bb_postings_search",
   title: "Buchungen suchen",
+  group: "postings",
   path: { literal: "/postings/get" },
   effect: "read",
   toolClass: "R",

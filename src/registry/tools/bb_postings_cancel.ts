@@ -52,6 +52,7 @@ const POSTING_ID_DESCRIPTION =
 export const bb_postings_cancel: ToolEntry = {
   name: "bb_postings_cancel",
   title: "Buchung stornieren",
+  group: "postings",
   path: { literal: "/postings/cancel" },
   effect: "delete",
   toolClass: "D",

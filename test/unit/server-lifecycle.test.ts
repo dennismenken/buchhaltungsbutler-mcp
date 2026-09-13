@@ -37,6 +37,7 @@ import { installTestConfig, mockApi, resetTestConfig, type ApiMock } from "../he
 const READ_ENTRY: ToolEntry = {
   name: "bb_receipts_search",
   title: "Belege suchen",
+  group: "receipts",
   path: { literal: "/receipts/get" },
   effect: "read",
   toolClass: "R",
@@ -79,6 +80,7 @@ const READ_ENTRY: ToolEntry = {
 const CREATE_ENTRY: ToolEntry = {
   name: "bb_receipts_create",
   title: "Beleg anlegen",
+  group: "receipts",
   path: { literal: "/receipts/add" },
   effect: "create",
   toolClass: "A",
@@ -127,6 +129,7 @@ const CREATE_ENTRY: ToolEntry = {
 const DELETE_ENTRY: ToolEntry = {
   name: "bb_receipts_delete",
   title: "Beleg löschen",
+  group: "receipts",
   path: {
     template: "/receipts/delete/{receipt_id_by_customer}",
     params: ["receipt_id_by_customer"],
@@ -188,11 +191,15 @@ afterEach(() => {
   resetTestConfig();
 });
 
+// Diese Datei prüft genau die drei Beispieleinträge. Die Bündelwerkzeuge stehen im Betrieb
+// zusätzlich in `tools/list`; sie werden hier ausdrücklich abgewählt (`bundles: []`), statt die
+// erwarteten Namen um sie zu erweitern. Ihre eigene Prüfung steht in `test/bundles/`.
 describe("initialize und tools/list", () => {
   it("meldet die drei Beispieleinträge mit Titel, Annotationen und strengem Schema", async () => {
     const built = createServer({
       config,
       entries: ENTRIES,
+      bundles: [],
       store: createMasterDataStore({ ttlMs: 0 }),
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
@@ -240,6 +247,7 @@ describe("initialize und tools/list", () => {
     const built = createServer({
       config: installTestConfig({ BB_MCP_READ_ONLY: "true" }),
       entries: ENTRIES,
+      bundles: [],
       store: createMasterDataStore({ ttlMs: 0 }),
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
@@ -263,6 +271,7 @@ describe("initialize und tools/list", () => {
     const built = createServer({
       config,
       entries: ENTRIES,
+      bundles: [],
       store: createMasterDataStore({ ttlMs: 0 }),
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
@@ -297,7 +306,7 @@ describe("Ein Fehler im Handler", () => {
   };
 
   it("wird zu isError im Ergebnis und nicht zu einem Protokollfehler", async () => {
-    const built = createServer({ config, entries: ENTRIES, store: explodingStore });
+    const built = createServer({ config, entries: ENTRIES, bundles: [], store: explodingStore });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
     const client = new Client({ name: "ap10-servertest", version: "0.0.0" });
     await built.server.connect(serverSide);
@@ -330,6 +339,7 @@ describe("stdout trägt ausschließlich JSON-RPC", () => {
     const built = createServer({
       config,
       entries: ENTRIES,
+      bundles: [],
       store: createMasterDataStore({ ttlMs: 0 }),
     });
     await built.server.connect(new StdioServerTransport(stdin, stdout));

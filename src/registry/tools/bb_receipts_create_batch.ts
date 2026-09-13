@@ -99,6 +99,7 @@ const CONTAINER_TEXT =
 export const bb_receipts_create_batch: ToolEntry = {
   name: "bb_receipts_create_batch",
   title: "Belege stapelweise anlegen",
+  group: "receipts",
   path: { literal: "/receipts/addBatch" },
   effect: "create",
   toolClass: "A",

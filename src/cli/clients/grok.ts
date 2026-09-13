@@ -16,6 +16,9 @@ import path from "node:path";
 
 import {
   entryEnv,
+  LEGACY_ENTRY_NOTE,
+  LEGACY_SERVER_NAMES,
+  SERVER_NAME,
   type ClientAdapter,
   type ClientHost,
   type ClientPlan,
@@ -66,7 +69,7 @@ export const grokAdapter: ClientAdapter = {
   inlineSecrets: false,
   envReference: reference,
   finishNote: "Grok braucht keinen Neustart; der Eintrag gilt ab der nächsten Sitzung.",
-  verifyCommand: "grok mcp doctor buchhaltungsbutler",
+  verifyCommand: `grok mcp doctor ${SERVER_NAME}`,
 
   detect(host) {
     const binary = host.which("grok");
@@ -88,7 +91,7 @@ export const grokAdapter: ClientAdapter = {
       pathNote: `Wird mit "grok ${addArgs(plan, env).join(" ")}" in ${configPath} eingetragen.`,
       format: "toml",
       block: renderTomlBlock(plan, env),
-      notes: [...notes, `Aufruf: grok ${addArgs(plan, env).join(" ")}`],
+      notes: [...notes, `Aufruf: grok ${addArgs(plan, env).join(" ")}`, LEGACY_ENTRY_NOTE],
     };
   },
 
@@ -122,22 +125,29 @@ export const grokAdapter: ClientAdapter = {
   },
 
   remove(plan, host): WriteOutcome {
+    // Entfernt wird der eigene Name UND jeder frühere: Eine ältere config.toml führt die
+    // Tabelle noch unter dem langen Namen, und `grok mcp remove` kennt nur den, den es hört.
+    const names = [
+      plan.serverName,
+      ...LEGACY_SERVER_NAMES.filter((name) => name !== plan.serverName),
+    ];
     if (host.which("grok") === null) {
-      return {
-        kind: "manual",
-        reason: `grok ist nicht im Suchpfad. Von Hand: grok mcp remove ${plan.serverName}`,
-      };
+      const byHand = names.map((name) => `grok mcp remove ${name}`).join(" und ");
+      return { kind: "manual", reason: `grok ist nicht im Suchpfad. Von Hand: ${byHand}` };
     }
-    const result = host.run("grok", ["mcp", "remove", plan.serverName]);
-    if (result.failure !== null) {
-      return { kind: "failed", reason: `grok ließ sich nicht starten: ${result.failure}` };
+    const attempts = names.map((name) => host.run("grok", ["mcp", "remove", name]));
+    const failure = attempts.find((attempt) => attempt.failure !== null);
+    if (failure !== undefined) {
+      return { kind: "failed", reason: `grok ließ sich nicht starten: ${failure.failure ?? ""}` };
     }
-    if (result.status !== 0) {
+    if (!attempts.some((attempt) => attempt.status === 0)) {
+      const last = attempts[attempts.length - 1];
       return {
         kind: "unchanged",
         reason:
-          `grok mcp remove endete mit Rückgabewert ${String(result.status)}; ` +
-          `vermutlich gab es keinen Eintrag. Ausgabe: ${(result.stderr || result.stdout).trim()}`,
+          `grok mcp remove endete für ${names.join(" und ")} mit Rückgabewert ` +
+          `${String(last?.status ?? null)}; vermutlich gab es keinen Eintrag. ` +
+          `Ausgabe: ${((last?.stderr ?? "") || (last?.stdout ?? "")).trim()}`,
       };
     }
     return { kind: "removed", path: grokConfigPath(host, plan.scope), backupPath: null };

@@ -32,6 +32,7 @@ import type { ResolvedConfig } from "../../src/config/resolve.js";
 import { STATE_NOTHING_SENT } from "../../src/errors/render.js";
 import { READ_ONLY_VAR } from "../../src/guards/read-only.js";
 import { resetRateLimiterForTests } from "../../src/http/rate-limiter.js";
+import { BUNDLE_ENTRIES } from "../../src/bundles/index.js";
 import { TOOL_ENTRIES } from "../../src/registry/index.generated.js";
 import type { ToolEntry } from "../../src/registry/types.js";
 import { createServer } from "../../src/server/create-server.js";
@@ -78,30 +79,29 @@ const READ_ARGUMENTS: Readonly<Record<string, Record<string, unknown>>> = {
  * wirklich **ausgeführt** und nicht nur „nicht gesperrt" wird, und dafür ist je Klasse ein
  * Beleg der richtige Zuschnitt.
  */
-const WRITE_SAMPLES: readonly { readonly name: string; readonly args: Record<string, unknown> }[] =
-  [
-    { name: "bb_cost_locations_create", args: { code: "ro0001", name: "Kostenstelle Test" } },
-    {
-      name: "bb_reports_create_bwa",
-      args: { date_from: "2026-01-01", date_to: "2026-01-31" },
+const WRITE_SAMPLES: readonly {
+  readonly name: string;
+  readonly args: Record<string, unknown>;
+}[] = [
+  { name: "bb_cost_locations_create", args: { code: "ro0001", name: "Kostenstelle Test" } },
+  { name: "bb_reports_create_bwa", args: { date_from: "2026-01-01", date_to: "2026-01-31" } },
+  {
+    name: "bb_cost_locations_update",
+    args: { code: "ro0001", name: "Kostenstelle Test, geändert" },
+  },
+  { name: "bb_cost_locations_delete", args: { code: "ro0001" } },
+  {
+    name: "bb_postings_create_free",
+    args: {
+      date: "2026-01-15",
+      postingtext: "Vertragstest",
+      amount: "119.00",
+      postingaccount_debit: "6815",
+      postingaccount_credit: "1600",
+      vat: "19_vat",
     },
-    {
-      name: "bb_cost_locations_update",
-      args: { code: "ro0001", name: "Kostenstelle Test, geändert" },
-    },
-    { name: "bb_cost_locations_delete", args: { code: "ro0001" } },
-    {
-      name: "bb_postings_create_free",
-      args: {
-        date: "2026-01-15",
-        postingtext: "Vertragstest",
-        amount: "119.00",
-        postingaccount_debit: "6815",
-        postingaccount_credit: "1600",
-        vat: "19_vat",
-      },
-    },
-  ];
+  },
+];
 
 // --- Aufbau -----------------------------------------------------------------------------
 
@@ -259,7 +259,11 @@ describe(`mit ${READ_ONLY_VAR}=true`, () => {
 
     try {
       expect(server.instructions).toContain(`${READ_ONLY_VAR}=true`);
-      expect(server.instructions).toContain("15 lesenden Werkzeuge");
+      // Die Einschränkung selbst, nicht ihre Zahlen: Wie viele Werkzeuge lesend sind, rechnet
+      // der Servertext aus beiden Registern, und `test/unit/server-instructions.test.ts` hält
+      // das Ergebnis gegen `tools/list` desselben Starts. Eine zweite, hier gepflegte Zahl
+      // wäre genau die Stelle, die beim nächsten Werkzeug wieder altert.
+      expect(server.instructions).toContain("Nur die lesenden laufen");
       // Die Folge aus 6.6: BWA und Summen- und Saldenliste brauchen den gesperrten ersten
       // Schritt; ohne Neustart bleibt nur das Hauptbuch.
       expect(server.instructions).toContain("bb_reports_get_ledger");
@@ -345,10 +349,7 @@ describe(`ohne ${READ_ONLY_VAR}`, () => {
         const path = expectedPath(concrete, sample.args);
         api.post(path, successReply(concrete));
 
-        const result = await server.client.callTool({
-          name: sample.name,
-          arguments: sample.args,
-        });
+        const result = await server.client.callTool({ name: sample.name, arguments: sample.args });
 
         expect(result.isError, `${sample.name} scheiterte: ${textOf(result)}`).toBeFalsy();
         expect(api.count(path), `${sample.name} hat ${path} nicht angesprochen`).toBe(1);
@@ -383,7 +384,10 @@ describe("die Werkzeugliste", () => {
       await serverWithoutFlag.close();
     }
 
-    expect(JSON.parse(listWithFlag)).toHaveLength(54);
+    // 54 Endpunktwerkzeuge plus die Bündelwerkzeuge der Gruppe `bundles` (N1: die 54 bleiben
+    // unverändert bestehen, die Bündel kommen hinzu). Auch das anlegende Bündel steht in der
+    // Liste: Gesperrt ist nicht versteckt.
+    expect(JSON.parse(listWithFlag)).toHaveLength(TOOL_ENTRIES.length + BUNDLE_ENTRIES.length);
     // Namen, Beschreibungen, Annotationen und beide Schemata: Die Liste hängt an keinem
     // Schalter und ist über die gesamte Verbindung stabil (Plan 1.5, 6.6).
     expect(listWithFlag).toBe(listWithoutFlag);

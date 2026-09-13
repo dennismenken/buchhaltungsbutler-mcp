@@ -6,7 +6,13 @@
  * der Ausgabe — dieselbe Zusage wie beim Schreiben (Plan 8.2 Schritt 7).
  */
 
-import { buildPlan, serverLaunch, type ClientHost, type WriteOutcome } from "./clients/types.js";
+import {
+  buildPlan,
+  serverLaunch,
+  SERVER_NAME,
+  type ClientHost,
+  type WriteOutcome,
+} from "./clients/types.js";
 import type { Terminal } from "./prompt.js";
 import { boolFlag, parseArgs, requireAdapter, scopeFlag } from "./run.js";
 
@@ -61,7 +67,7 @@ export async function runUninstall(options: RunUninstallOptions): Promise<number
 
   if (!boolFlag(args, "yes") && terminal.interactive && !boolFlag(args, "non-interactive")) {
     const sure = await terminal.confirm(
-      `Den Eintrag "buchhaltungsbutler" bei ${adapter.label} (Ebene ${scope}) entfernen?`,
+      `Den Eintrag "${SERVER_NAME}" bei ${adapter.label} (Ebene ${scope}) entfernen?`,
       false,
     );
     if (!sure) {

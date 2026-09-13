@@ -27,6 +27,7 @@ import type { ToolEntry } from "../types.js";
 export const bb_payment_accounts_list: ToolEntry = {
   name: "bb_payment_accounts_list",
   title: "Zahlungskonten auflisten",
+  group: "payment_accounts",
   path: { literal: "/accounts/get" },
   effect: "read",
   toolClass: "R",

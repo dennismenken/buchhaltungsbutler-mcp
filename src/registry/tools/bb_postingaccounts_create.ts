@@ -29,6 +29,7 @@ const PARENT_DESCRIPTION =
 export const bb_postingaccounts_create: ToolEntry = {
   name: "bb_postingaccounts_create",
   title: "Sachkonto anlegen",
+  group: "postingaccounts",
   path: { literal: "/settings/add/postingaccount" },
   effect: "create",
   toolClass: "A",

@@ -8,7 +8,19 @@
 //     Sachverhalte `date_delivery` und `date_payment_due`. Ein gemeinsamer Belegtyp über
 //     beide Endpunkte erzeugte genau hier eine still leere Fälligkeit (Plan 7.2).
 //  2. `amount_paid` und `amount_paid_fixed` stehen im Vertrag, obwohl die Spezifikation
-//     sie nicht führt: Die API liefert sie an beiden Belegendpunkten (Befund L4).
+//     sie nicht führt: Die API liefert sie an beiden Belegendpunkten (Befund L4). **Beide
+//     sind in diesem Mandanten funktionslos**, und zwar gemessen: Am 2026-09-13 lieferte
+//     `/receipts/get` mit `list_direction` 'inbound' und `limit` 50 genau 50 Zeilen, alle
+//     50 mit gesetztem `payment_date` und alle 50 mit `amount_paid` **und**
+//     `amount_paid_fixed` durchgehend `"0.00"`; dieselben Werte zeigten die Messungen M2
+//     und M3 (Befunde B2 und B3 in docs/entwicklung/buendelwerkzeuge.md Abschnitt 12).
+//     Weder eine Teilzahlung noch ein offener Betrag folgt daraus. Deshalb trägt die
+//     Werkzeugbeschreibung den Warnsatz: Ein Modell, das `amount_paid` für bare Münze
+//     nimmt, meldet jeden bezahlten Beleg als unbezahlt. Die **Bedeutung** von
+//     `amount_paid_fixed` ist NICHT ERMITTELT; es steht im Vertrag, damit es nicht als
+//     unbekanntes Feld in `_contract_warnings` auftaucht, und nicht, weil es gedeutet
+//     wäre. Ob andere Mandanten die beiden Felder füllen, ist ebenfalls nicht ermittelt —
+//     gemessen ist genau einer.
 //  3. Das Schema des Parameters `order` ist in der Spezifikation ein Platzhalter, nämlich
 //     eine einzige Eigenschaft `field` mit dem Enum ['ASC','DESC']; daraus erzeugte ein
 //     Generator {"field": "ASC"}, was die API ablehnt. Der Platzhalter ist verworfen, der
@@ -39,6 +51,7 @@ const RESPONSE_FORMAT_TEXT =
 export const bb_receipts_search: ToolEntry = {
   name: "bb_receipts_search",
   title: "Belege suchen",
+  group: "receipts",
   path: { literal: "/receipts/get" },
   effect: "read",
   toolClass: "R",
@@ -50,7 +63,9 @@ export const bb_receipts_search: ToolEntry = {
     "date_to. Einen einzelnen Beleg samt Fremdwährungsfeldern holt bb_receipts_get, die einem " +
     "Beleg zugeordneten Zahlungen listet bb_receipts_list_transactions, Buchungssätze liefert " +
     "bb_postings_search. Liefert keine Belegdatei und keinen Filter nach Belegart: Gutschriften " +
-    "sind erst am Feld type der Antwort zu erkennen. Höchstens 500 Zeilen je Aufruf, Vorgabe " +
+    "sind erst am Feld type der Antwort zu erkennen. amount_paid und amount_paid_fixed sind " +
+    "gemessen stets '0.00', auch bei bezahlten Belegen: keine Teilzahlung, kein offener Betrag. " +
+    "Bezahlt sagt payment_date. Höchstens 500 Zeilen je Aufruf, Vorgabe " +
     "100, weitere Seiten über offset. Eine Gesamttrefferzahl nennt die API nicht; weniger " +
     "Zeilen als limit bedeutet Ende des Ergebnisses.",
   fields: [
@@ -214,6 +229,9 @@ export const bb_receipts_search: ToolEntry = {
       payment_date: "null-or-string",
       due_date: "null-or-string",
       account: "string",
+      // Gemessen durchgehend `"0.00"`, auch bei gesetztem `payment_date`; `amount_paid_fixed`
+      // ist zusätzlich in seiner Bedeutung nicht ermittelt. Beide stehen hier, damit sie nicht
+      // als unbekannte Felder gemeldet werden — Begründung im Kopf dieser Datei, Punkt 2.
       amount_paid: "amount-string",
       amount_paid_fixed: "amount-string",
       deleted: "bool-string",

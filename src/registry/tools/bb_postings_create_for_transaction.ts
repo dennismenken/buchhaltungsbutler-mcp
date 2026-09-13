@@ -100,6 +100,7 @@ function positionSchema(name: string): FieldSpec["schema"] {
 export const bb_postings_create_for_transaction: ToolEntry = {
   name: "bb_postings_create_for_transaction",
   title: "Buchungen zu Zahlung anlegen",
+  group: "postings",
   path: { literal: "/postings/add/transaction" },
   effect: "create",
   toolClass: "B",

@@ -32,6 +32,9 @@ import { fileURLToPath } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { BUNDLE_ENTRIES } from "../../src/bundles/index.js";
+import { TOOL_ENTRIES } from "../../src/registry/index.generated.js";
+
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const PACKAGE_JSON = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
   readonly version: string;
@@ -261,6 +264,15 @@ function textOf(result: Record<string, unknown>): string {
 
 // --- Die Schritte -------------------------------------------------------------------------
 
+/**
+ * Die Zahl der Werkzeuge, die dieser Server anmeldet: die 54 Endpunktwerkzeuge und zusätzlich
+ * die Bündelwerkzeuge der Gruppe `bundles` (N1, `docs/entwicklung/buendelwerkzeuge.md` 7).
+ *
+ * Gerechnet und nicht geschrieben: Eine feste Zahl an dieser Stelle wäre beim nächsten Eintrag
+ * stumm falsch, und dieser Probelauf misst das GEBAUTE Paket.
+ */
+const EXPECTED_TOOL_COUNT = TOOL_ENTRIES.length + BUNDLE_ENTRIES.length;
+
 describe("Paketprobelauf nach Plan 9.6", () => {
   it("Schritt 1: das Archiv enthält nur dist, package.json, LICENSE und README", () => {
     expect(packedFiles.length).toBeGreaterThan(0);
@@ -344,10 +356,11 @@ describe("Paketprobelauf nach Plan 9.6", () => {
       const listed = (await session.request("tools/list")).result as {
         readonly tools: readonly { readonly name: string }[];
       };
-      expect(listed.tools).toHaveLength(54);
+      expect(listed.tools).toHaveLength(EXPECTED_TOOL_COUNT);
 
       // **Jeder** Aufruf, nicht ein Beispiel: Der letzte Satz aus 6.5 verspricht, dass alle
-      // 54 auf dieselbe Weise scheitern, und genau das wird hier nachgezählt.
+      // auf dieselbe Weise scheitern, und genau das wird hier nachgezählt. Die
+      // Bündelwerkzeuge gehören dazu: Sie laufen durch denselben Guard 1.
       for (const tool of listed.tools) {
         const answer = await session.request("tools/call", { name: tool.name, arguments: {} });
         const result = answer.result as Record<string, unknown>;
@@ -361,11 +374,11 @@ describe("Paketprobelauf nach Plan 9.6", () => {
 
       // Der Server darf dabei weder abbrechen noch hängen bleiben: Beides würde oben schon
       // als ausbleibende Antwort auffallen. Hier wird zusätzlich belegt, dass er weiterhin
-      // antwortet, nachdem er 54-mal abgesagt hat.
+      // antwortet, nachdem er jedem Werkzeug einmal abgesagt hat.
       const secondCall = (await session.request("tools/list")).result as {
         readonly tools: readonly unknown[];
       };
-      expect(secondCall.tools).toHaveLength(54);
+      expect(secondCall.tools).toHaveLength(EXPECTED_TOOL_COUNT);
     } finally {
       session.close();
     }
@@ -391,7 +404,7 @@ describe("Paketprobelauf nach Plan 9.6", () => {
       expect(
         typeof initialized.instructions === "string" ? initialized.instructions : "",
       ).not.toContain("NICHT KONFIGURIERT");
-      expect(listed.tools).toHaveLength(54);
+      expect(listed.tools).toHaveLength(EXPECTED_TOOL_COUNT);
 
       // Plan 9.6 Schritt 6: Die Startzeit wird gemessen und als **Zahl** ins Protokoll
       // geschrieben, damit sie über die Versionen hinweg verfolgbar ist. console.log
@@ -424,10 +437,16 @@ describe("Paketprobelauf nach Plan 9.6", () => {
 
     process.stderr.write(`\n${result.stdout.trim()}\n`);
 
-    expect(result.stdout).toContain("gepackt");
-    expect(result.stdout).toContain("entpackt");
-    expect(result.stdout).toContain("1.048.576");
-    expect(result.stdout).toContain("3.145.728");
-    expect(result.status, `check-size.ts meldete: ${result.stdout}${result.stderr}`).toBe(0);
+    // Der Rückgabewert wird **zuerst** geprüft, und die Meldung nennt immer beide Ströme.
+    // Bricht der Lauf ab, bevor er etwas ausgibt — etwa weil `npm pack` unter Last scheitert
+    // oder dist fehlt —, schreibt check-size.ts die Ursache nach stderr und lässt stdout leer.
+    // Stünde hier zuerst eine Inhaltsprüfung auf stdout, meldete der Fehlschlag nur
+    // „expected '' to contain 'gepackt'" und verschwiege die Ursache, die daneben liegt.
+    const report = `Rückgabewert ${String(result.status)}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`;
+    expect(result.status, report).toBe(0);
+    expect(result.stdout, report).toContain("gepackt");
+    expect(result.stdout, report).toContain("entpackt");
+    expect(result.stdout, report).toContain("1.048.576");
+    expect(result.stdout, report).toContain("3.145.728");
   });
 });

@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { BUNDLE_TOOL_COUNT } from "../../src/bundles/register.js";
 import { countByEffect, definitionSizeLines, runDoctor } from "../../src/cli/doctor.js";
 import { createClientHost, type ClientHost } from "../../src/cli/clients/types.js";
 import { createScriptedTerminal, type ScriptedTerminal } from "../../src/cli/prompt.js";
@@ -122,11 +123,49 @@ describe("runDoctor", () => {
     expect(sum).toBe(TOOL_ENTRIES.length);
 
     const text = terminal.text();
-    expect(text).toContain(`Registriert: ${String(TOOL_ENTRIES.length)}`);
-    expect(text).toContain(`${String(counts.read)} lesend`);
+    // Die genannte Zahl ist die der tools/list-Antwort: Endpunktwerkzeuge UND Bündel. Die
+    // Aufschlüsselung nach Wirkung bleibt bei den Endpunktwerkzeugen und sagt das.
+    expect(text).toContain(
+      `Registriert: ${String(TOOL_ENTRIES.length + BUNDLE_TOOL_COUNT)} — ` +
+        `${String(TOOL_ENTRIES.length)} Endpunktwerkzeuge und ` +
+        `${String(BUNDLE_TOOL_COUNT)} Bündelwerkzeuge.`,
+    );
+    expect(text).toContain(`Die Endpunktwerkzeuge nach Wirkung: ${String(counts.read)} lesend`);
+    expect(text).toContain("Die Bündelwerkzeuge sind darin nicht enthalten.");
     expect(text).toContain(MEASURED_TOOL_DEFINITION_CHARS.toLocaleString("de-DE"));
     expect(text).toContain(MEASURED_TOOL_DEFINITION_TOKENS.toLocaleString("de-DE"));
     expect(text).toContain("pnpm measure-tokens");
+  });
+
+  it("zählt die Bündel mit, wenn der Gruppenschalter nur sie übrig lässt", async () => {
+    // Der gemessene Befund vor der Behebung: doctor meldete hier „Registriert: 0 von 54 — 0
+    // lesend, 0 anlegend, 0 ändernd, 0 löschend", während tools/list fünf Werkzeuge auslieferte.
+    const env = baseEnv({ BB_MCP_TOOL_GROUPS: "bundles" });
+
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const text = terminal.text();
+    expect(text).toContain(
+      `Registriert: ${String(BUNDLE_TOOL_COUNT)} von ` +
+        `${String(TOOL_ENTRIES.length + BUNDLE_TOOL_COUNT)} — kein Endpunktwerkzeug und ` +
+        `${String(BUNDLE_TOOL_COUNT)} Bündelwerkzeuge.`,
+    );
+    expect(text).not.toContain("Registriert: 0 ");
+    // Die Rückmeldung zum Gruppenschalter nennt dieselbe Zahl wie die Zeile darüber.
+    expect(text).toContain(`Registriert: ${String(BUNDLE_TOOL_COUNT)} Werkzeuge`);
+  });
+
+  it("nennt bei abgeschalteten Bündeln nur die Endpunktwerkzeuge", async () => {
+    const env = baseEnv({ BB_MCP_TOOL_GROUPS_EXCLUDE: "bundles" });
+
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const text = terminal.text();
+    expect(text).toContain(
+      `Registriert: ${String(TOOL_ENTRIES.length)} von ` +
+        `${String(TOOL_ENTRIES.length + BUNDLE_TOOL_COUNT)} — ` +
+        `${String(TOOL_ENTRIES.length)} Endpunktwerkzeuge und kein Bündelwerkzeug.`,
+    );
   });
 
   it("nennt eine unbekannte BB_-Variable mit dem nächstähnlichen bekannten Namen", async () => {

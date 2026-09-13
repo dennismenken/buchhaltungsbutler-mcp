@@ -86,6 +86,7 @@ const item = einvoiceItemItem().shape;
 export const bb_invoices_create_einvoice: ToolEntry = {
   name: "bb_invoices_create_einvoice",
   title: "E-Rechnung erzeugen",
+  group: "invoices",
   path: { literal: "/invoices/create/e-invoice" },
   effect: "create",
   toolClass: "B",

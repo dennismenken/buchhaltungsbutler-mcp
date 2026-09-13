@@ -15,6 +15,16 @@
 // Geprüft wird gegen das Register unter `src/`, nicht gegen `dist/`. Der Bau ist zur Testzeit
 // nicht vorausgesetzt (`pnpm test` baut nicht); `scripts/build-mcpb.ts` lädt zur Bauzeit
 // dagegen ausdrücklich das gebaute Register und bricht ab, wenn `dist/` veraltet ist.
+//
+// **Die ausgelieferte Werkzeugmenge sind beide Listen zusammen**: die 54 Endpunktwerkzeuge aus
+// `TOOL_ENTRIES` und die 5 Bündelwerkzeuge aus `BUNDLE_ENTRIES` (N1). Das Manifest trägt
+// `tools_generated: false` und behauptet damit eine vollständige Liste; eine Liste aus nur
+// einer der beiden Mengen wäre im Installationsdialog von Claude Desktop schlicht falsch.
+//
+// Der dritte Block dieser Datei prüft die **Zahlen im Fließtext** der Vorlage. Sie stehen dort
+// als Literale, weil `description`, `long_description` und die Beschreibung von `read_only`
+// ganze deutsche Sätze sind und kein Platzhalterraster vertragen; die Gegenmaßnahme gegen das
+// Veralten ist deshalb dieser Test und nicht eine Einsetzung zur Bauzeit.
 
 import { describe, expect, it } from "vitest";
 
@@ -25,15 +35,33 @@ import {
   type Manifest,
   type ManifestTool,
 } from "../../scripts/build-mcpb.js";
-import { REGISTRY, TOOL_BY_NAME } from "../helpers/registry-fixtures.js";
+import { BUNDLE_ENTRIES } from "../../src/bundles/index.js";
+import { TOOL_CLASSES } from "../../src/registry/classes.js";
+import type { ToolClass, ToolEffect } from "../../src/registry/types.js";
+import { REGISTRY } from "../helpers/registry-fixtures.js";
 
-const COUNT = 54;
+/** So viel eines Eintrags braucht diese Datei. Mehr haben beide Listen nicht gemeinsam. */
+interface ToolListEntry {
+  readonly name: string;
+  readonly description: string;
+  readonly toolClass: ToolClass;
+  readonly effect: ToolEffect;
+}
+
+/** Die ausgelieferte Werkzeugmenge: Endpunktwerkzeuge und Bündelwerkzeuge zusammen. */
+const SHIPPED: readonly ToolListEntry[] = [...REGISTRY, ...BUNDLE_ENTRIES];
+
+const SHIPPED_BY_NAME: ReadonlyMap<string, ToolListEntry> = new Map(
+  SHIPPED.map((entry): [string, ToolListEntry] => [entry.name, entry]),
+);
+
+const COUNT = SHIPPED.length;
 
 /** Eine Version, die es so nie gibt. Sie belegt, dass `renderManifest` wirklich einsetzt. */
 const TESTVERSION = "9.9.9-test";
 
 const template: Manifest = readManifestTemplate();
-const tools: readonly ManifestTool[] = buildToolList(REGISTRY);
+const tools: readonly ManifestTool[] = buildToolList(SHIPPED);
 const manifest: Manifest = renderManifest(template, TESTVERSION, tools);
 
 function manifestTools(): readonly ManifestTool[] {
@@ -90,46 +118,50 @@ describe("Bundle-Manifest, Vorlage", () => {
 
   it("kennzeichnet die Werkzeugliste als vollständig und nicht zur Laufzeit erzeugt", () => {
     // tools_generated: true hieße, der Server melde zur Laufzeit weitere Werkzeuge an. Das
-    // tut er nicht: Es sind genau 54, eines je Endpunkt (E1).
+    // tut er nicht: Es sind 54 Endpunktwerkzeuge, eines je Endpunkt (E1), und 5 Bündel (N1).
     expect(template["tools_generated"]).toBe(false);
   });
 });
 
 describe("Bundle-Manifest, erzeugte Werkzeugliste", () => {
-  it("führt genau 54 Werkzeuge", () => {
+  it("führt beide Werkzeugmengen, also 54 Endpunktwerkzeuge und 5 Bündel", () => {
     expect(manifestTools()).toHaveLength(COUNT);
-    expect(REGISTRY).toHaveLength(COUNT);
+    expect(REGISTRY).toHaveLength(54);
+    expect(BUNDLE_ENTRIES).toHaveLength(5);
+    expect(COUNT).toBe(59);
   });
 
-  it("deckt sich in beide Richtungen mit dem Register", () => {
+  it("deckt sich in beide Richtungen mit der ausgelieferten Werkzeugmenge", () => {
     const inManifest = new Set(manifestTools().map((tool) => tool.name));
     const problems: string[] = [];
 
-    for (const entry of REGISTRY) {
+    for (const entry of SHIPPED) {
       if (!inManifest.has(entry.name)) {
-        problems.push(`${entry.name} steht im Register, aber nicht im Bundle-Manifest.`);
+        problems.push(`${entry.name} wird ausgeliefert, steht aber nicht im Bundle-Manifest.`);
       }
     }
     for (const name of inManifest) {
-      if (!TOOL_BY_NAME.has(name)) {
-        problems.push(`${name} steht im Bundle-Manifest, aber in keinem Registereintrag.`);
+      if (!SHIPPED_BY_NAME.has(name)) {
+        problems.push(
+          `${name} steht im Bundle-Manifest, aber in keinem Register- und keinem Bündeleintrag.`,
+        );
       }
     }
 
     expect(problems.join("\n")).toBe("");
   });
 
-  it("übernimmt jede Beschreibung unverändert aus dem Register", () => {
+  it("übernimmt jede Beschreibung unverändert aus dem Eintrag", () => {
     const problems: string[] = [];
 
     for (const tool of manifestTools()) {
-      const entry = TOOL_BY_NAME.get(tool.name);
+      const entry = SHIPPED_BY_NAME.get(tool.name);
       if (entry === undefined) {
         continue; // Der vorige Test nennt diesen Fall bereits beim Namen.
       }
       if (tool.description !== entry.description) {
         problems.push(
-          `${tool.name}: Die Beschreibung im Manifest weicht vom Register ab. ` +
+          `${tool.name}: Die Beschreibung im Manifest weicht vom Eintrag ab. ` +
             "Gekürzt wird nichts; was vor der Installation zu lesen ist, ist derselbe Text, " +
             "den der Agent danach sieht.",
         );
@@ -183,5 +215,169 @@ describe("Bundle-Manifest, Zusammenbau", () => {
     }
     expect(problems.join("\n")).toBe("");
     expect(Object.keys(manifest).sort()).toEqual(Object.keys(template).sort());
+  });
+});
+
+// ---------------------------------------------------------------------------------------
+// Die Zahlen im Fließtext
+// ---------------------------------------------------------------------------------------
+//
+// `description`, `long_description` und die Beschreibung des Schalters `read_only` sind die
+// Texte, die ein Mensch im Installationsdialog von Claude Desktop liest — nach N2 der
+// Hauptclient. Sie nennen Werkzeugzahlen, und sie nennen sie als Literale: Es sind ganze
+// deutsche Sätze, und ein Platzhalterraster („{{TOOL_COUNT}} Werkzeuge") machte die Vorlage
+// unlesbar und die Beugung falsch. Die Gegenmaßnahme gegen das Veralten ist deshalb dieser
+// Block. Er rechnet jede genannte Zahl aus der ausgelieferten Werkzeugmenge nach und verlangt
+// zusätzlich, dass im Text keine Zahl steht, die sich nicht aus ihr ergibt.
+
+/** Deutsche Zahlwörter, soweit die Vorlage sie ausschreibt. */
+const ZAHLWORT: Readonly<Record<number, string>> = {
+  1: "ein",
+  2: "zwei",
+  3: "drei",
+  4: "vier",
+  5: "fünf",
+};
+
+function zahlwort(value: number): string {
+  const word = ZAHLWORT[value];
+  if (word === undefined) {
+    throw new Error(
+      `Die Vorlage schreibt diese Zahl als Wort aus, und für ${value} kennt der Test keines. ` +
+        "Entweder die Tabelle ZAHLWORT erweitern oder den Satz in der Vorlage auf Ziffern umstellen.",
+    );
+  }
+  return word;
+}
+
+function readOnlyCount(entries: readonly ToolListEntry[]): number {
+  return entries.filter((entry) => TOOL_CLASSES[entry.toolClass].annotations.readOnlyHint).length;
+}
+
+function effectCount(entries: readonly ToolListEntry[], effect: ToolEffect): number {
+  return entries.filter((entry) => entry.effect === effect).length;
+}
+
+describe("Bundle-Manifest, die Zahlen im Fließtext der Vorlage", () => {
+  const endpoints = REGISTRY.length;
+  const bundles = BUNDLE_ENTRIES.length;
+  const total = SHIPPED.length;
+  const lesend = readOnlyCount(SHIPPED);
+  const schreibend = total - lesend;
+  const lesendeBuendel = readOnlyCount(BUNDLE_ENTRIES);
+  const schreibendeBuendel = BUNDLE_ENTRIES.filter(
+    (entry) => !TOOL_CLASSES[entry.toolClass].annotations.readOnlyHint,
+  );
+
+  const userConfig = template["user_config"] as Record<string, { description?: string }>;
+  const description = template["description"] as string;
+  const longDescription = template["long_description"] as string;
+  const readOnlyDescription = userConfig["read_only"]?.description ?? "";
+
+  it("liest die drei Texte überhaupt als Zeichenketten", () => {
+    for (const text of [description, longDescription, readOnlyDescription]) {
+      expect(typeof text).toBe("string");
+      expect(text.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("nennt in description die beiden Werkzeugmengen", () => {
+    const problems: string[] = [];
+    for (const phrase of [`${endpoints} Endpunktwerkzeuge`, `${bundles} Bündelwerkzeuge`]) {
+      if (!description.includes(phrase)) {
+        problems.push(`description nennt nicht „${phrase}".`);
+      }
+    }
+    expect(problems.join("\n")).toBe("");
+  });
+
+  it("nennt in long_description jede Zahl so, wie das Register sie hergibt", () => {
+    const problems: string[] = [];
+    const phrases = [
+      `Er stellt ${total} Werkzeuge bereit`,
+      `${endpoints} Endpunktwerkzeuge`,
+      `(${effectCount(REGISTRY, "read")} lesende, ${effectCount(REGISTRY, "create")} anlegende, ` +
+        `${effectCount(REGISTRY, "modify")} ändernde und ${effectCount(REGISTRY, "delete")} löschende)`,
+      `${bundles} Bündelwerkzeuge`,
+      `${lesend} der ${total} Werkzeuge lesen nur, ${schreibend} schreiben`,
+      `${schreibend} der ${total} Werkzeuge schreiben`,
+      `alle ${endpoints} bleiben daneben nutzbar`,
+      `alle ${schreibend} schreibenden Werkzeuge`,
+      `die ${zahlwort(lesendeBuendel)} lesenden Bündel`,
+    ];
+    for (const phrase of phrases) {
+      if (!longDescription.includes(phrase)) {
+        problems.push(`long_description nennt nicht „${phrase}".`);
+      }
+    }
+    if (
+      !longDescription
+        .toLowerCase()
+        .includes(`${zahlwort(lesendeBuendel)} der ${zahlwort(bundles)} lesen nur`)
+    ) {
+      problems.push(
+        `long_description sagt nicht, dass ${zahlwort(lesendeBuendel)} der ${zahlwort(bundles)} Bündel nur lesen.`,
+      );
+    }
+    expect(problems.join("\n")).toBe("");
+  });
+
+  it("nennt in der Beschreibung von read_only, was der Schalter sperrt und was er stehen lässt", () => {
+    const problems: string[] = [];
+    const phrases = [
+      `auf die ${lesend} lesenden Werkzeuge`,
+      `die ${effectCount(REGISTRY, "read")} lesenden Endpunkte`,
+      `die ${zahlwort(lesendeBuendel)} lesenden Bündel`,
+      `Die ${schreibend} schreibenden Werkzeuge lehnen dann ab`,
+    ];
+    for (const phrase of phrases) {
+      if (!readOnlyDescription.includes(phrase)) {
+        problems.push(`user_config.read_only.description nennt nicht „${phrase}".`);
+      }
+    }
+    expect(problems.join("\n")).toBe("");
+  });
+
+  it("benennt das einzige schreibende Bündel namentlich, in beiden Texten", () => {
+    // Vier der fünf Bündel lesen nur; bb_reports_run ersetzt den zuvor erzeugten Bericht
+    // desselben Typs und ist deshalb im Nur-Lesen-Modus gesperrt. Wächst die Zahl der
+    // schreibenden Bündel, ist jeder Satz mit „als einziges" falsch — dann bricht dieser Test.
+    expect(schreibendeBuendel.map((entry) => entry.name)).toEqual(["bb_reports_run"]);
+    expect(longDescription).toContain("bb_reports_run, schreibt als einziges");
+    expect(readOnlyDescription).toContain("bb_reports_run");
+  });
+
+  it("führt in keinem der drei Texte eine Zahl, die die Werkzeugmenge nicht hergibt", () => {
+    // Die Gegenprobe zu den Wendungen oben: Sie fängt eine Zahl, die beim Umschreiben
+    // stehengeblieben ist, auch dort, wo dieser Test keinen Satz erwartet.
+    const erlaubt = new Set<number>([
+      endpoints,
+      bundles,
+      total,
+      lesend,
+      schreibend,
+      effectCount(REGISTRY, "read"),
+      effectCount(REGISTRY, "create"),
+      effectCount(REGISTRY, "modify"),
+      effectCount(REGISTRY, "delete"),
+    ]);
+
+    const problems: string[] = [];
+    for (const [feld, text] of [
+      ["description", description],
+      ["long_description", longDescription],
+      ["user_config.read_only.description", readOnlyDescription],
+    ] as const) {
+      for (const treffer of text.matchAll(/\b\d+\b/g)) {
+        const zahl = Number(treffer[0]);
+        if (!erlaubt.has(zahl)) {
+          problems.push(
+            `${feld} nennt die Zahl ${zahl}, und keine Werkzeugzahl dieses Servers lautet so. ` +
+              `Erlaubt sind: ${[...erlaubt].sort((a, b) => a - b).join(", ")}.`,
+          );
+        }
+      }
+    }
+    expect(problems.join("\n")).toBe("");
   });
 });

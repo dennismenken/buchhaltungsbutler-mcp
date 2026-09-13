@@ -215,6 +215,7 @@ const ITEM_FIELDS: FieldSpec[] = [
 export const bb_transactions_create_batch: ToolEntry = {
   name: "bb_transactions_create_batch",
   title: "Zahlungen im Stapel anlegen",
+  group: "transactions",
   path: { literal: "/transactions/addBatch" },
   effect: "create",
   toolClass: "A",

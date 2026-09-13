@@ -23,14 +23,50 @@ import path from "node:path";
 import { PACKAGE_NAME } from "../../generated/version.js";
 import type { CredentialVarName } from "../../config/env.js";
 
-/** Der Name, unter dem dieser Server in jeder Clientkonfiguration steht. */
-export const SERVER_NAME = "buchhaltungsbutler";
+/**
+ * Der Name, unter dem dieser Server in jeder Clientkonfiguration steht.
+ *
+ * **Warum so kurz.** Ein Wirt hängt den Namen des Eintrags vor jeden Werkzeugnamen:
+ * `mcp__<servername>__<werkzeug>`. Die Messages API lässt für einen Werkzeugnamen höchstens
+ * 64 Zeichen zu, und mit dem früheren Namen `buchhaltungsbutler` war das Präfix 25 Zeichen
+ * lang — `mcp__buchhaltungsbutler__bb_postings_create_for_transaction_batch` kam damit auf
+ * 65 Zeichen und fiel in einem solchen Wirt aus, erfahrungsgemäß ohne sprechende Meldung.
+ * `bbutler` ist derselbe Name, den das `.mcpb`-Bundle mit `bbutler-mcp` und der Binärname
+ * ohnehin führen; das Präfix schrumpft damit auf 14 Zeichen. Entscheidung E1 bleibt unberührt:
+ * Gekürzt wurde der **Eintragsname**, kein einziger der 59 ausgelieferten Werkzeugnamen.
+ *
+ * Die Grenze hängt seither nicht mehr an dieser Erklärung, sondern an
+ * `test/registry/name-length.test.ts`: Die Prüfung rechnet sie für jedes Werkzeug aus
+ * `TOOL_ENTRIES` und `BUNDLE_ENTRIES` gegen genau diese Konstante nach.
+ */
+export const SERVER_NAME = "bbutler";
+
+/**
+ * Namen, unter denen dieser Server in älteren Konfigurationen steht.
+ *
+ * Ein umbenannter Eintrag ersetzt den alten nicht von selbst: Ohne diese Liste stünde der
+ * Server nach einem `setup` zweimal in derselben Datei, einmal unter dem alten und einmal
+ * unter dem neuen Namen, und der Wirt lüde jedes Werkzeug doppelt. Die Adapter erkennen den
+ * alten Eintrag deshalb beim Schreiben und entfernen ihn beim Entfernen.
+ */
+export const LEGACY_SERVER_NAMES: readonly string[] = Object.freeze(["buchhaltungsbutler"]);
 
 /** Das Paket, das `npx` lädt. Genau der Name aus der `package.json`. */
 export const PACKAGE_SPEC = PACKAGE_NAME;
 
 /** Der Binärname des Pakets (Plan 13.7). */
 export const BINARY_NAME = "bbutler-mcp";
+
+/**
+ * Der Hinweis auf einen möglichen Alteintrag, für die Adapter ohne Dateizugriff.
+ *
+ * Steht hinter {@link BINARY_NAME}, weil er ihn zur Auswertungszeit des Moduls braucht.
+ */
+export const LEGACY_ENTRY_NOTE =
+  "Frühere Fassungen trugen den Eintrag unter dem Namen " +
+  `${LEGACY_SERVER_NAMES.map((name) => `"${name}"`).join(" beziehungsweise ")}. ` +
+  "Er wird von diesem Weg nicht selbst entfernt; sonst stünde der Server doppelt in der " +
+  `Konfiguration. "${BINARY_NAME} uninstall" entfernt beide Namen.`;
 
 /** Die zwölf Clientkürzel aus Plan 8.1, in der Reihenfolge des Plans. */
 export const CLIENT_KEYS = [
@@ -409,6 +445,70 @@ export interface JsonFileAdapterSpec {
 }
 
 /**
+ * Die Alteintragsnamen, die in diesem Behälter tatsächlich vorkommen.
+ *
+ * Der eigene Name ist ausgenommen: Stünde er einmal in {@link LEGACY_SERVER_NAMES}, dürfte er
+ * trotzdem nicht als Alteintrag gelöscht werden.
+ */
+export function legacyEntryNames(container: Readonly<Record<string, unknown>>): readonly string[] {
+  return LEGACY_SERVER_NAMES.filter(
+    (name) => name !== SERVER_NAME && container[name] !== undefined,
+  );
+}
+
+/** Die Namen, die ein Entfernen in diesem Behälter trifft: der eigene und jeder frühere. */
+export function removableEntryNames(
+  container: Readonly<Record<string, unknown>>,
+  serverName: string,
+): readonly string[] {
+  const names = [serverName, ...LEGACY_SERVER_NAMES.filter((name) => name !== serverName)];
+  return names.filter((name) => container[name] !== undefined);
+}
+
+/** Was geschrieben wurde, in Worten: hinzugefügt, ersetzt oder vom alten Namen übernommen. */
+export function writtenDetail(
+  serverName: string,
+  existed: boolean,
+  legacy: readonly string[],
+): string {
+  if (legacy.length > 0) {
+    const names = legacy.map((name) => `"${name}"`).join(", ");
+    return (
+      `Der Eintrag "${serverName}" wurde geschrieben und der frühere Eintrag ${names} ` +
+      "dabei entfernt."
+    );
+  }
+  return existed
+    ? `Der bestehende Eintrag "${serverName}" wurde ersetzt.`
+    : `Der Eintrag "${serverName}" wurde hinzugefügt.`;
+}
+
+/**
+ * Warum ein bestehender Eintrag unangetastet bleibt, in Worten.
+ *
+ * Getrennt nach Fall, weil die beiden Fälle verschiedene Handgriffe verlangen: Beim eigenen
+ * Namen ersetzt `--overwrite` den Eintrag, beim alten Namen benennt es ihn um.
+ */
+export function existingEntryReason(
+  target: string,
+  serverName: string,
+  legacy: readonly string[],
+): string {
+  if (legacy.length === 0) {
+    return (
+      `${target} führt bereits einen Eintrag "${serverName}". Er wurde nicht angetastet. ` +
+      "Mit --overwrite wird er ersetzt."
+    );
+  }
+  const names = legacy.map((name) => `"${name}"`).join(", ");
+  return (
+    `${target} führt einen Eintrag unter dem früheren Namen ${names}. Er wurde nicht ` +
+    `angetastet, denn ein zweiter Eintrag daneben lüde jedes Werkzeug doppelt. Mit ` +
+    `--overwrite wird er durch "${serverName}" ersetzt.`
+  );
+}
+
+/**
  * Der gemeinsame Bauplan der sechs Adapter, die reines JSON schreiben.
  *
  * Reines JSON ist verlustfrei änderbar, deshalb wird hier geschrieben und nicht nur
@@ -552,16 +652,18 @@ export function createJsonFileAdapter(spec: JsonFileAdapterSpec): ClientAdapter 
         ? { ...(document[spec.wrapperKey] as Record<string, unknown>) }
         : {};
       const existed = container[plan.serverName] !== undefined;
-      if (existed && !plan.allowOverwrite) {
+      const legacy = legacyEntryNames(container);
+      if ((existed || legacy.length > 0) && !plan.allowOverwrite) {
         return {
           kind: "unchanged",
-          reason:
-            `${target} führt bereits einen Eintrag "${plan.serverName}". Er wurde nicht ` +
-            "angetastet. Mit --overwrite wird er ersetzt.",
+          reason: existingEntryReason(target, plan.serverName, existed ? [] : legacy),
         };
       }
 
       const { entry } = buildEntry(plan);
+      for (const name of legacy) {
+        delete container[name];
+      }
       container[plan.serverName] = entry;
       const next = { ...document, [spec.wrapperKey]: container };
       let written: WriteTextResult;
@@ -577,9 +679,7 @@ export function createJsonFileAdapter(spec: JsonFileAdapterSpec): ClientAdapter 
         kind: "written",
         path: target,
         backupPath: written.backupPath,
-        detail: existed
-          ? `Der bestehende Eintrag "${plan.serverName}" wurde ersetzt.`
-          : `Der Eintrag "${plan.serverName}" wurde hinzugefügt.`,
+        detail: writtenDetail(plan.serverName, existed, legacy),
       };
     },
 
@@ -600,14 +700,19 @@ export function createJsonFileAdapter(spec: JsonFileAdapterSpec): ClientAdapter 
       }
       const document = read.document;
       const raw = document[spec.wrapperKey];
-      if (!isRecord(raw) || raw[plan.serverName] === undefined) {
+      // Entfernt werden der eigene Name UND jeder frühere: Wer umbenennt, ohne beim Entfernen
+      // beide Namen zu kennen, lässt den Alteintrag als Leiche in der Datei zurück.
+      const removable = isRecord(raw) ? removableEntryNames(raw, plan.serverName) : [];
+      if (!isRecord(raw) || removable.length === 0) {
         return {
           kind: "unchanged",
           reason: `${target} führt keinen Eintrag "${plan.serverName}"; es war nichts zu entfernen.`,
         };
       }
       const container = { ...raw };
-      delete container[plan.serverName];
+      for (const name of removable) {
+        delete container[name];
+      }
       let written: WriteTextResult;
       try {
         written = host.writeText(target, renderJson({ ...document, [spec.wrapperKey]: container }));

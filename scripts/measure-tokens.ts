@@ -74,12 +74,21 @@ const definition = (await import(
 const budget = (await import(
   moduleUrl("src/registry/budget.ts")
 )) as typeof import("../src/registry/budget.js");
+const groups = (await import(
+  moduleUrl("src/registry/groups.ts")
+)) as typeof import("../src/registry/groups.js");
 const instructions = (await import(
   moduleUrl("src/server/instructions.ts")
 )) as typeof import("../src/server/instructions.js");
 const configModule = (await import(
   moduleUrl("src/config/resolve.ts")
 )) as typeof import("../src/config/resolve.js");
+const bundleRegistry = (await import(
+  moduleUrl("src/bundles/index.ts")
+)) as typeof import("../src/bundles/index.js");
+const bundleSchema = (await import(
+  moduleUrl("src/bundles/schema.ts")
+)) as typeof import("../src/bundles/schema.js");
 
 type ToolEntry = (typeof registry.TOOL_ENTRIES)[number];
 
@@ -166,8 +175,11 @@ function descriptionChars(value: unknown): number {
   return sum;
 }
 
+type ToolGroup = (typeof groups.TOOL_GROUP_NAMES)[number];
+
 interface ToolMeasurement extends Measurement {
   readonly name: string;
+  readonly group: ToolGroup;
   readonly tier: number;
   readonly descriptionChars: number;
   readonly inputTextChars: number;
@@ -179,6 +191,7 @@ const tools: ToolMeasurement[] = registry.TOOL_ENTRIES.map((entry) => {
   const rendered = renderedDefinition(entry);
   return {
     name: entry.name,
+    group: entry.group,
     tier: entry.tier,
     ...measure(rendered.json),
     descriptionChars: rendered.description.length,
@@ -188,10 +201,88 @@ const tools: ToolMeasurement[] = registry.TOOL_ENTRIES.map((entry) => {
   };
 });
 
-const definitions: Measurement = {
-  chars: tools.reduce((sum, tool) => sum + tool.chars, 0),
-  tokens: tools.reduce((sum, tool) => sum + tool.tokens, 0),
-};
+/** Die Summe mehrerer Messungen. */
+function sumOf(items: readonly Measurement[]): Measurement {
+  return {
+    chars: items.reduce((sum, item) => sum + item.chars, 0),
+    tokens: items.reduce((sum, item) => sum + item.tokens, 0),
+  };
+}
+
+const definitions: Measurement = sumOf(tools);
+
+/**
+ * Die Bündeldefinitionen, gemessen über `BUNDLE_ENTRIES` statt über `TOOL_ENTRIES`.
+ *
+ * Die Bündel stehen nicht im erzeugten Registerindex, weil sie einen eigenen Eintragstyp
+ * tragen (`src/bundles/types.ts`); über `TOOL_ENTRIES` sind sie deshalb unsichtbar. Gemessen
+ * wird mit `bundleDefinitionJson` aus `src/bundles/schema.ts`, also mit derselben Funktion, aus
+ * der `registerBundles` die ausgelieferte Definition baut — eine zweite Nachbildung gibt es
+ * nicht. Ohne diesen Block verglich die Budgetprüfung unten immer 0 gegen die Grenze und war
+ * damit wirkungslos.
+ */
+const bundleTools: readonly (Measurement & { readonly name: string })[] =
+  bundleRegistry.BUNDLE_ENTRIES.map((entry) => ({
+    name: entry.name,
+    ...measure(bundleSchema.bundleDefinitionJson(entry)),
+  }));
+
+// ---------------------------------------------------------------------------------------
+// Die Messung je Werkzeuggruppe (N5)
+// ---------------------------------------------------------------------------------------
+
+/**
+ * Was eine Gruppe kostet, gemessen statt geschätzt.
+ *
+ * Erst diese Zahlen machen den Gruppenschalter einstellbar: Wer `BB_MCP_TOOL_GROUPS` setzt,
+ * will wissen, was er damit spart. Die Summe einer Teilmenge ist exakt und keine Hochrechnung,
+ * weil jede Definition einzeln gemessen und danach addiert wird.
+ *
+ * Die Tabelle in `src/registry/groups.ts` trägt dieselben Zahlen eingecheckt, damit Startmeldung
+ * und `doctor` ohne Tokenizer auskommen; `test/registry/groups.test.ts` rechnet sie nach.
+ *
+ * **Die elf Endpunktgruppen werden über `TOOL_ENTRIES` gemessen, `bundles` über
+ * `BUNDLE_ENTRIES`.** Beide Quellen stehen nebeneinander, weil die Bündel einen eigenen
+ * Eintragstyp tragen und im erzeugten Registerindex nicht vorkommen; die Zeile `bundles` in
+ * der Ausgabe ist damit eine echte Messung und keine Null.
+ */
+interface GroupMeasurement extends Measurement {
+  readonly group: ToolGroup;
+  readonly tools: number;
+  /** Die eingecheckte Zahl aus `groups.ts`, oder `null`, solange keine hinterlegt ist. */
+  readonly recorded: number | null;
+  /**
+   * `true`, solange die Gruppe zu den 54 Endpunktwerkzeugen zählt. Nur diese Gruppen haben
+   * einen Anteil an den budgetierten {@link definitions}; `bundles` hat sein eigenes Budget.
+   */
+  readonly partOfDefinitions: boolean;
+}
+
+const groupMeasurements: GroupMeasurement[] = groups.TOOL_GROUP_NAMES.map((group) => {
+  const isBundleGroup = group === groups.BUNDLE_TOOL_GROUP;
+  const members: readonly Measurement[] = [
+    ...tools.filter((tool) => tool.group === group),
+    ...(isBundleGroup ? bundleTools : []),
+  ];
+  return {
+    group,
+    tools: members.length,
+    ...sumOf(members),
+    recorded: groups.TOOL_GROUPS[group].measuredTokens,
+    partOfDefinitions: !isBundleGroup,
+  };
+});
+
+const bundleMeasurement = groupMeasurements.find(
+  (measurement) => measurement.group === groups.BUNDLE_TOOL_GROUP,
+);
+const bundleTokens = bundleMeasurement?.tokens ?? 0;
+const bundleOverBudget = bundleTokens > budget.BUNDLE_DEFINITION_TOKEN_BUDGET;
+
+/** Gruppen, deren eingecheckte Zahl nicht mehr zur Messung passt. */
+const staleGroups = groupMeasurements.filter(
+  (measurement) => measurement.tools > 0 && measurement.recorded !== measurement.tokens,
+);
 
 /**
  * Dieselbe Summe in der Rechenweise von P11.
@@ -248,6 +339,14 @@ const instructionsMax = instructionsFor({
   BB_MCP_CACHE_TTL_MS: "60000",
   BB_MCP_MAX_AMOUNT: "1000.00",
   BB_MCP_MAX_BATCH: "10",
+  // Der Gruppenschalter gehört zum größten Zustand: Bei abgeschalteter Gruppe nennt der
+  // Servertext zusätzlich jede inaktive Gruppe und was mit ihr unbeantwortbar ist. Früher
+  // stand hier die kleinste Gruppe allein, also elf inaktive. Seit die Blöcke des Servertextes
+  // an ihren Gruppen hängen, ist das nicht mehr der teuerste Zustand: Ohne `postings` entfällt
+  // der Buchungswegweiser. Teuerste Einstellung ist jetzt `postings,bundles` — gemessen über
+  // alle 4.095 nichtleeren Gruppenmengen, zehn inaktive Gruppen plus den Wegweiser. Dieselbe
+  // Wahl trifft `largestConfig()` in `test/registry/token-budget.test.ts`.
+  BB_MCP_TOOL_GROUPS: "postings,bundles",
 });
 
 /**
@@ -319,6 +418,34 @@ function lineItemTable(): string {
   }
   return lines.join("\n");
 }
+/** Die Messung je Gruppe, absteigend nach Token. */
+function groupTable(): string {
+  const lines = [
+    "| Gruppe | Werkzeuge | Zeichen | Token | eingecheckt | Anteil |",
+    "| --- | --- | --- | --- | --- | --- |",
+  ];
+  // Absteigend nach Token, `bundles` aber immer zuletzt: Die Gruppe zählt nicht zu den 54
+  // Endpunktwerkzeugen und hat deshalb keinen Anteil an deren Summe. Stünde sie mitten in der
+  // Tabelle, läse sich die Spalte „Anteil" als Lücke statt als Hinweis.
+  const ordered = [...groupMeasurements].sort((a, b) => {
+    if (a.partOfDefinitions !== b.partOfDefinitions) return a.partOfDefinitions ? -1 : 1;
+    return b.tokens - a.tokens;
+  });
+  for (const measurement of ordered) {
+    const share = definitions.tokens === 0 ? 0 : (measurement.tokens / definitions.tokens) * 100;
+    lines.push(
+      `| \`${measurement.group}\` | ${de(measurement.tools)} | ${de(measurement.chars)} | ` +
+        `${de(measurement.tokens)} | ${measurement.recorded === null ? "—" : de(measurement.recorded)} | ` +
+        `${measurement.partOfDefinitions ? `${deRatio(share)} %` : "—"} |`,
+    );
+  }
+  lines.push(
+    `| **Summe der elf Endpunktgruppen** | ${de(tools.length)} | ${de(definitions.chars)} | ` +
+      `${de(definitions.tokens)} | | 100,00 % |`,
+  );
+  return lines.join("\n");
+}
+
 // ---------------------------------------------------------------------------------------
 // Der Bericht als Text
 // ---------------------------------------------------------------------------------------
@@ -541,6 +668,64 @@ const blocks: string[] = [
 
   ...budgetVerdict(),
 
+  "## 4a. Die Werkzeugdefinitionen je Gruppe",
+
+  prose(
+    "Der Gruppenschalter `BB_MCP_TOOL_GROUPS` (N5) schaltet Werkzeuge gruppenweise ab. Diese",
+    "Tabelle sagt, was eine Gruppe kostet und was ihr Abschalten spart. Jede Definition ist",
+    "einzeln gemessen und danach addiert; die Summe einer Teilmenge ist damit exakt und keine",
+    'Hochrechnung. Die Spalte „eingecheckt" ist die Zahl in `src/registry/groups.ts`, aus der',
+    "Startmeldung, `doctor` und `print-config` ihre Angabe ohne Tokenizer bilden.",
+  ),
+
+  prose(
+    "Die elf Endpunktgruppen sind über `TOOL_ENTRIES` gemessen, die Gruppe `bundles` über",
+    "`BUNDLE_ENTRIES` und `bundleDefinitionJson` — die Bündel tragen einen eigenen Eintragstyp",
+    "und stehen nicht im erzeugten Registerindex. Ihre Zeile steht am Ende und trägt in der",
+    'Spalte „Anteil" einen Strich: Sie zählt nicht zu den 54 Endpunktwerkzeugen und damit nicht',
+    "zu deren budgetierter Summe, sondern hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` ihre eigene",
+    "Grenze.",
+  ),
+
+  groupTable(),
+
+  ...(staleGroups.length === 0
+    ? [prose("Messung und eingecheckte Tabelle stimmen in jeder Gruppe mit Werkzeugen überein.")]
+    : [
+        prose(
+          "**Die eingecheckte Tabelle in `src/registry/groups.ts` ist veraltet.** Abweichend",
+          "sind:",
+          staleGroups
+            .map(
+              (measurement) =>
+                `\`${measurement.group}\` (eingecheckt ` +
+                `${measurement.recorded === null ? "nichts" : de(measurement.recorded)}, gemessen ` +
+                `${de(measurement.tokens)})`,
+            )
+            .join(", ") + ".",
+          "`test/registry/groups.test.ts` bricht daran ab; die Zahlen sind dort nachzutragen.",
+        ),
+      ]),
+
+  bundleOverBudget
+    ? prose(
+        "**Das Budget der Bündelgruppe ist gerissen.**",
+        `Gemessen ${de(bundleTokens)} Token, Grenze`,
+        `${de(budget.BUNDLE_DEFINITION_TOKEN_BUDGET)}. Überschuss`,
+        `${de(bundleTokens - budget.BUNDLE_DEFINITION_TOKEN_BUDGET)} Token. Die Grenze wird nicht`,
+        "angehoben; das entscheidet der Projektinhaber (`src/registry/budget.ts`).",
+      )
+    : prose(
+        "Das Budget der Bündelgruppe (`BUNDLE_DEFINITION_TOKEN_BUDGET`) ist eingehalten:",
+        `${de(bundleTokens)} von ${de(budget.BUNDLE_DEFINITION_TOKEN_BUDGET)} Token.`,
+        bundleTokens === 0
+          ? "Die Gruppe `bundles` führt in diesem Stand noch kein Werkzeug; die Grenze ist damit" +
+              " trivial eingehalten und noch keine Aussage."
+          : "Die Grenze steht seit dem 2026-09-13 auf dem gemessenen Stand zuzüglich einer" +
+              " kleinen Marge. Sinkt die Messung dauerhaft, wird sie nachgezogen; angehoben" +
+              " wird sie nicht.",
+      ),
+
   "## 5. Die Rechnung aus Plan 4.10, nachgeprüft",
 
   lineItemTable(),
@@ -604,14 +789,42 @@ console.log(
       `(Budget ${de(budget.INSTRUCTIONS_TOKEN_BUDGET)}).`,
     `Zeichen je Token: ${deRatio(measuredRatio)} gemessen, ` +
       `${deExact(budget.CHARS_PER_TOKEN)} in CHARS_PER_TOKEN.`,
+    `Werkzeuggruppen: ${groupMeasurements
+      .filter((measurement) => measurement.tools > 0)
+      .sort((a, b) => {
+        if (a.partOfDefinitions !== b.partOfDefinitions) return a.partOfDefinitions ? -1 : 1;
+        return b.tokens - a.tokens;
+      })
+      .map(
+        (measurement) => `${measurement.group} ${de(measurement.tools)}/${de(measurement.tokens)}`,
+      )
+      .join(", ")}.`,
+    `Gruppe bundles: ${de(bundleTokens)} Token ` +
+      `(Grenze ${de(budget.BUNDLE_DEFINITION_TOKEN_BUDGET)}).`,
     `Bericht geschrieben: ${REPORT_FILE}`,
   ].join("\n"),
 );
 
-if (overBudget || p11OverBudget || instructionsOverBudget) {
+if (staleGroups.length > 0) {
+  console.error(
+    `\nDie Gruppentabelle in src/registry/groups.ts ist veraltet: ${staleGroups
+      .map(
+        (measurement) =>
+          `${measurement.group} eingecheckt ` +
+          `${measurement.recorded === null ? "nichts" : de(measurement.recorded)}, gemessen ` +
+          `${de(measurement.tokens)}`,
+      )
+      .join("; ")}. Die Zahlen sind dort nachzutragen; test/registry/groups.test.ts bricht ` +
+      "sonst ab.",
+  );
+}
+
+if (overBudget || p11OverBudget || instructionsOverBudget || bundleOverBudget) {
   console.error(
     "\nEin Budget ist gerissen. Die Reihenfolge der Gegenmaßnahmen steht im Bericht und in " +
-      "Plan 4.10. Erzwungen wird in P11 und nicht in diesem Skript; P11 bricht seit dem " +
+      "Plan 4.10. Erzwungen wird in den Tests und nicht in diesem Skript: die Definitionen " +
+      "und die instructions in P11 (test/registry/token-budget.test.ts), die Bündelgruppe in " +
+      "test/bundles/read-bundles-contract.test.ts. P11 bricht seit dem " +
       "2026-09-13 wieder hart an der Grenze ab. Die Grenze anzuheben ist keine Nebenwirkung " +
       "dieses Laufs, sondern eine Entscheidung des Projektinhabers mit Eintrag in CHANGELOG.md.",
   );

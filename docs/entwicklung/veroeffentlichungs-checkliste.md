@@ -165,6 +165,43 @@ muss.
 - [ ] **Die eingecheckten Generate passen zur Spezifikation.**
       `pnpm generate && git diff --exit-code` → **keine Ausgabe**, Rückgabewert 0.
       Bei einer Abweichung: erst den Grund klären, dann das Generat committen.
+- [ ] **Kein ausgeliefertes Werkzeug reißt mit dem Clientpräfix die 64-Zeichen-Grenze der
+      Messages API.** Ein Wirt hängt den Namen des Servereintrags vor jeden Werkzeugnamen
+      (`mcp__<servername>__<werkzeug>`); über 64 Zeichen fällt genau dieses Werkzeug aus, und
+      zwar erfahrungsgemäß ohne sprechende Meldung.
+      `npx vitest run test/registry/name-length.test.ts`
+      Erwartet: Rückgabewert 0, drei grüne Prüfungen und auf stderr eine Zeile der Form
+      `[Namenslänge] <n> Werkzeuge, Präfix "mcp__<servername>__" (<k> Zeichen). Längster Name:
+      … = <l> Zeichen (…, Grenze 64, Abstand <64-l>).` Die Prüfung geht über **jedes** Werkzeug
+      aus `TOOL_ENTRIES` und `BUNDLE_ENTRIES` und nennt im Fehlerfall den längsten Namen samt
+      Länge. Der Hebel bei einem Verstoß ist `SERVER_NAME` in `src/cli/clients/types.ts`, denn
+      er wirkt auf alle Namen zugleich; einen ausgelieferten Werkzeugnamen zu ändern verbietet
+      Entscheidung E1.
+      *Am 2026-09-13 selbst gemessen: 59 Werkzeuge, Präfix `mcp__bbutler__` (14 Zeichen),
+      längster Name `mcp__bbutler__bb_postings_create_for_transaction_batch` = 54 Zeichen,
+      Abstand 10. Vorher, mit `SERVER_NAME = "buchhaltungsbutler"`, waren es 65 Zeichen und
+      damit eines zu viel (Befund B1 in `docs/entwicklung/buendelwerkzeuge.md` Abschnitt 12).*
+- [ ] **Der gekürzte Eintragsname ist überall derselbe.** Seit der Kürzung auf `bbutler` führen
+      ältere Installationen den Eintrag noch unter `buchhaltungsbutler`. Die Prüfung lief früher
+      nur über `src/` und hat deshalb übersehen, dass die gesamte Installationsanleitung der
+      README weiter den alten Namen trug — wer sie befolgte statt `bbutler-mcp setup` zu
+      benutzen, stellte den Defekt vollständig wieder her. Sie geht deshalb jetzt über alles,
+      was ausgeliefert wird oder was ein Nutzer abschreibt, die README eingeschlossen:
+      ```
+      grep -rnE '"buchhaltungsbutler"|mcp_servers\.buchhaltungsbutler|mcpServers/buchhaltungsbutler|mcp (add|add-json|get|remove|doctor|list)[^|]* buchhaltungsbutler' \
+        src/ scripts/ README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md NOTICE.md package.json
+      ```
+      Der Ausdruck trifft die vier Schreibweisen, in denen ein Eintragsname vorkommt: JSON-
+      Schlüssel, TOML-Tabelle `[mcp_servers.<name>]`, Dateiname unter `.continue/mcpServers/`
+      und Kommandozeile der Client-CLIs. Erwartet werden **genau zwei Zeilen**, beide gewollt:
+      1. `src/cli/clients/types.ts` mit der Liste `LEGACY_SERVER_NAMES`. Sie bleibt stehen: An
+         ihr hängt, dass `setup` einen Alteintrag erkennt und `uninstall` beide Namen entfernt.
+      2. `package.json` mit dem Stichwort `buchhaltungsbutler` im Feld `keywords`. Das ist ein
+         Suchbegriff der Registry und kein Eintragsname.
+
+      Jede dritte Zeile ist ein Befund. `test/registry/name-length.test.ts` kann diese Lücke
+      nicht abdecken, weil es gegen die Konstante `SERVER_NAME` rechnet und nicht gegen die
+      Namen, die in der Dokumentation stehen.
 
 ---
 

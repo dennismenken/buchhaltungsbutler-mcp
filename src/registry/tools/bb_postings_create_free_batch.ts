@@ -105,6 +105,7 @@ const FREE_POSTINGS_CONTAINER = batchContainer("bb_postings_create_free_batch", 
 export const bb_postings_create_free_batch: ToolEntry = {
   name: "bb_postings_create_free_batch",
   title: "Freie Buchungen anlegen",
+  group: "postings",
   path: { literal: "/postings/add-batch/free" },
   effect: "create",
   toolClass: "B",

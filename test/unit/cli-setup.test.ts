@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { createClientHost, type ClientHost } from "../../src/cli/clients/types.js";
+import { createClientHost, SERVER_NAME, type ClientHost } from "../../src/cli/clients/types.js";
 import { createScriptedTerminal, type ScriptedTerminal } from "../../src/cli/prompt.js";
 import { runSetup, VERIFICATION_SENTENCE } from "../../src/cli/setup.js";
 import { TEST_ENDPOINT } from "../../src/cli/test.js";
@@ -134,8 +134,8 @@ describe("runSetup, interaktiv", () => {
     const cursor = JSON.parse(fs.readFileSync(cursorUserFile(), "utf8")) as {
       mcpServers: Record<string, Record<string, unknown>>;
     };
-    expect(Object.keys(cursor.mcpServers).sort()).toEqual(["buchhaltungsbutler", "fremd"]);
-    expect(cursor.mcpServers.buchhaltungsbutler?.env).toBeUndefined();
+    expect(Object.keys(cursor.mcpServers).sort()).toEqual([SERVER_NAME, "fremd"].sort());
+    expect(cursor.mcpServers[SERVER_NAME]?.env).toBeUndefined();
   });
 
   it("nennt den Pfad der Sicherung, bevor es eine bestehende Datei ändert", async () => {
@@ -177,7 +177,7 @@ describe("runSetup, interaktiv", () => {
     expect(terminal.errorLines.join(" ")).toContain("Dann ist der api_key der falsche");
     expect(fs.existsSync(credentialsFile())).toBe(false);
     const cursor = fs.readFileSync(cursorUserFile(), "utf8");
-    expect(cursor).not.toContain("buchhaltungsbutler");
+    expect(cursor).not.toContain(SERVER_NAME);
   });
 
   it("schreibt nichts, wenn der Verbindungstest scheitert und der Nutzer abbricht", async () => {
@@ -213,7 +213,7 @@ describe("runSetup, interaktiv", () => {
     const cursor = JSON.parse(fs.readFileSync(cursorUserFile(), "utf8")) as {
       mcpServers: Record<string, { env?: Record<string, string> }>;
     };
-    expect(cursor.mcpServers.buchhaltungsbutler?.env).toEqual({ BB_MCP_READ_ONLY: "true" });
+    expect(cursor.mcpServers[SERVER_NAME]?.env).toEqual({ BB_MCP_READ_ONLY: "true" });
     expect(terminal.text()).toContain("BWA und Summen- und Saldenliste nicht");
   });
 });

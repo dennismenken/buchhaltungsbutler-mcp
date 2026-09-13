@@ -15,6 +15,9 @@
 import {
   entryEnv,
   renderJson,
+  LEGACY_ENTRY_NOTE,
+  LEGACY_SERVER_NAMES,
+  SERVER_NAME,
   type ClientAdapter,
   type ClientPlan,
   type ClientPreview,
@@ -55,7 +58,7 @@ export const claudeCodeAdapter: ClientAdapter = {
   finishNote:
     "Claude Code liest die Konfiguration beim Start einer Sitzung. Eine laufende Sitzung " +
     "übernimmt den Eintrag nach /mcp oder einem Neustart.",
-  verifyCommand: "claude mcp get buchhaltungsbutler",
+  verifyCommand: `claude mcp get ${SERVER_NAME}`,
 
   detect(host) {
     const binary = host.which("claude");
@@ -79,6 +82,7 @@ export const claudeCodeAdapter: ClientAdapter = {
       notes: [
         ...notes,
         `Aufruf: claude mcp add-json ${SCOPE_FLAG} ${plan.scope} ${plan.serverName} '${json}'`,
+        LEGACY_ENTRY_NOTE,
         ...(host.which("claude") === null
           ? ["claude ist nicht im Suchpfad; der Aufruf muss dort erfolgen, wo Claude Code liegt."]
           : []),
@@ -125,24 +129,37 @@ export const claudeCodeAdapter: ClientAdapter = {
   },
 
   remove(plan, host): WriteOutcome {
+    // Entfernt wird der eigene Name UND jeder frühere: Eine ältere Konfiguration führt den
+    // Eintrag noch unter dem langen Namen, und `claude mcp remove` kennt nur den, den es hört.
+    const names = removableNames(plan.serverName);
     if (host.which("claude") === null) {
-      return {
-        kind: "manual",
-        reason: `claude ist nicht im Suchpfad. Von Hand: claude mcp remove ${plan.serverName} ${SCOPE_FLAG} ${plan.scope}`,
-      };
+      const byHand = names
+        .map((name) => `claude mcp remove ${name} ${SCOPE_FLAG} ${plan.scope}`)
+        .join(" und ");
+      return { kind: "manual", reason: `claude ist nicht im Suchpfad. Von Hand: ${byHand}` };
     }
-    const result = host.run("claude", ["mcp", "remove", plan.serverName, SCOPE_FLAG, plan.scope]);
-    if (result.failure !== null) {
-      return { kind: "failed", reason: `claude ließ sich nicht starten: ${result.failure}` };
+    const attempts = names.map((name) =>
+      host.run("claude", ["mcp", "remove", name, SCOPE_FLAG, plan.scope]),
+    );
+    const failure = attempts.find((attempt) => attempt.failure !== null);
+    if (failure !== undefined) {
+      return { kind: "failed", reason: `claude ließ sich nicht starten: ${failure.failure ?? ""}` };
     }
-    if (result.status !== 0) {
+    if (!attempts.some((attempt) => attempt.status === 0)) {
+      const last = attempts[attempts.length - 1];
       return {
         kind: "unchanged",
         reason:
-          `claude mcp remove endete mit Rückgabewert ${String(result.status)}; ` +
-          `vermutlich gab es keinen Eintrag. Ausgabe: ${(result.stderr || result.stdout).trim()}`,
+          `claude mcp remove endete für ${names.join(" und ")} mit Rückgabewert ` +
+          `${String(last?.status ?? null)}; vermutlich gab es keinen Eintrag. ` +
+          `Ausgabe: ${((last?.stderr ?? "") || (last?.stdout ?? "")).trim()}`,
       };
     }
     return { kind: "removed", path: null, backupPath: null };
   },
 };
+
+/** Der eigene Eintragsname und jeder frühere, ohne Dopplung. */
+function removableNames(serverName: string): readonly string[] {
+  return [serverName, ...LEGACY_SERVER_NAMES.filter((name) => name !== serverName)];
+}

@@ -30,6 +30,7 @@ import { installTestConfig, mockApi, resetTestConfig, type ApiMock } from "../he
 const SEARCH_ENTRY: ToolEntry = {
   name: "bb_debtors_search",
   title: "Debitoren suchen",
+  group: "debtors",
   path: { literal: "/settings/get/debtors" },
   effect: "read",
   toolClass: "R",
@@ -81,6 +82,7 @@ const SEARCH_ENTRY: ToolEntry = {
 const CREATE_ENTRY: ToolEntry = {
   name: "bb_debtors_create",
   title: "Debitor anlegen",
+  group: "debtors",
   path: { literal: "/settings/add/debtor" },
   effect: "create",
   toolClass: "A",
@@ -133,6 +135,7 @@ const CREATE_ENTRY: ToolEntry = {
 const UPDATE_ENTRY: ToolEntry = {
   name: "bb_debtors_update",
   title: "Debitor ändern",
+  group: "debtors",
   path: { literal: "/settings/update/debtor" },
   effect: "modify",
   toolClass: "M",

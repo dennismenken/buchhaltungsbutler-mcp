@@ -175,7 +175,11 @@ describe("print-config", () => {
 });
 
 describe("uninstall", () => {
-  it("entfernt den eigenen Eintrag und legt eine Sicherung an", async () => {
+  // Der Eintrag steht hier bewusst unter dem FRÜHEREN Namen `buchhaltungsbutler`: Seit der
+  // Kürzung von `SERVER_NAME` auf `bbutler` (64-Zeichen-Grenze der Messages API) ist das der
+  // Fall einer bestehenden Installation, und `uninstall` muss ihn treffen. Der Fall mit dem
+  // aktuellen Namen steht in test/unit/cli-clients.test.ts.
+  it("entfernt den eigenen Eintrag, auch unter dem früheren Namen, und sichert vorher", async () => {
     const target = path.join(root, "home", ".cursor", "mcp.json");
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(

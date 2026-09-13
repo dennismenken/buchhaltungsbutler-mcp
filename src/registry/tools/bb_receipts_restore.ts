@@ -22,6 +22,7 @@ import type { ToolEntry } from "../types.js";
 export const bb_receipts_restore: ToolEntry = {
   name: "bb_receipts_restore",
   title: "Beleg wiederherstellen",
+  group: "receipts",
   path: {
     template: "/receipts/restore/{receipt_id_by_customer}",
     params: ["receipt_id_by_customer"],

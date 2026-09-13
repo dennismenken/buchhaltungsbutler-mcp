@@ -24,8 +24,8 @@ import type { MasterDataStore } from "../cache/store.js";
 import { getMasterDataStore } from "../cache/store.js";
 import type { ResolvedConfig } from "../config/resolve.js";
 import { getConfig } from "../config/resolve.js";
-import { pathLabel } from "../errors/path-label.js";
 import { renderRejectedBeforeRequest, renderTransportFailure } from "../errors/render.js";
+import { joinIssues } from "../errors/zod-issue.js";
 import { checkConfigured } from "../guards/configured.js";
 import { checkDuplicates } from "../guards/duplicate-check.js";
 import { checkLimits } from "../guards/limits.js";
@@ -40,9 +40,8 @@ import { mapRequest, resolveUploadArguments } from "../mapping/request.js";
 import { mapResponse } from "../mapping/response.js";
 import { TOOL_CLASSES } from "../registry/classes.js";
 import { TOOL_ENTRIES } from "../registry/index.generated.js";
-import type { ToolClass, ToolEntry } from "../registry/types.js";
+import type { ToolClass, ToolEntry, ToolGroup } from "../registry/types.js";
 import { buildToolResponse } from "../response/build.js";
-import { sanitizeText } from "../response/sanitize.js";
 import { buildOutputSchema } from "../response/output-schema.js";
 import { isUploadSourceError } from "../upload/sniff.js";
 import { buildZodSchema, specPathOf, toJsonSchema } from "../schema/build.js";
@@ -82,6 +81,8 @@ export interface RegisteredToolInfo {
   /** Der unveränderte Spezifikationspfad, auch bei den vier Werkzeugen mit Pfadvorlage (4.6). */
   readonly specPath: string;
   readonly toolClass: ToolClass;
+  /** Die Werkzeuggruppe, über die dieser Eintrag an- und abschaltbar ist (N5). */
+  readonly group: ToolGroup;
   /** `true`, wenn dieses Werkzeug bei der aktuellen Konfiguration an Guard 2 scheitert. */
   readonly blockedByReadOnly: boolean;
 }
@@ -165,228 +166,12 @@ function refuse(
 
 // ---------------------------------------------------------------------------------------
 // Guard 3 und Guard 4: die Schemameldungen.
+//
+// Die deutschen Sätze zu den Zod-Befunden stehen in `errors/zod-issue.ts` und werden von
+// `bundles/register.ts` aus derselben Datei benutzt. Vorher lag die Aufbereitung hier und im
+// Bündelpfad getrennt, und derselbe Fehler bekam zwei verschiedene Antworten — eine deutsche
+// und eine englische der Bibliothek.
 // ---------------------------------------------------------------------------------------
-
-/**
- * Der Ort eines Schemaverstoßes in der Schreibweise des Werkzeugschemas.
- *
- * Die Schreibweise steht in `errors/path-label.ts` und gilt für jede Meldung dieses Servers:
- * `items (Position 2).item_amount` und niemals `items[2]`. Eine Klammer, die ab 1 zählt, sagt
- * einem Sprachmodell das dritte Element, wenn sie das zweite meint.
- */
-function issueLocation(path: readonly (string | number | symbol)[]): string {
-  return path.length === 0 ? "der Aufruf" : pathLabel(path);
-}
-
-/**
- * Der tatsächlich übergebene Wert an der Stelle, die ein Befund nennt.
- *
- * Zod 4 führt den Wert im fertigen Issue **nicht** mehr; `issue.input` ist zur Laufzeit
- * `undefined`, und eine Meldung daraus behauptete an jedem Typfehler, das Feld fehle. Der
- * Wert wird deshalb über `issue.path` aus den Rohargumenten nachgeschlagen — dort steht er
- * unverändert, weil Guard 3 vor jeder Umformung läuft.
- */
-function valueAtPath(root: unknown, path: readonly (string | number | symbol)[]): unknown {
-  let current: unknown = root;
-  for (const segment of path) {
-    if (current === null || typeof current !== "object") return undefined;
-    if (typeof segment === "number") {
-      if (!Array.isArray(current)) return undefined;
-      current = current[segment];
-    } else {
-      current = (current as Record<string, unknown>)[String(segment)];
-    }
-  }
-  return current;
-}
-
-/** Die längste Wiedergabe eines übergebenen Wertes in einer Fehlermeldung. */
-const VALUE_EXCERPT_LENGTH = 40;
-
-/**
- * Der übergebene Wert als deutscher Halbsatz.
- *
- * Der Unterschied zwischen „das Feld fehlt" und „das Feld hat den falschen Typ" ist der
- * ganze Zweck: Der Agent liest aus dem einen, er müsse etwas nachtragen, aus dem anderen, er
- * müsse etwas umformen. Beides mit demselben Satz zu beantworten hat im Evaluationslauf
- * genau diesen Irrweg erzeugt (Befund V2/E-3).
- */
-function describeGivenValue(value: unknown): string {
-  if (value === undefined) return "das Feld fehlt";
-  if (value === null) return "übergeben wurde null";
-  if (Array.isArray(value))
-    return `übergeben wurde eine Liste mit ${String(value.length)} Einträgen`;
-  if (typeof value === "object") return "übergeben wurde ein Objekt";
-  if (typeof value === "string") {
-    const sanitized = sanitizeText(value);
-    const excerpt =
-      sanitized.length > VALUE_EXCERPT_LENGTH
-        ? `${sanitized.slice(0, VALUE_EXCERPT_LENGTH)}…`
-        : sanitized;
-    return `übergeben wurde die Zeichenkette "${excerpt}"`;
-  }
-  if (typeof value === "number") return `übergeben wurde die Zahl ${String(value)}`;
-  if (typeof value === "boolean") return `übergeben wurde der Wahrheitswert ${String(value)}`;
-  // bigint, symbol und function kommen aus JSON-RPC nicht an; der Zweig ist reine Vorsorge.
-  return `übergeben wurde ein Wert vom Typ ${typeof value}`;
-}
-
-/** Die längste Aufzählung erlaubter Werte in einer Fehlermeldung. */
-const ALLOWED_VALUES_LIMIT = 8;
-
-/**
- * Ein erlaubter Wert in der Schreibweise der Werkzeugbeschreibungen.
- *
- * Zeichenketten stehen in einfachen Anführungszeichen wie überall sonst, wo dieser Server
- * einen API-Wert wörtlich zitiert (`schema/vocab.ts`, Sprachregel aus Plan 4.9). Geschwärzt
- * wird hier nichts: Die Werte stammen aus dem Enum des eigenen Schemas und nie vom Aufrufer.
- */
-function renderAllowedValue(value: unknown): string {
-  return typeof value === "string" ? `'${value}'` : String(value);
-}
-
-/**
- * Die erlaubten Werte eines Enums als deutsche Aufzählung.
- *
- * Lange Vorräte werden gekürzt: Die Währungsliste hat 48 Einträge, und eine Fehlermeldung, die
- * sie vollständig ausschreibt, verdrängt die Aussage, um die es geht. Der vollständige Vorrat
- * steht ohnehin im angekündigten JSON Schema des Werkzeugs.
- */
-function listAllowedValues(values: readonly unknown[]): string {
-  if (values.length === 0) {
-    // Ein Enum ohne Werte kann dieses Register nicht bauen; der Zweig ist reine Vorsorge.
-    return "kein Wert";
-  }
-  const shown = values.slice(0, ALLOWED_VALUES_LIMIT).map(renderAllowedValue);
-  if (values.length > ALLOWED_VALUES_LIMIT) {
-    return (
-      `${shown.join(", ")} und ${String(values.length - ALLOWED_VALUES_LIMIT)} weitere ` +
-      "(der vollständige Vorrat steht im Eingabeschema dieses Werkzeugs)"
-    );
-  }
-  const last = shown[shown.length - 1] ?? "";
-  return shown.length === 1 ? last : `${shown.slice(0, -1).join(", ")} und ${last}`;
-}
-
-/**
- * Die erlaubten Formen einer Vereinigung, aus den Befunden ihrer Zweige gelesen.
- *
- * Zod meldet zu `invalid_union` keinen erwarteten Typ, sondern die Befunde **jedes** Zweiges.
- * Der erste Befund eines Zweiges sagt, woran dieser Zweig gescheitert ist, und damit, was er
- * erwartet hätte.
- *
- * @returns `undefined`, wenn sich aus den Zweigen nichts Nennbares ergibt.
- */
-function describeUnionForms(errors: readonly (readonly z.core.$ZodIssue[])[]): string | undefined {
-  const forms: string[] = [];
-  for (const branch of errors) {
-    const first = branch[0];
-    if (first === undefined) {
-      continue;
-    }
-    const form =
-      first.code === "invalid_type"
-        ? `ein Wert vom Typ ${first.expected}`
-        : first.code === "invalid_value"
-          ? `einer der Werte ${listAllowedValues(first.values)}`
-          : undefined;
-    if (form !== undefined && !forms.includes(form)) {
-      forms.push(form);
-    }
-  }
-  return forms.length === 0 ? undefined : forms.join(" oder ");
-}
-
-/**
- * Ein Zod-Befund als deutscher Satz.
- *
- * Die Bausteine der Schemaschicht tragen ihre Meldungen selbst und auf Deutsch (AP05); für die
- * Befunde, die Zod ohne eigenen Text erzeugt, steht der Text hier. Eine englische
- * Bibliotheksmeldung inmitten von 54 deutschen Beschreibungen wäre der größere Bruch
- * (Plan 4.9, E4).
- *
- * Vier Codes werden deshalb selbst formuliert. `invalid_value` ist der Code, den Zod 4 an
- * jedem Enum erzeugt — 54 Enum-Felder in 31 der 54 Werkzeuge, darunter `list_direction`,
- * `invoice_type`, `show_prices_type` und `order`; ohne diesen Zweig fiele die Meldung dort auf
- * „Invalid option: expected one of …" zurück, und zwar **auch** dann, wenn das Pflichtfeld
- * schlicht fehlt. Genau diese Unterscheidung zwischen „nachtragen" und „umformen" ist der
- * Zweck der Meldung (Befund V2/E-3).
- */
-function describeIssue(issue: z.core.$ZodIssue, rawArgs: unknown): string {
-  const where = issueLocation(issue.path);
-  switch (issue.code) {
-    case "invalid_type":
-      return `${where}: erwartet wird ${issue.expected}, ${describeGivenValue(valueAtPath(rawArgs, issue.path))}.`;
-    case "invalid_value": {
-      const given = describeGivenValue(valueAtPath(rawArgs, issue.path));
-      const verb = issue.values.length === 1 ? "erlaubt ist nur" : "erlaubt sind";
-      return `${where}: ${verb} ${listAllowedValues(issue.values)}, ${given}.`;
-    }
-    case "invalid_union": {
-      const given = describeGivenValue(valueAtPath(rawArgs, issue.path));
-      const forms = describeUnionForms(issue.errors);
-      return forms === undefined
-        ? `${where}: der Wert passt zu keiner der erlaubten Formen, ${given}.`
-        : `${where}: erwartet wird ${forms}, ${given}.`;
-    }
-    case "unrecognized_keys":
-      return (
-        `${where}: unbekannte Felder ${issue.keys.join(", ")}. Das Schema ist streng ` +
-        "(additionalProperties: false), weil die API unbekannte Body-Felder kommentarlos " +
-        "ignoriert und ein Tippfehler im Feldnamen sonst ein stiller Datenfehler wäre."
-      );
-    default:
-      return `${where}: ${issue.message}`;
-  }
-}
-
-/**
- * Die Satzzeichen, die einen Einzelbefund als abgeschlossen ausweisen.
- *
- * Fehlt eines davon, setzt {@link joinIssues} einen Punkt. Der Doppelpunkt und das Semikolon
- * stehen mit in der Liste, weil ein Befundtext mit einem von beiden eine angehängte Aufzählung
- * ankündigt („darf nicht leer sein; das Feld stattdessen weglassen"); ein Punkt dahinter wäre
- * ein zweites Satzzeichen an derselben Stelle.
- */
-const ISSUE_END_MARKS: readonly string[] = [".", "!", "?", ":", ";", "…"];
-
-/**
- * Das Trennzeichen zwischen zwei Einzelbefunden im Block `[Warum]`.
- *
- * Es ist bewusst ein Zeichen, das in keinem der deutschen Befundtexte vorkommt. Ein Leerzeichen
- * allein trägt nicht: Bei kurzen Texten ohne Satzzeichen — `muss mindestens 1 sein` — läuft der
- * nächste Befund unsichtbar in den vorigen hinein.
- */
-const ISSUE_SEPARATOR = " | ";
-
-/**
- * Mehrere Befunde als ein Block `[Warum]`, jeder Befund für sich abgegrenzt.
- *
- * Ein Aufruf verletzt das Schema regelmäßig an mehreren Feldern zugleich, und der Block
- * `[Warum]` ist der Kanal, über den ein Agent erkennt, welches Feld er **nachzutragen** und
- * welches er **umzuformen** hat. Verschmolzene Befunde machen genau diese Unterscheidung
- * unlesbar: `limit: muss mindestens 1 sein offset: muss 0 oder größer sein` liest sich als ein
- * Satz über ein Feld.
- *
- * Normalisiert wird deshalb **hier**, an der Fügestelle, und nicht in den Einzeltexten: Die
- * Meldungen der Schemabausteine (`schema/primitives.ts`) enden ohne Satzzeichen, weil Zod sie
- * auch einzeln ausgibt, und der `default`-Zweig von {@link describeIssue} reicht sie unverändert
- * durch. Jeder Teil bekommt sein Satzende, und zwischen zwei Teilen steht zusätzlich
- * {@link ISSUE_SEPARATOR}.
- */
-function joinIssues(issues: readonly z.core.$ZodIssue[], rawArgs: unknown): string {
-  const parts: string[] = [];
-  for (const issue of issues) {
-    const text = describeIssue(issue, rawArgs).trim();
-    if (text === "") {
-      // Ein leerer Befundtext entsteht aus keinem Zweig von describeIssue; der Zweig ist
-      // Vorsorge dagegen, dass ein leerer Teil ein Trennzeichen ohne Inhalt erzeugt.
-      continue;
-    }
-    parts.push(ISSUE_END_MARKS.some((mark) => text.endsWith(mark)) ? text : `${text}.`);
-  }
-  return parts.join(ISSUE_SEPARATOR);
-}
 
 function schemaRefusal(
   entry: ToolEntry,
@@ -815,10 +600,21 @@ function unexpectedFailure(
 /**
  * Registriert jeden Eintrag als Werkzeug und hängt den einen Handler daran.
  *
- * Die Registrierung hängt an **keiner** Bedingung: Auch ein durch `BB_MCP_READ_ONLY`
- * gesperrtes und auch ein bei fehlender Konfiguration nicht ausführbares Werkzeug steht in
- * `tools/list`. Die Liste ist über die gesamte Verbindung stabil und hängt von keinem Schalter
- * ab (Plan 1.5, 6.5 Punkt 1, 6.6).
+ * Ein durch `BB_MCP_READ_ONLY` gesperrtes und ein bei fehlender Konfiguration nicht
+ * ausführbares Werkzeug steht trotzdem in `tools/list`: Die Absage kommt beim Aufruf und nicht
+ * durch Weglassen (Plan 1.5, 6.5 Punkt 1, 6.6).
+ *
+ * **Die einzige Ausnahme ist der Gruppenschalter (N5)**, und sie ist der bewusste Gegensatz
+ * dazu: Ein Werkzeug einer abgeschalteten Gruppe wird **gar nicht erst registriert** statt mit
+ * `enabled: false` geführt. Der Nur-Lesen-Schalter existiert, um einen Agenten aufzuklären, der
+ * Gruppenschalter, um Kontext zu sparen; ein verstecktes, aber weiterhin gesendetes
+ * Eingabeschema spart nichts. Die Entscheidung fällt einmal beim Start aus der eingefrorenen
+ * Konfiguration, die Liste bleibt über die gesamte Verbindung stabil.
+ *
+ * Das Nachschlagen für den Duplikatshinweis (Guard 6) geht über **alle** übergebenen Einträge
+ * und nicht nur über die registrierten: Der Gruppenschalter spart Kontext, er begrenzt keinen
+ * Zugriff, und ein abgeschaltetes Lesewerkzeug soll die Duplikatsabfrage nicht heimlich
+ * entwerten.
  *
  * @returns Eine Zeile je registriertem Werkzeug, in Registrierreihenfolge.
  */
@@ -833,10 +629,16 @@ export function registerTools(
 
   const byName = new Map(entries.map((entry): [string, ToolEntry] => [entry.name, entry]));
   const resolveEntry = (name: string): ToolEntry | undefined => byName.get(name);
+  const activeGroups = new Set<ToolGroup>(config.toolGroups.active);
 
   const registered: RegisteredToolInfo[] = [];
 
   for (const entry of entries) {
+    // N5: nicht registrieren statt verstecken. Ein Eintrag ohne aktive Gruppe erzeugt hier
+    // weder ein Schema noch einen Handler; es entsteht kein toter Code.
+    if (!activeGroups.has(entry.group)) {
+      continue;
+    }
     // `maxItems` wird ausdrücklich übergeben und nicht aus der prozessweiten Konfiguration
     // geholt: Dieser Aufruf kennt seine Konfiguration schon, und ein Schema, das sich die
     // Grenze woanders besorgt, wäre gegenüber der hier gültigen blind.
@@ -873,6 +675,7 @@ export function registerTools(
       name: entry.name,
       specPath: runtime.specPath,
       toolClass: entry.toolClass,
+      group: entry.group,
       blockedByReadOnly: checkReadOnly(entry, config) !== undefined,
     });
   }

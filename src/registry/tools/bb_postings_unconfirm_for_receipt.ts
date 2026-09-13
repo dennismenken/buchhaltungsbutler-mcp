@@ -49,6 +49,7 @@ const RECEIPT_ID_DESCRIPTION =
 export const bb_postings_unconfirm_for_receipt: ToolEntry = {
   name: "bb_postings_unconfirm_for_receipt",
   title: "Buchungen eines Belegs entfernen",
+  group: "postings",
   path: { literal: "/postings/unconfirm/receipt" },
   effect: "delete",
   toolClass: "D",

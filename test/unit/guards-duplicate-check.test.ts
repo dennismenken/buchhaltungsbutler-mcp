@@ -23,6 +23,7 @@ import { installTestConfig, mockApi, resetTestConfig, type ApiMock } from "../he
 const SEARCH_ENTRY: ToolEntry = {
   name: "bb_receipts_search",
   title: "Belege suchen",
+  group: "receipts",
   path: { literal: "/receipts/get" },
   effect: "read",
   toolClass: "R",
@@ -70,6 +71,7 @@ const SEARCH_ENTRY: ToolEntry = {
 const CREATE_ENTRY: ToolEntry = {
   name: "bb_receipts_create",
   title: "Beleg anlegen",
+  group: "receipts",
   path: { literal: "/receipts/add" },
   effect: "create",
   toolClass: "A",
@@ -142,6 +144,7 @@ function batchEntry(): ToolEntry {
   return {
     name: "bb_receipts_create_batch",
     title: "Belege im Stapel anlegen",
+    group: "receipts",
     path: { literal: "/receipts/addBatch" },
     effect: "create",
     toolClass: "A",

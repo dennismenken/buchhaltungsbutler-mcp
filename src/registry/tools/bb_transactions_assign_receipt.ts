@@ -17,6 +17,7 @@ const RECEIPT_ID = idByCustomer("des Belegs", "bb_receipts_search");
 export const bb_transactions_assign_receipt: ToolEntry = {
   name: "bb_transactions_assign_receipt",
   title: "Beleg einer Zahlung zuordnen",
+  group: "transactions",
   path: { literal: "/transactions/assign/receipt" },
   effect: "modify",
   toolClass: "A",

@@ -35,6 +35,18 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
+  // Die Sourcemaps bleiben im Paket (Plan 9.6 Schritt 1), aber ohne die eingebetteten
+  // Quelltexte. Gemessen am Bau vom 2026-09-13: 2.024.654 Bytes Karten, davon 1.630.728
+  // Bytes allein `sourcesContent`. Mit den Quelltexten riss das entpackte Paket das Budget
+  // aus 9.10 (3.197.280 von 3.145.728 Bytes); ohne sie liegt es bei rund der Hälfte.
+  // Zeilen- und Spaltenzuordnung eines Stacktrace bleibt vollständig erhalten, nur der
+  // Quelltext daneben fehlt — und der ist über das öffentliche Repository erreichbar.
+  // Die Alternative wäre gewesen, die Grenze anzuheben; das ist nach 9.10 Punkt 3
+  // ausdrücklich kein Schritt eines Implementierungs-Agenten, und 9.10 Punkt 2 stellt die
+  // Ursachensuche ohnehin davor.
+  outputOptions: {
+    sourcemapExcludeSources: true,
+  },
   // Die Version wird beim Bau eingesetzt. Zur Laufzeit wird kein JSON gelesen; das ist die
   // Zwischenlösung bis AP15, das die Zeile auf src/generated/version.ts umstellt (AP01, AP03).
   define: {

@@ -36,6 +36,7 @@ const DATE_TO_DESCRIPTION =
 export const bb_reports_create_bwa: ToolEntry = {
   name: "bb_reports_create_bwa",
   title: "BWA anfordern",
+  group: "reports",
   path: { literal: "/reports/create/bwa" },
   effect: "create",
   toolClass: "AR",

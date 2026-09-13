@@ -47,6 +47,7 @@ const REVISION_DESCRIPTION =
 export const bb_payment_accounts_create: ToolEntry = {
   name: "bb_payment_accounts_create",
   title: "Zahlungskonto anlegen",
+  group: "payment_accounts",
   path: { literal: "/accounts/add" },
   effect: "create",
   toolClass: "A",

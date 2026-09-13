@@ -32,7 +32,7 @@ function expectReject(env: Record<string, string>, part: string): void {
 }
 
 describe("bekannte Variablen", () => {
-  it("kennt die siebzehn Variablen aus 6.2 und den veralteten Namen", () => {
+  it("kennt die neunzehn Variablen aus 6.2 und N5 sowie den veralteten Namen", () => {
     expect([...KNOWN_ENV_VARS].sort()).toEqual(
       [
         "BB_API_CLIENT",
@@ -49,13 +49,16 @@ describe("bekannte Variablen", () => {
         "BB_MCP_RATE_LIMIT",
         "BB_MCP_READ_ONLY",
         "BB_MCP_TIMEOUT_MS",
+        // Der Gruppenschalter aus N5; beide Namen im bestehenden Schema BB_MCP_*.
+        "BB_MCP_TOOL_GROUPS",
+        "BB_MCP_TOOL_GROUPS_EXCLUDE",
         "BB_MCP_UPLOAD_DIRS",
         "BB_MCP_UPLOAD_FROM_URL",
         "BB_PROFILE",
         "BB_READ_ONLY",
       ].sort(),
     );
-    expect(KNOWN_ENV_VARS).toHaveLength(18);
+    expect(KNOWN_ENV_VARS).toHaveLength(20);
   });
 });
 

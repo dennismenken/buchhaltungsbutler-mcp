@@ -239,6 +239,13 @@ export const envSchema = z.object({
 
   BB_MCP_UPLOAD_FROM_URL: booleanVar().default(false),
 
+  // Der Gruppenschalter (N5). Beide Werte bleiben hier ROH: Sie werden erst in
+  // `config/tool-groups.ts` zerlegt und geprüft, weil drei der vier Startfehler beide
+  // Variablen zugleich betrachten müssen und ein Feldschema das nicht kann. Ein leerer Wert
+  // erreicht dieses Schema ohnehin nie — `parseEnv` behandelt ihn als nicht gesetzt.
+  BB_MCP_TOOL_GROUPS: z.string().optional(),
+  BB_MCP_TOOL_GROUPS_EXCLUDE: z.string().optional(),
+
   BB_MCP_LOG_LEVEL: z
     .string()
     .trim()

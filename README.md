@@ -3,10 +3,10 @@
 > **Inoffizielles Projekt.** Keine Verbindung zur BuchhaltungsButler GmbH, keine Unterstützung
 > von dort. Die Marke gehört ihrem Rechteinhaber.
 >
-> **Der Server arbeitet auf echten Buchhaltungsdaten. 39 der 54 Werkzeuge schreiben.**
+> **Der Server arbeitet auf echten Buchhaltungsdaten. 40 der 59 Werkzeuge schreiben.**
 > Buchungen und Rechnungen sind über diese API nicht löschbar.
 >
-> Nach der Installation sind alle 54 Werkzeuge sofort aufrufbar. Welche Ihr Assistent benutzen
+> Nach der Installation sind alle 59 Werkzeuge sofort aufrufbar. Welche Ihr Assistent benutzen
 > darf, entscheiden Sie in Ihrem Client.
 
 Dieser Server verbindet einen KI-Assistenten über das Model Context Protocol (MCP) mit Ihrem
@@ -17,8 +17,20 @@ außer an BuchhaltungsButler selbst.
 
 ## 1. Was der Server kann
 
-**54 Werkzeuge, genau eines je Endpunkt der BuchhaltungsButler-API v1, davon 15 lesend.** Es
-gibt kein Werkzeug, das mehrere Endpunkte zusammenfasst, und keinen Endpunkt ohne Werkzeug.
+Der Server bietet zwei Sorten von Werkzeugen an.
+
+**54 Endpunktwerkzeuge, genau eines je Endpunkt der BuchhaltungsButler-API v1, davon 15
+lesend.** Kein Endpunkt bleibt ohne Werkzeug, und keines dieser 54 fasst zwei Endpunkte
+zusammen. Wer einen Vorgang genau so auslösen will, wie die Schnittstelle ihn kennt, nimmt
+eines davon.
+
+**Dazu fünf Bündelwerkzeuge, davon vier lesend.** Ein Bündel erledigt in einem einzigen Aufruf,
+wofür sonst mehrere nacheinander nötig wären — etwa alle Seiten einer langen Belegliste zu
+blättern oder eine Auswertung anzustoßen, auf sie zu warten und sie abzuholen. Die Bündel
+**ersetzen kein Endpunktwerkzeug**; sie kommen daneben. Was sie beantworten, steht in
+[Abschnitt 11.1](#111-die-fünf-bündelwerkzeuge).
+
+Zusammen meldet der Server damit **59 Werkzeuge, davon 19 lesend**.
 
 <!-- werkzeuge-bereiche:anfang -->
 
@@ -31,12 +43,15 @@ gibt kein Werkzeug, das mehrere Endpunkte zusammenfasst, und keinen Endpunkt ohn
 | Stammdaten | 13 | 4 |
 | Kostenstellen | 4 | 1 |
 | Berichte | 5 | 3 |
-| **Zusammen** | **54** | **15** |
+| **Endpunktwerkzeuge zusammen** | **54** | **15** |
+| Bündelwerkzeuge ([11.1](#111-die-fünf-bündelwerkzeuge)) | 5 | 4 |
+| **Alle Werkzeuge zusammen** | **59** | **19** |
 
 <!-- werkzeuge-bereiche:ende -->
 
 Die vollständige Liste mit einer Zeile je Werkzeug steht in [Abschnitt 11](#11-die-werkzeuge).
-Diese Tabellen werden aus dem Register des Servers erzeugt und nicht von Hand gepflegt.
+Diese Tabellen werden aus dem Register des Servers erzeugt und nicht von Hand gepflegt; ein
+neues Werkzeug, das dort fehlt, macht die CI rot.
 
 ---
 
@@ -113,10 +128,22 @@ Jeder Abschnitt nennt den Befehl oder den Block, den Ablageort, ob ein Neustart 
 wie Sie prüfen, ob es funktioniert hat. Alle Blöcke benutzen `npx`; für die feste Installation
 siehe [Abschnitt 6](#6-statt-npx-feste-installation).
 
+**Der Eintrag heißt überall `bbutler`, und der kurze Name ist Absicht.** Ein Client stellt den
+Eintragsnamen jedem Werkzeugnamen als `mcp__<name>__` voran, und ein Werkzeugname darf
+höchstens 64 Zeichen lang sein. Mit dem früheren Eintragsnamen `buchhaltungsbutler` kam
+`mcp__buchhaltungsbutler__bb_postings_create_for_transaction_batch` auf 65 Zeichen und fiel
+deshalb aus, erfahrungsgemäß ohne sprechende Meldung. Mit `bbutler` sind es 54. Wer einen
+eigenen Namen einträgt, rechnet ihn gegen diese Grenze nach.
+
+**Eine ältere Installation führt den Eintrag noch unter `buchhaltungsbutler`.** Schreiben Sie
+den neuen Namen nicht einfach daneben: Der Client lüde sonst jedes Werkzeug doppelt.
+`bbutler-mcp uninstall` entfernt beide Namen. `bbutler-mcp setup` erkennt einen Alteintrag und
+ersetzt ihn mit `--overwrite`, statt einen zweiten anzulegen.
+
 ### 5.1 Claude Code
 
 ```bash
-claude mcp add-json --scope user buchhaltungsbutler \
+claude mcp add-json --scope user bbutler \
   '{"type":"stdio","command":"npx","args":["-y","@dennismenken/buchhaltungsbutler-mcp"],"env":{"BB_API_CLIENT":"${BB_API_CLIENT}","BB_API_SECRET":"${BB_API_SECRET}","BB_API_KEY":"${BB_API_KEY}"}}'
 ```
 
@@ -131,8 +158,8 @@ Die drei Ebenen, in denen ein Eintrag liegen kann:
 | `project` | nur im aktuellen Projekt | ja, über die Versionsverwaltung | `.mcp.json` im Projektwurzelverzeichnis |
 | `user` | in allen Projekten | nein | `~/.claude.json` |
 
-Kein Neustart nötig. Prüfen mit `claude mcp get buchhaltungsbutler`, in einer laufenden Sitzung
-mit `/mcp`. Entfernen mit `claude mcp remove buchhaltungsbutler --scope user`.
+Kein Neustart nötig. Prüfen mit `claude mcp get bbutler`, in einer laufenden Sitzung
+mit `/mcp`. Entfernen mit `claude mcp remove bbutler --scope user`.
 
 ### 5.2 Claude Desktop
 
@@ -144,7 +171,7 @@ Claude-Menü, Settings, Reiter Developer, „Edit Config". Die Datei liegt hier:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -169,7 +196,7 @@ den Veröffentlichungen bei.
 ### 5.3 OpenAI Codex CLI
 
 ```bash
-codex mcp add buchhaltungsbutler \
+codex mcp add bbutler \
   --env BB_API_CLIENT="IHR_API_CLIENT" \
   --env BB_API_SECRET="IHR_API_SECRET" \
   --env BB_API_KEY="IHR_API_KEY" \
@@ -179,13 +206,13 @@ codex mcp add buchhaltungsbutler \
 Oder von Hand in `~/.codex/config.toml`:
 
 ```toml
-[mcp_servers.buchhaltungsbutler]
+[mcp_servers.bbutler]
 command = "npx"
 args = ["-y", "@dennismenken/buchhaltungsbutler-mcp"]
 startup_timeout_sec = 30
 default_tools_approval_mode = "writes"
 
-[mcp_servers.buchhaltungsbutler.env]
+[mcp_servers.bbutler.env]
 BB_API_CLIENT = "IHR_API_CLIENT"
 BB_API_SECRET = "IHR_API_SECRET"
 BB_API_KEY = "IHR_API_KEY"
@@ -194,7 +221,7 @@ BB_API_KEY = "IHR_API_KEY"
 `startup_timeout_sec = 30` ist wichtig: Die Vorgabe von 10 Sekunden ist für einen
 `npx`-Kaltstart knapp. `default_tools_approval_mode = "writes"` fragt bei schreibenden
 Werkzeugen nach und lässt lesende durch. Kein Neustart nötig. Prüfen mit
-`codex mcp get buchhaltungsbutler`, in der Oberfläche mit `/mcp`.
+`codex mcp get bbutler`, in der Oberfläche mit `/mcp`.
 
 ### 5.4 ChatGPT-Desktop-App
 
@@ -204,7 +231,7 @@ einmal nach [5.3](#53-openai-codex-cli) ein; ein zweiter Eintrag ist nicht nöti
 ### 5.5 Grok Build (xAI)
 
 ```bash
-grok mcp add buchhaltungsbutler \
+grok mcp add bbutler \
   -e BB_API_CLIENT="IHR_API_CLIENT" \
   -e BB_API_SECRET="IHR_API_SECRET" \
   -e BB_API_KEY="IHR_API_KEY" \
@@ -213,7 +240,7 @@ grok mcp add buchhaltungsbutler \
 
 Mit `--scope project` landet der Eintrag in `./.grok/config.toml` statt in `~/.grok/config.toml`
 und kann geteilt werden. Kein Neustart nötig. Prüfen mit `grok mcp list` und
-`grok mcp doctor buchhaltungsbutler`.
+`grok mcp doctor bbutler`.
 
 ### 5.6 Cursor
 
@@ -222,7 +249,7 @@ Für ein Projekt `.cursor/mcp.json`, für alle Projekte `~/.cursor/mcp.json`:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -248,7 +275,7 @@ Datei `.vscode/mcp.json` im Projekt. Der äußere Schlüssel heißt hier `server
 ```json
 {
   "servers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -272,7 +299,7 @@ sicher; die Datei kann deshalb eingecheckt werden. Für das Nutzerprofil statt e
 Befehlspalette, **MCP: Open User Configuration**. Ohne Zugangsdaten geht auch:
 
 ```bash
-code --add-mcp "{\"name\":\"buchhaltungsbutler\",\"command\":\"npx\",\"args\":[\"-y\",\"@dennismenken/buchhaltungsbutler-mcp\"]}"
+code --add-mcp "{\"name\":\"bbutler\",\"command\":\"npx\",\"args\":[\"-y\",\"@dennismenken/buchhaltungsbutler-mcp\"]}"
 ```
 
 Der Server wird in VS Code ausdrücklich gestartet. Status und Protokolle: Befehlspalette,
@@ -285,7 +312,7 @@ Der Server wird in VS Code ausdrücklich gestartet. Status und Protokolle: Befeh
 | **Windsurf** | `~/.codeium/windsurf/mcp_config.json`, Schlüssel `mcpServers` | auch über das Symbol „MCPs" im Cascade-Bereich erreichbar |
 | **Zed** | `settings.json`, Schlüssel **`context_servers`** | Zed nennt MCP-Server „context servers". Die Datei ist JSONC mit Kommentaren; der Einrichtungsassistent gibt den Block deshalb nur aus und schreibt ihn nicht |
 | **Cline** | CLI-Variante: `~/.cline/mcp.json`. IDE-Variante: Symbol „MCP Servers", Reiter Configure | Tragen Sie unter `autoApprove` nur lesende Werkzeuge ein |
-| **Continue** | `.continue/mcpServers/buchhaltungsbutler.yaml` im Projekt | MCP wirkt in Continue nur im Agent-Modus. YAML, Ablageort projektabhängig, deshalb nur Ausgabe |
+| **Continue** | `.continue/mcpServers/bbutler.yaml` im Projekt | MCP wirkt in Continue nur im Agent-Modus. YAML, Ablageort projektabhängig, deshalb nur Ausgabe |
 | **LM Studio** | `~/.lmstudio/mcp.json`, ab Version 0.3.17 über Reiter „Program", `Install`, `Edit mcp.json` | lädt den Server nach dem Speichern selbst neu |
 | **Jan** | Settings, MCP Servers, „+ Add MCP Server": Command `npx`, Args `-y` und `@dennismenken/buchhaltungsbutler-mcp` | Lassen Sie „Allow All MCP Tool Permissions" **aus**. Sonst führt Jan auch schreibende Buchhaltungsoperationen ohne Rückfrage aus |
 
@@ -305,7 +332,7 @@ Die meisten MCP-Clients lesen dieses Format:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -376,7 +403,7 @@ Servers**. Eine Vorlage mit allen Variablen liegt als [`.env.example`](.env.exam
 | `BB_API_SECRET` | API Secret, Passwort der Basic-Authentifizierung |
 | `BB_API_KEY` | der `api_key` im Body; **wählt den Mandanten**, kein harmloser Bezeichner |
 
-Fehlt einer der drei Werte, **startet der Server trotzdem** und meldet alle 54 Werkzeuge. Jeder
+Fehlt einer der drei Werte, **startet der Server trotzdem** und meldet alle 59 Werkzeuge. Jeder
 Aufruf antwortet dann mit einem Fehler, der genau sagt, welche Variable fehlt, und dass nichts
 an BuchhaltungsButler hinausgegangen ist. Das ist Absicht: Ein Server, der gar nicht startet,
 erzeugt im Client nur die Meldung „Server konnte nicht gestartet werden", und die hilft
@@ -389,7 +416,9 @@ niemandem weiter.
 | `BB_BASE_URL` | Basis-URL der API. Muss `https:` sein; `http:` nur gegen `localhost` | `https://webapp.buchhaltungsbutler.de/api/v1` |
 | `BB_PROFILE` | Profilname in der Zugangsdatendatei | `default` |
 | `BB_CONFIG_DIR` | Ort der Zugangsdatendatei | `${XDG_CONFIG_HOME:-~/.config}/buchhaltungsbutler-mcp`, unter Windows `%APPDATA%\buchhaltungsbutler-mcp` |
-| `BB_MCP_READ_ONLY` | `true` beschränkt den Server auf die 15 lesenden Endpunkte | `false`, also aus |
+| `BB_MCP_READ_ONLY` | `true` beschränkt den Server auf die 19 lesenden Werkzeuge | `false`, also aus |
+| `BB_MCP_TOOL_GROUPS` | Kommaliste von Werkzeuggruppen. Gesetzt: **nur** diese Gruppen werden angemeldet (siehe 7.4) | nicht gesetzt, also alle zwölf |
+| `BB_MCP_TOOL_GROUPS_EXCLUDE` | Kommaliste von Werkzeuggruppen, die abgezogen werden | nicht gesetzt |
 | `BB_MCP_MAX_BATCH` | Obergrenze je Aufruf für jedes Stapel- und Positionsarray, zulässig 1 bis 50 | `50` |
 | `BB_MCP_MAX_AMOUNT` | Betragsgrenze für buchende und anlegende Werkzeuge mit Betragsfeld | nicht gesetzt, also aus |
 | `BB_MCP_RATE_LIMIT` | Nachfüllrate des Standardeimers je Minute, 10 bis 100 | `60` |
@@ -450,6 +479,86 @@ Sind `BB_API_CLIENT`, `BB_API_SECRET` und `BB_API_KEY` **alle drei** gesetzt, ge
 die Datei wird nicht gelesen. Teilweise gesetzte Werte mischen sich nicht mit der Datei.
 Verwaltet wird die Datei mit `bbutler-mcp profiles list|add|remove`.
 
+### 7.4 Werkzeuggruppen abschalten
+
+```bash
+BB_MCP_TOOL_GROUPS=bundles
+```
+
+**Der Gruppenschalter spart Kontext, nicht Zugriff.** Die 54 Werkzeugdefinitionen wiegen
+zusammen gemessen **48.368 Token**, und Claude Desktop legt sie in seinem ungünstigsten Modus in
+**jede** Anfrage. Wer Buchhaltung auswertet und nicht erfasst, bezahlt davon den größten Teil
+umsonst. Claude Code und die Codex CLI laden Werkzeugdefinitionen dagegen erst bei Bedarf; dort
+kostet ein Werkzeug im Leerlauf nur seinen Namen, und der Schalter lohnt sich nicht.
+
+Abgeschaltete Gruppen werden **gar nicht erst angemeldet**. Sie stehen nicht in `tools/list` und
+sagen deshalb auch nicht ab — sie sind schlicht nicht da. Das ist der bewusste Unterschied zum
+Nur-Lesen-Schalter aus Abschnitt 8, der gesperrte Werkzeuge sichtbar lässt und beim Aufruf mit
+einer Erklärung absagt. Wer den **Zugriff** begrenzen will, nimmt deshalb `BB_MCP_READ_ONLY` und
+nicht diesen Schalter.
+
+#### Die zwölf Gruppen
+
+| Gruppe | Werkzeuge | Token (gemessen) | Was sie kann |
+| --- | --- | --- | --- |
+| `postings` | 12 | 12.213 | Buchungen suchen, anlegen, stornieren, Belege an Buchungen binden |
+| `receipts` | 8 | 8.529 | Belege suchen, hochladen, anlegen, löschen, wiederherstellen |
+| `transactions` | 8 | 6.661 | Zahlungen suchen und anlegen, Belege an Zahlungen binden |
+| `invoices` | 3 | 5.766 | Ausgangsrechnungen, Entwürfe, E-Rechnungen schreiben |
+| `creditors` | 4 | 3.341 | Lieferanten nachschlagen, anlegen, ändern |
+| `reports` | 5 | 3.203 | BWA, Summen- und Saldenliste, Kontenblatt |
+| `debtors` | 4 | 3.198 | Kunden nachschlagen, anlegen, ändern |
+| `postingaccounts` | 3 | 1.877 | Sachkonten nachschlagen, anlegen, ändern |
+| `cost_locations` | 4 | 1.839 | Kostenstellen nachschlagen, anlegen, ändern, löschen |
+| `payment_accounts` | 2 | 1.142 | Zahlungskonten auflisten und anlegen |
+| `comments` | 1 | 599 | Kommentar an Beleg oder Zahlung hängen |
+| `bundles` | 5 | 6.852 | Bündelwerkzeuge: mehrere Endpunkte in einem Aufruf |
+| **Summe der elf Endpunktgruppen** | **54** | **48.368** | |
+
+Die Tokenzahlen sind mit `gpt-tokenizer` (Kodierung `o200k_base`) an den ausgelieferten
+Definitionen gemessen, nicht geschätzt; `pnpm measure-tokens` weist sie je Gruppe neu aus. Die
+Gruppe `bundles` steht nicht in der Summe darüber: Ihre 6.852 Token kommen zu den 48.368 hinzu,
+sie hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` eine eigene Grenze und ist als Ganzes abschaltbar.
+
+#### Empfohlene Profile
+
+| Zweck | Einstellung | Werkzeuge | Token |
+| --- | --- | --- | --- |
+| Claude Desktop, Buchhaltung ohne Erfassung | `BB_MCP_TOOL_GROUPS=bundles` | nur die Bündel | 6.852 statt 55.220 |
+| Claude Desktop, mit Belegerfassung | `BB_MCP_TOOL_GROUPS=bundles,receipts,payment_accounts` | 10 plus die Bündel | 16.523 |
+| Nur auswerten | `BB_MCP_TOOL_GROUPS=bundles,reports` plus `BB_MCP_READ_ONLY=true` | 5 plus die Bündel | 10.055 |
+| Claude Code, Codex CLI | alles an, also nichts setzen | 54 plus die Bündel | im Leerlauf rund 2.000, nur die Namen |
+
+Die Zahlen der ersten drei Zeilen enthalten die Bündelgruppe. Sie sind seit dem 2026-09-13
+gemessen und keine Schätzungen mehr: 6.852 Token für die fünf Bündel, dazu 8.529 für `receipts`
+und 1.142 für `payment_accounts` beziehungsweise 3.203 für `reports`.
+
+#### Vier Startfehler statt stiller Wirkung
+
+Ein Tippfehler, der die halbe Werkzeugliste abschaltet und nichts sagt, ist der teuerste
+Zustand dieses Schalters. Der Server bricht deshalb ab und erklärt sich, statt weiterzulaufen:
+
+1. **Unbekannter Gruppenname.** Die Meldung nennt den falschen Wert, die Variable, alle zwölf
+   gültigen Namen und, wenn der Wert nah genug liegt, den wahrscheinlich gemeinten.
+2. **Derselbe Name in beiden Variablen.** Ein echter Widerspruch; keine Seite gewinnt
+   stillschweigend.
+3. **Ein Ausschluss ohne Wirkung**, also ein Name in `BB_MCP_TOOL_GROUPS_EXCLUDE`, der durch
+   `BB_MCP_TOOL_GROUPS` ohnehin nicht aktiv ist.
+4. **Keine Gruppe übrig.** Ein Server ohne Werkzeuge ist kein Server.
+
+Aus 2 und 3 zusammen folgt: Beide Variablen gleichzeitig zu setzen ist immer ein Startfehler.
+Ein **leerer** Wert ist dagegen ausdrücklich kein Fehler und gilt wie „nicht gesetzt"; im
+Desktop-Bundle bleibt das Feld sonst für jeden unausfüllbar, der es nicht braucht.
+
+Was gerade gilt, sagen drei Stellen: die Startmeldung auf stderr, `bbutler-mcp doctor` und
+`bbutler-mcp print-config`. Alle drei nennen die aktiven Gruppen, die Zahl der angemeldeten
+Werkzeuge, den Tokenpreis und jede abgeschaltete Gruppe samt der Variable, die sie abgeschaltet
+hat. Die `instructions` des Servers nennen dem Assistenten dieselben Gruppen, damit er nicht
+nach Werkzeugen sucht, die diese Installation nicht anbietet.
+
+Im Desktop-Bundle (`.mcpb`) heißt das Feld **Werkzeuggruppen**; leer lassen heißt alle Gruppen.
+Der Schalter wird nur beim Start gelesen und wirkt erst nach einem Neustart des Clients.
+
 ---
 
 ## 8. Nur lesen lassen
@@ -458,14 +567,19 @@ Verwaltet wird die Datei mit `bbutler-mcp profiles list|add|remove`.
 BB_MCP_READ_ONLY=true
 ```
 
-**Standard ist `false`, der Schalter ist also aus.** Nach der Installation sind alle 54
+**Standard ist `false`, der Schalter ist also aus.** Nach der Installation sind alle 59
 Werkzeuge aufrufbar.
 
-Steht er auf `true`, führt der Server nur die 15 lesenden Werkzeuge aus. Die übrigen 39 lehnen
+Steht er auf `true`, führt der Server nur die 19 lesenden Werkzeuge aus. Die übrigen 40 lehnen
 ab, **bevor** ein Request an BuchhaltungsButler abgeht, und die Absage nennt die Variable und
 ihren Zielwert. Gesperrte Werkzeuge bleiben in der Werkzeugliste sichtbar: Ein Assistent, der
 ein Werkzeug nicht sieht, schließt auf eine fehlende Fähigkeit und sucht Umwege; einer, der eine
 klare Absage liest, kann sie Ihnen erklären.
+
+Genau darin unterscheidet er sich vom Gruppenschalter aus
+[7.4](#74-werkzeuggruppen-abschalten): Der sagt nicht ab, sondern meldet gar nicht erst an, und
+er tut das, um Kontext zu sparen. Die beiden Schalter sind voneinander unabhängig und lassen
+sich kombinieren.
 
 Der Schalter wird **nur beim Start gelesen** und ist aus einem Gespräch heraus nicht aufhebbar,
 auch nicht durch ein Werkzeug.
@@ -477,10 +591,14 @@ desselben Typs ersetzt. Bei aktivem Schalter sind also
 | Auswertung | Schalter aus | `BB_MCP_READ_ONLY=true` |
 | --- | --- | --- |
 | Kontenblatt (`bb_reports_get_ledger`) | verfügbar | **verfügbar** |
+| Kontostand und Kontenblatt (`bb_balances_get`) | verfügbar | **verfügbar**, dieses Bündel liest nur |
 | BWA | verfügbar | **nicht verfügbar**, der erste Schritt ist gesperrt |
 | Summen- und Saldenliste | verfügbar | **nicht verfügbar**, der erste Schritt ist gesperrt |
+| BWA oder Summenliste in einem Aufruf (`bb_reports_run`) | verfügbar | **nicht verfügbar**, das Bündel stößt genau diesen ersten Schritt an |
 
-Ein früher erzeugter Bericht lässt sich weiterhin abholen.
+Ein früher erzeugter Bericht lässt sich weiterhin abholen. `bb_reports_run` ist damit das
+einzige der fünf Bündelwerkzeuge, das der Nur-Lesen-Schalter sperrt; die übrigen vier bleiben
+nutzbar.
 
 ---
 
@@ -529,8 +647,9 @@ demselben Mandanten teilen sich diesen Zähler allerdings nicht; siehe
 
 ## 11. Die Werkzeuge
 
-Eine Zeile je Werkzeug, gruppiert nach Bereichen. Der Text ist der erste Satz der
-Werkzeugbeschreibung, die Ihr Assistent sieht. Diese Tabelle wird aus dem Register erzeugt.
+Eine Zeile je Endpunktwerkzeug, gruppiert nach Bereichen. Der Text ist der erste Satz der
+Werkzeugbeschreibung, die Ihr Assistent sieht. Diese Tabelle wird aus dem Register erzeugt. Die
+fünf Bündelwerkzeuge stehen nicht darin, sondern in [11.1](#111-die-fünf-bündelwerkzeuge).
 
 <!-- werkzeuge-tabelle:anfang -->
 
@@ -625,16 +744,91 @@ Werkzeugbeschreibung, die Ihr Assistent sieht. Diese Tabelle wird aus dem Regist
 
 <!-- werkzeuge-tabelle:ende -->
 
-### 11.1 Was die Annotationen bedeuten
+### 11.1 Die fünf Bündelwerkzeuge
+
+Ein Bündelwerkzeug beantwortet eine Frage, für die sonst mehrere Aufrufe nacheinander nötig
+wären. Der Server erledigt diese Aufrufe selbst und schickt **eine** Antwort zurück. Das spart
+nicht nur Zeit: Jeder Zwischenschritt, den ein Assistent nicht selbst planen muss, ist ein
+Schritt, bei dem er sich nicht verlaufen kann.
+
+Drei Dinge gelten für alle fünf gleich:
+
+- **Sie ersetzen nichts.** Jedes der 54 Endpunktwerkzeuge bleibt da und kann weiterhin einzeln
+  aufgerufen werden. Braucht man ein Feld, das ein Bündel zusammenfasst oder weglässt, nennt die
+  Antwort das Einzelwerkzeug, das es liefert.
+- **Sie sagen, wenn etwas offen geblieben ist.** Jede Antwort führt ein Feld `bundle.complete`.
+  Steht dort `false`, ist der Bestand nicht vollständig gelesen worden — etwa weil die
+  Aufrufobergrenze erreicht war — und die Antwort nennt daneben, was fehlt und womit man
+  weitermacht. Eine unvollständige Antwort wird also nie als vollständige ausgegeben.
+- **Sie haben eine harte Obergrenze an Aufrufen.** Die Spalte „Aufrufe höchstens" sagt, wie viele
+  Anfragen an BuchhaltungsButler ein einziger Aufruf im schlimmsten Fall verbraucht. Das ist
+  wichtig, weil BuchhaltungsButler nur 100 Anfragen je Mandant und Minute zulässt
+  ([Abschnitt 9](#9-weitere-grenzen)).
+
+<!-- buendel-tabelle:anfang -->
+
+| Werkzeug | Wirkung | Aufrufe höchstens | Wofür es da ist |
+| --- | --- | --- | --- |
+| `bb_masterdata_search` | lesend | 5 | Findet ein Zahlungskonto, ein Sachkonto, einen Debitor, einen Kreditor oder eine Kostenstelle über den Namen oder die Nummer, ohne dass man vorher wissen muss, in welcher Liste der Eintrag geführt wird. |
+| `bb_records_collect` | lesend | 10 | Läuft serverseitig über alle Seiten von Belegen, Zahlungen oder Buchungen und liefert Anzahl und Summe statt aller Zeilen; Einzelzeilen erst ab max_rows. |
+| `bb_assignments_get` | lesend | 5 | Holt einen Beleg oder eine Zahlung samt allen zugeordneten Gegenstücken in einem Aufruf und beantwortet damit 'welcher Beleg gehört zu dieser Abbuchung' und 'welche Zahlung hängt an dieser Rechnung'. |
+| `bb_reports_run` | anlegend | 10 | Erzeugt eine BWA oder eine Summen- und Saldenliste für einen Zeitraum, wartet auf die serverseitige Berechnung und liefert die fertige Auswertung im selben Aufruf zurück. |
+| `bb_balances_get` | lesend | 2 | Liefert das Kontenblatt eines Kontos mit fortgeschriebenem Saldo und beantwortet damit 'stimmt mein Kassenbestand' und 'wie viel ist gerade auf PayPal'. account nimmt eine Kontonummer oder den Namen eines Zahlungskontos; die Nummer eines Sachkontos liefert bb_masterdata_search. |
+
+<!-- buendel-tabelle:ende -->
+
+In Alltagssprache:
+
+- **`bb_masterdata_search`** beantwortet „unter welcher Nummer läuft eigentlich der Lieferant
+  Meier" und „was habe ich überhaupt für Konten und Kostenstellen". Es sucht in allen fünf
+  Stammdatenlisten gleichzeitig, damit man nicht vorher wissen muss, in welcher der Gesuchte
+  geführt wird. Ohne Suchwort liefert es den Überblick für den Sitzungsanfang.
+- **`bb_records_collect`** beantwortet „wie viele offene Eingangsrechnungen habe ich" und „was
+  ist im März über PayPal gelaufen". Es blättert selbst durch alle Seiten und liefert Anzahl und
+  Summe statt hunderter Einzelzeilen. Belege sucht es auf Wunsch in beiden Richtungen zugleich,
+  Eingang und Ausgang; die beiden Durchläufe teilen sich dabei dieselben höchstens zehn Aufrufe.
+- **`bb_assignments_get`** beantwortet „welcher Beleg gehört zu dieser Abbuchung" und „ist diese
+  Rechnung schon bezahlt". Es holt den Vorgang und seine Gegenstücke zusammen. Die Belegdatei
+  selbst kommt nie mit; dafür gibt es `bb_receipts_get`.
+- **`bb_reports_run`** erzeugt eine BWA oder eine Summen- und Saldenliste, wartet auf die
+  Berechnung und legt die fertige Auswertung vor. **Es ist das einzige schreibende Bündel** und
+  überschreibt dabei die zuvor erzeugte Auswertung desselben Typs im ganzen Mandanten — auch die
+  einer Kollegin, die gerade daran arbeitet. Buchungsdaten ändert es nicht. Bei
+  [`BB_MCP_READ_ONLY=true`](#8-nur-lesen-lassen) ist es gesperrt.
+  **Achten Sie auf das Zeitlimit Ihres Clients**, denn es ist das zweite und schärfere: Viele
+  Clients brechen eine einzelne Anfrage nach etwa 60 Sekunden ab. Das ist die Vorgabe des
+  MCP-SDK (`DEFAULT_REQUEST_TIMEOUT_MSEC = 60000`); welche Frist ein bestimmter Client
+  tatsächlich setzt, ist **nicht verifiziert**. Bricht er ab, sehen Sie eine gescheiterte
+  Anfrage — **der Bericht ist trotzdem erzeugt und der vorherige trotzdem ersetzt.** Er ist dann
+  nicht verloren, sondern nur noch mit `bb_reports_get_bwa` beziehungsweise `bb_reports_get_sums`
+  abzuholen; die dafür nötige Kennung steht nicht in der abgebrochenen Antwort, sondern im
+  stderr-Protokoll des Servers und in der Weboberfläche von BuchhaltungsButler. Wählen Sie
+  `max_wait_seconds` deshalb unterhalb der Frist Ihres Clients. Bei den üblichen 60 Sekunden
+  heißt das **höchstens 30**: Der Server wartet dann in Pausen von zusammen höchstens
+  24 Sekunden und behält Luft für das Anlegen und die Abholversuche. Die Vorgabe 60 und erst
+  recht das erlaubte Maximum 240 setzen ein Zeitlimit voraus, das Sie bei Ihrem Client kennen
+  und das höher liegt: Ist der Bericht bei `max_wait_seconds=60` nicht rechtzeitig fertig,
+  wartet der Server allein 60 Sekunden und setzt dazu acht Anfragen ab, liegt also in jedem
+  Fall über der Minute.
+- **`bb_balances_get`** beantwortet „stimmt mein Kassenbestand" und „wie viel ist gerade auf
+  PayPal". Man darf den Kontonamen sagen; die Kontonummer sucht das Werkzeug selbst. Ein leeres
+  Kontenblatt ist dabei ausdrücklich **kein** Saldo von 0,00, und die Antwort sagt das auch so.
+
+Die Tabelle darüber wird wie die der Endpunktwerkzeuge aus dem Register erzeugt. Ein sechstes
+Bündel erscheint nach `pnpm generate` von selbst darin, und die CI ist rot, solange dieser Lauf
+fehlt. Die Erklärungen in Alltagssprache darunter sind von Hand geschrieben und gehören mit
+demselben Schritt ergänzt.
+
+### 11.2 Was die Annotationen bedeuten
 
 Jedes Werkzeug trägt vier maschinenlesbare Hinweise. **Ihr Client entscheidet damit, wofür er
 nachfragt. Das ist der eigentliche Schutz**, denn dieser Server fragt selbst nicht nach.
 
 | Annotation | Bedeutung | Bei diesem Server |
 | --- | --- | --- |
-| `readOnlyHint` | verändert nichts | `true` bei den 15 lesenden Werkzeugen |
-| `destructiveHint` | überschreibt, löscht oder ersetzt Bestehendes | `true` bei 13 Werkzeugen: den sieben löschenden, den vier überschreibenden Stammdatenwerkzeugen und den beiden Berichtserzeugern, die den Vorgängerbericht ersetzen |
-| `idempotentHint` | ein zweiter Aufruf ändert nichts mehr | `true` nur dort, wo das beweisbar ist: bei den 15 lesenden und den 4 überschreibenden Werkzeugen. Bei allen übrigen `false`, weil es **nicht verifiziert** ist und ein falsches `true` einen Client zum automatischen Wiederholen einlädt |
+| `readOnlyHint` | verändert nichts | `true` bei den 19 lesenden Werkzeugen, also den 15 lesenden Endpunktwerkzeugen und den vier lesenden Bündeln |
+| `destructiveHint` | überschreibt, löscht oder ersetzt Bestehendes | `true` bei 14 Werkzeugen: den sieben löschenden, den vier überschreibenden Stammdatenwerkzeugen, den beiden Berichtserzeugern, die den Vorgängerbericht ersetzen, und dem Bündel `bb_reports_run`, das genau diese Erzeugung anstößt |
+| `idempotentHint` | ein zweiter Aufruf ändert nichts mehr | `true` bei 23 Werkzeugen, nämlich nur dort, wo das beweisbar ist: bei den 19 lesenden und den 4 überschreibenden. Bei allen übrigen `false`, weil es **nicht verifiziert** ist und ein falsches `true` einen Client zum automatischen Wiederholen einlädt |
 | `openWorldHint` | spricht mit einem fremden System | überall `true` |
 
 So vergeben Sie Leserechte getrennt von Schreibrechten:
@@ -696,9 +890,10 @@ Der Server reicht sie sichtbar durch, statt sie zu verstecken.
   genau einer Gegenstelle: der BuchhaltungsButler-API.
 - **Protokolliert wird auf stderr**, nie auf stdout, weil stdout dem MCP-Protokoll gehört. Die
   Stufe stellen Sie mit `BB_MCP_LOG_LEVEL` ein.
-- **Kontextkosten.** Die Definitionen der 54 Werkzeuge sind rund **48.000 Token** groß, die
-  Serverbeschreibung rund 1.200. Gemessen mit `gpt-tokenizer` in der Kodierung `o200k_base`; für
-  andere Modellfamilien ist das eine Größenordnung und keine exakte Zahl. Das ist der Preis
+- **Kontextkosten.** Die Definitionen der 54 Endpunktwerkzeuge sind rund **48.000 Token** groß,
+  die der fünf Bündelwerkzeuge weitere 6.852, die Serverbeschreibung rund 1.400. Gemessen mit
+  `gpt-tokenizer` in der Kodierung `o200k_base`; für andere Modellfamilien ist das eine
+  Größenordnung und keine exakte Zahl. Das ist der Preis
   dafür, dass jeder Endpunkt ein eigenes Werkzeug mit allen Parametern hat. Wer viele Server
   gleichzeitig betreibt, sollte das einplanen.
 - **Werkzeugargumente können von Inhalten beeinflusst sein, die Ihr Assistent gelesen hat.**
@@ -747,7 +942,8 @@ Eine gesunde Ausgabe zeigt
 - die Rechte der Zugangsdatendatei,
 - das Ergebnis des Verbindungstests mit der Zahl der gefundenen Zahlungskonten,
 - die Schalterlage, also `BB_MCP_READ_ONLY`, die Grenzen und den Stammdatenspeicher,
-- „Registriert: 54 — 15 lesend, 24 anlegend, 8 ändernd, 7 löschend",
+- „Registriert: 59 — 54 Endpunktwerkzeuge und 5 Bündelwerkzeuge" und darunter die Wirkungen der
+  Endpunktwerkzeuge, also „15 lesend, 24 anlegend, 8 ändernd, 7 löschend",
 - die geschätzte Größe der Werkzeugdefinitionen,
 - die gefundenen Clientkonfigurationen mit Pfad,
 - jede unbekannte `BB_*`-Variable mit dem ähnlichsten bekannten Namen.
@@ -781,10 +977,13 @@ Diese Punkte sind bekannt, benannt und nicht wegkonstruierbar.
 
 - **Ein Client, der nicht nachfragt, kann mit diesem Server löschen, stornieren und buchen.**
   Der Server erzwingt keine Bestätigung; das ist eine bewusste Entscheidung. Ihr Schutz sind die
-  Annotationen ([11.1](#111-was-die-annotationen-bedeuten)), die Freigabe in Ihrem Client, der
+  Annotationen ([11.2](#112-was-die-annotationen-bedeuten)), die Freigabe in Ihrem Client, der
   Nur-Lesen-Schalter und die Betrags- und Mengengrenzen.
-- **54 Werkzeuge kosten Kontext**, rund 48.000 Token. Bei vielen gleichzeitig aktiven Servern
-  kann die Trefferquote eines Assistenten darunter leiden.
+- **Die Werkzeuge kosten Kontext.** Die 54 Endpunktwerkzeuge wiegen rund 48.000 Token (gemessen
+  48.368), die fünf Bündelwerkzeuge weitere 6.852, zusammen 55.220. Bei vielen gleichzeitig
+  aktiven Servern kann die Trefferquote eines Assistenten darunter leiden. Wer nur einen Teil
+  braucht, meldet mit `BB_MCP_TOOL_GROUPS` nur diesen an ([7.4](#74-werkzeuggruppen-abschalten)). In Claude Code und
+  der Codex CLI erübrigt sich das: Dort werden Definitionen erst bei Bedarf geladen.
 - **Buchungen und Rechnungen sind über die API nicht löschbar.** Eine Buchung wird storniert,
   eine festgeschriebene erzeugt dabei eine dauerhaft sichtbare Stornobuchung. Für Rechnungen
   gibt es über die API gar keinen Weg zurück.

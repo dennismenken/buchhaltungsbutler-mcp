@@ -3325,6 +3325,20 @@ geraten, aber die Hochrechnung ist eine **Annahme**, weil noch kein Bau existier
 Die Obergrenzen liegen also bei rund dem Doppelten des Erwarteten. Das ist Absicht: Ein Budget,
 das schon bei normalem Wachstum reißt, wird angehoben statt beachtet.
 
+**Nachtrag vom 2026-09-13, am gebauten Paket gemessen.** Die Hochrechnung oben bleibt als
+Annahme stehen, wie sie war; der Bau sieht anders aus. Gemessen wurden 1.172.626 Bytes
+JavaScript samt Typdateien, README und `package.json` gegenüber den erwarteten rund 510 KB —
+also mehr als das Doppelte. Die Sourcemaps trugen mit eingebetteten Quelltexten 2.024.654
+Bytes, davon allein 1.630.728 Bytes `sourcesContent`; der Faktor lag damit bei 1,7 wie
+vorhergesagt, nur auf der doppelten Grundmenge. Das entpackte Paket lag dadurch bei 3.197.280
+Bytes und riss die Grenze um 51.552 Bytes. Behoben wurde das **nach Punkt 2 an der Ursache und
+nicht an der Grenze**: `tsdown.config.ts` setzt `outputOptions.sourcemapExcludeSources`. Die
+Karten bleiben im Paket, wie 9.6 Schritt 1 es verlangt, und behalten ihre vollständige
+Zeilen- und Spaltenzuordnung; nur die eingebetteten Quelltexte entfallen, die über das
+öffentliche Repository ohnehin erreichbar sind. Beide Grenzen bleiben unverändert. Gemessen
+danach: **entpackt 1.566.960 Bytes (49,8 Prozent), gepackt 377.847 Bytes (36,0 Prozent)**. Der
+Faktor der Karten liegt jetzt bei 0,34 statt 1,5 bis 2.
+
 **Warum überhaupt eine Obergrenze, wo 9.6 Schritt 1 doch die Dateiliste prüft.** Die
 Dateilistenprüfung vergleicht die enthaltenen **Pfade** gegen eine erwartete Liste und fängt
 damit den groben Fehler („`src`, `test`, `docs` sind im Tarball"). Wie **groß** die erlaubten

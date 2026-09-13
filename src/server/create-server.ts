@@ -15,11 +15,15 @@ import { McpServer } from "@modelcontextprotocol/server";
 import type { Transport } from "@modelcontextprotocol/server";
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
 
+import type { RegisteredBundleInfo } from "../bundles/register.js";
+import { registerBundles } from "../bundles/register.js";
+import type { BundleEntry } from "../bundles/types.js";
 import type { MasterDataStore } from "../cache/store.js";
 import type { ResolvedConfig } from "../config/resolve.js";
 import { getConfig, isConfigLoaded, loadConfigOrExit } from "../config/resolve.js";
+import { toolGroupReportLines } from "../config/tool-groups.js";
 import { installGlobalDispatcher } from "../http/dispatcher.js";
-import { logInfo } from "../logging/stderr.js";
+import { logInfo, writeStderrBlock } from "../logging/stderr.js";
 import type { ToolEntry } from "../registry/types.js";
 import { SERVER_INFO } from "../generated/version.js";
 import { buildInstructions } from "./instructions.js";
@@ -34,6 +38,11 @@ export interface CreateServerOptions {
   readonly config?: ResolvedConfig;
   /** Die Registereinträge. Ohne Angabe das vollständige Register. */
   readonly entries?: readonly ToolEntry[];
+  /**
+   * Die Bündelwerkzeuge. Ohne Angabe alle aus `src/bundles/index.ts`; ein leeres Array meldet
+   * keines an. Gedacht für Tests, die einen Server mit genau einer Werkzeugliste prüfen.
+   */
+  readonly bundles?: readonly BundleEntry[];
   readonly store?: MasterDataStore;
   /**
    * Ersetzt den Text aus `instructions.ts`. Gedacht für Tests und für einen Einbettenden, der
@@ -48,6 +57,8 @@ export interface BuiltServer {
   readonly server: McpServer;
   /** Eine Zeile je registriertem Werkzeug, in Registrierreihenfolge. */
   readonly tools: readonly RegisteredToolInfo[];
+  /** Eine Zeile je registriertem Bündelwerkzeug; leer, wenn die Gruppe `bundles` aus ist. */
+  readonly bundles: readonly RegisteredBundleInfo[];
   /** Die URIs der registrierten Resources (Plan 7.7). */
   readonly resources: readonly string[];
   /** Der Text, der bei `initialize` mitgeht. */
@@ -57,9 +68,11 @@ export interface BuiltServer {
 /**
  * Baut den Server und registriert alles, was er anbietet.
  *
- * **Die Werkzeugliste hängt an keinem Schalter.** Auch bei fehlender Konfiguration und auch bei
- * gesetztem `BB_MCP_READ_ONLY` werden alle Einträge registriert; die Absage kommt beim Aufruf
- * und nicht durch Weglassen (Plan 1.5, 6.5 Punkt 1, 6.6).
+ * **Die Werkzeugliste hängt an genau einem Schalter, und das ist nicht der Nur-Lesen-Schalter.**
+ * Auch bei fehlender Konfiguration und auch bei gesetztem `BB_MCP_READ_ONLY` werden alle
+ * übergebenen Einträge registriert; die Absage kommt beim Aufruf und nicht durch Weglassen
+ * (Plan 1.5, 6.5 Punkt 1, 6.6). Allein der Gruppenschalter `BB_MCP_TOOL_GROUPS` lässt Einträge
+ * weg, und er tut es, um Kontext zu sparen (N5); die Begründung steht bei `registerTools`.
  *
  * Beide `listChanged`-Angaben stehen ausdrücklich auf `false`: Werkzeugliste und
  * Resource-Liste sind über die gesamte Verbindung stabil, und dieser Server schickt keine
@@ -86,12 +99,54 @@ export function createServer(options: CreateServerOptions = {}): BuiltServer {
     ...(options.store === undefined ? {} : { store: options.store }),
     ...(options.now === undefined ? {} : { now: options.now }),
   });
+  // Die Bündelwerkzeuge hängen an der Gruppe `bundles` und an keiner Endpunktgruppe: Ein
+  // Bündel ruft die HTTP-Schicht auf und nicht die Endpunktwerkzeuge (Bauvorlage Abschnitt 7).
+  const bundles = registerBundles(server, {
+    config,
+    ...(options.bundles === undefined ? {} : { entries: options.bundles }),
+    ...(options.now === undefined ? {} : { now: options.now }),
+  });
   const resources = registerResources(
     server,
     options.store === undefined ? {} : { store: options.store },
   );
 
-  return { server, tools, resources, instructions };
+  return { server, tools, bundles, resources, instructions };
+}
+
+/**
+ * Die Zahl der Werkzeuge, die dieser Start angemeldet hat: Endpunktwerkzeuge **und** Bündel.
+ *
+ * Die Bündel gehören in jede genannte Zahl, denn sie stehen in derselben `tools/list`-Antwort
+ * wie die 54 Endpunktwerkzeuge (N1). Ohne sie meldete der Start unter
+ * `BB_MCP_TOOL_GROUPS=bundles` „0 Werkzeuge", während der Client fünf bekommt — und das ist
+ * das empfohlene Profil für Claude Desktop. Die Rückmeldung zum Gruppenschalter ist die
+ * einzige Stelle, an der jemand nachsehen kann, was seine Einstellung bewirkt hat; eine Zahl,
+ * die dort das Gegenteil der Wahrheit sagt, ist schlimmer als gar keine.
+ */
+export function registeredToolCount(built: BuiltServer): number {
+  return built.tools.length + built.bundles.length;
+}
+
+/**
+ * Die Startmeldung zum Gruppenschalter (N5).
+ *
+ * **Zwei Wege mit Absicht.** Sind alle zwölf Gruppen aktiv, ist nichts versteckt, und die
+ * Zeilen gehen als gewöhnliche `info`-Meldung heraus, die `BB_MCP_LOG_LEVEL` stummschalten
+ * darf. Ist mindestens eine Gruppe abgeschaltet, geht der Block ohne Stufenprüfung heraus: Eine
+ * Werkzeugliste, die aus unsichtbaren Gründen kürzer ist als erwartet, ist der teuerste Zustand
+ * dieses Schalters, und wer ihn gesetzt hat, hat die Meldung selbst veranlasst.
+ *
+ * @param registeredTools Endpunktwerkzeuge **und** Bündel zusammen, also genau die Länge der
+ *   `tools/list`-Antwort dieses Starts. Siehe {@link registeredToolCount}.
+ */
+function announceToolGroups(config: ResolvedConfig, registeredTools: number): void {
+  const lines = toolGroupReportLines(config.toolGroups, registeredTools);
+  if (config.toolGroups.restricted) {
+    writeStderrBlock(["", "WERKZEUGGRUPPEN", ...lines, ""].join("\n"));
+    return;
+  }
+  logInfo(lines.join("\n"));
 }
 
 export interface RunStdioServerOptions extends CreateServerOptions {
@@ -149,9 +204,12 @@ export async function runStdioServer(options: RunStdioServerOptions = {}): Promi
   };
 
   await built.server.connect(transport);
+  const registered = registeredToolCount(built);
+  announceToolGroups(config, registered);
   logInfo(
     `${SERVER_INFO.name} ${SERVER_INFO.version} läuft auf stdio mit ` +
-      `${String(built.tools.length)} Werkzeugen.`,
+      `${String(registered)} Werkzeugen: ${String(built.tools.length)} Endpunktwerkzeuge und ` +
+      `${String(built.bundles.length)} Bündel.`,
   );
 
   return { ...built, transport, shutdown, dispose };

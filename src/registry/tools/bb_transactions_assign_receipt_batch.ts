@@ -29,6 +29,7 @@ const TRANSACTION_ID = idByCustomer("der Zahlung", "bb_transactions_search");
 export const bb_transactions_assign_receipt_batch: ToolEntry = {
   name: "bb_transactions_assign_receipt_batch",
   title: "Belege und Zahlungen im Stapel zuordnen",
+  group: "transactions",
   path: { literal: "/transactions/assign-batch/receipt" },
   effect: "modify",
   toolClass: "A",

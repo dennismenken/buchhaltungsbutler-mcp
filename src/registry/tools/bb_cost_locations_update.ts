@@ -23,6 +23,7 @@ const NAME_DESCRIPTION =
 export const bb_cost_locations_update: ToolEntry = {
   name: "bb_cost_locations_update",
   title: "Kostenstelle überschreiben",
+  group: "cost_locations",
   path: { literal: "/cost-locations/update" },
   effect: "modify",
   toolClass: "M",

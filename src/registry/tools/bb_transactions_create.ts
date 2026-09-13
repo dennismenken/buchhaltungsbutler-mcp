@@ -78,6 +78,7 @@ const PAYMENT_REFERENCE_DESCRIPTION =
 export const bb_transactions_create: ToolEntry = {
   name: "bb_transactions_create",
   title: "Zahlung anlegen",
+  group: "transactions",
   path: { literal: "/transactions/add" },
   effect: "create",
   toolClass: "A",

@@ -19,6 +19,13 @@
 // `exchangerate` kennt die Spezifikation überhaupt nicht; dieser Endpunkt ist die einzige
 // Quelle für Fremdwährungsbeträge (Befunde L2 und L4, Plan 7.2).
 //
+// **`amount_paid` und `amount_paid_fixed` sind auch hier funktionslos**, gemessen wie beim
+// Listenabruf: Am 2026-09-13 lieferte `/receipts/get/2` einen Beleg über `"884.65"` mit
+// `payment_date` `"2021-03-05"` — und `amount_paid` wie `amount_paid_fixed` mit `"0.00"`. Die
+// Begründung steht vollständig im Kopf von bb_receipts_search.ts, Punkt 2; hier gilt sie
+// unverändert, weil dieser Endpunkt dieselben beiden Felder liefert. Der Warnsatz in der
+// Beschreibung ist der kürzeren Stufe 2 entsprechend knapper gefasst.
+
 // `file_content` und `file_type` stehen bewusst **nicht** im Vertrag. Sie kommen nur bei
 // get_file, und der Zweig ist nicht verifiziert (Plan 0.3, „Was ausdrücklich nicht folgt").
 // Als Vertragsfelder erzeugten sie bei jedem gewöhnlichen Abruf zwei `_contract_warnings`;
@@ -39,6 +46,7 @@ const RESPONSE_FORMAT_TEXT =
 export const bb_receipts_get: ToolEntry = {
   name: "bb_receipts_get",
   title: "Beleg holen",
+  group: "receipts",
   path: {
     template: "/receipts/get/{receipt_id_by_customer}",
     params: ["receipt_id_by_customer"],
@@ -54,7 +62,9 @@ export const bb_receipts_get: ToolEntry = {
     "den bb_receipts_search mit id_by_customer 4711 geliefert hat. Zum Suchen nach Zeitraum " +
     "oder Gegenpartei bb_receipts_search, für die zugeordneten Zahlungen " +
     "bb_receipts_list_transactions. Liefert keine Buchungssätze und keine Liste: Ein Aufruf " +
-    "holt einen Beleg, und die Feldnamen weichen von denen der Suche ab.",
+    "holt einen Beleg, und die Feldnamen weichen von denen der Suche ab. amount_paid und " +
+    "amount_paid_fixed sind auch hier gemessen stets '0.00'; den Zahlungsstand trägt allein " +
+    "payment_date.",
   fields: [
     {
       name: "receipt_id_by_customer",
@@ -117,6 +127,9 @@ export const bb_receipts_get: ToolEntry = {
       payment_reference: "null-or-string",
       date_delivery: "null-or-string",
       date_payment_due: "null-or-string",
+      // Gemessen durchgehend `"0.00"`, auch bei gesetztem `payment_date`; `amount_paid_fixed`
+      // ist zusätzlich in seiner Bedeutung nicht ermittelt. Beide stehen hier, damit sie nicht
+      // als unbekannte Felder gemeldet werden — Begründung im Kopf dieser Datei.
       amount_paid: "amount-string",
       amount_paid_fixed: "amount-string",
       deleted: "bool-string",

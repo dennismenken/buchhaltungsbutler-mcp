@@ -29,6 +29,7 @@ const CODE_DESCRIPTION =
 export const bb_cost_locations_search: ToolEntry = {
   name: "bb_cost_locations_search",
   title: "Kostenstellen auflisten",
+  group: "cost_locations",
   path: { literal: "/cost-locations/get" },
   effect: "read",
   toolClass: "R",

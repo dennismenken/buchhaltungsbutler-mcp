@@ -40,9 +40,11 @@ import {
   type CredentialsFileWarning,
 } from "./credentials-file.js";
 import { registerSecrets } from "./redact.js";
+import { resolveToolGroups, type ToolGroupSelection } from "./tool-groups.js";
 
 export { ConfigError } from "./env.js";
 export type { CredentialVarName } from "./env.js";
+export type { ToolGroupSelection } from "./tool-groups.js";
 
 /**
  * Kleinste unterstützte Node-Fassung. Sie spiegelt `engines.node` der `package.json`
@@ -91,6 +93,11 @@ export interface ResolvedConfig {
   readonly credentialsFile: string;
 
   readonly readOnly: boolean;
+  /**
+   * Die aktiven Werkzeuggruppen (N5). Sie entscheiden über die **Registrierung**; der
+   * Nur-Lesen-Schalter daneben über die **Ausführung**. Beide sind vollständig orthogonal.
+   */
+  readonly toolGroups: ToolGroupSelection;
   readonly maxBatch: number;
   /** Betragsgrenze als Dezimalzeichenkette, `null` wenn aus. */
   readonly maxAmount: string | null;
@@ -304,6 +311,14 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
   }
   const readOnly = canonicalReadOnly ?? deprecatedReadOnly ?? ENV_DEFAULTS.BB_MCP_READ_ONLY;
 
+  // 6.4 Punkt 4b: der Gruppenschalter. Er steht hier, also vor dem Auflösen der Zugangsdaten:
+  // Ein unbrauchbarer Gruppenname ist ein Abbruch, und ein Abbruch soll keine Zugangsdatendatei
+  // gelesen haben. Die vier Startfehler stehen in `config/tool-groups.ts`.
+  const toolGroups = resolveToolGroups({
+    include: values.BB_MCP_TOOL_GROUPS,
+    exclude: values.BB_MCP_TOOL_GROUPS_EXCLUDE,
+  });
+
   // 6.4 Punkt 5: Zugangsdaten auflösen, ohne zu mischen (6.3).
   const configDir = values.BB_CONFIG_DIR ?? defaultConfigDir(env, platform, homeDir);
   const credentialsFile = credentialsFilePath(configDir);
@@ -380,6 +395,7 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
     credentialsFile,
 
     readOnly,
+    toolGroups,
     maxBatch: values.BB_MCP_MAX_BATCH,
     maxAmount,
     maxAmountCents: maxAmount === null ? null : amountToCents(maxAmount),

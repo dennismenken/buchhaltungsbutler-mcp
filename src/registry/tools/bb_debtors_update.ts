@@ -48,6 +48,7 @@ const NAME_DESCRIPTION = "Neuer Name des Kundenkontos, zum Beispiel Musterkunde 
 export const bb_debtors_update: ToolEntry = {
   name: "bb_debtors_update",
   title: "Debitorenkonto überschreiben",
+  group: "debtors",
   path: { literal: "/settings/update/debtor" },
   effect: "modify",
   toolClass: "M",

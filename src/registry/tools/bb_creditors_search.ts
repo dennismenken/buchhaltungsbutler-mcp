@@ -26,6 +26,7 @@ const pagination = paginationFor("/settings/get/creditors");
 export const bb_creditors_search: ToolEntry = {
   name: "bb_creditors_search",
   title: "Kreditoren auflisten",
+  group: "creditors",
   path: { literal: "/settings/get/creditors" },
   effect: "read",
   toolClass: "R",

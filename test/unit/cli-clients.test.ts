@@ -17,6 +17,8 @@ import {
   createClientHost,
   placeholderCredentials,
   serverLaunch,
+  LEGACY_SERVER_NAMES,
+  SERVER_NAME,
   type ClientHost,
   type CommandResult,
 } from "../../src/cli/clients/types.js";
@@ -131,8 +133,8 @@ describe("JSON-Dateiadapter", () => {
 
     const written = JSON.parse(fs.readFileSync(target, "utf8")) as Record<string, unknown>;
     const servers = written.mcpServers as Record<string, Record<string, unknown>>;
-    expect(Object.keys(servers).sort()).toEqual(["buchhaltungsbutler", "fremd"]);
-    expect(servers.buchhaltungsbutler?.command).toBe("npx");
+    expect(Object.keys(servers).sort()).toEqual([SERVER_NAME, "fremd"].sort());
+    expect(servers[SERVER_NAME]?.command).toBe("npx");
     expect(written.andereEinstellung).toBe(1);
   });
 
@@ -167,10 +169,7 @@ describe("JSON-Dateiadapter", () => {
     const host = makeHost();
     const target = path.join(root, "home", ".cline", "mcp.json");
     fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.writeFileSync(
-      target,
-      JSON.stringify({ mcpServers: { buchhaltungsbutler: { command: "alt" } } }),
-    );
+    fs.writeFileSync(target, JSON.stringify({ mcpServers: { [SERVER_NAME]: { command: "alt" } } }));
 
     const outcome = clineAdapter.apply(buildPlan({ launch: launch() }), host);
     expect(outcome.kind).toBe("unchanged");
@@ -183,8 +182,78 @@ describe("JSON-Dateiadapter", () => {
     const written = JSON.parse(fs.readFileSync(target, "utf8")) as {
       mcpServers: Record<string, Record<string, unknown>>;
     };
-    expect(written.mcpServers.buchhaltungsbutler?.command).toBe("npx");
-    expect(written.mcpServers.buchhaltungsbutler?.disabled).toBe(false);
+    expect(written.mcpServers[SERVER_NAME]?.command).toBe("npx");
+    expect(written.mcpServers[SERVER_NAME]?.disabled).toBe(false);
+  });
+
+  // --- Der frühere Eintragsname ------------------------------------------------------
+  //
+  // `SERVER_NAME` wurde von `buchhaltungsbutler` auf `bbutler` gekürzt, damit
+  // `mcp__<name>__<werkzeug>` unter der 64-Zeichen-Grenze der Messages API bleibt. Eine
+  // bestehende Installation führt den Eintrag deshalb noch unter dem alten Namen. Die
+  // folgenden drei Prüfungen halten fest, dass daraus kein doppelter Eintrag wird.
+
+  it("tastet einen Eintrag unter dem früheren Namen ohne Zustimmung nicht an", () => {
+    const host = makeHost();
+    const target = path.join(root, "home", ".cline", "mcp.json");
+    const legacy = LEGACY_SERVER_NAMES[0] ?? "";
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, JSON.stringify({ mcpServers: { [legacy]: { command: "alt" } } }));
+
+    const outcome = clineAdapter.apply(buildPlan({ launch: launch() }), host);
+
+    expect(outcome.kind).toBe("unchanged");
+    if (outcome.kind !== "unchanged") {
+      return;
+    }
+    expect(outcome.reason).toContain(legacy);
+    expect(JSON.parse(fs.readFileSync(target, "utf8"))).toEqual({
+      mcpServers: { [legacy]: { command: "alt" } },
+    });
+  });
+
+  it("ersetzt mit --overwrite den früheren Eintrag, statt einen zweiten daneben zu legen", () => {
+    const host = makeHost();
+    const target = path.join(root, "home", ".cline", "mcp.json");
+    const legacy = LEGACY_SERVER_NAMES[0] ?? "";
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(
+      target,
+      JSON.stringify({ mcpServers: { [legacy]: { command: "alt" }, fremd: {} } }),
+    );
+
+    const outcome = clineAdapter.apply(buildPlan({ launch: launch(), allowOverwrite: true }), host);
+
+    expect(outcome.kind).toBe("written");
+    if (outcome.kind !== "written") {
+      return;
+    }
+    expect(outcome.detail).toContain(legacy);
+    const written = JSON.parse(fs.readFileSync(target, "utf8")) as {
+      mcpServers: Record<string, Record<string, unknown>>;
+    };
+    // Genau ein Eintrag dieses Servers, und zwar unter dem neuen Namen. Der fremde bleibt.
+    expect(Object.keys(written.mcpServers).sort()).toEqual([SERVER_NAME, "fremd"].sort());
+    expect(written.mcpServers[SERVER_NAME]?.command).toBe("npx");
+  });
+
+  it("entfernt auch einen Eintrag, der noch unter dem früheren Namen steht", () => {
+    const host = makeHost();
+    const target = path.join(root, "home", ".codeium", "windsurf", "mcp_config.json");
+    const legacy = LEGACY_SERVER_NAMES[0] ?? "";
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(
+      target,
+      JSON.stringify({ mcpServers: { [legacy]: { command: "npx" }, fremd: {} } }),
+    );
+
+    const outcome = windsurfAdapter.remove(buildPlan({ launch: launch() }), host);
+
+    expect(outcome.kind).toBe("removed");
+    const written = JSON.parse(fs.readFileSync(target, "utf8")) as {
+      mcpServers: Record<string, unknown>;
+    };
+    expect(Object.keys(written.mcpServers)).toEqual(["fremd"]);
   });
 
   it("entfernt den eigenen Eintrag und legt auch dabei eine Sicherung an", () => {
@@ -193,7 +262,7 @@ describe("JSON-Dateiadapter", () => {
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(
       target,
-      JSON.stringify({ mcpServers: { buchhaltungsbutler: { command: "npx" }, fremd: {} } }),
+      JSON.stringify({ mcpServers: { [SERVER_NAME]: { command: "npx" }, fremd: {} } }),
     );
 
     const outcome = windsurfAdapter.remove(buildPlan({ launch: launch() }), host);
@@ -261,13 +330,7 @@ describe("Adapter mit eigener Kommandozeile", () => {
     expect(calls).toHaveLength(1);
     const call = calls[0];
     expect(call?.command).toBe("claude");
-    expect(call?.args.slice(0, 5)).toEqual([
-      "mcp",
-      "add-json",
-      "--scope",
-      "user",
-      "buchhaltungsbutler",
-    ]);
+    expect(call?.args.slice(0, 5)).toEqual(["mcp", "add-json", "--scope", "user", SERVER_NAME]);
     const payload = call?.args[5] ?? "";
     for (const value of Object.values(TEST_VALUES)) {
       expect(payload).not.toContain(value);
@@ -299,7 +362,7 @@ describe("Adapter mit eigener Kommandozeile", () => {
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(
       target,
-      ["# eigener Kommentar", "[mcp_servers.buchhaltungsbutler]", 'command = "npx"', ""].join("\n"),
+      ["# eigener Kommentar", `[mcp_servers.${SERVER_NAME}]`, 'command = "npx"', ""].join("\n"),
     );
 
     const outcome = codexAdapter.apply(buildPlan({ launch: launch() }), host);
@@ -359,7 +422,7 @@ describe("VS Code", () => {
     }
     expect(text).toContain("${input:bb-api-key}");
     const parsed = JSON.parse(text) as { servers: Record<string, unknown>; inputs: unknown[] };
-    expect(Object.keys(parsed.servers)).toEqual(["buchhaltungsbutler"]);
+    expect(Object.keys(parsed.servers)).toEqual([SERVER_NAME]);
     expect(parsed.inputs).toHaveLength(3);
   });
 

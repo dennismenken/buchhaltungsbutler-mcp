@@ -53,6 +53,7 @@ function textField(name: string, required: boolean, description: string): FieldS
 export const bb_debtors_create: ToolEntry = {
   name: "bb_debtors_create",
   title: "Debitorenkonto anlegen",
+  group: "debtors",
   path: { literal: "/settings/add/debtor" },
   effect: "create",
   toolClass: "A",

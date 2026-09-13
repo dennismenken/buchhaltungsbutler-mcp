@@ -7,6 +7,15 @@
  * eine README oder ein Bildschirmfoto darf.
  */
 
+import { registeredBundleCount } from "../bundles/register.js";
+import type { ToolGroupSelection } from "../config/resolve.js";
+import {
+  TOOL_GROUPS_EXCLUDE_VAR,
+  TOOL_GROUPS_VAR,
+  toolGroupReportLines,
+} from "../config/tool-groups.js";
+import { TOOL_ENTRIES } from "../registry/index.generated.js";
+import type { ToolGroup } from "../registry/types.js";
 import {
   buildPlan,
   placeholderCredentials,
@@ -63,6 +72,8 @@ export function previewPlan(options: {
   readonly readOnly: boolean;
   readonly profile: string | null;
   readonly withCredentials: boolean;
+  /** Der Gruppenschalter dieser Umgebung. Ohne Angabe steht er im Block nicht. */
+  readonly toolGroups?: ToolGroupSelection;
 }): ClientPlan {
   const extraEnv: Record<string, string> = {};
   if (options.readOnly) {
@@ -70,6 +81,18 @@ export function previewPlan(options: {
   }
   if (options.profile !== null && options.profile !== "default") {
     extraEnv.BB_PROFILE = options.profile;
+  }
+  // Der Gruppenschalter wandert in den Block, sobald er etwas bewirkt. Ohne diese Zeilen
+  // erzeugte print-config eine Konfiguration, die einen anderen Werkzeugsatz anmeldet als die
+  // Umgebung, aus der sie gerade entstanden ist — und niemand sähe den Unterschied.
+  const selection = options.toolGroups;
+  if (selection !== undefined) {
+    if (selection.include !== null) {
+      extraEnv[TOOL_GROUPS_VAR] = selection.include.join(",");
+    }
+    if (selection.exclude.length > 0) {
+      extraEnv[TOOL_GROUPS_EXCLUDE_VAR] = selection.exclude.join(",");
+    }
   }
   return buildPlan({
     launch: serverLaunch(options.start, options.host.which("bbutler-mcp")),
@@ -105,9 +128,22 @@ export function runPrintConfig(options: RunPrintConfigOptions): Promise<number> 
     readOnly: boolFlag(args, "read-only") || config.readOnly,
     profile: stringFlag(args, "profile") ?? config.profile,
     withCredentials,
+    toolGroups: config.toolGroups,
   });
 
   printPreview(terminal, adapter, adapter.preview(plan, host));
+  terminal.write("");
+
+  // Dieselbe Angabe wie in der Startmeldung und in doctor (N5, Rückmeldung an drei Stellen).
+  // Gezählt werden Endpunktwerkzeuge und Bündel zusammen, also genau das, was tools/list
+  // ausliefert; die Bündel hängen an der Gruppe `bundles` und an keiner Endpunktgruppe.
+  const activeGroups = new Set<ToolGroup>(config.toolGroups.active);
+  const registered = TOOL_ENTRIES.filter((entry) => activeGroups.has(entry.group));
+  const registeredTotal = registered.length + registeredBundleCount(config.toolGroups);
+  terminal.write("Werkzeuggruppen");
+  for (const line of toolGroupReportLines(config.toolGroups, registeredTotal)) {
+    terminal.write(`  ${line}`);
+  }
   terminal.write("");
   // Der Schlusssatz muss zum ausgegebenen Block passen. Nur mit --with-credentials stehen
   // überhaupt Platzhalter darin; ohne den Schalter gäbe ein Hinweis auf zu ersetzende

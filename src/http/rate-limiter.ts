@@ -117,6 +117,21 @@ export interface RateLimiterOptions {
   readonly giveUpWaitMs?: number;
 }
 
+/**
+ * Die nicht blockierende Abschätzung eines Eimerstands (Bauvorlage Bündelwerkzeuge, 6.5).
+ *
+ * Sie entnimmt nichts und wartet nicht. Ein Bündel fragt damit vor jedem ZUSÄTZLICHEN
+ * Teilaufruf, ob der nächste Token ohne nennenswertes Warten zu haben ist, und bricht lieber
+ * wahrheitsgemäß ab, als die Unterhaltung blockieren zu lassen. Eine Umgehung des Eimers ist
+ * das nicht: Entnommen wird weiterhin ausschließlich über {@link RateLimiter.acquire}.
+ */
+export interface PeekResult {
+  /** Ganze Token, die ohne Warten verfügbar sind. */
+  readonly available: number;
+  /** Wartezeit in Millisekunden bis zum nächsten Token; 0, wenn eines bereitliegt. */
+  readonly waitMs: number;
+}
+
 export interface AcquireRequest {
   /** Gehashter `api_key`; {@link tenantKey} erzeugt ihn. */
   readonly tenant: string;
@@ -233,6 +248,21 @@ class TokenBucket {
     }
   }
 
+  /**
+   * Der Stand, ohne zu entnehmen und ohne zu warten.
+   *
+   * `refill` wird dabei aufgerufen, weil der Füllstand eine Zeitdifferenz ist; die Rechnung
+   * ist dieselbe wie in {@link takeNow} und liefert deshalb keine anderen Zahlen als eine
+   * unmittelbar folgende Entnahme.
+   */
+  peek(): PeekResult {
+    this.refill(this.clock.now());
+    return {
+      available: Math.max(0, Math.floor(this.tokens)),
+      waitMs: this.tokens >= 1 ? 0 : Math.ceil((1 - this.tokens) * this.definition.intervalMs),
+    };
+  }
+
   /** Füllstand für Diagnose und Tests. */
   level(): number {
     this.refill(this.clock.now());
@@ -310,6 +340,26 @@ export class RateLimiter {
       waitedMs += await this.bucketFor(request.tenant, name).take(request);
     }
     return { waitedMs, buckets: order };
+  }
+
+  /**
+   * Die Abschätzung für einen Aufruf an diesem Eimer, ohne Entnahme und ohne Warten.
+   *
+   * Geprüft werden dieselben Eimer in derselben Reihenfolge wie in {@link acquire}: bei einem
+   * Sondereimer also dieser **und** `default`. Maßgeblich ist der ungünstigere von beiden,
+   * denn ein Aufruf braucht aus jedem einen Token. Die Eimer entstehen dabei wie bei einer
+   * Entnahme; ein noch nie benutzter Eimer ist voll und meldet genau das.
+   */
+  peek(tenant: string, bucket: BucketName): PeekResult {
+    const order: BucketName[] = bucket === "default" ? ["default"] : [bucket, "default"];
+    let available = Number.POSITIVE_INFINITY;
+    let waitMs = 0;
+    for (const name of order) {
+      const seen = this.bucketFor(tenant, name).peek();
+      available = Math.min(available, seen.available);
+      waitMs = Math.max(waitMs, seen.waitMs);
+    }
+    return { available: Number.isFinite(available) ? available : 0, waitMs };
   }
 
   /** Füllstände für Diagnose und Tests, Schlüssel `<tenant>:<eimer>`. */

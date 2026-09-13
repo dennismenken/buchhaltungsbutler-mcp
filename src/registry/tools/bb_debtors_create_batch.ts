@@ -115,6 +115,7 @@ const debtors = batchContainer("bb_debtors_create_batch", debtorItem, {
 export const bb_debtors_create_batch: ToolEntry = {
   name: "bb_debtors_create_batch",
   title: "Debitorenkonten im Stapel anlegen",
+  group: "debtors",
   path: { literal: "/settings/add-batch/debtors" },
   effect: "create",
   toolClass: "A",

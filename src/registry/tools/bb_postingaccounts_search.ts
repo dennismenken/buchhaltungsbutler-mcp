@@ -49,6 +49,7 @@ function excludeField(name: string, what: string): FieldSpec {
 export const bb_postingaccounts_search: ToolEntry = {
   name: "bb_postingaccounts_search",
   title: "Kontenrahmen durchsuchen",
+  group: "postingaccounts",
   path: { literal: "/settings/get/postingaccounts" },
   effect: "read",
   toolClass: "R",

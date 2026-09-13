@@ -88,6 +88,7 @@ const position = postingPositionItem(false).shape;
 export const bb_postings_create_for_receipt: ToolEntry = {
   name: "bb_postings_create_for_receipt",
   title: "Buchungen zu Beleg anlegen",
+  group: "postings",
   path: { literal: "/postings/add/receipt" },
   effect: "create",
   toolClass: "B",

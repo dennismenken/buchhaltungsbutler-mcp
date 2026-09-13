@@ -21,6 +21,9 @@ import path from "node:path";
 
 import {
   entryEnv,
+  LEGACY_ENTRY_NOTE,
+  LEGACY_SERVER_NAMES,
+  SERVER_NAME,
   type ClientAdapter,
   type ClientHost,
   type ClientPlan,
@@ -112,7 +115,7 @@ export const codexAdapter: ClientAdapter = {
   finishNote:
     "Codex braucht keinen Neustart. Die ChatGPT-Desktop-App und die IDE-Erweiterung lesen " +
     "dieselbe Datei und übernehmen den Eintrag mit.",
-  verifyCommand: "codex mcp get buchhaltungsbutler",
+  verifyCommand: `codex mcp get ${SERVER_NAME}`,
 
   detect(host) {
     const binary = host.which("codex");
@@ -141,6 +144,7 @@ export const codexAdapter: ClientAdapter = {
         `Aufruf: codex ${args.join(" ")}`,
         'Empfehlung für Codex: default_tools_approval_mode = "writes" fragt genau bei den ' +
           "39 schreibenden Werkzeugen nach.",
+        LEGACY_ENTRY_NOTE,
       ],
     };
   },
@@ -217,22 +221,29 @@ export const codexAdapter: ClientAdapter = {
   },
 
   remove(plan, host): WriteOutcome {
+    // Entfernt wird der eigene Name UND jeder frühere: Eine ältere config.toml führt die
+    // Tabelle noch unter dem langen Namen, und `codex mcp remove` kennt nur den, den es hört.
+    const names = [
+      plan.serverName,
+      ...LEGACY_SERVER_NAMES.filter((name) => name !== plan.serverName),
+    ];
     if (host.which("codex") === null) {
-      return {
-        kind: "manual",
-        reason: `codex ist nicht im Suchpfad. Von Hand: codex mcp remove ${plan.serverName}`,
-      };
+      const byHand = names.map((name) => `codex mcp remove ${name}`).join(" und ");
+      return { kind: "manual", reason: `codex ist nicht im Suchpfad. Von Hand: ${byHand}` };
     }
-    const result = host.run("codex", ["mcp", "remove", plan.serverName]);
-    if (result.failure !== null) {
-      return { kind: "failed", reason: `codex ließ sich nicht starten: ${result.failure}` };
+    const attempts = names.map((name) => host.run("codex", ["mcp", "remove", name]));
+    const failure = attempts.find((attempt) => attempt.failure !== null);
+    if (failure !== undefined) {
+      return { kind: "failed", reason: `codex ließ sich nicht starten: ${failure.failure ?? ""}` };
     }
-    if (result.status !== 0) {
+    if (!attempts.some((attempt) => attempt.status === 0)) {
+      const last = attempts[attempts.length - 1];
       return {
         kind: "unchanged",
         reason:
-          `codex mcp remove endete mit Rückgabewert ${String(result.status)}; ` +
-          `vermutlich gab es keinen Eintrag. Ausgabe: ${(result.stderr || result.stdout).trim()}`,
+          `codex mcp remove endete für ${names.join(" und ")} mit Rückgabewert ` +
+          `${String(last?.status ?? null)}; vermutlich gab es keinen Eintrag. ` +
+          `Ausgabe: ${((last?.stderr ?? "") || (last?.stdout ?? "")).trim()}`,
       };
     }
     return { kind: "removed", path: codexConfigPath(host), backupPath: null };

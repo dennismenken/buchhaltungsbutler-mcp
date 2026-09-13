@@ -98,6 +98,7 @@ const item = invoiceItemItem().shape;
 export const bb_invoices_create: ToolEntry = {
   name: "bb_invoices_create",
   title: "Rechnung erzeugen",
+  group: "invoices",
   path: { literal: "/invoices/create" },
   effect: "create",
   toolClass: "B",

@@ -13,7 +13,13 @@
  * welcher der beiden Fälle vorliegt, und behauptet nichts anderes.
  */
 
+import { BUNDLE_TOOL_COUNT, registeredBundleCount } from "../bundles/register.js";
 import { inspectCredentialsPermissions, type ResolvedConfig } from "../config/resolve.js";
+import {
+  TOOL_GROUPS_EXCLUDE_VAR,
+  TOOL_GROUPS_VAR,
+  toolGroupReportLines,
+} from "../config/tool-groups.js";
 import { PACKAGE_NAME, VERSION } from "../generated/version.js";
 import { CHARS_PER_TOKEN } from "../registry/budget.js";
 import {
@@ -22,7 +28,7 @@ import {
   measureToolDefinitionChars,
 } from "../registry/definition.js";
 import { TOOL_ENTRIES } from "../registry/index.generated.js";
-import type { ToolEffect, ToolEntry } from "../registry/types.js";
+import type { ToolEffect, ToolEntry, ToolGroup } from "../registry/types.js";
 import { CHATGPT_BROWSER_NOTE } from "./clients/print-only.js";
 import { BINARY_NAME, type ClientHost } from "./clients/types.js";
 import type { Terminal } from "./prompt.js";
@@ -40,6 +46,18 @@ const EFFECT_LABELS: Readonly<Record<ToolEffect, string>> = {
 /** Eine Zahl in deutscher Schreibweise, mit Tausenderpunkt. */
 function de(value: number): string {
   return value.toLocaleString("de-DE");
+}
+
+/**
+ * Eine gezählte Werkzeugmenge als deutscher Satzteil: „54 Endpunktwerkzeuge",
+ * „1 Bündelwerkzeug", „kein Bündelwerkzeug". Die Null bekommt ihr eigenes Wort, weil
+ * „0 Bündelwerkzeuge" im Fließtext wie ein abgeschnittener Wert aussieht.
+ */
+function countedTools(count: number, singular: string, plural: string): string {
+  if (count === 0) {
+    return `kein ${singular}`;
+  }
+  return `${String(count)} ${count === 1 ? singular : plural}`;
 }
 
 /**
@@ -132,7 +150,19 @@ export async function runDoctor(options: RunDoctorOptions): Promise<number> {
   }
 
   const { config, warnings } = loadCliConfig(options.env ?? process.env);
+  // Zwei Mengen, und sie werden nie vermischt: `entries` ist der volle Satz und damit die
+  // Bezugsgröße der eingecheckten Messung; `registered` ist das, was dieser Start anmelden
+  // würde. Ohne Gruppenschalter sind beide gleich.
   const entries = TOOL_ENTRIES;
+  const activeGroups = new Set<ToolGroup>(config.toolGroups.active);
+  const registered = entries.filter((entry) => activeGroups.has(entry.group));
+  // Die Bündelwerkzeuge hängen an der Gruppe `bundles` und an keiner Endpunktgruppe. Sie
+  // stehen in derselben tools/list-Antwort wie die 54 Endpunktwerkzeuge und gehören deshalb in
+  // jede Zahl, die diese Diagnose nennt: Ohne sie meldete `doctor` unter
+  // BB_MCP_TOOL_GROUPS=bundles „0 von 54", während der Client fünf Werkzeuge bekommt.
+  const registeredBundles = registeredBundleCount(config.toolGroups);
+  const registeredTotal = registered.length + registeredBundles;
+  const availableTotal = entries.length + BUNDLE_TOOL_COUNT;
   let healthy = true;
 
   terminal.write(`${BINARY_NAME} — Diagnose`);
@@ -190,16 +220,51 @@ export async function runDoctor(options: RunDoctorOptions): Promise<number> {
   terminal.write("");
 
   // --- Werkzeuge ----------------------------------------------------------------------
-  const counts = countByEffect(entries);
+  const counts = countByEffect(registered);
   terminal.write("Werkzeuge");
   terminal.write(
-    `  Registriert: ${String(entries.length)} — ` +
+    `  Registriert: ${String(registeredTotal)}` +
+      (registeredTotal === availableTotal ? "" : ` von ${String(availableTotal)}`) +
+      ` — ${countedTools(registered.length, "Endpunktwerkzeug", "Endpunktwerkzeuge")} und ` +
+      `${countedTools(registeredBundles, "Bündelwerkzeug", "Bündelwerkzeuge")}.`,
+  );
+  // Die Aufschlüsselung nach Wirkung beschreibt ausdrücklich nur die Endpunktwerkzeuge: Ein
+  // Bündel fasst mehrere Endpunkte zusammen, und seine Wirkung ist die schärfste seiner
+  // Schritte. Die Zeile sagt das, statt die Zahlen stillschweigend zu vermischen.
+  terminal.write(
+    "  Die Endpunktwerkzeuge nach Wirkung: " +
       (Object.keys(EFFECT_LABELS) as ToolEffect[])
         .map((effect) => `${String(counts[effect])} ${EFFECT_LABELS[effect]}`)
         .join(", ") +
-      ".",
+      ". Die Bündelwerkzeuge sind darin nicht enthalten.",
   );
+  // Gezählt wird der volle Satz der Endpunktwerkzeuge, auch bei eingeschränkten Gruppen: Nur
+  // er ist mit der eingecheckten Messung vergleichbar. Was diese Installation wirklich sendet,
+  // steht im Abschnitt darunter — und die Zeile sagt es, statt die große Zahl unkommentiert
+  // danebenzustellen.
+  if (registeredTotal !== entries.length) {
+    terminal.write(
+      `  Die folgenden beiden Zeilen messen den VOLLEN Satz aus ${String(entries.length)} ` +
+        "Endpunktwerkzeugen: nicht die Auswahl dieser Installation und ohne die " +
+        "Bündeldefinitionen, die in der eingecheckten Messung nicht enthalten sind. Nur so " +
+        "bleiben sie vergleichbar. Was hier wirklich gesendet wird, steht unter " +
+        "Werkzeuggruppen.",
+    );
+  }
   for (const line of definitionSizeLines(entries)) {
+    terminal.write(`  ${line}`);
+  }
+  terminal.write("");
+
+  // --- Werkzeuggruppen ------------------------------------------------------------------
+  terminal.write("Werkzeuggruppen");
+  terminal.write(
+    `  ${TOOL_GROUPS_VAR}:         ${config.toolGroups.include === null ? "nicht gesetzt, also alle Gruppen" : config.toolGroups.include.join(", ")}`,
+  );
+  terminal.write(
+    `  ${TOOL_GROUPS_EXCLUDE_VAR}: ${config.toolGroups.exclude.length === 0 ? "nicht gesetzt" : config.toolGroups.exclude.join(", ")}`,
+  );
+  for (const line of toolGroupReportLines(config.toolGroups, registeredTotal)) {
     terminal.write(`  ${line}`);
   }
   terminal.write("");

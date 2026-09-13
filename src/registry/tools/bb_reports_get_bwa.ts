@@ -41,6 +41,7 @@ const GET_FILES_DESCRIPTION =
 export const bb_reports_get_bwa: ToolEntry = {
   name: "bb_reports_get_bwa",
   title: "BWA abholen",
+  group: "reports",
   path: { literal: "/reports/get/bwa" },
   effect: "read",
   toolClass: "R",

@@ -30,6 +30,7 @@ const RESPONSE_FORMAT_TEXT =
 export const bb_receipts_list_transactions: ToolEntry = {
   name: "bb_receipts_list_transactions",
   title: "Zahlungen eines Belegs",
+  group: "receipts",
   path: { literal: "/receipts/assigned-transactions/get" },
   effect: "read",
   toolClass: "R",

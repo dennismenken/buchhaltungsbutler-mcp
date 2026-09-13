@@ -28,6 +28,7 @@ const pagination = paginationFor("/settings/get/debtors");
 export const bb_debtors_search: ToolEntry = {
   name: "bb_debtors_search",
   title: "Debitoren auflisten",
+  group: "debtors",
   path: { literal: "/settings/get/debtors" },
   effect: "read",
   toolClass: "R",

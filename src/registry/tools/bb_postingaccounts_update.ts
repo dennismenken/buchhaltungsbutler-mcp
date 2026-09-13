@@ -24,6 +24,7 @@ const NUMBER_DESCRIPTION =
 export const bb_postingaccounts_update: ToolEntry = {
   name: "bb_postingaccounts_update",
   title: "Sachkonto überschreiben",
+  group: "postingaccounts",
   path: { literal: "/settings/update/postingaccount" },
   effect: "modify",
   toolClass: "M",

@@ -28,6 +28,7 @@ const TRANSACTION_ID = idByCustomer("der Zahlung", "bb_transactions_search");
 export const bb_transactions_get: ToolEntry = {
   name: "bb_transactions_get",
   title: "Zahlung holen",
+  group: "transactions",
   path: {
     template: "/transactions/get/{transaction_id_by_customer}",
     params: ["transaction_id_by_customer"],

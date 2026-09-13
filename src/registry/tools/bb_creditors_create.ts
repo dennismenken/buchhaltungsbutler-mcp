@@ -60,6 +60,7 @@ function dueInDays(): z.ZodNumber {
 export const bb_creditors_create: ToolEntry = {
   name: "bb_creditors_create",
   title: "Kreditorenkonto anlegen",
+  group: "creditors",
   path: { literal: "/settings/add/creditor" },
   effect: "create",
   toolClass: "A",

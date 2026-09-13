@@ -37,6 +37,7 @@ import { RECEIPT_TYPES, RECEIPT_TYPE_TEXT } from "./bb_receipts_create.js";
 export const bb_receipts_upload: ToolEntry = {
   name: "bb_receipts_upload",
   title: "Belegdatei hochladen",
+  group: "receipts",
   path: { literal: "/receipts/upload" },
   effect: "create",
   toolClass: "A",

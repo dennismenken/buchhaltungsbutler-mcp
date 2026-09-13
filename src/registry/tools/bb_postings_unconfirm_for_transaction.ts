@@ -47,6 +47,7 @@ const TRANSACTION_ID_DESCRIPTION =
 export const bb_postings_unconfirm_for_transaction: ToolEntry = {
   name: "bb_postings_unconfirm_for_transaction",
   title: "Buchungen einer Zahlung entfernen",
+  group: "postings",
   path: { literal: "/postings/unconfirm/transaction" },
   effect: "delete",
   toolClass: "D",

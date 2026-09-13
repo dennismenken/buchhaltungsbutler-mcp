@@ -78,6 +78,7 @@ function batchEntry(): ToolEntry {
   return {
     name: "bb_postings_create_for_receipt_batch",
     title: "Buchungen zu Belegen anlegen",
+    group: "postings",
     path: { literal: "/postings/add-batch/receipts" },
     effect: "create",
     toolClass: "B",
@@ -124,6 +125,7 @@ function readEntryWithAmount(): ToolEntry {
   return {
     name: "bb_postings_search",
     title: "Buchungen suchen",
+    group: "postings",
     path: { literal: "/postings/get" },
     effect: "read",
     toolClass: "R",

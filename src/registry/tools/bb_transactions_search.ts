@@ -64,6 +64,7 @@ const TO_FROM_DESCRIPTION =
 export const bb_transactions_search: ToolEntry = {
   name: "bb_transactions_search",
   title: "Zahlungen suchen",
+  group: "transactions",
   path: { literal: "/transactions/get" },
   effect: "read",
   toolClass: "R",

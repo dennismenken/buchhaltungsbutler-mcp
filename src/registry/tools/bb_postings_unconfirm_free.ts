@@ -49,6 +49,7 @@ const POSTING_ID_DESCRIPTION =
 export const bb_postings_unconfirm_free: ToolEntry = {
   name: "bb_postings_unconfirm_free",
   title: "Freie Buchung entfernen",
+  group: "postings",
   path: { literal: "/postings/unconfirm/free" },
   effect: "delete",
   toolClass: "D",

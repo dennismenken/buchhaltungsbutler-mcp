@@ -38,6 +38,7 @@ const GET_FILES_DESCRIPTION =
 export const bb_reports_get_sums: ToolEntry = {
   name: "bb_reports_get_sums",
   title: "Summen- und Saldenliste abholen",
+  group: "reports",
   path: { literal: "/reports/get/sums" },
   effect: "read",
   toolClass: "R",

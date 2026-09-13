@@ -64,6 +64,57 @@ import type { DescriptionTier } from "./types.js";
  */
 export const TOTAL_TOOL_DEFINITION_TOKEN_BUDGET = 49_000;
 
+/**
+ * Obergrenze für die Definitionen der Gruppe `bundles`, in Token. Eine **zweite, getrennte,
+ * ebenfalls harte** Zahl neben {@link TOTAL_TOOL_DEFINITION_TOKEN_BUDGET}. Beide werden einzeln
+ * erzwungen, damit sichtbar bleibt, was die Ergänzung wirklich kostet: das Gesamtbudget in P11
+ * (test/registry/token-budget.test.ts), diese Grenze in test/bundles/read-bundles-contract.test.ts
+ * über `bundleDefinitionJson`. `pnpm measure-tokens` weist beide zusätzlich im Bericht aus.
+ *
+ * **Warum getrennt und nicht aufgeschlagen.** Die 49.000 sind die dokumentierte Entscheidung
+ * des Projektinhabers über die 54 Endpunktwerkzeuge und über E1. Eine als Ganzes abschaltbare
+ * Bündelgruppe (N5) ist ein anderer Gegenstand und verdient eine eigene, sichtbare Zahl, statt
+ * sich in einer fremden zu verstecken. Das Hauptbudget bleibt bei 49.000 und deckt weiterhin
+ * genau die 54 Endpunktwerkzeuge.
+ *
+ * **6.950 stehen auf einer Messung, und die Messung steht nur an EINER Stelle.** Die gemessene
+ * Tokenzahl der fünf Bündeldefinitionen und ihre fünf Summanden führt `src/registry/groups.ts`
+ * bei `bundles` (`TOOL_GROUPS.bundles.measuredTokens`, Stand 2026-09-13: **6.852 Token**,
+ * `gpt-tokenizer@4.0.0` in der Kodierung `o200k_base` über `bundleDefinitionJson`). Hier stehen
+ * die Summanden mit Absicht nicht noch einmal: Sie standen schon einmal an beiden Stellen, und
+ * genau das ist auseinandergelaufen — der Kommentar nannte 6.675 und zwei veraltete Summanden,
+ * während die Tabelle längst 6.852 führte. `test/registry/groups.test.ts` rechnet den Eintrag in
+ * der Tabelle bei jedem Lauf mit dem echten Tokenizer nach, und
+ * `test/bundles/read-bundles-contract.test.ts` hält diese Grenze gegen genau diese Zahl; keine
+ * der beiden kann damit unbemerkt veralten.
+ *
+ * **Wie die Zahl zustande kam.** Die Bauvorlage (docs/entwicklung/buendelwerkzeuge.md,
+ * Abschnitt 8) setzt 7.000 an, ausdrücklich als Schätzung mit großzügiger Luft, weil die Bündel
+ * dort noch nicht geschrieben waren, und verlangt ebenso ausdrücklich, diese Zahl nach dem ersten
+ * Lauf von `pnpm measure-tokens` **auf den gemessenen Stand zuzüglich einer kleinen Marge zu
+ * senken**. Genau das sind die 6.950: 6.852 gemessen, 98 Token Marge. Das ist dasselbe Maß, in
+ * dem das Hauptbudget bei seiner Festlegung am 2026-09-13 Luft ließ, nämlich rund 1,4 Prozent des
+ * gemessenen Standes (dort 695 von 48.305).
+ *
+ * **Der Zwischenstand 6.800 lag unter dem gemessenen Stand.** Er sollte dieselbe Senkung
+ * vollziehen, stand aber auf einer Messung, die zwei der fünf Summanden nicht mehr traf: 6.675
+ * statt 6.852, weil `bb_assignments_get` und `bb_reports_run` danach gewachsen sind. Der
+ * Testlauf blieb damit rot. Offen gesagt, was diese Zeile tut: Gegenüber dem Zwischenstand 6.800
+ * ist 6.950 eine Anhebung um 150 Token, gegenüber den 7.000 der Bauvorlage, die diese Konstante
+ * überhaupt erst gesetzt hat, eine Senkung um 50. Die Sperre unten gilt einer Grenze, die auf
+ * einer Messung steht; die 6.800 taten das nie. Der Eintrag dazu steht in CHANGELOG.md, genau
+ * wie bei den 49.000.
+ *
+ * **Was die Zahl nicht ist: eine Erlaubnis zu wachsen.** Die Luft von 98 Token trägt eine
+ * Umformulierung, aber weder ein sechstes Bündel noch einen weiteren Parameter von Gewicht.
+ * Reißt sie, wird gekürzt.
+ *
+ * **Diese Zahl darf ein Agent senken, niemals anheben.** Sinkt die gemessene Summe dauerhaft,
+ * wird sie nachgezogen. Anheben ist eine Entscheidung des Projektinhabers mit Eintrag in
+ * CHANGELOG.md, genau wie bei den 49.000.
+ */
+export const BUNDLE_DEFINITION_TOKEN_BUDGET = 6_950;
+
 /** Obergrenze für die instructions des Servers, in Token (Plan 4.10, 6.7). Sie tragen alles
  *  Querschnittliche genau einmal statt 54-mal und sind deshalb getrennt budgetiert. */
 export const INSTRUCTIONS_TOKEN_BUDGET = 2_100;

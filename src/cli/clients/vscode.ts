@@ -23,7 +23,13 @@ import path from "node:path";
 
 import { CREDENTIAL_VARS } from "../../config/env.js";
 import {
+  existingEntryReason,
+  legacyEntryNames,
+  LEGACY_ENTRY_NOTE,
+  LEGACY_SERVER_NAMES,
+  removableEntryNames,
   renderJson,
+  writtenDetail,
   type ClientAdapter,
   type ClientHost,
   type ClientPlan,
@@ -179,7 +185,7 @@ export const vscodeAdapter: ClientAdapter = {
         "ist der Befehl MCP: Open User Configuration.",
       format: "json",
       block: renderBlock(plan, built),
-      notes: [...built.notes, `Aufruf: code --add-mcp '${payload}'`],
+      notes: [...built.notes, `Aufruf: code --add-mcp '${payload}'`, LEGACY_ENTRY_NOTE],
     };
   },
 
@@ -208,15 +214,17 @@ export const vscodeAdapter: ClientAdapter = {
       const wrapper = document[WRAPPER_KEY];
       const container: Record<string, unknown> = isRecord(wrapper) ? { ...wrapper } : {};
       const existed = container[plan.serverName] !== undefined;
-      if (existed && !plan.allowOverwrite) {
+      const legacy = legacyEntryNames(container);
+      if ((existed || legacy.length > 0) && !plan.allowOverwrite) {
         return {
           kind: "unchanged",
-          reason:
-            `${target} führt bereits einen Eintrag "${plan.serverName}". Er wurde nicht ` +
-            "angetastet. Mit --overwrite wird er ersetzt.",
+          reason: existingEntryReason(target, plan.serverName, existed ? [] : legacy),
         };
       }
       const built = buildEntry(plan, true);
+      for (const name of legacy) {
+        delete container[name];
+      }
       container[plan.serverName] = built.entry;
       const next: Record<string, unknown> = { ...document, [WRAPPER_KEY]: container };
       if (built.inputs.length > 0) {
@@ -235,9 +243,7 @@ export const vscodeAdapter: ClientAdapter = {
           kind: "written",
           path: target,
           backupPath: written.backupPath,
-          detail: existed
-            ? `Der bestehende Eintrag "${plan.serverName}" wurde ersetzt.`
-            : `Der Eintrag "${plan.serverName}" wurde hinzugefügt.`,
+          detail: writtenDetail(plan.serverName, existed, legacy),
         };
       } catch (error) {
         return {
@@ -290,7 +296,8 @@ export const vscodeAdapter: ClientAdapter = {
         reason:
           "Für das Benutzerprofil gibt es keinen dokumentierten Befehl zum Entfernen. In der " +
           `Befehlspalette MCP: Open User Configuration öffnen und den Eintrag "${plan.serverName}" ` +
-          "dort löschen.",
+          `dort löschen; ältere Konfigurationen führen ihn unter ` +
+          `${LEGACY_SERVER_NAMES.map((name) => `"${name}"`).join(" beziehungsweise ")}.`,
       };
     }
     const target = vscodeProjectFile(host);
@@ -315,13 +322,17 @@ export const vscodeAdapter: ClientAdapter = {
     }
     const wrapper = parsed[WRAPPER_KEY];
     const container: Record<string, unknown> = isRecord(wrapper) ? { ...wrapper } : {};
-    if (container[plan.serverName] === undefined) {
+    // Auch hier gilt: der eigene Name und jeder frühere (siehe types.ts).
+    const removable = removableEntryNames(container, plan.serverName);
+    if (removable.length === 0) {
       return {
         kind: "unchanged",
         reason: `${target} führt keinen Eintrag "${plan.serverName}".`,
       };
     }
-    delete container[plan.serverName];
+    for (const name of removable) {
+      delete container[name];
+    }
     try {
       const written = host.writeText(target, renderJson({ ...parsed, [WRAPPER_KEY]: container }));
       return { kind: "removed", path: target, backupPath: written.backupPath };

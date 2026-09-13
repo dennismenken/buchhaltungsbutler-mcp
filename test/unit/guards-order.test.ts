@@ -41,6 +41,7 @@ import {
 const READ_ENTRY: ToolEntry = {
   name: "bb_receipts_search",
   title: "Belege suchen",
+  group: "receipts",
   path: { literal: "/receipts/get" },
   effect: "read",
   toolClass: "R",
@@ -99,6 +100,7 @@ const READ_ENTRY: ToolEntry = {
 const CREATE_ENTRY: ToolEntry = {
   name: "bb_receipts_create",
   title: "Beleg anlegen",
+  group: "receipts",
   path: { literal: "/receipts/add" },
   effect: "create",
   toolClass: "A",
@@ -163,6 +165,7 @@ const CREATE_ENTRY: ToolEntry = {
 const DELETE_ENTRY: ToolEntry = {
   name: "bb_receipts_delete",
   title: "Beleg löschen",
+  group: "receipts",
   path: {
     template: "/receipts/delete/{receipt_id_by_customer}",
     params: ["receipt_id_by_customer"],

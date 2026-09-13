@@ -24,6 +24,7 @@ const CONFIRMED_ONLY_DESCRIPTION =
 export const bb_transactions_list_receipts: ToolEntry = {
   name: "bb_transactions_list_receipts",
   title: "Belege einer Zahlung auflisten",
+  group: "transactions",
   path: { literal: "/transactions/assigned-receipts/get" },
   effect: "read",
   toolClass: "R",

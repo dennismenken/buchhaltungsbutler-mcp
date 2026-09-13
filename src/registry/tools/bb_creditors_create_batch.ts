@@ -140,6 +140,7 @@ const creditors = batchContainer("bb_creditors_create_batch", creditorItem, {
 export const bb_creditors_create_batch: ToolEntry = {
   name: "bb_creditors_create_batch",
   title: "Kreditorenkonten im Stapel anlegen",
+  group: "creditors",
   path: { literal: "/settings/add-batch/creditors" },
   effect: "create",
   toolClass: "A",

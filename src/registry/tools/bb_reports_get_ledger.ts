@@ -46,6 +46,7 @@ const BASE_DESCRIPTION =
 export const bb_reports_get_ledger: ToolEntry = {
   name: "bb_reports_get_ledger",
   title: "Kontenblatt abrufen",
+  group: "reports",
   path: { literal: "/reports/get/sums/ledger" },
   effect: "read",
   toolClass: "R",

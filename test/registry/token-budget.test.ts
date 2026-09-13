@@ -28,6 +28,8 @@ import { pathToFileURL } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import type { ResolvedConfig } from "../../src/config/resolve.js";
+import { resolveConfig } from "../../src/config/resolve.js";
 import {
   DESCRIPTION_CHAR_BUDGET_BY_TIER,
   INSTRUCTIONS_TOKEN_BUDGET,
@@ -55,6 +57,41 @@ function expectNoIssues(problems: readonly string[]): void {
 }
 
 /**
+ * Der größte Zustand der Konfiguration: jeder Schalter an, der den Servertext verlängert.
+ *
+ * Das Budget muss im größten Zustand halten, und nur er beweist das. Zum Gruppenschalter
+ * gehörte dabei früher die **kleinste** Gruppe allein: Elf inaktive Gruppen, jede mit dem,
+ * was mit ihr unbeantwortbar ist (N5), und der Buchungswegweiser stand ohnehin in jedem
+ * Profil. Seit die Blöcke des Servertextes an ihren Gruppen hängen, trägt das nicht mehr:
+ * Ohne die Gruppe `postings` entfällt der Wegweiser, und `comments` allein wiegt gemessen nur
+ * noch 1.508 Token. Der teuerste Zustand ist jetzt `postings,bundles` mit 1.840 Token —
+ * gemessen über alle 4.095 nichtleeren Gruppenmengen mit demselben Tokenizer, der auch hier
+ * zählt; die nächstteuren liegen bei 1.839 und 1.832. Er vereint beides: zehn inaktive
+ * Gruppen und den Wegweiser.
+ *
+ * Die Zugangsdaten sind Platzhalter. Sie stehen in keinem Ausgabetext; sie sorgen allein
+ * dafür, dass die Auflösung keine Zugangsdatendatei des Betreibers liest.
+ */
+function largestConfig(): ResolvedConfig {
+  return resolveConfig({
+    env: {
+      BB_API_CLIENT: "PLATZHALTER",
+      BB_API_SECRET: "PLATZHALTER",
+      BB_API_KEY: "PLATZHALTER",
+      BB_MCP_READ_ONLY: "true",
+      BB_MCP_DUPLICATE_CHECK: "on",
+      BB_MCP_CACHE_TTL_MS: "60000",
+      BB_MCP_MAX_AMOUNT: "1000.00",
+      BB_MCP_MAX_BATCH: "10",
+      BB_MCP_TOOL_GROUPS: "postings,bundles",
+    },
+    platform: "linux",
+    homeDir: "/nicht/vorhanden",
+    nodeVersion: process.versions.node,
+  }).config;
+}
+
+/**
  * Die instructions des Servers, sofern es sie schon gibt. src/server/instructions.ts wird in
  * AP10 als Platzhalter angelegt und in AP14 befüllt; die endgültige Signatur der
  * Exportfunktion steht dort und nicht hier, weshalb diese Prüfung jeden Export abtastet und
@@ -72,12 +109,15 @@ async function instructionsText(): Promise<string | undefined> {
     if (typeof value === "string") return value;
     if (typeof value !== "function") continue;
 
-    // Erst ohne Argument, dann mit einem leeren Konfigurationsobjekt: Der Platzhalter aus
-    // AP10 erzeugt den Zustandsblock aus 6.7 Punkt 1 und liefert sonst eine leere Zeichenkette.
-    for (const args of [[], [{}]]) {
+    // Drei Versuche, in aufsteigender Vollständigkeit: ohne Argument, mit einem leeren
+    // Objekt (der Platzhalter aus AP10 kommt damit aus) und mit einer echten, vollständig
+    // aufgelösten Konfiguration im größten Zustand. Der dritte Versuch ist der, der seit dem
+    // Gruppenschalter trägt: Der Servertext liest dort ein Feld, das ein leeres Objekt nicht
+    // hat, und misst dann zugleich den teuersten Zustand statt des billigsten.
+    for (const args of [[], [{}], [largestConfig()]]) {
       try {
         const result: unknown = (value as (...args: unknown[]) => unknown)(...args);
-        if (typeof result === "string") return result;
+        if (typeof result === "string" && result !== "") return result;
       } catch {
         // Dieser Export war es nicht; der nächste wird probiert.
       }
@@ -233,7 +273,7 @@ describe("P11 Gesamtbudget", () => {
 });
 
 describe("P11 instructions", () => {
-  it("bleibt unter 2.100 Token", async () => {
+  it("bleibt auch im größten Zustand unter 2.100 Token", async () => {
     const text = await instructionsText();
 
     expect(

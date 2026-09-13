@@ -28,6 +28,7 @@ import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { BUNDLE_ENTRIES } from "../../src/bundles/index.js";
 import { TOOL_ENTRIES } from "../../src/registry/index.generated.js";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
@@ -180,7 +181,7 @@ describe("der gebaute Server über einen echten MCP-Client", () => {
     },
   ] as const;
 
-  it("beantwortet initialize, meldet genau 54 Werkzeuge mit vier Hints und führt je Klasse einen Aufruf aus", {
+  it("beantwortet initialize, meldet die 54 Endpunktwerkzeuge samt Bündeln mit vier Hints und führt je Klasse einen Aufruf aus", {
     timeout: 60_000,
   }, async () => {
     const api = await startApiStandIn();
@@ -202,9 +203,10 @@ describe("der gebaute Server über einen echten MCP-Client", () => {
 
       const listed = await client.listTools();
 
-      expect(listed.tools).toHaveLength(54);
+      // Die 54 Endpunktwerkzeuge und zusätzlich die Bündelwerkzeuge (N1, Bauvorlage 7).
+      expect(listed.tools).toHaveLength(TOOL_ENTRIES.length + BUNDLE_ENTRIES.length);
       expect(listed.tools.map((tool) => tool.name).sort()).toEqual(
-        TOOL_ENTRIES.map((entry) => entry.name).sort(),
+        [...TOOL_ENTRIES, ...BUNDLE_ENTRIES].map((entry) => entry.name).sort(),
       );
 
       for (const tool of listed.tools) {
@@ -362,4 +364,190 @@ describe("die Standardausgabe des Serverprozesses", () => {
       await api.close();
     }
   });
+});
+
+// --- Teil 3: die genannte Werkzeugzahl gegen tools/list ----------------------------------
+
+/**
+ * Die beiden Zahlen, die der Server beim Start nennt, und die Werkzeugliste desselben Starts.
+ *
+ * Gemessen wird am **gebauten** Server als Unterprozess und nicht an `createServer` im
+ * Testprozess: Die Lücke, gegen die dieser Teil steht, lag zwischen der Meldung auf stderr und
+ * der Antwort auf stdout, und nur ein echter Start zeigt beide zugleich.
+ */
+interface AnnouncedStart {
+  /** Die Zahl aus „Registriert: N Werkzeuge" der Gruppenrückmeldung. */
+  readonly announced: number;
+  /** Die Zahl aus „läuft auf stdio mit N Werkzeugen". */
+  readonly running: number;
+  /** Die Namen aus der Antwort auf `tools/list`. */
+  readonly listed: readonly string[];
+}
+
+/**
+ * Die Werkzeugnamen aus der Antwort auf `tools/list`, oder `null`, solange sie nicht da ist.
+ *
+ * Gelesen werden ausschließlich vollständige Zeilen: Ein Teilstück, das noch in der Röhre
+ * steckt, ist kein JSON und wäre ein Fehlalarm.
+ */
+function toolListNames(stdout: string): readonly string[] | null {
+  const lines = stdout.split("\n");
+  // Das letzte Stück ist erst mit dem Zeilenumbruch vollständig; ohne ihn bleibt es liegen.
+  for (const line of lines.slice(0, -1)) {
+    if (line.trim() === "") {
+      continue;
+    }
+    const message = JSON.parse(line) as { id?: unknown; result?: { tools?: { name: string }[] } };
+    if (message.id === 2) {
+      return (message.result?.tools ?? []).map((tool) => tool.name);
+    }
+  }
+  return null;
+}
+
+/** Die eine Zahl aus einer Meldung. Fehlt sie oder steht sie doppelt, ist das ein Fehler. */
+function onlyNumber(stderr: string, pattern: RegExp, what: string): number {
+  const matches = [...stderr.matchAll(new RegExp(pattern, "g"))];
+  if (matches.length !== 1) {
+    throw new Error(
+      `Erwartet war genau eine Zeile "${what}", gefunden sind ${String(matches.length)}. ` +
+        `stderr: ${JSON.stringify(stderr.slice(0, 2000))}`,
+    );
+  }
+  return Number(matches[0]?.[1]);
+}
+
+/**
+ * Startet den gebauten Server mit dem übergebenen Profil, fragt `tools/list` und liest die
+ * Startmeldung von stderr.
+ *
+ * `BB_MCP_LOG_LEVEL=info` ist nötig, weil die Rückmeldung ohne eingeschränkte Gruppen als
+ * gewöhnliche `info`-Meldung herausgeht; mit eingeschränkten Gruppen ginge sie ohnehin.
+ * Gewartet wird auf das Ende des Prozesses, damit stderr vollständig vorliegt: Die beiden
+ * Ströme sind getrennte Röhren und haben untereinander keine garantierte Reihenfolge.
+ */
+async function startWithProfile(
+  baseUrl: string,
+  extraEnv: Record<string, string>,
+): Promise<AnnouncedStart> {
+  const child: ChildProcessWithoutNullStreams = spawn(process.execPath, [BUILT_CLI], {
+    cwd: ROOT,
+    env: childEnv(baseUrl, { BB_MCP_LOG_LEVEL: "info", ...extraEnv }),
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+
+  let stdout = "";
+  let stderr = "";
+  // Erst die Antwort auf tools/list abwarten, dann die Standardeingabe schließen: Das Ende der
+  // Eingabe fährt den Server herunter, und eine noch offene Anfrage bekäme keine Antwort mehr.
+  const answered = new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      reject(
+        new Error(
+          `Der Server hat binnen 20 s nicht auf tools/list geantwortet. ` +
+            `stdout: ${JSON.stringify(stdout.slice(0, 500))}`,
+        ),
+      );
+    }, 20_000);
+    child.stdout.on("data", (chunk: Buffer) => {
+      stdout += chunk.toString("utf8");
+      if (toolListNames(stdout) !== null) {
+        clearTimeout(timer);
+        resolve();
+      }
+    });
+    child.on("error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
+  child.stderr.on("data", (chunk: Buffer) => {
+    stderr += chunk.toString("utf8");
+  });
+
+  const ended = new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      reject(
+        new Error(`Der Server ist binnen 20 s nicht beendet. stdout: ${stdout.slice(0, 500)}`),
+      );
+    }, 20_000);
+    child.on("close", () => {
+      clearTimeout(timer);
+      resolve();
+    });
+    child.on("error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
+
+  child.stdin.write(
+    rpcLine({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "initialize",
+      params: {
+        protocolVersion: "2025-11-25",
+        capabilities: {},
+        clientInfo: { name: "ap16-werkzeugzahl", version: "0.0.0" },
+      },
+    }),
+  );
+  child.stdin.write(rpcLine({ jsonrpc: "2.0", method: "notifications/initialized" }));
+  child.stdin.write(rpcLine({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }));
+  await answered;
+  // Das Ende der Standardeingabe fährt den Server herunter (shutdown.ts). Erst nach dem Ende
+  // des Prozesses ist sicher, dass stderr vollständig gelesen ist; die Startmeldung steht zwar
+  // vor jeder Antwort, liegt aber in einer anderen Röhre.
+  child.stdin.end();
+  await ended;
+
+  const listed = toolListNames(stdout) ?? [];
+
+  return {
+    announced: onlyNumber(stderr, /Registriert: (\d+) Werkzeuge/, "Registriert: N Werkzeuge"),
+    running: onlyNumber(
+      stderr,
+      /läuft auf stdio mit (\d+) Werkzeugen/,
+      "läuft auf stdio mit N Werkzeugen",
+    ),
+    listed,
+  };
+}
+
+describe("die beim Start genannte Werkzeugzahl", () => {
+  /**
+   * Die drei Profile aus dem Befund. „bundles" ist das empfohlene Desktop-Profil und war
+   * zugleich der schlimmste Fall: Die Startmeldung sagte „0 Werkzeuge", `tools/list` lieferte
+   * fünf.
+   */
+  const PROFILES = [
+    { label: "alle Gruppen", env: {}, expected: TOOL_ENTRIES.length + BUNDLE_ENTRIES.length },
+    { label: "bundles", env: { BB_MCP_TOOL_GROUPS: "bundles" }, expected: BUNDLE_ENTRIES.length },
+    {
+      label: "receipts,bundles",
+      env: { BB_MCP_TOOL_GROUPS: "receipts,bundles" },
+      expected:
+        TOOL_ENTRIES.filter((entry) => entry.group === "receipts").length + BUNDLE_ENTRIES.length,
+    },
+  ] as const;
+
+  for (const profile of PROFILES) {
+    it(`stimmt im Profil "${profile.label}" mit tools/list überein`, {
+      timeout: 60_000,
+    }, async () => {
+      const api = await startApiStandIn();
+      try {
+        const session = await startWithProfile(api.baseUrl, { ...profile.env });
+
+        expect(session.listed).toHaveLength(profile.expected);
+        expect(session.announced).toBe(session.listed.length);
+        expect(session.running).toBe(session.listed.length);
+      } finally {
+        await api.close();
+      }
+    });
+  }
 });

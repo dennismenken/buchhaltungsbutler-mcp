@@ -41,6 +41,9 @@ function field(spec: Partial<FieldSpec> & Pick<FieldSpec, "name" | "schema">): F
 function entry(spec: Partial<ToolEntry> & Pick<ToolEntry, "name" | "path">): ToolEntry {
   return {
     title: `Attrappe ${spec.name}`,
+    // Die Gruppe der Attrappe ist beliebig, aber Pflicht: `group` ist ein Feld von ToolEntry
+    // und wird niemals aus dem Namen abgeleitet (src/registry/groups.ts).
+    group: "receipts",
     effect: "read",
     toolClass: "R",
     tier: 2,

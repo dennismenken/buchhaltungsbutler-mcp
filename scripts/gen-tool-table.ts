@@ -1,11 +1,18 @@
-// Erzeugt die beiden Werkzeugtabellen der README aus dem Register (Plan 2, AP20).
+// Erzeugt die drei Werkzeugtabellen der README aus dem Register (Plan 2, AP20).
 //
-// **Warum erzeugt und nicht von Hand gepflegt.** Die README nennt 54 Werkzeuge mit Wirkung
+// **Warum erzeugt und nicht von Hand gepflegt.** Die README nennt jedes Werkzeug mit Wirkung
 // und Kurzbeschreibung. Eine von Hand gepflegte Tabelle wäre eine zweite Wahrheit neben
 // src/registry/tools/ und liefe genau dann auseinander, wenn es darauf ankommt: beim
 // Nachrüsten eines Endpunkts. Der CI-Schritt „pnpm generate, danach git diff --exit-code"
 // (.github/workflows/ci.yml) prüft die eingecheckte README damit gegen das Register; ein
 // vergessener Lauf ist rot und nicht unsichtbar.
+//
+// **Die Bündelwerkzeuge werden mitgeführt.** Sie stehen nicht in `index.generated.ts`, weil
+// sie einen eigenen Eintragstyp tragen (Entscheidung N1: die 54 Endpunktwerkzeuge bleiben
+// unverändert, die Bündel kommen daneben). Dieses Skript liest sie deshalb aus
+// `src/bundles/index.ts` und erzeugt daraus die Tabelle in Abschnitt 11.1 sowie die beiden
+// Bündelzeilen der Bereichsübersicht in Abschnitt 1. Ein sechstes Bündel macht damit dieselbe
+// CI-Prüfung rot wie ein neuer Endpunkt, statt in der README unbemerkt zu fehlen.
 //
 // **Warum hier dynamisch importiert wird.** Node führt TypeScript aus, löst aber einen
 // Spezifizierer `./x.js` nicht auf `./x.ts` auf — und genau so importiert dieses Projekt
@@ -45,6 +52,7 @@ function filePath(relativePath: string): string {
 }
 
 const REGISTRY_INDEX = "src/registry/index.generated.ts";
+const BUNDLE_INDEX = "src/bundles/index.ts";
 const README = "README.md";
 
 // Der Registerindex wird nicht eingecheckt (Plan 4.2) und von gen-registry-index.ts erzeugt.
@@ -63,7 +71,12 @@ const registry = (await import(
   moduleUrl(REGISTRY_INDEX)
 )) as typeof import("../src/registry/index.generated.js");
 
+// Die Bündelliste ist eingecheckt und braucht keinen Generatorlauf vorher; sie wird deshalb
+// ohne die Existenzprüfung von oben geladen.
+const bundles = (await import(moduleUrl(BUNDLE_INDEX))) as typeof import("../src/bundles/index.js");
+
 type Entry = (typeof registry.TOOL_ENTRIES)[number];
+type Bundle = (typeof bundles.BUNDLE_ENTRIES)[number];
 
 // --- Bereiche --------------------------------------------------------------------------
 
@@ -196,8 +209,18 @@ function groupByArea(entries: readonly Entry[]): Map<string, Entry[]> {
   return groups;
 }
 
-/** Die Übersicht nach Bereichen (Plan 10, Punkt 1). */
-function renderAreaTable(groups: ReadonlyMap<string, readonly Entry[]>, total: number): string {
+/**
+ * Die Übersicht nach Bereichen (Plan 10, Punkt 1).
+ *
+ * Die Tabelle trägt drei Summenzeilen statt einer: die Endpunktwerkzeuge, die Bündelwerkzeuge
+ * und beides zusammen. Nur die letzte Zahl ist die, die `tools/list` einem Client wirklich
+ * meldet — und genau sie stand vor den Bündeln nirgends in Abschnitt 1.
+ */
+function renderAreaTable(
+  groups: ReadonlyMap<string, readonly Entry[]>,
+  total: number,
+  bundleEntries: readonly Bundle[],
+): string {
   const lines = ["| Bereich | Werkzeuge | davon lesend |", "| --- | --- | --- |"];
   let readTotal = 0;
   for (const [area, bucket] of groups) {
@@ -205,7 +228,47 @@ function renderAreaTable(groups: ReadonlyMap<string, readonly Entry[]>, total: n
     readTotal += reading;
     lines.push(`| ${cell(area)} | ${String(bucket.length)} | ${String(reading)} |`);
   }
-  lines.push(`| **Zusammen** | **${String(total)}** | **${String(readTotal)}** |`);
+  const bundleReading = bundleEntries.filter((entry) => entry.effect === "read").length;
+  lines.push(
+    `| **Endpunktwerkzeuge zusammen** | **${String(total)}** | **${String(readTotal)}** |`,
+  );
+  lines.push(
+    `| Bündelwerkzeuge ([11.1](#111-die-fünf-bündelwerkzeuge)) | ` +
+      `${String(bundleEntries.length)} | ${String(bundleReading)} |`,
+  );
+  lines.push(
+    `| **Alle Werkzeuge zusammen** | **${String(total + bundleEntries.length)}** | ` +
+      `**${String(readTotal + bundleReading)}** |`,
+  );
+  return lines.join("\n");
+}
+
+/**
+ * Die Tabelle der Bündelwerkzeuge (Abschnitt 11.1).
+ *
+ * Gezeigt wird, was jemand ohne Programmierkenntnisse wissen muss: wofür das Bündel da ist, ob
+ * es dabei schreibt, und wie viele Aufrufe an die API es höchstens verbraucht. Welche Frage aus
+ * dem Buchhaltungsalltag es beantwortet, steht in der Aufzählung unter der Tabelle; die ist von
+ * Hand geschrieben, weil dieser Text im Register nicht steht.
+ *
+ * Die Spalte „Aufrufe höchstens" kommt aus `maxCalls` und nicht aus dem Beschreibungstext; eine
+ * später angehobene Obergrenze wandert damit von selbst in die README.
+ *
+ * Die Reihenfolge ist die von `BUNDLE_ENTRIES` und damit die Registrierreihenfolge. Anders als
+ * bei den Endpunktwerkzeugen wird hier **nicht** alphabetisch sortiert: Die Liste ist kurz,
+ * und ihre Reihenfolge geht vom Sitzungsanfang (Stammdaten) zum Abschluss (Auswertung).
+ */
+function renderBundleTable(bundleEntries: readonly Bundle[]): string {
+  const lines = [
+    "| Werkzeug | Wirkung | Aufrufe höchstens | Wofür es da ist |",
+    "| --- | --- | --- | --- |",
+  ];
+  for (const entry of bundleEntries) {
+    lines.push(
+      `| \`${cell(entry.name)}\` | ${EFFECT_LABELS[entry.effect]} | ` +
+        `${String(entry.maxCalls)} | ${cell(firstSentence(entry.description))} |`,
+    );
+  }
   return lines.join("\n");
 }
 
@@ -229,7 +292,7 @@ function renderToolTable(groups: ReadonlyMap<string, readonly Entry[]>): string 
 
 /**
  * Ersetzt den Inhalt zwischen zwei Markierungen. Fehlt eine Markierung, ist das ein Fehler:
- * Eine stillschweigend nicht eingesetzte Tabelle wäre eine README, die 54 Werkzeuge
+ * Eine stillschweigend nicht eingesetzte Tabelle wäre eine README, die ihre Werkzeuge
  * verschweigt, und niemand merkte es.
  */
 function replaceBlock(source: string, marker: string, content: string): string {
@@ -265,20 +328,34 @@ if (entries.length === 0) {
     );
   }
 
+  // Die Bündel sind kein Sonderfall, der ausfallen darf: Steht die Liste leer, fehlt entweder
+  // der Import oder jemand hat sie geleert — beides gehört gemeldet und nicht in eine
+  // stillschweigend leere Tabelle geschrieben.
+  const bundleEntries = bundles.BUNDLE_ENTRIES;
+  if (bundleEntries.length === 0) {
+    console.error(
+      `${BUNDLE_INDEX} führt kein einziges Bündelwerkzeug. Abschnitt 11.1 der README ` +
+        "beschreibt sie; eine leere Tabelle dort wäre eine falsche Aussage.",
+    );
+    process.exit(1);
+  }
+
   const readmePath = filePath(README);
   const current = readFileSync(readmePath, "utf8");
-  let next = replaceBlock(current, "werkzeuge-bereiche", renderAreaTable(groups, entries.length));
+  let next = replaceBlock(
+    current,
+    "werkzeuge-bereiche",
+    renderAreaTable(groups, entries.length, bundleEntries),
+  );
   next = replaceBlock(next, "werkzeuge-tabelle", renderToolTable(groups));
+  next = replaceBlock(next, "buendel-tabelle", renderBundleTable(bundleEntries));
 
+  const counted = `${String(entries.length)} Endpunktwerkzeuge, ${String(bundleEntries.length)} Bündel`;
   if (current === next) {
-    process.stderr.write(
-      `${README}: Werkzeugtabelle ist aktuell (${String(entries.length)} Werkzeuge).\n`,
-    );
+    process.stderr.write(`${README}: Werkzeugtabellen sind aktuell (${counted}).\n`);
   } else {
     writeFileSync(readmePath, next, "utf8");
-    process.stderr.write(
-      `${README}: Werkzeugtabelle geschrieben (${String(entries.length)} Werkzeuge).\n`,
-    );
+    process.stderr.write(`${README}: Werkzeugtabellen geschrieben (${counted}).\n`);
   }
   process.exitCode = 0;
 }

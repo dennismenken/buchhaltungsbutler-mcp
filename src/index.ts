@@ -54,6 +54,16 @@ export {
   type ToolEffectDefinition,
 } from "./registry/classes.js";
 
+export {
+  BUNDLE_TOOL_GROUP,
+  TOOL_GROUPS,
+  TOOL_GROUP_NAMES,
+  isToolGroup,
+  measuredTokensOf,
+  type ToolGroup,
+  type ToolGroupDefinition,
+} from "./registry/groups.js";
+
 export type {
   ContractFieldType,
   CrossCheckId,
@@ -70,6 +80,17 @@ export type {
   VerifySpec,
 } from "./registry/types.js";
 
+// --- Die Bündelwerkzeuge --------------------------------------------------------------
+
+// Das Verzeichnis der Bündel liegt neben dem Register und nicht darin (N1: die 54
+// Endpunktwerkzeuge bleiben unverändert). Ausgeliefert werden beide Listen gemeinsam, und wer
+// die ausgelieferte Werkzeugmenge braucht, braucht deshalb beide: Die Werkzeugliste des
+// Bundle-Manifests entsteht in `scripts/build-mcpb.ts` aus genau diesen beiden Ausfuhren des
+// gebauten Pakets.
+export { BUNDLE_BY_NAME, BUNDLE_ENTRIES } from "./bundles/index.js";
+
+export type { BundleEntry } from "./bundles/types.js";
+
 // --- Konfiguration --------------------------------------------------------------------
 
 export {
@@ -84,6 +105,20 @@ export {
   type ResolveOptions,
   type ResolveOutcome,
 } from "./config/resolve.js";
+
+export {
+  ALL_TOOL_GROUPS,
+  TOOL_GROUPS_EXCLUDE_VAR,
+  TOOL_GROUPS_VAR,
+  parseToolGroupList,
+  resolveToolGroups,
+  toolGroupInstructionLines,
+  toolGroupReportLines,
+  type InactiveToolGroup,
+  type ResolveToolGroupsInput,
+  type ToolGroupSelection,
+  type ToolGroupVariable,
+} from "./config/tool-groups.js";
 
 // --- Version --------------------------------------------------------------------------
 

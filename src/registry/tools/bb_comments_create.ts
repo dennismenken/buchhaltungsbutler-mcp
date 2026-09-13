@@ -29,6 +29,7 @@ const EITHER_OR =
 export const bb_comments_create: ToolEntry = {
   name: "bb_comments_create",
   title: "Kommentar anhängen",
+  group: "comments",
   path: { literal: "/comments/add" },
   effect: "create",
   toolClass: "A",

@@ -63,6 +63,7 @@ function addressField(name: ContactAddressField): FieldSpec {
 export const bb_creditors_update: ToolEntry = {
   name: "bb_creditors_update",
   title: "Kreditorenkonto überschreiben",
+  group: "creditors",
   path: { literal: "/settings/update/creditor" },
   effect: "modify",
   toolClass: "M",

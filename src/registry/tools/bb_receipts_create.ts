@@ -49,6 +49,7 @@ export const RECEIPT_TYPE_TEXT =
 export const bb_receipts_create: ToolEntry = {
   name: "bb_receipts_create",
   title: "Beleg anlegen",
+  group: "receipts",
   path: { literal: "/receipts/add" },
   effect: "create",
   toolClass: "A",

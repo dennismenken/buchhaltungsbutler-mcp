@@ -126,6 +126,7 @@ const TRANSACTIONS_CONTAINER = batchContainer(
 export const bb_postings_create_for_transaction_batch: ToolEntry = {
   name: "bb_postings_create_for_transaction_batch",
   title: "Buchungen zu Zahlungen anlegen",
+  group: "postings",
   path: { literal: "/postings/add-batch/transactions" },
   effect: "create",
   toolClass: "B",

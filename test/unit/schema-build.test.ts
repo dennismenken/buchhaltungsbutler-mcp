@@ -25,6 +25,7 @@ function baseEntry(overrides: Partial<ToolEntry>): ToolEntry {
   return {
     name: "bb_beispiel",
     title: "Beispielwerkzeug",
+    group: "receipts",
     path: { literal: "/receipts/get" },
     effect: "read",
     toolClass: "R",

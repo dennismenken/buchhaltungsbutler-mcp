@@ -6,6 +6,10 @@
 // Texte, die ein Agent liest: description, title, Parameterbeschreibungen, Fehlertexte
 // und die instructions (Plan 4.9).
 
+import type { ToolGroup } from "./groups.js";
+
+export type { ToolGroup } from "./groups.js";
+
 /**
  * Der Pfad eines Endpunkts (Plan 4.6). Vier der 54 Endpunkte tragen im
  * Spezifikationspfad das Segment `id_by_customer`; live gemessen ist das ein
@@ -28,6 +32,7 @@ export type PathSpec =
 export interface ToolEntry {
   name: string; // bb_…, gleich dem Dateinamen ohne .ts
   title: string; // deutscher Anzeigename, höchstens 40 Zeichen (Abschnitt 3.6)
+  group: ToolGroup; // abschaltbare Werkzeuggruppe (N5); NIEMALS aus dem Namen abgeleitet
   path: PathSpec; // { literal } oder { template, params, specPath } (4.6)
   effect: "read" | "create" | "modify" | "delete"; // Wirkung nach grundlagen.md 7.3
   toolClass: "R" | "A" | "AR" | "M" | "D" | "B"; // treibt Annotationen, Retry, Schalter

@@ -5,6 +5,14 @@ Adressat ist ein Implementierungs-Agent, der ohne Rückfragen arbeiten soll.
 
 **Stand:** 2026-09-12. Alle externen Quellen wurden am 2026-09-12 abgerufen.
 
+**Nachtrag vom 2026-09-13 — der Name des Eintrags.** Jeder Block in diesem Dokument trägt den
+Eintragsnamen `bbutler`. Er lautete bis zum 2026-09-13 `buchhaltungsbutler` und wurde gekürzt,
+weil ein Wirt ihn vor jeden Werkzeugnamen hängt (`mcp__<eintrag>__<werkzeug>`) und die Messages
+API dort höchstens 64 Zeichen zulässt: `mcp__buchhaltungsbutler__bb_postings_create_for_transaction_batch`
+kam auf 65. Maßgeblich ist `SERVER_NAME` in `src/cli/clients/types.ts`; geprüft wird die Grenze
+in `test/registry/name-length.test.ts`. Die Blöcke hier sind entsprechend nachgezogen — nur die
+Kandidatenliste in 15.5 nicht, dort geht es um **Paket**namen und nicht um den Eintrag.
+
 ---
 
 ## Inhalt
@@ -53,7 +61,7 @@ Adressat ist ein Implementierungs-Agent, der ohne Rückfragen arbeiten soll.
 | `CONTINUE-MCP` | https://docs.continue.dev/customize/deep-dives/mcp | Offizielle Doku | 2026-09-12 |
 | `LMSTUDIO-MCP` | https://lmstudio.ai/docs/app/plugins/mcp und https://lmstudio.ai/docs/app/mcp | Offizielle Doku | 2026-09-12 |
 | `JAN-MCP` | https://www.jan.ai/docs/desktop/mcp und https://www.jan.ai/docs/desktop/integrations/mcp-servers | Offizielle Doku, nur über Suchtreffer ausgewertet | 2026-09-12 |
-| `NPM-REG` | Direkte HTTP-Abfragen von `https://registry.npmjs.org/<name>` für `buchhaltungsbutler-mcp`, `@dennismenken/buchhaltungsbutler-mcp`, `bb-mcp`, `bbutler-mcp`, `bbutler`, `buchhaltungsbutler`, `mcp-buchhaltungsbutler`, `buchhaltungsbutler-mcp-server`, `bb-buchhaltungsbutler` | Messung an der npm-Registry | 2026-09-12 |
+| `NPM-REG` | Direkte HTTP-Abfragen von `https://registry.npmjs.org/<name>` für `buchhaltungsbutler-mcp`, `@dennismenken/buchhaltungsbutler-mcp`, `bb-mcp`, `bbutler-mcp`, `bbutler`, `bbutler`, `mcp-buchhaltungsbutler`, `buchhaltungsbutler-mcp-server`, `bb-buchhaltungsbutler` | Messung an der npm-Registry | 2026-09-12 |
 | `WEB-CHECK` | HTTP-Statusabfragen von `https://github.com/dennismenken`, `https://github.com/dennismenken/buchhaltungsbutler-mcp` und `https://www.npmjs.com/~dennismenken` | Messung | 2026-09-12 |
 | `DOC-GRUNDLAGEN` | `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/api/grundlagen.md` | Projektinterne Doku | 2026-09-12 |
 | `LOCAL-NODE` | Eigene Messung: `node --version` = v22.23.2, `npm --version` = 10.9.8, Laufzeit von `npx --version` | Messung | 2026-09-12 |
@@ -134,7 +142,7 @@ claude mcp add \
   --env BB_API_CLIENT="$BB_API_CLIENT" \
   --env BB_API_SECRET="$BB_API_SECRET" \
   --env BB_API_KEY="$BB_API_KEY" \
-  --transport stdio --scope user buchhaltungsbutler \
+  --transport stdio --scope user bbutler \
   -- npx -y @dennismenken/buchhaltungsbutler-mcp
 ```
 
@@ -212,7 +220,7 @@ Er gilt als **Annahme**, die aus der Home-Verzeichnis-Konvention folgt.
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -259,9 +267,9 @@ projekt-, local- oder user-bezogenen Eintrags braucht deshalb einen Vorgabewert,
 
 ```bash
 claude mcp list                 # Liste mit Verbindungsstatus
-claude mcp get buchhaltungsbutler   # Einzelansicht inklusive Fehlerdetail
-claude mcp remove buchhaltungsbutler
-claude mcp remove buchhaltungsbutler --scope user   # gezielt aus einem Scope
+claude mcp get bbutler   # Einzelansicht inklusive Fehlerdetail
+claude mcp remove bbutler
+claude mcp remove bbutler --scope user   # gezielt aus einem Scope
 claude mcp reset-project-choices                    # Zustimmungen zu .mcp.json zurücksetzen
 ```
 
@@ -324,7 +332,7 @@ Inhalt für unseren Server:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -353,7 +361,7 @@ Fehlersuche, Protokolldateien:
 | macOS | `~/Library/Logs/Claude` |
 | Windows | `%APPDATA%\Claude\logs` |
 
-`mcp.log` enthält die allgemeinen Verbindungsmeldungen, `mcp-server-buchhaltungsbutler.log`
+`mcp.log` enthält die allgemeinen Verbindungsmeldungen, `mcp-server-bbutler.log`
 die Standardfehlerausgabe unseres Servers.
 
 ```bash
@@ -516,7 +524,7 @@ Relevante Optionen von `codex mcp add`:
 Aufruf für unseren Server:
 
 ```bash
-codex mcp add buchhaltungsbutler \
+codex mcp add bbutler \
   --env BB_API_CLIENT="$BB_API_CLIENT" \
   --env BB_API_SECRET="$BB_API_SECRET" \
   --env BB_API_KEY="$BB_API_KEY" \
@@ -527,8 +535,8 @@ Weitere Befehle, alle am Binary geprüft:
 
 ```bash
 codex mcp list             # optional --json
-codex mcp get buchhaltungsbutler   # optional --json
-codex mcp remove buchhaltungsbutler
+codex mcp get bbutler   # optional --json
+codex mcp remove bbutler
 codex mcp login <name>     # nur für OAuth-fähige HTTP-Server
 ```
 
@@ -563,14 +571,14 @@ Untertabellen `[mcp_servers.<name>.env]` und `[mcp_servers.<name>.http_headers]`
 Für unseren Server:
 
 ```toml
-[mcp_servers.buchhaltungsbutler]
+[mcp_servers.bbutler]
 command = "npx"
 args = ["-y", "@dennismenken/buchhaltungsbutler-mcp"]
 startup_timeout_sec = 30
 tool_timeout_sec = 60
 enabled = true
 
-[mcp_servers.buchhaltungsbutler.env]
+[mcp_servers.bbutler.env]
 BB_API_CLIENT = "PLATZHALTER_API_CLIENT"
 BB_API_SECRET = "PLATZHALTER_API_SECRET"
 BB_API_KEY = "PLATZHALTER_API_KEY"
@@ -591,7 +599,7 @@ Felder für stdio-Server laut `CODEX-MCP`:
 schreiben, werden nur die Namen genannt und die Werte aus der lokalen Umgebung gelesen.
 
 ```toml
-[mcp_servers.buchhaltungsbutler]
+[mcp_servers.bbutler]
 command = "npx"
 args = ["-y", "@dennismenken/buchhaltungsbutler-mcp"]
 env_vars = ["BB_API_CLIENT", "BB_API_SECRET", "BB_API_KEY"]
@@ -743,7 +751,7 @@ gehen und nicht an grok.
 Aufruf für unseren Server:
 
 ```bash
-grok mcp add buchhaltungsbutler \
+grok mcp add bbutler \
   -e BB_API_CLIENT="$BB_API_CLIENT" \
   -e BB_API_SECRET="$BB_API_SECRET" \
   -e BB_API_KEY="$BB_API_KEY" \
@@ -754,10 +762,10 @@ Weitere Unterbefehle, alle an der Hilfe geprüft:
 
 ```bash
 grok mcp list
-grok mcp remove buchhaltungsbutler
-grok mcp enable buchhaltungsbutler
-grok mcp disable buchhaltungsbutler
-grok mcp doctor buchhaltungsbutler   # Konfiguration und Erreichbarkeit prüfen
+grok mcp remove bbutler
+grok mcp enable bbutler
+grok mcp disable bbutler
+grok mcp doctor bbutler   # Konfiguration und Erreichbarkeit prüfen
 ```
 
 `grok mcp doctor` ist bemerkenswert: Kein anderer der hier behandelten Clients bringt eine
@@ -775,7 +783,7 @@ Der Windows-Pfad ist **Annahme**. Format, aus `XAI-MCP` und gegengeprüft an ein
 vorhandenen `.grok/config.toml`:
 
 ```toml
-[mcp_servers.buchhaltungsbutler]
+[mcp_servers.bbutler]
 command = "npx"
 args = ["-y", "@dennismenken/buchhaltungsbutler-mcp"]
 env = { BB_API_CLIENT = "${BB_API_CLIENT}", BB_API_SECRET = "${BB_API_SECRET}", BB_API_KEY = "${BB_API_KEY}" }
@@ -811,7 +819,7 @@ Konfiguration für unseren Server:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -836,7 +844,7 @@ Variablen:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -892,7 +900,7 @@ Kopierfehler zwischen VS Code und allen anderen Clients.
 ```json
 {
   "servers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -936,7 +944,7 @@ Eingabetypen: `promptString`, `pickString`, `command`.
 ### 9.3 Der Kommandozeilenbefehl
 
 ```bash
-code --add-mcp "{\"name\":\"buchhaltungsbutler\",\"command\":\"npx\",\"args\":[\"-y\",\"@dennismenken/buchhaltungsbutler-mcp\"]}"
+code --add-mcp "{\"name\":\"bbutler\",\"command\":\"npx\",\"args\":[\"-y\",\"@dennismenken/buchhaltungsbutler-mcp\"]}"
 ```
 
 Der Befehl schreibt in das Nutzerprofil. Zugangsdaten gehören nicht in diese
@@ -953,7 +961,7 @@ eine einzige Domain kontaktiert, ist das eine sinnvolle Empfehlung:
 ```json
 {
   "servers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -1000,7 +1008,7 @@ Konfigurationsdatei: `~/.codeium/windsurf/mcp_config.json`
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -1029,7 +1037,7 @@ und dort MCP Servers.
 ```json
 {
   "context_servers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -1059,7 +1067,7 @@ Quelle: `CLINE-MCP`.
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -1093,7 +1101,7 @@ name: BuchhaltungsButler mcpServer
 version: 0.0.1
 schema: v1
 mcpServers:
-  - name: buchhaltungsbutler
+  - name: bbutler
     type: stdio
     command: npx
     args:
@@ -1127,7 +1135,7 @@ Empfohlen wird der eingebaute Editor: Reiter "Program" in der rechten Seitenleis
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -1179,7 +1187,7 @@ Nenner und der Block, den wir in der README als Erstes zeigen.
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -1699,7 +1707,7 @@ werden nicht überschrieben, ohne dass ausdrücklich zugestimmt wurde.
 **Schritt 8, Abschluss.** Je Client eine Zeile, was zu tun ist, damit die Änderung wirkt:
 Claude Desktop vollständig beenden und neu starten, Cursor neu laden, VS Code den Server
 starten, Codex und Grok brauchen keinen Neustart. Dazu die passende Prüfzeile, etwa
-`claude mcp get buchhaltungsbutler` oder `grok mcp doctor buchhaltungsbutler`.
+`claude mcp get bbutler` oder `grok mcp doctor bbutler`.
 
 ### 14.3 Welche Clients der Assistent automatisch konfigurieren kann
 
@@ -1964,7 +1972,7 @@ claude mcp add \
   --env BB_API_CLIENT="DEIN_API_CLIENT" \
   --env BB_API_SECRET="DEIN_API_SECRET" \
   --env BB_API_KEY="DEIN_API_KEY" \
-  --transport stdio --scope user buchhaltungsbutler \
+  --transport stdio --scope user bbutler \
   -- npx -y @dennismenken/buchhaltungsbutler-mcp
 ```
 
@@ -1976,7 +1984,7 @@ enthält keine Zugangsdaten, sondern Verweise auf Umgebungsvariablen:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -1994,8 +2002,8 @@ Prüfen und wieder entfernen:
 
 ```bash
 claude mcp list
-claude mcp get buchhaltungsbutler
-claude mcp remove buchhaltungsbutler --scope user
+claude mcp get bbutler
+claude mcp remove bbutler --scope user
 ```
 
 In einer laufenden Sitzung zeigt `/mcp` den Status und alle Werkzeuge.
@@ -2015,7 +2023,7 @@ Reiter Developer, dann "Edit Config". Die Datei liegt hier:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -2044,7 +2052,7 @@ dann in einer eigenen Datei mit eingeschränkten Rechten ab.
 Beide teilen sich dieselbe Konfiguration. Einmal eintragen genügt:
 
 ```bash
-codex mcp add buchhaltungsbutler \
+codex mcp add bbutler \
   --env BB_API_CLIENT="DEIN_API_CLIENT" \
   --env BB_API_SECRET="DEIN_API_SECRET" \
   --env BB_API_KEY="DEIN_API_KEY" \
@@ -2054,13 +2062,13 @@ codex mcp add buchhaltungsbutler \
 Oder von Hand in `~/.codex/config.toml`:
 
 ```toml
-[mcp_servers.buchhaltungsbutler]
+[mcp_servers.bbutler]
 command = "npx"
 args = ["-y", "@dennismenken/buchhaltungsbutler-mcp"]
 startup_timeout_sec = 30
 default_tools_approval_mode = "writes"
 
-[mcp_servers.buchhaltungsbutler.env]
+[mcp_servers.bbutler.env]
 BB_API_CLIENT = "DEIN_API_CLIENT"
 BB_API_SECRET = "DEIN_API_SECRET"
 BB_API_KEY = "DEIN_API_KEY"
@@ -2074,14 +2082,14 @@ Wenn du die Zugangsdaten nicht in die Datei schreiben willst, setze sie in deine
 nenne in der Konfiguration nur die Namen:
 
 ```toml
-[mcp_servers.buchhaltungsbutler]
+[mcp_servers.bbutler]
 command = "npx"
 args = ["-y", "@dennismenken/buchhaltungsbutler-mcp"]
 env_vars = ["BB_API_CLIENT", "BB_API_SECRET", "BB_API_KEY"]
 ```
 
-Prüfen: `codex mcp list`, `codex mcp get buchhaltungsbutler`. Entfernen:
-`codex mcp remove buchhaltungsbutler`. In der Oberfläche zeigt `/mcp` die aktiven Server.
+Prüfen: `codex mcp list`, `codex mcp get bbutler`. Entfernen:
+`codex mcp remove bbutler`. In der Oberfläche zeigt `/mcp` die aktiven Server.
 ````
 
 ### 17.6 ChatGPT im Browser
@@ -2110,7 +2118,7 @@ Zwei Alternativen:
 ### Grok Build (xAI)
 
 ```bash
-grok mcp add buchhaltungsbutler \
+grok mcp add bbutler \
   -e BB_API_CLIENT="DEIN_API_CLIENT" \
   -e BB_API_SECRET="DEIN_API_SECRET" \
   -e BB_API_KEY="DEIN_API_KEY" \
@@ -2123,7 +2131,7 @@ Mit `--scope project` landet der Eintrag in `./.grok/config.toml` statt in
 Oder von Hand in `~/.grok/config.toml`:
 
 ```toml
-[mcp_servers.buchhaltungsbutler]
+[mcp_servers.bbutler]
 command = "npx"
 args = ["-y", "@dennismenken/buchhaltungsbutler-mcp"]
 env = { BB_API_CLIENT = "${BB_API_CLIENT}", BB_API_SECRET = "${BB_API_SECRET}", BB_API_KEY = "${BB_API_KEY}" }
@@ -2131,8 +2139,8 @@ startup_timeout_sec = 30
 enabled = true
 ```
 
-Prüfen: `grok mcp list` und `grok mcp doctor buchhaltungsbutler`. Entfernen:
-`grok mcp remove buchhaltungsbutler`.
+Prüfen: `grok mcp list` und `grok mcp doctor bbutler`. Entfernen:
+`grok mcp remove bbutler`.
 ````
 
 ### 17.8 Cursor
@@ -2146,7 +2154,7 @@ Für ein einzelnes Projekt legst du `.cursor/mcp.json` an, für alle Projekte
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -2168,7 +2176,7 @@ Alternativ liest Cursor die Werte aus einer Datei:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -2193,7 +2201,7 @@ nicht `mcpServers`:
 ```json
 {
   "servers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
@@ -2219,7 +2227,7 @@ Für dein Nutzerprofil statt eines Projekts: Befehlspalette, **MCP: Open User Co
 Oder über die Kommandozeile, ohne Zugangsdaten:
 
 ```bash
-code --add-mcp "{\"name\":\"buchhaltungsbutler\",\"command\":\"npx\",\"args\":[\"-y\",\"@dennismenken/buchhaltungsbutler-mcp\"]}"
+code --add-mcp "{\"name\":\"bbutler\",\"command\":\"npx\",\"args\":[\"-y\",\"@dennismenken/buchhaltungsbutler-mcp\"]}"
 ```
 
 Status und Protokolle: Befehlspalette, **MCP: List Servers**, Server wählen, **Show Output**.
@@ -2236,7 +2244,7 @@ rechts im Cascade-Bereich.
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -2260,7 +2268,7 @@ Settings, AI, MCP Servers, oder die Aktion `agent: open settings`. In der `setti
 ```json
 {
   "context_servers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -2287,7 +2295,7 @@ Schaltfläche "Configure MCP Servers". In der CLI-Variante: `~/.cline/mcp.json`.
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -2312,14 +2320,14 @@ Zahlungen und Buchungssätze an; die sollten immer bestätigt werden.
 ### Continue
 
 Lege im Projekt den Ordner `.continue/mcpServers/` an und darin die Datei
-`buchhaltungsbutler.yaml`:
+`bbutler.yaml`:
 
 ```yaml
 name: BuchhaltungsButler mcpServer
 version: 0.0.1
 schema: v1
 mcpServers:
-  - name: buchhaltungsbutler
+  - name: bbutler
     type: stdio
     command: npx
     args:
@@ -2346,7 +2354,7 @@ Linux) beziehungsweise `%USERPROFILE%/.lmstudio/mcp.json` (Windows).
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {
@@ -2388,7 +2396,7 @@ Die meisten MCP-Clients lesen dieses Format:
 ```json
 {
   "mcpServers": {
-    "buchhaltungsbutler": {
+    "bbutler": {
       "command": "npx",
       "args": ["-y", "@dennismenken/buchhaltungsbutler-mcp"],
       "env": {

@@ -22,6 +22,8 @@ import { CREDENTIAL_VARS } from "../../config/env.js";
 import {
   entryEnv,
   renderJson,
+  LEGACY_ENTRY_NOTE,
+  SERVER_NAME,
   type ClientAdapter,
   type ClientHost,
   type ClientPlan,
@@ -94,7 +96,7 @@ function createPrintOnlyAdapter(spec: PrintOnlySpec): ClientAdapter {
         pathNote: target === null ? spec.pathNote : `${spec.pathNote} Vermuteter Ort: ${target}.`,
         format: spec.format,
         block: spec.render(plan, env),
-        notes: [...notes, ...spec.standingNotes],
+        notes: [...notes, ...spec.standingNotes, LEGACY_ENTRY_NOTE],
       };
     },
 
@@ -190,7 +192,7 @@ export const continueAdapter: ClientAdapter = createPrintOnlyAdapter({
   // Continue liest Geheimnisse als ${{ secrets.NAME }}; das ist keine Umgebungsvariable,
   // sondern der eigene Geheimnisspeicher des Clients.
   envReference: (name) => `\${{ secrets.${name} }}`,
-  pathHint: (host) => path.join(host.cwd, ".continue", "mcpServers", "buchhaltungsbutler.yaml"),
+  pathHint: (host) => path.join(host.cwd, ".continue", "mcpServers", `${SERVER_NAME}.yaml`),
   pathNote:
     "Der Block gehört in eine eigene YAML-Datei unter .continue/mcpServers/ auf oberster Ebene " +
     "des Arbeitsbereichs, oder in den Abschnitt mcpServers der config.yaml.",

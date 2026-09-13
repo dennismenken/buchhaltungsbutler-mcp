@@ -75,6 +75,7 @@ const CREDIT_DESCRIPTION =
 export const bb_postings_create_free: ToolEntry = {
   name: "bb_postings_create_free",
   title: "Freie Buchung anlegen",
+  group: "postings",
   path: { literal: "/postings/add/free" },
   effect: "create",
   toolClass: "B",

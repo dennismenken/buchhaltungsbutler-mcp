@@ -19,11 +19,11 @@ das: Sie kippt nicht an fünf Prozent Abweichung.
 
 | Größe | Zeichen | Token | Zeichen je Token |
 | --- | --- | --- | --- |
-| 54 Werkzeugdefinitionen, wie ausgeliefert | 197.528 | 48.305 | 4,09 |
-| instructions, Auslieferungszustand | 5.092 | 1.259 | 4,04 |
-| instructions, alle Schalter an | 5.760 | 1.419 | 4,06 |
-| Was der Client beim Verbinden sieht | 202.620 | 49.564 | 4,09 |
-| 54 Definitionen in der Rechenweise von P11 | 197.528 | 48.305 | 4,09 |
+| 54 Werkzeugdefinitionen, wie ausgeliefert | 197.802 | 48.368 | 4,09 |
+| instructions, Auslieferungszustand | 5.694 | 1.407 | 4,05 |
+| instructions, alle Schalter an | 7.452 | 1.840 | 4,05 |
+| Was der Client beim Verbinden sieht | 203.496 | 49.775 | 4,09 |
+| 54 Definitionen in der Rechenweise von P11 | 197.802 | 48.368 | 4,09 |
 
 Die Zeile „wie ausgeliefert" misst genau das, was `server/register-tools.ts` an `registerTool`
 übergibt: Name, Titel, Beschreibung, Annotationen, das JSON Schema aus `schema/build.ts` und das
@@ -40,7 +40,7 @@ Gegenstand: Beide Zeilen der Tabelle stimmen auf das Token überein.
 Annahme gekennzeichnet. Die Annahme lag zu niedrig: Eine Werkzeugdefinition ist zum größeren Teil
 JSON-Struktur mit englischen Feldnamen, und die zerfällt in wenige, lange Token; der deutsche
 Fließtext drumherum kommt in `o200k_base` ebenfalls auf rund vier Zeichen je Token, nämlich auf
-4,04 in den instructions, die fast nur Fließtext sind.
+4,05 in den instructions, die fast nur Fließtext sind.
 
 In `src/registry/budget.ts` steht `CHARS_PER_TOKEN` deshalb jetzt auf **4** statt auf 3,2. Der
 Wert ist gegenüber der Messung **abgerundet**, und zwar mit Absicht: Die Konstante wird zur
@@ -55,12 +55,12 @@ eigenen Gegenstand eher zu groß ist — auch deshalb die Abrundung.
 
 ## 4. Das Budget
 
-Das Budget der Werkzeugdefinitionen ist eingehalten: 48.305 von 49.000 Token.
+Das Budget der Werkzeugdefinitionen ist eingehalten: 48.368 von 49.000 Token.
 
-In der Rechenweise von P11 sind es 48.305 Token. P11 bricht seit der Entscheidung vom 2026-09-13
-wieder hart an der Grenze von 49.000 Token ab: noch 695 Token Luft, der Testlauf ist grün.
+In der Rechenweise von P11 sind es 48.368 Token. P11 bricht seit der Entscheidung vom 2026-09-13
+wieder hart an der Grenze von 49.000 Token ab: noch 632 Token Luft, der Testlauf ist grün.
 
-Das Budget der instructions ist eingehalten: 1.419 von 2.100 Token, gemessen im größten Zustand.
+Das Budget der instructions ist eingehalten: 1.840 von 2.100 Token, gemessen im größten Zustand.
 
 **Woher die Grenze von 49.000 Token kommt.** Plan 4.10 hatte 32.000 vorgerechnet, und dieser Wert
 war gerissen: Die Messung vom 2026-09-12 kam auf 48.305 Token, ein Überschuss von 16.305. Die
@@ -82,15 +82,51 @@ sitzen. Sie ersetzt die Prüfung nicht: Aus einer Zeichenzahl folgt, welcher Pos
 ausgefallen ist als angesetzt, aber nicht, welche der sechs Sparmaßnahmen dort fehlt. Das ist an
 den Registereinträgen zu prüfen und gehört nicht in dieses Skript.
 
+## 4a. Die Werkzeugdefinitionen je Gruppe
+
+Der Gruppenschalter `BB_MCP_TOOL_GROUPS` (N5) schaltet Werkzeuge gruppenweise ab. Diese Tabelle
+sagt, was eine Gruppe kostet und was ihr Abschalten spart. Jede Definition ist einzeln gemessen
+und danach addiert; die Summe einer Teilmenge ist damit exakt und keine Hochrechnung. Die Spalte
+„eingecheckt" ist die Zahl in `src/registry/groups.ts`, aus der Startmeldung, `doctor` und
+`print-config` ihre Angabe ohne Tokenizer bilden.
+
+Die elf Endpunktgruppen sind über `TOOL_ENTRIES` gemessen, die Gruppe `bundles` über
+`BUNDLE_ENTRIES` und `bundleDefinitionJson` — die Bündel tragen einen eigenen Eintragstyp und
+stehen nicht im erzeugten Registerindex. Ihre Zeile steht am Ende und trägt in der Spalte „Anteil"
+einen Strich: Sie zählt nicht zu den 54 Endpunktwerkzeugen und damit nicht zu deren budgetierter
+Summe, sondern hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` ihre eigene Grenze.
+
+| Gruppe | Werkzeuge | Zeichen | Token | eingecheckt | Anteil |
+| --- | --- | --- | --- | --- | --- |
+| `postings` | 12 | 49.409 | 12.213 | 12.213 | 25,25 % |
+| `receipts` | 8 | 34.709 | 8.529 | 8.529 | 17,63 % |
+| `transactions` | 8 | 26.869 | 6.661 | 6.661 | 13,77 % |
+| `invoices` | 3 | 23.253 | 5.766 | 5.766 | 11,92 % |
+| `creditors` | 4 | 13.789 | 3.341 | 3.341 | 6,91 % |
+| `reports` | 5 | 13.046 | 3.203 | 3.203 | 6,62 % |
+| `debtors` | 4 | 13.176 | 3.198 | 3.198 | 6,61 % |
+| `postingaccounts` | 3 | 8.060 | 1.877 | 1.877 | 3,88 % |
+| `cost_locations` | 4 | 7.951 | 1.839 | 1.839 | 3,80 % |
+| `payment_accounts` | 2 | 4.921 | 1.142 | 1.142 | 2,36 % |
+| `comments` | 1 | 2.619 | 599 | 599 | 1,24 % |
+| `bundles` | 5 | 28.165 | 6.852 | 6.852 | — |
+| **Summe der elf Endpunktgruppen** | 54 | 197.802 | 48.368 | | 100,00 % |
+
+Messung und eingecheckte Tabelle stimmen in jeder Gruppe mit Werkzeugen überein.
+
+Das Budget der Bündelgruppe (`BUNDLE_DEFINITION_TOKEN_BUDGET`) ist eingehalten: 6.852 von 6.950
+Token. Die Grenze steht seit dem 2026-09-13 auf dem gemessenen Stand zuzüglich einer kleinen
+Marge. Sinkt die Messung dauerhaft, wird sie nachgezogen; angehoben wird sie nicht.
+
 ## 5. Die Rechnung aus Plan 4.10, nachgeprüft
 
 | Posten | angesetzt in 4.10 (Zeichen) | gemessen (Zeichen) | Abweichung |
 | --- | --- | --- | --- |
-| Werkzeugbeschreibungen nach Stufenbudget (S2) | 39.120 | 32.654 | −6.466 |
+| Werkzeugbeschreibungen nach Stufenbudget (S2) | 39.120 | 32.928 | −6.192 |
 | Parameterbeschreibungen, reiner Text (S1, S3, S4, S5) | 38.400 | 67.161 | +28.761 |
 | `outputSchema` ohne Feldbeschreibungen (S6) | 14.040 | 40.030 | +25.990 |
 | Name, Titel, Annotationen, Schemarümpfe | 5.238 | 57.683 | +52.445 |
-| Summe | 96.798 | 197.528 | +100.730 |
+| Summe | 96.798 | 197.802 | +101.004 |
 
 Die Spalte „angesetzt" ist die Endabrechnung aus Plan 4.10 nach den sechs Sparmaßnahmen. Gemessen
 wird in derselben Abgrenzung wie dort: „Parameterbeschreibungen" sind die Summe aller
@@ -121,7 +157,7 @@ S5 zu Buche.
 | `bb_postings_search` | 1 | 7.737 | 1.937 |
 | `bb_invoices_create` | 1 | 7.640 | 1.896 |
 | `bb_invoices_create_draft` | 1 | 7.120 | 1.751 |
-| `bb_receipts_search` | 1 | 6.660 | 1.695 |
+| `bb_receipts_search` | 1 | 6.817 | 1.733 |
 | `bb_receipts_upload` | 1 | 6.441 | 1.597 |
 | `bb_receipts_create` | 2 | 6.233 | 1.544 |
 | `bb_postings_create_for_receipt_batch` | 1 | 5.821 | 1.464 |
