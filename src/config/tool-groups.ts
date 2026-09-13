@@ -1,6 +1,5 @@
 /**
- * Der Gruppenschalter: `BB_MCP_TOOL_GROUPS` und `BB_MCP_TOOL_GROUPS_EXCLUDE` (Entscheidung N5,
- * `docs/entwicklung/buendelwerkzeuge.md` Abschnitt 7).
+ * Der Gruppenschalter: `BB_MCP_TOOL_GROUPS` und `BB_MCP_TOOL_GROUPS_EXCLUDE`.
  *
  * Zwei Variablen statt einer, weil beide typischen Fälle ohne Aufzählung gehen sollen: „nur
  * diese drei" und „alles außer `invoices`".
@@ -126,7 +125,7 @@ export interface ResolveToolGroupsInput {
  * Reihenfolge: zerlegen und prüfen, dann Widerspruch, dann wirkungsloser Ausschluss, dann die
  * leere Menge. Aktiv ist die Positivliste, sonst alle zwölf, jeweils abzüglich der Negativliste.
  *
- * @throws ConfigError in den vier Startfehlern aus Abschnitt 7 der Bauvorlage.
+ * @throws ConfigError in den vier Startfehlern des Gruppenschalters.
  */
 export function resolveToolGroups(input: ResolveToolGroupsInput = {}): ToolGroupSelection {
   const include =
@@ -250,9 +249,9 @@ export function toolGroupReportLines(
       continue;
     }
     // Die abgeschalteten Gruppen tragen ihren deutschen Anzeigenamen mit. Der Gruppenname ist
-    // das, was getippt wird; das Label ist das, was ein Buchhalter wiedererkennt, und N2 nennt
-    // ihn als Zielgruppe. Die aktiven Gruppen stehen dagegen nackt da: Sie sollen zum
-    // Abschreiben in die Variable taugen.
+    // das, was getippt wird; das Label ist das, was ein Buchhalter wiedererkennt, und der
+    // Buchhalter ist die Zielgruppe dieses Servers. Die aktiven Gruppen stehen dagegen nackt
+    // da: Sie sollen zum Abschreiben in die Variable taugen.
     const named = off.map((group) => `${group} (${TOOL_GROUPS[group].label})`).join(", ");
     lines.push(
       variable === TOOL_GROUPS_VAR
@@ -283,7 +282,8 @@ export function toolGroupReportLines(
 }
 
 /**
- * Die Zeilen über die Werkzeuggruppen für die `instructions` (N5, Rückmeldung Stelle 3).
+ * Die Zeilen über die Werkzeuggruppen für die `instructions` (Rückmeldung zum Gruppenschalter,
+ * Stelle 3 von 3 neben Startmeldung und `doctor`).
  *
  * Ein Agent, der ein Werkzeug nicht findet, baut Umwege oder behauptet eine fehlende Fähigkeit
  * der API. Deshalb stehen die aktiven Gruppen immer namentlich im Servertext, und bei

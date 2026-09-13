@@ -2,7 +2,7 @@
  * Der einzige erlaubte Ausgabeweg des Servers neben dem MCP-Protokoll.
  *
  * stdout gehört der Protokollverbindung: Eine einzige fremde Zeile dort zerstört die
- * JSON-RPC-Sitzung (Plan 1.3, Risiko R8). Alles, was der Server mitzuteilen hat, geht
+ * JSON-RPC-Sitzung (Risiko R8). Alles, was der Server mitzuteilen hat, geht
  * deshalb über dieses Modul nach stderr, und jede Zeile läuft vorher durch die Schwärzung.
  */
 
@@ -10,7 +10,7 @@ import fs from "node:fs";
 
 import { redact } from "../config/redact.js";
 
-/** Protokollstufen aus 6.2, absteigende Dringlichkeit. */
+/** Protokollstufen, absteigende Dringlichkeit. */
 export const LOG_LEVELS = ["error", "warn", "info", "debug"] as const;
 
 export type LogLevel = (typeof LOG_LEVELS)[number];
@@ -45,7 +45,7 @@ export function isLevelEnabled(level: LogLevel): boolean {
 
 /**
  * Schreibt einen Block unverändert nach stderr, ohne Stufenpräfix, aber geschwärzt.
- * Gedacht für die mehrzeilige Startmeldung aus 6.5 und für Abbruchtexte.
+ * Gedacht für die mehrzeilige Startmeldung und für Abbruchtexte.
  */
 export function writeStderrBlock(text: string): void {
   const redacted = redact(text);
@@ -133,7 +133,7 @@ export function logDebug(message: string): void {
 
 /**
  * Gibt eine Meldung höchstens einmal je Prozesslauf aus. Für wiederkehrende Befunde, die
- * beim zweiten Mal nur noch Lärm sind — etwa ein unbekanntes Antwortfeld (7.3).
+ * beim zweiten Mal nur noch Lärm sind — etwa ein unbekanntes Antwortfeld.
  */
 export function logOnce(key: string, level: LogLevel, message: string): void {
   if (seenOnce.has(key)) {

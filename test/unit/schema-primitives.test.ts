@@ -105,7 +105,7 @@ describe("Betrag", () => {
   });
 });
 
-describe("Markierung der Betragsfelder (Guard 5, Plan 4.5)", () => {
+describe("Markierung der Betragsfelder (Guard 5)", () => {
   it("markiert jedes von amountValue erzeugte Fragment", () => {
     expect(isAmountSchema(amountValue("Bruttobetrag"))).toBe(true);
     expect(schemaKind(amountValue("Bruttobetrag"))).toBe("amount");
@@ -181,7 +181,7 @@ describe("das eine strikte Objekt", () => {
     expect(schema.safeParse({ a: "x", b: "y" }).success).toBe(false);
   });
 
-  // Die Regel aus Plan 11.2 (AP05) lautet: Es gibt genau einen Ort, der
+  // Die Regel lautet: Es gibt genau einen Ort, der
   // additionalProperties: false setzt. Sie wird hier geprüft und nicht bloß verabredet.
   it("ist der einzige Aufruf von .strict() in der ganzen Schemaschicht", () => {
     const directory = path.join(import.meta.dirname, "..", "..", "src", "schema");

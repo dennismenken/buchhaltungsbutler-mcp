@@ -10,7 +10,7 @@ import { runCli } from "../../src/cli/run.js";
 import { resetTestConfig, TEST_BASE_URL } from "../helpers/mock-api.js";
 
 // Die Weiche aus `run.ts` und die beiden Unterbefehle, die nur mit Dateien und Ausgabe
-// arbeiten: `print-config` und `uninstall` (Plan 8.1).
+// arbeiten: `print-config` und `uninstall`.
 
 let root: string;
 let terminal: ScriptedTerminal;

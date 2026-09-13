@@ -1,4 +1,4 @@
-// Positionsliste statt paralleler Arrays (Plan 4.8, Sparmaßnahme S5, Streitfrage S11).
+// Positionsliste statt paralleler Arrays (Sparmaßnahme S5 in docs/entwicklung/tokenbudget.md).
 //
 // Fünf Endpunkte erwarten zusammengehörige Werte als mehrere gleich lange Arrays auf
 // oberster Ebene, zwei weitere je Stapelelement. Das Werkzeug nimmt stattdessen **eine**
@@ -7,10 +7,10 @@
 // wirkt je Position, Fehler sind positionsgenau meldbar, und die Definition wird kleiner.
 //
 // Dass dies eine Umformung gegenüber der API ist, steht in jeder betroffenen
-// Werkzeugbeschreibung wörtlich (Plan 4.8); {@link declarationSentence} liefert den Satz,
+// Werkzeugbeschreibung wörtlich; {@link declarationSentence} liefert den Satz,
 // damit er nicht siebenmal neu formuliert wird.
 //
-// Die Umformung selbst ruft `src/mapping/parallel-arrays.ts` (AP08) auf. Sie steht hier und
+// Die Umformung selbst ruft `src/mapping/parallel-arrays.ts` auf. Sie steht hier und
 // nicht dort, weil Schema und Umformung dieselbe Spaltenliste brauchen: Eine zweite Liste
 // wäre die Stelle, an der die Längeninvariante später doch wieder auseinanderfällt.
 
@@ -29,7 +29,7 @@ import { costLocation, idByCustomer, postingAccountNumber, vatKey } from "./voca
 export const API_MAX_BATCH = 50;
 
 /**
- * Die wirksame Mengengrenze `min(50, BB_MCP_MAX_BATCH)` (Plan 4.7 Q4, 4.8, 6.2).
+ * Die wirksame Mengengrenze `min(50, BB_MCP_MAX_BATCH)`.
  *
  * Sie gilt für **beide** Arten von Mengenfeld: für die acht Stapelbehälter und für die
  * Positionslisten, auf oberster Ebene wie je Stapelelement. `BB_MCP_MAX_BATCH` ist eine
@@ -39,10 +39,10 @@ export const API_MAX_BATCH = 50;
  * Die Herkunft der 50 ist je Art verschieden, und das wird hier nicht verwischt: Bei den
  * beiden genannten Stapelendpunkten nennt die Spezifikation sie, bei den übrigen sechs ist
  * sie **nicht verifiziert** und defensiv übernommen, und bei den Positionslisten ist sie
- * überhaupt keine API-Regel, sondern unsere eigene Mengengrenze (Plan 14.2).
+ * überhaupt keine API-Regel, sondern unsere eigene Mengengrenze.
  *
  * Ohne `override` wird die eingefrorene Konfiguration gelesen. Sie ist beim Bau des Schemas
- * bereits aufgelöst (Plan 6.4 Punkt 7); ist sie es nicht, wirft `getConfig()`. Ein
+ * bereits aufgelöst; ist sie es nicht, wirft `getConfig()`. Ein
  * stillschweigender Rückfall auf 50 wäre schlimmer: Er machte aus einer falschen
  * Startreihenfolge eine unbemerkt abgeschaltete Schutzschicht.
  *
@@ -70,8 +70,8 @@ export type ParallelArrayMapping = readonly ParallelArrayColumn[];
 /**
  * Die sechs Spalten der Buchungspositionen von `/postings/add/receipt` (Werkzeug 21).
  *
- * Die Feldnamen des Positionsobjekts sind die Einzahlformen aus dem Musterschema in
- * Plan 4.8; die `apiName`-Spalte trägt die Mehrzahlformen der Spezifikation.
+ * Die Feldnamen des Positionsobjekts sind die Einzahlformen des Musterschemas; die
+ * `apiName`-Spalte trägt die Mehrzahlformen der Spezifikation.
  */
 export const POSTINGS_RECEIPT_COLUMNS: ParallelArrayMapping = Object.freeze([
   { field: "postingaccount", apiName: "postingaccounts", required: true },
@@ -100,8 +100,8 @@ export const POSTINGS_TRANSACTION_COLUMNS: ParallelArrayMapping = Object.freeze(
  * (Werkzeug 22, Definition `ReceiptPostings`).
  *
  * Der einzige Unterschied zu {@link POSTINGS_RECEIPT_COLUMNS} ist die Schreibweise
- * `postingstexts` mit eingeschobenem `s`. Das ist der benannte Spezifikationsfehler aus
- * Plan 0.5: Die Elementdefinition trägt `postingstexts`, der Einzelendpunkt
+ * `postingstexts` mit eingeschobenem `s`. Das ist ein benannter Spezifikationsfehler: Die
+ * Elementdefinition trägt `postingstexts`, der Einzelendpunkt
  * `postingtexts`. Er steht so in `SPEC_BUGS` und wird hier nicht stillschweigend geglättet,
  * weil der Aufruf sonst am falschen Feldnamen scheiterte.
  */
@@ -161,8 +161,8 @@ export const EINVOICE_ITEM_COLUMNS: ParallelArrayMapping = Object.freeze([
 // --- Der Deklarationssatz ------------------------------------------------------------
 
 /**
- * Der Satz, mit dem jede betroffene Werkzeugbeschreibung die Umformung deklariert
- * (Plan 4.8). Damit ist sie kein verborgenes Verhalten im Sinne von E1.
+ * Der Satz, mit dem jede betroffene Werkzeugbeschreibung die Umformung deklariert.
+ * Damit ist die Umformung kein verborgenes Verhalten.
  */
 export function declarationSentence(mapping: ParallelArrayMapping): string {
   const names = mapping.map((column) => column.apiName).join(", ");
@@ -214,14 +214,14 @@ export const EINVOICE_TAX_TYPES = ["S", "Z", "AE", "K", "G", "E"] as const;
  * Die Spezifikation schreibt an `item_tax_amount` wörtlich „Only required if corresponding
  * item_tax_type = 'S' (VAT)“ und führt das Feld zugleich als `required: true`. Die beiden
  * Angaben widersprechen sich; Q8 löst den Widerspruch auf der sicheren Seite auf, indem es
- * den Satz genau dort verlangt, wo die Steuerart ihn braucht (Plan 4.7 Q8).
+ * den Satz genau dort verlangt, wo die Steuerart ihn braucht.
  */
 export const EINVOICE_TAX_TYPE_WITH_AMOUNT = "S";
 
 // --- Positionsobjekte ----------------------------------------------------------------
 
 /**
- * Ein Buchungssatz als Positionsobjekt (Plan 4.8).
+ * Ein Buchungssatz als Positionsobjekt.
  *
  * @param withOpenItem `true` an den Zahlungsvarianten (Werkzeuge 23 und 24): Dort kommt
  *   die Zuordnung offener Posten je Position hinzu. `null` bedeutet dort ausdrücklich

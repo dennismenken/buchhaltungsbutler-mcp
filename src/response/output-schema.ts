@@ -1,16 +1,17 @@
-// Das `outputSchema` eines Werkzeugs, erzeugt aus dem Antwortvertrag (Plan 7.1).
+// Das `outputSchema` eines Werkzeugs, erzeugt aus dem Antwortvertrag.
 //
-// **Gesetzt bei allen 54 Werkzeugen, aber niemals geschlossen** (Streitfrage S18). Jedes
-// Ausgabeschema trägt `additionalProperties: true`, und die Pflichtfelder beschränken sich auf
-// `success` und den Datenbehälter.
+// **Gesetzt bei allen 54 Werkzeugen, aber niemals geschlossen.** Jedes Ausgabeschema trägt
+// `additionalProperties: true`, und die Pflichtfelder beschränken sich auf `success` und den
+// Datenbehälter. Diese Zusicherung ist hier begründet; andere Stellen verweisen auf sie.
 //
-// Die Begründung ist gemessen (Plan 0.3 Befund L4): `/receipts/get` liefert `amount_paid` und
+// Die Begründung ist gemessen: `/receipts/get` liefert `amount_paid` und
 // `amount_paid_fixed`, die in der Spezifikation nicht stehen. Ein geschlossenes Ausgabeschema
 // ließe beim nächsten Feld, das BuchhaltungsButler ergänzt, jeden Aufruf scheitern — und zwar
 // bei allen Nutzern gleichzeitig. Das ist der Unterschied zwischen „das Projekt braucht ein
 // Update" und „das Projekt ist kaputt, bis jemand eines macht".
 //
-// **Feldbeschreibungen entfallen** (Sparmaßnahme S6 aus Plan 4.10); Feldnamen und Typen
+// **Feldbeschreibungen entfallen** (Sparmaßnahme S6 in docs/entwicklung/tokenbudget.md);
+// Feldnamen und Typen
 // genügen. Das Schema beschreibt genau das, was `response/build.ts` in `structuredContent`
 // legt — sonst wäre es keine Zusage, sondern eine Zierde: Ein Client, der validiert, müsste
 // sonst jede Antwort verwerfen.
@@ -25,10 +26,11 @@ export const LIST_CONTAINER = "items";
 export const OBJECT_CONTAINER = "data";
 
 /**
- * Der JSON-Schema-Typ eines Vertragsfeldes **nach** der Normalisierung aus Plan 7.4.
+ * Der JSON-Schema-Typ eines Vertragsfeldes **nach** der Normalisierung.
  *
  * Jeder Typ ist zusätzlich `null`: Gemessen kommen nicht gesetzte Felder durchgehend als
- * JSON-`null` (Befund L3), und `null` wird weder weggelassen noch zu `""` gemacht. Ein
+ * JSON-`null` (Befund L3 in docs/api/live-befunde.md), und `null` wird weder weggelassen
+ * noch zu `""` gemacht. Ein
  * Schema, das das verschwiege, würde bei der ersten leeren Zelle fehlschlagen.
  */
 function jsonTypeOf(type: ContractFieldType): unknown {
@@ -37,10 +39,11 @@ function jsonTypeOf(type: ContractFieldType): unknown {
       return ["number", "null"];
     case "boolean":
     case "bool-string":
-      // "0"/"1" wird zu echtem Boolean normalisiert (Plan 7.4).
+      // "0"/"1" wird zu echtem Boolean normalisiert.
       return ["boolean", "null"];
     default:
-      // Auch ein Betrag bleibt String: Es entsteht niemals ein number-Betragsfeld (S9).
+      // Auch ein Betrag bleibt String: Es entsteht niemals ein number-Betragsfeld
+      // (Umwandlungsregel 1 im Kopf von src/mapping/coerce.ts).
       return ["string", "null"];
   }
 }
@@ -51,12 +54,12 @@ export function recordProperties(entry: ToolEntry): Record<string, unknown> {
   for (const [name, type] of Object.entries(entry.responseContract.fields)) {
     properties[name] = { type: jsonTypeOf(type) };
     if (type === "amount-string") {
-      // Die verlustfreie Ganzzahlform des Betrages (Plan 7.4).
+      // Die verlustfreie Ganzzahlform des Betrages.
       properties[centsFieldName(name)] = { type: "integer" };
     }
     const label = ACCOUNT_LABEL_FIELDS[name];
     if (label !== undefined) {
-      // Wird nur ergänzt, wenn der Kontenrahmen im Stammdatenspeicher liegt (Plan 7.4).
+      // Wird nur ergänzt, wenn der Kontenrahmen im Stammdatenspeicher liegt.
       properties[label] = { type: "string" };
     }
   }
@@ -103,7 +106,7 @@ export function buildOutputSchema(entry: ToolEntry): Record<string, unknown> {
       properties.rows_returned = { type: "integer" };
       properties.limit_used = { type: ["integer", "null"] };
       properties.offset_used = { type: "integer" };
-      // „wahrscheinlich mehr", niemals eine Gesamttrefferzahl (Plan 7.5).
+      // „wahrscheinlich mehr", niemals eine Gesamttrefferzahl.
       properties.more_possible = { type: "boolean" };
       properties[LIST_CONTAINER] = { type: "array", items: record };
       required.push(LIST_CONTAINER);
@@ -116,14 +119,14 @@ export function buildOutputSchema(entry: ToolEntry): Record<string, unknown> {
     }
     case "ack": {
       // Eine Quittung trägt keine Nutzdaten; kommt doch etwas, steht es unter data und ist
-      // durch additionalProperties gedeckt (Plan 5.5).
+      // durch additionalProperties gedeckt.
       properties[OBJECT_CONTAINER] = { type: ["object", "array", "string", "null"] };
       break;
     }
   }
 
   if (entry.effect !== "read") {
-    // Der aufgelöste Datensatz und der Weg zurück (Plan 7.1, Zeile „Schreiben"; 7.6).
+    // Der aufgelöste Datensatz und der Weg zurück (Zeile „Schreiben").
     properties[writeRecordKey(entry.effect)] = { type: "object", additionalProperties: true };
     properties.reversal = { type: ["object", "null"], additionalProperties: true };
     properties.fields_not_returned = { type: "array", items: { type: "string" } };
@@ -135,7 +138,7 @@ export function buildOutputSchema(entry: ToolEntry): Record<string, unknown> {
 /**
  * Der Schlüssel des aufgelösten Datensatzes einer Schreibantwort.
  *
- * Plan 7.1 nennt für die Zeile „Schreiben" den Schlüssel `created`. Das trifft für 24 der 39
+ * Ein einheitlicher Schlüssel `created` für jede Schreibantwort träfe nur für 24 der 39
  * schreibenden Werkzeuge zu; für ein `update` oder ein `delete` wäre `created` schlicht
  * falsch, und ein falscher Schlüssel ist in einer Buchhaltung teurer als ein zusätzlicher.
  * Deshalb folgt der Name der Wirkung des Eintrags.

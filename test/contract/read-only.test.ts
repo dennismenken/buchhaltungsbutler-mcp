@@ -1,4 +1,4 @@
-// Vertragstest aus Plan 9.3: **der optionale Nur-Lesen-Schalter** (Plan 6.6).
+// Vertragstest: **der optionale Nur-Lesen-Schalter**.
 //
 // Geprüft werden vier Zusagen, und jede einzelne ist eine, an der ein Nutzer den Server misst,
 // der ihn ausdrücklich eingeschränkt hat:
@@ -10,13 +10,13 @@
 //  2. Die **15 lesenden** Werkzeuge laufen dabei weiter.
 //  3. **Die Werkzeugliste ist in beiden Läufen identisch** — Namen, Annotationen und Schemata.
 //     Ein Agent, der ein Werkzeug nicht sieht, schließt auf eine fehlende Fähigkeit und sucht
-//     Umwege; ein Agent, der eine klare Absage liest, kann sie dem Nutzer erklären (6.6).
+//     Umwege; ein Agent, der eine klare Absage liest, kann sie dem Nutzer erklären.
 //  4. Die Berichtszeile: Mit Schalter antworten die drei `bb_reports_get_*` weiter, die beiden
 //     `bb_reports_create_*` sagen ab, und die `instructions` nennen die Einschränkung.
 //
-// **Zur zweiten Hälfte von 9.3 („ohne die Variable führen dieselben 39 aus").** Sie wird hier
+// **Zur zweiten Hälfte („ohne die Variable führen dieselben 39 aus").** Sie wird hier
 // über den Schalter selbst geprüft: Ohne die Variable meldet der Server für alle 54 Einträge
-// `blockedByReadOnly: false`, kein einziger der 39 Aufrufe endet in der Absage aus 6.6, und
+// `blockedByReadOnly: false`, kein einziger der 39 Aufrufe endet in der Absage, und
 // fünf Werkzeuge — eines je schreibender Klasse — laufen vollständig bis zur Antwort durch.
 // **Dass alle 39 ohne den Schalter wirklich bis zur HTTP-Schicht kommen, belegt
 // `test/contract/no-write-retry.test.ts`**, das ohne `BB_MCP_READ_ONLY` läuft und für jedes
@@ -119,7 +119,7 @@ async function startServer(config: ResolvedConfig): Promise<RunningTestServer> {
     store: createMasterDataStore({ ttlMs: config.cacheTtlMs }),
   });
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-  const client = new Client({ name: "ap16-read-only", version: "0.0.0" });
+  const client = new Client({ name: "read-only", version: "0.0.0" });
   await built.server.connect(serverSide);
   await client.connect(clientSide);
   return {
@@ -133,7 +133,7 @@ async function startServer(config: ResolvedConfig): Promise<RunningTestServer> {
   };
 }
 
-/** Die Antwort der Nachbildung, passend zur erwarteten Umschlagform des Eintrags (5.5). */
+/** Die Antwort der Nachbildung, passend zur erwarteten Umschlagform des Eintrags. */
 function successReply(entry: ToolEntry): { status: number; json: Record<string, unknown> } {
   const body: Record<string, unknown> =
     entry.shape === "list"
@@ -144,7 +144,7 @@ function successReply(entry: ToolEntry): { status: number; json: Record<string, 
   return { status: 200, json: body };
 }
 
-/** Der Pfad, an dem der Request erwartet wird; bei Pfadvorlagen der interpolierte (4.6). */
+/** Der Pfad, an dem der Request erwartet wird; bei Pfadvorlagen der interpolierte. */
 function expectedPath(entry: ToolEntry, args: Readonly<Record<string, unknown>>): string {
   if ("literal" in entry.path) {
     return entry.path.literal;
@@ -196,7 +196,7 @@ describe(`mit ${READ_ONLY_VAR}=true`, () => {
 
     try {
       for (const entry of WRITE_ENTRIES) {
-        // Die Argumente sind hier bewusst leer: Guard 2 läuft vor Guard 3 (Plan 1.4), und
+        // Die Argumente sind hier bewusst leer: Guard 2 läuft vor Guard 3, und
         // genau das soll die Absage belegen. Käme stattdessen eine Schemameldung, stünde der
         // Schalter an der falschen Stelle der Kette.
         const result = await server.client.callTool({ name: entry.name, arguments: {} });
@@ -234,8 +234,8 @@ describe(`mit ${READ_ONLY_VAR}=true`, () => {
 
     try {
       for (const entry of READ_ENTRIES) {
-        // Berichts- und Stapeleimer führen ein Token je 10 beziehungsweise 5 Sekunden
-        // (Plan 5.4). Der Limiter hat seinen eigenen Test; hier soll er nicht die Laufzeit
+        // Berichts- und Stapeleimer führen ein Token je 10 beziehungsweise 5 Sekunden.
+        // Der Limiter hat seinen eigenen Test; hier soll er nicht die Laufzeit
         // bestimmen.
         resetRateLimiterForTests();
         const args = READ_ARGUMENTS[entry.name] ?? {};
@@ -264,7 +264,7 @@ describe(`mit ${READ_ONLY_VAR}=true`, () => {
       // das Ergebnis gegen `tools/list` desselben Starts. Eine zweite, hier gepflegte Zahl
       // wäre genau die Stelle, die beim nächsten Werkzeug wieder altert.
       expect(server.instructions).toContain("Nur die lesenden laufen");
-      // Die Folge aus 6.6: BWA und Summen- und Saldenliste brauchen den gesperrten ersten
+      // Die Folge: BWA und Summen- und Saldenliste brauchen den gesperrten ersten
       // Schritt; ohne Neustart bleibt nur das Hauptbuch.
       expect(server.instructions).toContain("bb_reports_get_ledger");
     } finally {
@@ -290,8 +290,7 @@ describe(`mit ${READ_ONLY_VAR}=true`, () => {
       }
 
       // Sie ändern keinen Buchungsbestand, ersetzen aber den Vorgängerbericht. Ein Server mit
-      // ausdrücklichem Schreibverbot, der fremde Berichte überschreibt, bricht seine Zusage
-      // (Plan 6.6).
+      // ausdrücklichem Schreibverbot, der fremde Berichte überschreibt, bricht seine Zusage.
       for (const name of ["bb_reports_create_bwa", "bb_reports_create_sums"]) {
         const result = await server.client.callTool({
           name,
@@ -321,7 +320,7 @@ describe(`ohne ${READ_ONLY_VAR}`, () => {
       for (const entry of WRITE_ENTRIES) {
         const result = await server.client.callTool({ name: entry.name, arguments: {} });
         const text = textOf(result);
-        // Ohne Schalter darf die Absage aus 6.6 an keinem der 39 auftauchen. Was hier
+        // Ohne Schalter darf die Absage an keinem der 39 auftauchen. Was hier
         // stattdessen kommt, ist die Schemameldung aus Guard 3 — also ein **späterer**
         // Schritt der Kette, den der Schalter vorher abgefangen hätte.
         expect(text, `${entry.name} wurde ohne Schalter gesperrt`).not.toContain("ist gesperrt");
@@ -384,12 +383,12 @@ describe("die Werkzeugliste", () => {
       await serverWithoutFlag.close();
     }
 
-    // 54 Endpunktwerkzeuge plus die Bündelwerkzeuge der Gruppe `bundles` (N1: die 54 bleiben
+    // 54 Endpunktwerkzeuge plus die Bündelwerkzeuge der Gruppe `bundles` (die 54 bleiben
     // unverändert bestehen, die Bündel kommen hinzu). Auch das anlegende Bündel steht in der
     // Liste: Gesperrt ist nicht versteckt.
     expect(JSON.parse(listWithFlag)).toHaveLength(TOOL_ENTRIES.length + BUNDLE_ENTRIES.length);
     // Namen, Beschreibungen, Annotationen und beide Schemata: Die Liste hängt an keinem
-    // Schalter und ist über die gesamte Verbindung stabil (Plan 1.5, 6.6).
+    // Schalter und ist über die gesamte Verbindung stabil.
     expect(listWithFlag).toBe(listWithoutFlag);
   }, 30_000);
 });

@@ -1,4 +1,4 @@
-// P4 aus Plan 9.2: das Namensschema aus Plan 3.1 und die Prüfsätze aus Plan 3.9.
+// P4: das Namensschema und die Prüfsätze.
 //
 // Der Name ist das Erste, was ein Agent sieht, und bei 54 Werkzeugen die einzige
 // Navigationshilfe, die ohne Kontextkosten auskommt. Deshalb ist er hier vollständig
@@ -11,12 +11,12 @@ import { describe, expect, it } from "vitest";
 import { REGISTRY, entryByName, missingEntry } from "../helpers/registry-fixtures.js";
 import { EXPECTED_TOOL_NAMES } from "./class-list.js";
 
-/** Das Namensschema aus Plan 3.1. Die Längengrenze wird zusätzlich geprüft: Der Ausdruck
+/** Das Namensschema. Die Längengrenze wird zusätzlich geprüft: Der Ausdruck
  *  allein ließe 41 Zeichen zu (3 Zeichen „bb_" plus 1 plus 37). */
 const NAME_PATTERN = /^bb_[a-z][a-z0-9_]{2,37}$/;
 const MAX_NAME_LENGTH = 40;
 
-/** Die geschlossene Verbliste aus Plan 3.1, zwölf Verben. Elf aus tool-design.md 4.4,
+/** Die geschlossene Verbliste, zwölf Verben. Elf aus tool-design.md 4.4,
  *  `unassign` ergänzt, weil `bb_transactions_delete_receipt` sich läse, als lösche es den
  *  Beleg — im Buchhaltungskontext eine gefährliche Fehllesung. */
 const VERBS: readonly string[] = [
@@ -34,7 +34,7 @@ const VERBS: readonly string[] = [
   "unassign",
 ];
 
-/** Die Auszählung nach Ressource aus Plan 3.9, von Hand abgeschrieben. Summe 54. */
+/** Die Auszählung nach Ressource, von Hand abgeschrieben. Summe 54. */
 const TOOLS_BY_RESOURCE: Readonly<Record<string, number>> = {
   receipts: 8,
   transactions: 8,
@@ -49,7 +49,7 @@ const TOOLS_BY_RESOURCE: Readonly<Record<string, number>> = {
   reports: 5,
 };
 
-/** Längster und kürzester Name des Satzes, nachgerechnet in Plan 3.9. */
+/** Längster und kürzester Name des Satzes, nachgerechnet. */
 const LONGEST_NAME = "bb_postings_create_for_transaction_batch";
 const SHORTEST_NAME = "bb_receipts_get";
 
@@ -58,7 +58,7 @@ function expectNoIssues(problems: readonly string[]): void {
 }
 
 /** Ressource und Verb eines Namens. Das Verb wird als SEGMENT hinter der Ressource gesucht
- *  und nicht als Namensendung, weil zwölf Namen auf einen Qualifizierer enden (Plan 3.1). */
+ *  und nicht als Namensendung, weil zwölf Namen auf einen Qualifizierer enden. */
 function parseName(name: string): { resource: string; verb?: string; verbIndex: number } {
   const segments = name.slice("bb_".length).split("_");
   const verbIndex = segments.findIndex((segment) => VERBS.includes(segment));
@@ -86,7 +86,7 @@ describe("P4 Namensschema", () => {
 
     for (const tool of REGISTRY) {
       if (!NAME_PATTERN.test(tool.name)) {
-        problems.push(`${tool.name}: erfüllt ${String(NAME_PATTERN)} nicht (Plan 3.1).`);
+        problems.push(`${tool.name}: erfüllt ${String(NAME_PATTERN)} nicht.`);
       }
       if (tool.name.length > MAX_NAME_LENGTH) {
         problems.push(
@@ -106,9 +106,7 @@ describe("P4 Namensschema", () => {
       const verbSegments = segments.filter((segment) => VERBS.includes(segment));
 
       if (verbSegments.length === 0) {
-        problems.push(
-          `${tool.name}: kein Verb aus der Liste (${VERBS.join(", ")}) als Segment (Plan 3.1).`,
-        );
+        problems.push(`${tool.name}: kein Verb aus der Liste (${VERBS.join(", ")}) als Segment.`);
         continue;
       }
       if (verbSegments.length > 1) {
@@ -139,7 +137,7 @@ describe("P4 Namensschema", () => {
       const lastSegment = resource.split("_").at(-1) ?? "";
       if (!lastSegment.endsWith("s")) {
         problems.push(
-          `${tool.name}: Ressource "${resource}" steht nicht im Plural (Plan 3.1). Die elf Ressourcen sind ${Object.keys(TOOLS_BY_RESOURCE).join(", ")}.`,
+          `${tool.name}: Ressource "${resource}" steht nicht im Plural. Die elf Ressourcen sind ${Object.keys(TOOLS_BY_RESOURCE).join(", ")}.`,
         );
       }
     }
@@ -147,7 +145,7 @@ describe("P4 Namensschema", () => {
     expectNoIssues(problems);
   });
 
-  it("verteilt die 54 Werkzeuge genau wie die Auszählung nach Ressource in Plan 3.9", () => {
+  it("verteilt die 54 Werkzeuge genau wie die Auszählung nach Ressource", () => {
     const problems: string[] = [];
     const countByResource = new Map<string, number>();
 
@@ -160,14 +158,14 @@ describe("P4 Namensschema", () => {
       const actualCount = countByResource.get(resource) ?? 0;
       if (actualCount !== expected) {
         problems.push(
-          `Ressource ${resource}: ${String(actualCount)} Werkzeuge, expected sind ${String(expected)} (Plan 3.9).`,
+          `Ressource ${resource}: ${String(actualCount)} Werkzeuge, expected sind ${String(expected)}.`,
         );
       }
     }
     for (const [resource, actualCount] of countByResource) {
       if (!(resource in TOOLS_BY_RESOURCE)) {
         problems.push(
-          `Ressource ${resource}: in Plan 3.9 nicht vorgesehen (${String(actualCount)} Werkzeuge).`,
+          `Ressource ${resource}: nicht vorgesehen (${String(actualCount)} Werkzeuge).`,
         );
       }
     }
@@ -200,19 +198,17 @@ describe("P4 Namensschema", () => {
     for (const tool of REGISTRY) {
       if (tool.title.trim() === "") {
         problems.push(
-          `${tool.name}: kein title. Der Client zeigt im Freigabedialog den title, sonst den Maschinennamen (Plan 3.6).`,
+          `${tool.name}: kein title. Der Client zeigt im Freigabedialog den title, sonst den Maschinennamen.`,
         );
         continue;
       }
       if (tool.title.length > MAX_NAME_LENGTH) {
         problems.push(
-          `${tool.name}: title ist ${String(tool.title.length)} Zeichen lang, erlaubt sind höchstens ${String(MAX_NAME_LENGTH)} (Plan 3.6).`,
+          `${tool.name}: title ist ${String(tool.title.length)} Zeichen lang, erlaubt sind höchstens ${String(MAX_NAME_LENGTH)}.`,
         );
       }
       if (/[.,;:!?]$/.test(tool.title)) {
-        problems.push(
-          `${tool.name}: title endet mit einem Satzzeichen (Plan 3.6): "${tool.title}".`,
-        );
+        problems.push(`${tool.name}: title endet mit einem Satzzeichen: "${tool.title}".`);
       }
     }
 

@@ -1,4 +1,4 @@
-// Das Verzeichnis der Bündelwerkzeuge (Gruppe `bundles`, Entscheidung N5).
+// Das Verzeichnis der Bündelwerkzeuge (Gruppe `bundles`, abschaltbar über `BB_MCP_TOOL_GROUPS`).
 //
 // Anders als das Register der 54 Endpunktwerkzeuge entsteht diese Liste nicht durch einen
 // Generator: Ein Bündel trägt seinen Ablauf als Code, es gibt also ohnehin eine Datei je
@@ -6,7 +6,7 @@
 // erwartet in `src/registry/tools/` ausschließlich `ToolEntry`. Die Liste ist kurz und
 // abschließend; sie wächst nur mit einer Entscheidung des Projektinhabers.
 //
-// Die Reihenfolge ist die der Bauvorlage und zugleich die Registrierreihenfolge.
+// Die Reihenfolge ist zugleich die Registrierreihenfolge.
 
 import { bb_assignments_get } from "./tools/bb_assignments_get.js";
 import { bb_balances_get } from "./tools/bb_balances_get.js";

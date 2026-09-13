@@ -1,20 +1,21 @@
-// P11 aus Plan 9.2: das Kontextbudget.
+// P11: das Kontextbudget.
 //
-// Gezählt wird mit dem echten Tokenizer aus Plan 13.9 (`gpt-tokenizer@4.0.0`, Kodierung
+// Gezählt wird mit dem echten Tokenizer (`gpt-tokenizer@4.0.0`, Kodierung
 // `o200k_base`) und ausdrücklich NICHT über die Konstante CHARS_PER_TOKEN: Ein Budget, das
-// über einen Schätzfaktor erzwungen wird, erzwingt die Schätzung und nicht das Budget
-// (Plan 4.10). Der Tokenizer ist seit AP01 eine devDependency; P11 ist damit hier
-// vollständig lauffähig und wartet auf keine Messung aus AP14.
+// über einen Schätzfaktor erzwungen wird, erzwingt die Schätzung und nicht das Budget.
+// Der Tokenizer ist eine devDependency; P11 ist damit hier vollständig lauffähig und
+// wartet auf keine gesonderte Messung.
 //
-// Die Stufenbudgets aus Plan 4.9 sind ZEICHENgrenzen und brauchen ohnehin keinen Tokenizer.
+// Die Stufenbudgets sind ZEICHENgrenzen und brauchen ohnehin keinen Tokenizer.
 //
-// Reißt das Gesamtbudget, gilt die Reihenfolge aus Plan 4.10: erstens S1 bis S6 nachziehen,
+// Reißt das Gesamtbudget, gilt die Reihenfolge: erstens S1 bis S6 nachziehen,
 // zweitens die Beschreibungen der Stufe 3 auf die untere Wortgrenze kürzen, drittens Inhalte
-// in Resources verschieben. Werkzeuge zu streichen oder zusammenzulegen ist kein Hebel, E1
-// steht dem entgegen; das Budget stillschweigend anzuheben ebenfalls nicht.
+// in Resources verschieben. Werkzeuge zu streichen oder zusammenzulegen ist kein Hebel: Die
+// Vorgabe, genau ein Werkzeug je Endpunkt auszuliefern, steht dem entgegen; das Budget
+// stillschweigend anzuheben ebenfalls nicht.
 //
 // Stand 2026-09-13: Die drei Schritte schließen die Lücke nicht, und das ist ausgerechnet
-// (48.305 Token gegen die frühere Grenze von 32.000, docs/entwicklung/befund-tokenbudget.md):
+// (48.305 Token gegen die frühere Grenze von 32.000, docs/entwicklung/tokenbudget.md):
 // Selbst alle 54 Werkzeugbeschreibungen zusammen sind nur 32.654 Zeichen lang, also rund 7.980
 // Token, während 16.305 Token fehlen. Die Rechnung steht in src/registry/budget.ts.
 // Der Projektinhaber hat das Gesamtbudget daraufhin ausdrücklich auf 49.000 Token angehoben,
@@ -49,7 +50,7 @@ import { EXPECTED_TOOL_NAMES } from "./class-list.js";
 
 const TIERS: readonly DescriptionTier[] = [1, 2, 3];
 
-/** Die Besetzung der drei Stufen aus Plan 4.9, Prüfsumme 22 + 18 + 14 = 54. */
+/** Die Besetzung der drei Stufen, Prüfsumme 22 + 18 + 14 = 54. */
 const TIER_COUNTS: Readonly<Record<DescriptionTier, number>> = { 1: 22, 2: 18, 3: 14 };
 
 function expectNoIssues(problems: readonly string[]): void {
@@ -61,7 +62,7 @@ function expectNoIssues(problems: readonly string[]): void {
  *
  * Das Budget muss im größten Zustand halten, und nur er beweist das. Zum Gruppenschalter
  * gehörte dabei früher die **kleinste** Gruppe allein: Elf inaktive Gruppen, jede mit dem,
- * was mit ihr unbeantwortbar ist (N5), und der Buchungswegweiser stand ohnehin in jedem
+ * was mit ihr unbeantwortbar ist, und der Buchungswegweiser stand ohnehin in jedem
  * Profil. Seit die Blöcke des Servertextes an ihren Gruppen hängen, trägt das nicht mehr:
  * Ohne die Gruppe `postings` entfällt der Wegweiser, und `comments` allein wiegt gemessen nur
  * noch 1.508 Token. Der teuerste Zustand ist jetzt `postings,bundles` mit 1.840 Token —
@@ -92,16 +93,15 @@ function largestConfig(): ResolvedConfig {
 }
 
 /**
- * Die instructions des Servers, sofern es sie schon gibt. src/server/instructions.ts wird in
- * AP10 als Platzhalter angelegt und in AP14 befüllt; die endgültige Signatur der
- * Exportfunktion steht dort und nicht hier, weshalb diese Prüfung jeden Export abtastet und
- * nicht einen Namen errät.
+ * Die instructions des Servers, sofern es sie schon gibt. Die endgültige Signatur der
+ * Exportfunktion steht in `src/server/instructions.ts` und nicht hier, weshalb diese
+ * Prüfung jeden Export abtastet und nicht einen Namen errät.
  */
 async function instructionsText(): Promise<string | undefined> {
   if (!existsSync(INSTRUCTIONS_MODULE)) return undefined;
 
   // Der Pfad steht bewusst in einer Variablen: Ein wörtlicher Spezifizierer würde die
-  // Typprüfung dieser Testdatei an eine Datei binden, die es vor AP10 noch nicht gibt.
+  // Typprüfung dieser Testdatei an eine Datei binden, die es möglicherweise nicht gibt.
   const specifier = pathToFileURL(INSTRUCTIONS_MODULE).href;
   const moduleExports = (await import(specifier)) as Record<string, unknown>;
 
@@ -110,7 +110,7 @@ async function instructionsText(): Promise<string | undefined> {
     if (typeof value !== "function") continue;
 
     // Drei Versuche, in aufsteigender Vollständigkeit: ohne Argument, mit einem leeren
-    // Objekt (der Platzhalter aus AP10 kommt damit aus) und mit einer echten, vollständig
+    // Objekt (ein Platzhalter kommt damit aus) und mit einer echten, vollständig
     // aufgelösten Konfiguration im größten Zustand. Der dritte Versuch ist der, der seit dem
     // Gruppenschalter trägt: Der Servertext liest dort ein Feld, das ein leeres Objekt nicht
     // hat, und misst dann zugleich den teuersten Zustand statt des billigsten.
@@ -135,7 +135,7 @@ describe("P11 Stufenbesetzung", () => {
       const names = TOOL_NAMES_BY_TIER[tier];
       if (names.length !== TIER_COUNTS[tier]) {
         problems.push(
-          `Stufe ${String(tier)}: ${String(names.length)} Werkzeuge in src/registry/budget.ts, nach Plan 4.9 sind es ${String(TIER_COUNTS[tier])}.`,
+          `Stufe ${String(tier)}: ${String(names.length)} Werkzeuge in src/registry/budget.ts, sind es ${String(TIER_COUNTS[tier])}.`,
         );
       }
       if (new Set(names).size !== names.length) {
@@ -170,7 +170,7 @@ describe("P11 Stufenbesetzung", () => {
         }
         if (tool.tier !== tier) {
           problems.push(
-            `${name}: tier ${String(tool.tier)} statt ${String(tier)} (Plan 4.9, src/registry/budget.ts).`,
+            `${name}: tier ${String(tool.tier)} statt ${String(tier)} (src/registry/budget.ts).`,
           );
         }
       }
@@ -197,7 +197,7 @@ describe("P11 Zeichengrenzen je Stufe", () => {
     expectNoIssues(problems);
   });
 
-  it("bestätigt die Budgetwerte aus Plan 4.9", () => {
+  it("bestätigt die Budgetwerte", () => {
     expect(DESCRIPTION_CHAR_BUDGET_BY_TIER[1]).toBe(900);
     expect(DESCRIPTION_CHAR_BUDGET_BY_TIER[2]).toBe(700);
     expect(DESCRIPTION_CHAR_BUDGET_BY_TIER[3]).toBe(480);
@@ -250,12 +250,12 @@ describe("P11 Gesamtbudget", () => {
 
     expect(
       total,
-      `${report} Das Gesamtbudget ist gerissen: Die Werkzeugdefinitionen sind über den in docs/entwicklung/befund-tokenbudget.md festgehaltenen Stand hinaus gewachsen. Gegenmaßnahmen in der Reihenfolge aus Plan 4.10: erstens S1 bis S6 nachziehen, zweitens die Beschreibungen der Stufe 3 kürzen, drittens Inhalte in die Resources aus 7.7 verschieben. Die Grenze anzuheben ist kein Schritt dieser Prüfung, sondern eine Entscheidung des Projektinhabers mit Eintrag in CHANGELOG.md.`,
+      `${report} Das Gesamtbudget ist gerissen: Die Werkzeugdefinitionen sind über den in docs/entwicklung/tokenbudget.md festgehaltenen Stand hinaus gewachsen. Gegenmaßnahmen in der Reihenfolge: erstens S1 bis S6 nachziehen, zweitens die Beschreibungen der Stufe 3 kürzen, drittens Inhalte in die Resources verschieben. Die Grenze anzuheben ist kein Schritt dieser Prüfung, sondern eine Entscheidung des Projektinhabers mit Eintrag in CHANGELOG.md.`,
     ).toBeLessThanOrEqual(TOTAL_TOOL_DEFINITION_TOKEN_BUDGET);
   });
 
   it("bestätigt die Zahlen, an denen P11 abbricht", () => {
-    // 49.000 statt der 32.000 aus Plan 4.10: die ausdrückliche Entscheidung des
+    // 49.000 statt der 32.000: die ausdrückliche Entscheidung des
     // Projektinhabers vom 2026-09-13 über den gemessenen Stand, begründet in
     // src/registry/budget.ts und in CHANGELOG.md. Hier mitgeprüft, damit ein weiteres,
     // stilles Anheben auffällt.
@@ -265,7 +265,7 @@ describe("P11 Gesamtbudget", () => {
 
   it("zählt mit dem Tokenizer und nicht über einen Schätzfaktor", () => {
     // Ein deutscher Satz mit Umlauten zerfällt in mehr Token als die Zeichenzahl geteilt
-    // durch 3,2 vermuten lässt; genau deshalb steht hier der echte Tokenizer (Plan 4.10).
+    // durch 3,2 vermuten lässt; genau deshalb steht hier der echte Tokenizer.
     const sentence = "Überschreibt Stammdaten im echten Mandanten von BuchhaltungsButler.";
     expect(tokenCount(sentence)).toBeGreaterThan(0);
     expect(tokenCount("")).toBe(0);
@@ -278,7 +278,7 @@ describe("P11 instructions", () => {
 
     expect(
       text,
-      `src/server/instructions.ts liefert keinen messbaren Text. Die Datei entsteht als Platzhalter in AP10 und wird in AP14 befüllt (Plan 6.7); sie muss eine Zeichenkette exportieren oder eine Funktion, die eine liefert.`,
+      `src/server/instructions.ts liefert keinen messbaren Text; die Datei muss eine Zeichenkette exportieren oder eine Funktion, die eine liefert.`,
     ).toBeTypeOf("string");
 
     if (typeof text !== "string") return;
@@ -286,7 +286,7 @@ describe("P11 instructions", () => {
     const token = tokenCount(text);
     expect(
       token,
-      `${String(token)} Token in den instructions, erlaubt sind ${String(INSTRUCTIONS_TOKEN_BUDGET)}. Sie tragen alles Querschnittliche genau einmal; was nicht hineinpasst, gehört in eine Resource (Plan 4.10, 7.7).`,
+      `${String(token)} Token in den instructions, erlaubt sind ${String(INSTRUCTIONS_TOKEN_BUDGET)}. Sie tragen alles Querschnittliche genau einmal; was nicht hineinpasst, gehört in eine Resource.`,
     ).toBeLessThanOrEqual(INSTRUCTIONS_TOKEN_BUDGET);
   });
 });

@@ -1,8 +1,9 @@
-// Werkzeug 2 von 54 (Plan 3.8): `/receipts/get/id_by_customer`, der Belegeinzelabruf.
+// Werkzeug 2 von 54: `/receipts/get/id_by_customer`, der Belegeinzelabruf.
 //
-// **Pfadvorlage statt literalem Pfad (Plan 4.6).** Das Segment `id_by_customer` im Pfad der
+// **Pfadvorlage statt literalem Pfad.** Das Segment `id_by_customer` im Pfad der
 // Spezifikation ist ein Platzhalter für den Wert und kein literales Segment. Gemessen am
-// 2026-09-12 (Befund L1): `POST /receipts/get/<wert>` antwortet mit HTTP 200, der
+// 2026-09-12 (Befund L1 in docs/api/live-befunde.md): `POST /receipts/get/<wert>` antwortet
+// mit HTTP 200, der
 // dokumentierte Aufruf mit dem Body-Feld `id_by_customer` dagegen mit HTTP 400 und
 // error_code 5. Der Eintrag trägt deshalb `template`, `params` und zusätzlich `specPath` mit
 // dem unveränderten Schlüssel der Spezifikation: Fehlerkatalog, Deckungstest und Audit-Zeile
@@ -11,32 +12,38 @@
 // nicht** — die Spezifikation führt an diesem Pfad ohnehin nur zwei Parameter.
 //
 // Die Aufrufform ist live bestätigt; dieser Eintrag trägt deshalb **kein** `verified: false`
-// und seine Beschreibung keinen Einschränkungssatz (Plan 4.6, Streitfrage S1).
+// und seine Beschreibung keinen Einschränkungssatz.
 //
-// **Der Antwortvertrag ist ein anderer als der des Listenabrufs** und gemessen (Befund L2):
+// **Der Antwortvertrag ist ein anderer als der des Listenabrufs** und gemessen (Befund L2 in
+// docs/api/live-befunde.md):
 // 23 statt 16 Felder, `data` als Objekt ohne `rows`, `date_delivery` und `date_payment_due`
 // statt `delivery_date` und `due_date`. `amount_original`, `currency_original` und
-// `exchangerate` kennt die Spezifikation überhaupt nicht; dieser Endpunkt ist die einzige
-// Quelle für Fremdwährungsbeträge (Befunde L2 und L4, Plan 7.2).
+// `exchangerate` fehlen der Listenantwort — für diesen Pfad führt die Spezifikation sie sehr
+// wohl. Dieser Endpunkt ist damit die einzige Quelle für Fremdwährungsbeträge (Befunde L2 und
+// L4). Was er gegenüber seiner Spezifikation zusätzlich liefert, sind `amount_paid` und
+// `amount_paid_fixed`; was sie verspricht und er ohne `get_file` nicht liefert, sind
+// `file_content` und `file_type` (Befund L4).
 //
 // **`amount_paid` und `amount_paid_fixed` sind auch hier funktionslos**, gemessen wie beim
-// Listenabruf: Am 2026-09-13 lieferte `/receipts/get/2` einen Beleg über `"884.65"` mit
-// `payment_date` `"2021-03-05"` — und `amount_paid` wie `amount_paid_fixed` mit `"0.00"`. Die
-// Begründung steht vollständig im Kopf von bb_receipts_search.ts, Punkt 2; hier gilt sie
-// unverändert, weil dieser Endpunkt dieselben beiden Felder liefert. Der Warnsatz in der
-// Beschreibung ist der kürzeren Stufe 2 entsprechend knapper gefasst.
+// Listenabruf: Befund L4 in docs/api/live-befunde.md belegt über 500 Zeilen beide Felder
+// durchgehend mit `"0.00"`, obwohl 493 dieser Zeilen ein `payment_date` tragen, und weist
+// dieselben zwei Felder auch für `/receipts/get/<wert>` nach. Ein Einzelabruf am 2026-09-13
+// zeigte es erneut: `"0.00"` in beiden Feldern bei gesetztem `payment_date`. Die Begründung
+// steht vollständig im Kopf von bb_receipts_search.ts, Punkt 2; hier gilt sie unverändert,
+// weil dieser Endpunkt dieselben beiden Felder liefert. Der Warnsatz in der Beschreibung ist
+// der kürzeren Stufe 2 entsprechend knapper gefasst.
 
 // `file_content` und `file_type` stehen bewusst **nicht** im Vertrag. Sie kommen nur bei
-// get_file, und der Zweig ist nicht verifiziert (Plan 0.3, „Was ausdrücklich nicht folgt").
+// get_file, und der Zweig ist nicht verifiziert („Was ausdrücklich nicht folgt").
 // Als Vertragsfelder erzeugten sie bei jedem gewöhnlichen Abruf zwei `_contract_warnings`;
-// als unbekannte Felder laufen sie unverändert durch (Plan 7.3, letzter Fall).
+// als unbekannte Felder laufen sie unverändert durch.
 
 import { z } from "zod";
 
 import { idByCustomer, responseFormat } from "../../schema/vocab.js";
 import type { ToolEntry } from "../types.js";
 
-/** Das serverseitige Feld der Projektion. Sein Text ist der des Bausteins (Plan 4.5). */
+/** Das serverseitige Feld der Projektion. Sein Text ist der des Bausteins. */
 const RESPONSE_FORMAT_TEXT =
   "'concise' liefert nur die Felder, die einen Datensatz erkennbar machen und den nächsten " +
   "Schritt erlauben. 'detailed' liefert den Datensatz so, wie die BuchhaltungsButler-API ihn " +
@@ -69,7 +76,7 @@ export const bb_receipts_get: ToolEntry = {
     {
       name: "receipt_id_by_customer",
       // Leeres apiNames und source "path": Der Wert wird in den Pfad eingesetzt und nie in den
-      // Body geschrieben (Plan 4.6 Regel 5). Die Spezifikation führt ihn an diesem Pfad nicht.
+      // Body geschrieben. Die Spezifikation führt ihn an diesem Pfad nicht.
       apiNames: [],
       source: "path",
       required: true,
@@ -101,10 +108,10 @@ export const bb_receipts_get: ToolEntry = {
     },
   ],
   serverOnlyFields: ["response_format"],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   responseContract: {
     container: "data",
-    // Die 23 gemessenen Felder des Einzelabrufs (Plan 0.3 Befunde L2 und L3). `e_invoice_type`
+    // Die 23 gemessenen Felder des Einzelabrufs. `e_invoice_type`
     // kam als JSON-Zahl, obwohl die Spezifikation einen String führt; `vat` ist der
     // Steuersatz in Prozent und heißt im Request `vat_rate`.
     fields: {

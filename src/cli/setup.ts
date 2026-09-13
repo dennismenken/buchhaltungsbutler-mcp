@@ -1,7 +1,7 @@
 /**
- * Der Einrichtungsassistent, neun Schritte nach Plan 8.2.
+ * Der Einrichtungsassistent, neun Schritte.
  *
- * Die Reihenfolge der Ausführung weicht an **einer** Stelle von der Nummerierung des Plans ab,
+ * Die Reihenfolge der Ausführung weicht an **einer** Stelle von der Nummerierung ab,
  * und zwar zwingend: Die Frage nach dem Nur-Lesen-Schalter ist dort Schritt 9, ihre Antwort
  * wird aber in die Konfiguration geschrieben, die Schritt 7 anlegt. Sie wird deshalb vor
  * Schritt 7 gestellt und in der Ausgabe ausdrücklich als vorgezogener Schritt 9 benannt. Alle
@@ -50,10 +50,10 @@ import {
 import { printConnectionTest, runConnectionTest } from "./test.js";
 import { printOutcome } from "./uninstall.js";
 
-/** Wohin die Zugangsdaten gehen (Plan 8.2 Schritt 6). */
+/** Wohin die Zugangsdaten gehen. */
 type CredentialTarget = "file" | "client" | "none";
 
-/** Der Satz, den der Nutzer in seinen Client tippen kann (Plan 8.2 Schritt 8). */
+/** Der Satz, den der Nutzer in seinen Client tippen kann. */
 export const VERIFICATION_SENTENCE = "Liste meine Zahlungskonten in BuchhaltungsButler.";
 
 const WHERE_TO_FIND =
@@ -95,7 +95,7 @@ export async function runSetup(options: RunSetupOptions): Promise<number> {
 
   // --- Schritt 1: Vorprüfung ----------------------------------------------------------
   // Die Node-Version prüft `resolveConfig` als Erstes; eine Unterschreitung endet dort mit
-  // einem ConfigError, den `runCli` ausgibt (Plan 6.4 Punkt 1).
+  // einem ConfigError, den `runCli` ausgibt.
   const { config } = loadCliConfig(env);
   const profileName = stringFlag(args, "profile") ?? config.profile;
 
@@ -597,7 +597,7 @@ async function chooseClients(options: ClientChoiceOptions): Promise<ClientAdapte
     );
   }
 
-  // Gefundene Clients zuerst, die übrigen darunter (Plan 8.2 Schritt 1).
+  // Gefundene Clients zuerst, die übrigen darunter.
   const sorted = [...detections].sort((left, right) =>
     left.detection.found === right.detection.found ? 0 : left.detection.found ? -1 : 1,
   );

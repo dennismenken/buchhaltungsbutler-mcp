@@ -1,9 +1,9 @@
-// Die geteilten Bausteine aus Plan 4.5: Schemafragment und deutsches Beschreibungsmuster
+// Die geteilten Bausteine: Schemafragment und deutsches Beschreibungsmuster
 // immer zusammen, damit derselbe Sachverhalt an 54 Werkzeugen nicht 54-mal neu formuliert
 // wird. Das ist der größte Hebel gegen Wiederholung und trägt die Sparmaßnahmen S1, S3 und
-// S4 aus Plan 4.10.
+// S4.
 //
-// Sprachregel (Plan 4.9, E4): Der Fließtext ist deutsch mit echten Umlauten. API-Feldnamen,
+// Sprachregel: Der Fließtext ist deutsch mit echten Umlauten. API-Feldnamen,
 // Werkzeugnamen und Enum-Werte stehen unverändert im Original und werden weder übersetzt
 // noch eingedeutscht; wörtlich zitierte API-Werte stehen in einfachen Anführungszeichen,
 // damit eine maschinelle Sprachprüfung sie ausklammern kann.
@@ -28,18 +28,18 @@ import {
  *
  * Die Spezifikation wiederholt „An empty string is not considered a valid date“ dutzendfach.
  * Als Querschnittsregel steht sie einmal in den `instructions` (S1). An den Datumsfeldern
- * steht sie trotzdem, weil Plan 4.5 das Muster von `date()` wörtlich so festlegt: Dort ist
+ * steht sie trotzdem, weil das Muster von `date()` sie wörtlich vorsieht: Dort ist
  * der Unterschied zwischen „leerer String“ und „weglassen“ der häufigste Fehler.
  */
 export const EMPTY_STRING_SENTENCE =
   "Ein leerer String wird abgelehnt; das Feld stattdessen weglassen.";
 
-/** Der Hinweis auf die Typ-Asymmetrie der Kennungen (Plan 12, Streitfrage S10). */
+/** Der Hinweis auf die Typ-Asymmetrie der Kennungen. */
 export const ID_STRING_SENTENCE =
   "In Suchergebnissen erscheint sie als String; hier ohne Anführungszeichen übergeben.";
 
 /**
- * Der Pflichtsatz zur Währung einer Zahlung, wörtlich nach Plan 4.3.
+ * Der Pflichtsatz zur Währung einer Zahlung, wörtlich.
  *
  * Er ersetzt die zurückgenommene Verschärfung von `currency` an `/transactions/add`: Die
  * Währung einer Zahlung ist implizit die des Zahlungskontos, und kein Endpunkt der API gibt
@@ -53,7 +53,7 @@ export const TRANSACTION_CURRENCY_SENTENCE =
   "wenn er aus dem Vorgang bekannt ist.";
 
 /**
- * Der Beschreibungstext der beiden Belegwährungsfelder, wörtlich nach Plan 4.5.
+ * Der Beschreibungstext der beiden Belegwährungsfelder, wörtlich.
  *
  * Er benennt den Spezifikationswiderspruch, statt ihn durch ein geratenes Enum zu
  * verdecken: drei Codes am Endpunkt, 48 Codes am Stapelelement und dort zugleich der
@@ -66,7 +66,7 @@ export const RECEIPT_CURRENCY_SENTENCE =
   "BuchhaltungsButler eine Währung ab, nennt die Fehlermeldung den erlaubten Vorrat.";
 
 /**
- * Der Beschreibungstext von `currency` an `/receipts/upload`, Plan 4.5 Zeile 3.
+ * Der Beschreibungstext von `currency` an `/receipts/upload`.
  *
  * Die Spezifikation verlangt dort „Has to be 'EUR' if specified“ und widerspricht damit dem
  * Vorrat von `/receipts/add`. Dass nur 'EUR' gilt, ist **nicht verifiziert**.
@@ -79,7 +79,7 @@ export const UPLOAD_CURRENCY_SENTENCE =
 // --- Datum, Datumzeit, Betrag, Kennung -----------------------------------------------
 
 /**
- * Datumsfeld, Muster nach Plan 4.5.
+ * Datumsfeld, Muster.
  *
  * @param subject Der feldeigene Anfang der Beschreibung, zum Beispiel
  *                „Rechnungsdatum des Belegs“. Ohne abschließenden Punkt.
@@ -88,7 +88,7 @@ export function date(subject: string): z.ZodString {
   return dateValue(`${subject} als YYYY-MM-DD, zum Beispiel 2026-04-26. ${EMPTY_STRING_SENTENCE}`);
 }
 
-/** Datum mit Uhrzeit, Muster nach Plan 4.5. Ein reines Datum gilt als 23:59:59 dieses Tages. */
+/** Datum mit Uhrzeit, Muster. Ein reines Datum gilt als 23:59:59 dieses Tages. */
 export function dateTime(subject: string): z.ZodString {
   return dateTimeValue(
     `${subject} als YYYY-MM-DD HH:MM:SS, zum Beispiel 2026-04-26 13:45:00. ` +
@@ -97,7 +97,7 @@ export function dateTime(subject: string): z.ZodString {
 }
 
 /**
- * Betragsfeld, Muster nach Plan 4.5. Das Fragment ist als Betrag markiert (Guard 5).
+ * Betragsfeld, Muster. Das Fragment ist als Betrag markiert (Guard 5).
  *
  * @param subject Der feldeigene Anfang der Beschreibung, zum Beispiel „Bruttobetrag des
  *                Belegs". Ohne abschließenden Punkt.
@@ -111,7 +111,7 @@ export function amountIn(subject: string): z.ZodString {
 }
 
 /**
- * Mandantenbezogene Kennung, Muster nach Plan 4.5.
+ * Mandantenbezogene Kennung, Muster.
  *
  * @param entity     Die **vollständige Nominalphrase im Genitiv**, mit Artikel: „des Belegs“,
  *                   „der Zahlung“, „der Buchung“. Der Artikel gehört zum Argument und steht
@@ -166,7 +166,7 @@ export const VAT_KEYS = [
   "7_both_app",
 ] as const;
 
-/** Steuerschlüssel als Enum über die 23 belegten Werte (Plan 4.5). */
+/** Steuerschlüssel als Enum über die 23 belegten Werte. */
 export function vatKey() {
   return z
     .enum(VAT_KEYS)
@@ -182,7 +182,7 @@ export function vatKey() {
 // --- Konten und Kostenstellen --------------------------------------------------------
 
 /**
- * Sachkontonummer. Mandantendaten sind nie ein Enum (Plan 4.3), sondern tragen den Verweis
+ * Sachkontonummer. Mandantendaten sind nie ein Enum, sondern tragen den Verweis
  * auf das Nachschlagewerkzeug.
  */
 export function postingAccountNumber(): z.ZodString {
@@ -198,7 +198,7 @@ export function postingAccountNumber(): z.ZodString {
  *
  * Der eigene Baustein ist kein Zierrat: Der API-Parameter heißt an vier Endpunkten
  * `account`, erwartet aber eine Sachkontonummer und meint ein Zahlungskonto. Im
- * Werkzeugschema heißt das Feld deshalb `payment_account_number` (Anhang A, Plan 3.4).
+ * Werkzeugschema heißt das Feld deshalb `payment_account_number` (Anhang A).
  */
 export function paymentAccountNumber(): z.ZodString {
   return boundedText(
@@ -208,7 +208,7 @@ export function paymentAccountNumber(): z.ZodString {
   );
 }
 
-/** Kostenstelle, höchstens 10 Zeichen (Plan 4.5). */
+/** Kostenstelle, höchstens 10 Zeichen. */
 export function costLocation(): z.ZodString {
   return boundedText(
     "Kostenstelle, mandantenbezogen, nachschlagen mit bb_cost_locations_search. " +
@@ -222,14 +222,14 @@ export function costLocation(): z.ZodString {
 /**
  * Die neun Adress- und Kontaktfelder, die Debitoren, Kreditoren und Rechnungen teilen.
  *
- * Sparmaßnahme S4 aus Plan 4.10: Die rund 90 Vorkommen dieser Felder über alle Werkzeuge
+ * Sparmaßnahme S4: Die rund 90 Vorkommen dieser Felder über alle Werkzeuge
  * tragen einen Einzeiler nach festem Muster und höchstens 80 Zeichen, statt den
  * ausführlichen Spezifikationstext zu übersetzen.
  *
  * **Bankdaten gehören nicht in diesen Block.** `iban` und `bic` stehen als eigene
  * Bausteine daneben ({@link iban}, {@link bic}): Eine überschriebene Bankverbindung ist ein
- * anderer Schaden als eine überschriebene Postadresse, und Plan 3.3 begründet
- * `destructiveHint: true` bei Klasse M ausdrücklich mit ihr.
+ * anderer Schaden als eine überschriebene Postadresse, und genau damit ist
+ * `destructiveHint: true` bei Klasse M begründet.
  *
  * **Der Feldname weicht bei den Rechnungen ab.** Debitoren und Kreditoren führen
  * `additional_address_line`, die drei Rechnungsendpunkte `additional_addressline` ohne
@@ -280,14 +280,14 @@ export function bic(): z.ZodString {
 
 // --- Antwortformat -------------------------------------------------------------------
 
-/** Die beiden Werte von `response_format` (Plan 7.4, `tool-design.md` 7.2). */
+/** Die beiden Werte von `response_format` (`tool-design.md` 7.2). */
 export const RESPONSE_FORMATS = ["concise", "detailed"] as const;
 
 /**
- * Das einzige rein serverseitige Feld des ganzen Servers (Plan 4.3).
+ * Das einzige rein serverseitige Feld des ganzen Servers.
  *
  * Es wird nie an die API gesendet, und die Beschreibung sagt das. Damit ist es kein
- * verborgenes Verhalten im Sinne von E1, sondern deklariert.
+ * verborgenes Verhalten, sondern deklariert.
  */
 export function responseFormat() {
   // .describe() steht nach .default(): Nur dann trägt das äußere Schema die Beschreibung,
@@ -308,7 +308,7 @@ export function responseFormat() {
 // --- Währung -------------------------------------------------------------------------
 
 /**
- * Die 48 Währungscodes, verbindlich und vollständig nach Plan 4.5.
+ * Die 48 Währungscodes, verbindlich und vollständig.
  *
  * Entnommen dem Beschreibungstext von `Transaction.currency` (maschinell am 2026-09-12).
  * Der Body-Parameter `currency` an `/transactions/add` schreibt 47 davon aus; der einzige
@@ -371,10 +371,10 @@ export const TRANSACTION_CURRENCY_CODES = [
  *
  * Benutzt von Werkzeug 4 (`bb_receipts_create`) und Werkzeug 5
  * (`bb_receipts_create_batch`). Dass beide denselben Baustein rufen, ist die konstruktive
- * Erfüllung von Regel R-A aus Plan 4.5: Ein Werkzeugpaar, bei dem ein Wert einzeln erlaubt
+ * Erfüllung von Regel R-A: Ein Werkzeugpaar, bei dem ein Wert einzeln erlaubt
  * und im Stapel verboten wäre, ist ein Widerspruch, den kein Aufrufer auflösen kann. Der
  * Ein-Wert-Enum `['EUR']` der Definition `Receipt` wird verworfen wie das Platzhalterschema
- * des `order`-Parameters (Plan 0.5 Korrektur 2, Anhang B Punkt 47).
+ * des `order`-Parameters.
  */
 export function currencyReceipts(): z.ZodString {
   return boundedText(RECEIPT_CURRENCY_SENTENCE);
@@ -393,7 +393,7 @@ export function currencyTransactions() {
 }
 
 /**
- * Währung beim Belegupload: freier String mit dem Widerspruch aus Plan 4.5 Zeile 3.
+ * Währung beim Belegupload: freier String mit dem Widerspruch.
  *
  * Benutzt von Werkzeug 6 (`bb_receipts_upload`). Der eigene Baustein ist nötig, weil die
  * Spezifikation hier einen dritten, wieder anderen Vorrat nennt; R-A greift nicht, weil

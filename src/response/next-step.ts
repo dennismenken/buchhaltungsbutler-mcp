@@ -1,14 +1,14 @@
-// Anschlusshinweis und Umkehrweg (Plan 7.6).
+// Anschlusshinweis und Umkehrweg.
 //
 // Zwei Dinge stehen hier, weil sie beide dieselbe Frage beantworten — „und was jetzt?" — und
 // beide aus dem Werkzeugnamen folgen:
 //
 //  1. **Der Weg zurück.** Jede Antwort eines schreibenden Werkzeugs nennt ihn, „sofern es
-//     einen gibt, und ausdrücklich dessen Fehlen, wo es keinen gibt" (Plan 7.6). Die Zuordnung
-//     steht in {@link REVERSAL_BY_TOOL}, abgeleitet aus der Werkzeugtabelle in Plan 3.8 und dem
-//     Wegweiser in 3.7. Sie steht hier und nicht im Registereintrag, weil `ToolEntry` (Plan
-//     2.1) kein Feld dafür führt; wäre eines vorgesehen, gehörte sie dorthin.
-//  2. **Die vier Anschlusshinweise aus der Tabelle in 7.6**, wörtlich.
+//     einen gibt, und ausdrücklich dessen Fehlen, wo es keinen gibt". Die Zuordnung
+//     steht in {@link REVERSAL_BY_TOOL}, abgeleitet aus der Werkzeugtabelle und dem
+//     Buchungswegweiser. Sie steht hier und nicht im Registereintrag, weil `ToolEntry`
+//     kein Feld dafür führt; wäre eines vorgesehen, gehörte sie dorthin.
+//  2. **Die vier Anschlusshinweise aus der Tabelle**, wörtlich.
 //
 // Ton: Hinweise erscheinen nur, wenn sie nicht offensichtlich sind, und **nie als Anweisung an
 // das Modell**, sondern als Befund mit Handlungsoption. „Die Antwort ist voll, es gibt also
@@ -23,7 +23,7 @@ export type Reversal =
       /**
        * Zuordnung Parameter des Umkehrwerkzeugs → Feld, aus dem der Wert kommt. Gelesen wird
        * zuerst die Schreibantwort, dann die Argumente des Aufrufs; **ohne** zusätzlichen
-       * Request (Plan 7.6).
+       * Request.
        */
       readonly argFrom: Readonly<Record<string, string>>;
       /** Was dabei wirklich passiert. Pflicht, wo „zurücknehmen" nicht „ungeschehen" heißt. */
@@ -54,7 +54,7 @@ const RECREATE_NOTE =
   "Buchungsnummern und Zeitstempel sind danach andere.";
 
 /**
- * Der Weg zurück je schreibendem Werkzeug, vollständig für alle 39 (Plan 3.8, 3.9).
+ * Der Weg zurück je schreibendem Werkzeug, vollständig für alle 39.
  *
  * Lesende Werkzeuge stehen nicht in der Tabelle: Sie verändern nichts, und ein „Weg zurück"
  * wäre dort eine sinnlose Zeile.
@@ -304,7 +304,7 @@ export function reversalFor(toolName: string): Reversal | undefined {
  * Der Satz „Weg zurück" für den Textblock.
  *
  * Die Werte der Umkehrargumente kommen aus der Schreibantwort und aus den Argumenten des
- * Aufrufs — **ohne** zusätzlichen Request (Plan 7.6). Ist ein Wert nicht bekannt, wird er
+ * Aufrufs — **ohne** zusätzlichen Request. Ist ein Wert nicht bekannt, wird er
  * nicht erfunden: Dann steht dort der Parametername ohne Wert, und der Agent weiß, was er
  * einsetzen muss.
  */
@@ -341,7 +341,7 @@ export function reversalText(
 
 /**
  * Der Anschlusshinweis nach `bb_reports_create_bwa` beziehungsweise
- * `bb_reports_create_sums` (Plan 7.6, erste Zeile der Hinweistabelle).
+ * `bb_reports_create_sums` (erste Zeile der Hinweistabelle).
  */
 export function reportRequestedNote(options: {
   readonly reportId: string;
@@ -358,10 +358,10 @@ export function reportRequestedNote(options: {
 }
 
 /**
- * Der Hinweis auf ein gefundenes Duplikat (Plan 7.6, zweite Zeile).
+ * Der Hinweis auf ein gefundenes Duplikat.
  *
  * Er erscheint **ausschließlich** bei `BB_MCP_DUPLICATE_CHECK=on`; im Auslieferungszustand ist
- * der Guard aus, und dann geht auch kein Zusatzaufruf hinaus (Plan 6.2, 7.5 Regel 2).
+ * der Guard aus, und dann geht auch kein Zusatzaufruf hinaus.
  */
 export function duplicateFoundNote(options: {
   readonly existingId: string;

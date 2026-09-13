@@ -1,4 +1,4 @@
-// Die zweite, unabhängig gepflegte Gruppenliste für die Prüfung des Gruppenschalters (N5).
+// Die zweite, unabhängig gepflegte Gruppenliste für die Prüfung von `BB_MCP_TOOL_GROUPS`.
 //
 // Sie liegt aus demselben Grund getrennt vom Register wie `class-list.ts`: Eine Prüfung, die
 // die Gruppe aus derselben Datei liest, in der sie steht, prüft sich selbst. Erst zwei
@@ -10,8 +10,8 @@
 // `payment_accounts`, und die Bündelwerkzeuge tragen kein `bb_bundles_` im Namen und liegen
 // trotzdem in `bundles`.
 //
-// Reihenfolge und Abschnittsüberschriften sind die der Werkzeugnummern aus Plan 3.8, damit ein
-// Abgleich mit dem Plan ohne Zählen möglich ist.
+// Reihenfolge und Abschnittsüberschriften sind die der Werkzeugnummern, damit ein
+// Abgleich ohne Zählen möglich ist.
 
 import type { ToolGroup } from "../../src/registry/groups.js";
 
@@ -95,9 +95,8 @@ export const EXPECTED_TOOL_GROUPS = {
 } as const satisfies Record<string, ToolGroup>;
 
 /**
- * Die Anzahl je Gruppe, von Hand aus der Tabelle in `docs/entwicklung/buendelwerkzeuge.md`
- * Abschnitt 7 abgeschrieben. Summe 54. Sie ist die Quersumme zur Liste oben: Ein Tippfehler
- * dort, der ein Werkzeug verschiebt, fällt hier auf.
+ * Die Anzahl je Gruppe, von Hand abgeschrieben. Summe 54. Sie ist die Quersumme zur Liste
+ * oben: Ein Tippfehler dort, der ein Werkzeug verschiebt, fällt hier auf.
  *
  * `bundles` steht **nicht** in dieser Tabelle: Die Gruppe führt kein Endpunktwerkzeug, und ihre
  * Besetzung ist Sache der Bündelwerkzeuge selbst.

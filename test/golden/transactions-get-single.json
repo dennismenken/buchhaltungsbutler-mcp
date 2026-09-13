@@ -1,5 +1,5 @@
 {
-  "_herkunft": "Endpunkt /transactions/get/{wert} (Einzelabruf, interpolierter Pfad) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L1, L2 und L3, docs/api/live-befunde-orchestrator.md Befund 1 und 2 | Struktur gemessen, Geschäftsdaten erfunden | Feldmenge und Typen am 2026-09-12 in AP09 erneut live gegen die Produktivumgebung geprüft (lesend, 5 Aufrufe): Umschlag, Feldzahl und Typen stimmen (13 Felder, account als JSON-Zahl, data als Objekt ohne rows)",
+  "_herkunft": "Endpunkt /transactions/get/{wert} (Einzelabruf, interpolierter Pfad) | gemessen 2026-09-12 | Quelle: Live-Messung vom 2026-09-12, docs/api/live-befunde.md Befund 1 und 2 | Struktur gemessen, Geschäftsdaten erfunden | Feldmenge und Typen am 2026-09-12 erneut live gegen die Produktivumgebung geprüft (lesend, 5 Aufrufe): Umschlag, Feldzahl und Typen stimmen (13 Felder, account als JSON-Zahl, data als Objekt ohne rows)",
   "_zweck": "die 13 Felder des Einzelabrufs gegen die 6 der Liste, account als JSON-Zahl, data als Objekt ohne rows",
   "http": {
     "status": 200,

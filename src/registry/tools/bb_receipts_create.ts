@@ -1,6 +1,6 @@
-// Werkzeug 4 von 54 (Plan 3.8): `/receipts/add`, Beleg ohne Datei anlegen.
+// Werkzeug 4 von 54: `/receipts/add`, Beleg ohne Datei anlegen.
 //
-// **Währung, Regel R-A aus Plan 4.5.** `currency` trägt hier und an `bb_receipts_create_batch`
+// **Währung, Regel R-A.** `currency` trägt hier und an `bb_receipts_create_batch`
 // denselben Wertevorrat, dieselbe Pflichtigkeit und wortgleich dieselbe Beschreibung: freier
 // String, an beiden Pflicht, Text aus `RECEIPT_CURRENCY_SENTENCE`. Dass beide Einträge
 // dieselbe Konstante und denselben Baustein rufen, ist der Nachweis des Gleichlaufs.
@@ -8,15 +8,14 @@
 // `.definitions.Receipt.properties.currency.enum` in docs/openapi/buchhaltungsbutler-v1.json)
 // **ist verworfen**, weil er dem Beschreibungstext derselben Eigenschaft mit 48 Codes und dem
 // Endpunkttext mit drei Codes widerspricht; nach Regel R-B ist damit kein Vorrat belegt, und
-// ein erfundenes Enum lehnte gültige Belege unsichtbar vor dem Request ab (Plan 0.5
-// Korrektur 2, Anhang B Punkt 47).
+// ein erfundenes Enum lehnte gültige Belege unsichtbar vor dem Request ab.
 //
 // **Zu `account` und `creditor_debtor`:** Die Spezifikation führt beide als `integer`, schreibt
-// die Beispiele in ihrem eigenen Text aber als '1200' und '70001'. Plan 4.5 gibt für `account`
-// den Baustein `paymentAccountNumber()` vor, also eine Zeichenkette; `creditor_debtor` folgt
-// derselben Form, damit zwei Felder mit derselben Bedeutung nicht verschiedene Typen haben und
-// führende Nullen erhalten bleiben. Ob die API eine Zeichenkette annimmt, ist **nicht
-// verifiziert** (kein schreibender Testaufruf, Plan 0.3).
+// die Beispiele in ihrem eigenen Text aber als '1200' und '70001'. Für `account` gilt
+// deshalb der Baustein `paymentAccountNumber()`, also eine Zeichenkette; `creditor_debtor`
+// folgt derselben Form, damit zwei Felder mit derselben Bedeutung nicht verschiedene Typen
+// haben und führende Nullen erhalten bleiben. Ob die API eine Zeichenkette annimmt, ist
+// **nicht verifiziert** (kein schreibender Testaufruf).
 
 import { z } from "zod";
 
@@ -123,7 +122,7 @@ export const bb_receipts_create: ToolEntry = {
       source: "body",
       required: true,
       // Wortgleich mit dem Feld `currency` je Element an bb_receipts_create_batch: dieselbe
-      // Konstante, derselbe Baustein, dieselbe Pflichtigkeit (Regel R-A, Plan 4.5).
+      // Konstante, derselbe Baustein, dieselbe Pflichtigkeit (Regel R-A).
       description: RECEIPT_CURRENCY_SENTENCE,
       schema: currencyReceipts(),
     },
@@ -211,7 +210,7 @@ export const bb_receipts_create: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   responseContract: {
     // Die Quittung trägt id_by_customer auf oberster Ebene des Umschlags, nicht unter data
     // (docs/api/belege.md 5.2, Spezifikation ReceiptsAdd_Success).

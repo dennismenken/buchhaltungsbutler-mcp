@@ -1,5 +1,5 @@
 /**
- * Visual Studio Code mit GitHub Copilot (Plan 8.3).
+ * Visual Studio Code mit GitHub Copilot.
  *
  * Zwei Wege, je Ebene einer:
  *

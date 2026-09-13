@@ -1,19 +1,19 @@
 name: Veröffentlichung
 
 # Ausgelöst wird dieser Workflow ausschließlich durch einen Tag der Form v*.*.*, den allein
-# der Projektinhaber setzt (Plan 11.2, AP21). Es gibt bewusst KEIN workflow_dispatch: Die
-# Veröffentlichung auf npm ist einer der beiden unumkehrbaren Schritte des Vorhabens, und ein
-# Knopf in der Weboberfläche ist genau ein Klick zu wenig Widerstand. Wer veröffentlichen
-# will, setzt einen Tag; das ist ein bewusster, nachvollziehbarer Schritt mit einem Namen.
+# der Projektinhaber setzt. Es gibt bewusst KEIN workflow_dispatch: Die Veröffentlichung auf
+# npm ist einer der beiden unumkehrbaren Schritte des Vorhabens, und ein Knopf in der
+# Weboberfläche ist genau ein Klick zu wenig Widerstand. Wer veröffentlichen will, setzt einen
+# Tag; das ist ein bewusster, nachvollziehbarer Schritt mit einem Namen.
 #
 # Die Reihenfolge der Schritte ist nicht beliebig. Alles, was den Lauf abbrechen kann, liegt
 # VOR `npm publish`:
 #
 #   1. Tag gegen package.json,
-#   2. Bestätigung des Vertragslaufs aus der Tag-Nachricht (Plan 9.7),
+#   2. Bestätigung des Vertragslaufs aus der Tag-Nachricht,
 #   3. Abschnitt aus CHANGELOG.md,
 #   4. Generatordifferenz, Typprüfung, Linting, Formatierung, Tests, Abdeckung,
-#   5. Bau, Größenbudget (Plan 9.10), Bau des .mcpb-Bundles.
+#   5. Bau, Größenbudget, Bau des .mcpb-Bundles.
 #
 # Erst danach wird veröffentlicht. Ein Verpackungsfehler, ein zu großes Paket oder eine
 # fehlende Bestätigung blockiert damit denselben Schritt, den niemand zurücknehmen kann.
@@ -44,7 +44,7 @@ jobs:
       id-token: write
 
     steps:
-      # SHA-Pinnung wie in ci.yml (Plan 13.3), hier aber mit dem größten Gewicht: Dieser
+      # SHA-Pinnung wie in ci.yml, hier aber mit dem größten Gewicht: Dieser
       # Lauf bekommt über `id-token: write` ein Veröffentlichungsrecht auf npm. Ein
       # verschobener Tag einer Fremd-Action liefe mit genau diesem Recht. Der Tag hinter
       # dem SHA ist der Anker für Dependabot (.github/dependabot.yml).
@@ -70,11 +70,10 @@ jobs:
           echo "bundle=bbutler-mcp-${VERSION}.mcpb" >> "$GITHUB_OUTPUT"
           echo "Tag und package.json nennen übereinstimmend ${VERSION}."
 
-      # Plan 9.7: Der Vertragslauf gegen die echte API ist Pflicht vor jeder Veröffentlichung.
-      # Hier kann er nicht laufen — er braucht echte Zugangsdaten, und die öffentliche CI
-      # bekommt keine (Plan 9.1). Verlangt wird deshalb die ausdrückliche Bestätigung, dass er
-      # gelaufen ist, mit Datum und Ergebnis. Eine Zusage, die nirgends abgefragt wird, ist
-      # keine.
+      # Der Vertragslauf gegen die echte API ist Pflicht vor jeder Veröffentlichung. Hier kann
+      # er nicht laufen — er braucht echte Zugangsdaten, und die öffentliche CI bekommt keine.
+      # Verlangt wird deshalb die ausdrückliche Bestätigung, dass er gelaufen ist, mit Datum
+      # und Ergebnis. Eine Zusage, die nirgends abgefragt wird, ist keine.
       #
       # Abgefragt wird sie in der Nachricht des annotierten Tags. Das ist derselbe Handgriff,
       # mit dem der Projektinhaber die Veröffentlichung auslöst, und er ist unveränderlich
@@ -101,7 +100,7 @@ jobs:
 
           TYP="$(git cat-file -t "refs/tags/${TAG}")"
           if [ "$TYP" != "tag" ]; then
-            echo "::error::${TAG} ist ein leichtgewichtiger Tag und trägt keine Nachricht. Die Bestätigung des Vertragslaufs steht in der Tag-Nachricht (Plan 9.7). Tag löschen und mit 'git tag -a' neu setzen. Es wird nichts veröffentlicht."
+            echo "::error::${TAG} ist ein leichtgewichtiger Tag und trägt keine Nachricht. Die Bestätigung des Vertragslaufs steht in der Tag-Nachricht. Tag löschen und mit 'git tag -a' neu setzen. Es wird nichts veröffentlicht."
             exit 1
           fi
 
@@ -110,7 +109,7 @@ jobs:
           ZEILE="$(printf '%s\n' "$NACHRICHT" | grep -E "$MUSTER" | head -n 1 || true)"
 
           if [ -z "$ZEILE" ]; then
-            echo "::error::Die Nachricht von ${TAG} enthält keine gültige Bestätigung des Vertragslaufs. Verlangt ist genau eine Zeile der Form 'Vertragslauf: JJJJ-MM-TT ohne Abweichungen' oder 'Vertragslauf: JJJJ-MM-TT mit Abweichungen: <Text>'. Zuerst 'pnpm run contract:read' gegen die echte API ausführen (Plan 9.7). Es wird nichts veröffentlicht."
+            echo "::error::Die Nachricht von ${TAG} enthält keine gültige Bestätigung des Vertragslaufs. Verlangt ist genau eine Zeile der Form 'Vertragslauf: JJJJ-MM-TT ohne Abweichungen' oder 'Vertragslauf: JJJJ-MM-TT mit Abweichungen: <Text>'. Zuerst 'pnpm run contract:read' gegen die echte API ausführen. Es wird nichts veröffentlicht."
             exit 1
           fi
 
@@ -127,7 +126,7 @@ jobs:
             exit 1
           fi
           if [ "$ALTER" -gt 30 ]; then
-            echo "::error::Der Vertragslauf vom ${DATUM} ist ${ALTER} Tage alt. Verlangt sind höchstens 30 Tage: Die Spezifikation der API wird nicht gepflegt, und was zurückkommt, ist das, was zählt (Plan 9.7). Lauf wiederholen und den Tag neu setzen. Es wird nichts veröffentlicht."
+            echo "::error::Der Vertragslauf vom ${DATUM} ist ${ALTER} Tage alt. Verlangt sind höchstens 30 Tage: Die Spezifikation der API wird nicht gepflegt, und was zurückkommt, ist das, was zählt. Lauf wiederholen und den Tag neu setzen. Es wird nichts veröffentlicht."
             exit 1
           fi
 
@@ -148,7 +147,7 @@ jobs:
           if (kopf === -1) {
             console.error(
               `CHANGELOG.md führt keinen Abschnitt "## [${version}]". Jede Veröffentlichung ` +
-                "bekommt einen Eintrag (Plan 2). Es wird nichts veröffentlicht.",
+                "bekommt einen Eintrag. Es wird nichts veröffentlicht.",
             );
             process.exit(1);
           }
@@ -175,7 +174,7 @@ jobs:
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          # Die Untergrenze aus engines.node (Plan 13.1). Was hier baut, baut überall, wo das
+          # Die Untergrenze aus engines.node in package.json. Was hier baut, baut überall, wo das
           # Paket laufen darf.
           node-version: "22.19.0"
           cache: "pnpm"
@@ -198,22 +197,21 @@ jobs:
         run: pnpm format --check
       - name: Tests
         run: pnpm test
-      # Wie in ci.yml: Nur ein Lauf mit --coverage wertet die Schwellen aus Plan 9.5 aus. Er
-      # steht hier vor dem unumkehrbaren Schritt, damit eine Unterschreitung die
+      # Wie in ci.yml: Nur ein Lauf mit --coverage wertet die Schwellen aus vitest.config.ts
+      # aus. Er steht hier vor dem unumkehrbaren Schritt, damit eine Unterschreitung die
       # Veröffentlichung blockiert und nicht erst danach auffällt.
       - name: Abdeckung
         run: pnpm test:coverage
       - name: Bau
         run: pnpm build
 
-      # Plan 9.10: dasselbe Budget wie im Paketprobelauf, hier aber vor dem unumkehrbaren
-      # Schritt. Ein zu großes Paket blockiert die Veröffentlichung, statt sie zu überleben.
+      # Dasselbe Budget wie im Paketprobelauf, hier aber vor dem unumkehrbaren Schritt. Ein zu
+      # großes Paket blockiert die Veröffentlichung, statt sie zu überleben.
       - name: Größenbudget
         run: pnpm check-size
 
-      # Plan 11.2 AP21: Das Bundle wird VOR npm publish gebaut, damit ein Verpackungsfehler
-      # den unumkehrbaren Schritt blockiert. Das Werkzeug kommt aus node_modules, nie über npx
-      # (Plan 13.5).
+      # Das Bundle wird VOR npm publish gebaut, damit ein Verpackungsfehler den unumkehrbaren
+      # Schritt blockiert. Das Werkzeug kommt aus node_modules, nie über npx.
       - name: .mcpb-Bundle bauen
         env:
           BUNDLE: ${{ steps.version.outputs.bundle }}

@@ -1,4 +1,4 @@
-// Positionsliste → parallele Arrays, mit positionsgenauen Fehlermeldungen (Plan 4.8).
+// Positionsliste → parallele Arrays, mit positionsgenauen Fehlermeldungen.
 //
 // **Genau fünf Endpunkte** erwarten zusammengehörige Werte als mehrere gleich lange Arrays auf
 // oberster Ebene, **zwei weitere** je Stapelelement. Überall sonst findet keine Umformung
@@ -6,14 +6,14 @@
 // `/postings/add-batch/free`, `/postings/add-batch/receipts` (auf oberster Ebene),
 // `/postings/add-batch/transactions` (auf oberster Ebene), `/receipts/addBatch`,
 // `/transactions/addBatch`, `/settings/add-batch/debtors`, `/settings/add-batch/creditors` und
-// `/transactions/assign-batch/receipt` sind **bereits Objektlisten** (Plan 4.8, maschinell
+// `/transactions/assign-batch/receipt` sind **bereits Objektlisten** (maschinell
 // belegt).
 //
 // Die Spaltenliste wird **aus dem Registereintrag abgeleitet** und nicht zweitens hier
 // gepflegt: Jedes Feld des Positionsobjekts trägt in `apiNames` genau den Namen des parallelen
-// Arrays, das es erzeugt (Plan 2.1, 4.8). Eine zweite Liste wäre die Stelle, an der die
+// Arrays, das es erzeugt. Eine zweite Liste wäre die Stelle, an der die
 // Längeninvariante später doch wieder auseinanderfällt — zum Beispiel an der abweichenden
-// Schreibweise `postingstexts` innerhalb von `ReceiptPostings` (Spezifikationsfehler aus 0.5).
+// Schreibweise `postingstexts` innerhalb von `ReceiptPostings` (Spezifikationsfehler).
 //
 // Die Längeninvariante ist **konstruktiv** erfüllt: Jedes erzeugte Array entsteht aus derselben
 // Schleife über dieselbe Liste. Es gibt keinen Zweig, in dem ein Array kürzer sein könnte.
@@ -29,8 +29,8 @@ export interface PositionColumn {
 }
 
 /**
- * Die fünf Endpunkte mit parallelen Arrays **auf oberster Ebene** (Plan 4.8). Mehr gibt es
- * nicht; die Summe ihrer Array-Parameter ist genau die in 0.4 gezählte Menge von 32.
+ * Die fünf Endpunkte mit parallelen Arrays **auf oberster Ebene**. Mehr gibt es
+ * nicht; die Summe ihrer Array-Parameter ist genau die gezählte Menge von 32.
  */
 export const PARALLEL_ARRAY_TOP_LEVEL_PATHS: readonly string[] = Object.freeze([
   "/postings/add/receipt",
@@ -41,7 +41,7 @@ export const PARALLEL_ARRAY_TOP_LEVEL_PATHS: readonly string[] = Object.freeze([
 ]);
 
 /**
- * Die zwei Endpunkte mit parallelen Arrays **innerhalb jedes Stapelelements** (Plan 4.8). Auf
+ * Die zwei Endpunkte mit parallelen Arrays **innerhalb jedes Stapelelements**. Auf
  * oberster Ebene findet dort keine Umformung statt: Der Behälter ist eine Objektliste.
  */
 export const PARALLEL_ARRAY_NESTED_PATHS: readonly string[] = Object.freeze([
@@ -51,7 +51,7 @@ export const PARALLEL_ARRAY_NESTED_PATHS: readonly string[] = Object.freeze([
 
 /**
  * Die Endpunkte, an denen ausdrücklich **keine** Umformung stattfindet, obwohl sie Mengen
- * entgegennehmen. Die Liste steht hier, damit die Zusicherung aus Plan 4.8 prüfbar ist und
+ * entgegennehmen. Die Liste steht hier, damit die Zusicherung prüfbar ist und
  * nicht nur in der Prosa behauptet wird.
  */
 export const NO_PARALLEL_ARRAY_PATHS: readonly string[] = Object.freeze([
@@ -104,7 +104,7 @@ export function columnsOf(toolName: string, field: FieldSpec): readonly Position
       field.name,
       null,
       "Das Feld ist als parallele Arrays deklariert, trägt aber keine itemFields. Ohne den " +
-        "Aufbau eines Elements gibt es keine Spaltenliste (Plan 2.1).",
+        "Aufbau eines Elements gibt es keine Spaltenliste.",
     );
   }
 
@@ -145,7 +145,7 @@ export function columnsOf(toolName: string, field: FieldSpec): readonly Position
 }
 
 /**
- * Prüft, dass die Umformung an dieser Stelle überhaupt erlaubt ist (Plan 4.8).
+ * Prüft, dass die Umformung an dieser Stelle überhaupt erlaubt ist.
  *
  * @param specPath Der unveränderte Spezifikationspfad des Endpunkts.
  * @param nested `true`, wenn die Positionsliste innerhalb eines Stapelelements liegt.
@@ -168,7 +168,7 @@ export function assertTransformAllowed(
     fieldPath,
     null,
     `${specPath} führt ${nested ? "je Stapelelement" : "auf oberster Ebene"} keine parallelen ` +
-      "Arrays. Die Umformung findet ausschließlich an den in Plan 4.8 benannten Endpunkten " +
+      "Arrays. Die Umformung findet ausschließlich an den benannten Endpunkten " +
       "statt; alle übrigen Mengenfelder sind bereits Objektlisten und gehen unverändert " +
       "hinaus.",
   );
@@ -256,7 +256,7 @@ export function buildParallelArrays(
  *
  * Das betrifft genau `oi_receipts_ids_by_customer` an `/postings/add/transaction` und dessen
  * Stapelform: Dort bedeutet `null` „dieser Position ausdrücklich keinen Beleg zuordnen" und
- * ist deshalb ein Wert und keine Lücke (Plan 4.8).
+ * ist deshalb ein Wert und keine Lücke.
  *
  * Gefragt wird das Schemafragment des Elementfeldes selbst, nicht eine Namensliste und auch
  * keine Zod-Interna: Wenn das Fragment `null` annimmt, ist `null` dort ein gültiger Wert.

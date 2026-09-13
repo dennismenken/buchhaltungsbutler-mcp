@@ -1,5 +1,5 @@
 // Der Aufbau des Servers: McpServer bauen, `instructions` übergeben, Werkzeuge und Resources
-// registrieren, Signal- und Fehlerbehandlung einhängen (Plan 2, Dateibaum; AP10).
+// registrieren, Signal- und Fehlerbehandlung einhängen (Dateibaum).
 //
 // Die Datei hält zwei Einstiegspunkte auseinander, und zwar mit Absicht:
 //
@@ -59,7 +59,7 @@ export interface BuiltServer {
   readonly tools: readonly RegisteredToolInfo[];
   /** Eine Zeile je registriertem Bündelwerkzeug; leer, wenn die Gruppe `bundles` aus ist. */
   readonly bundles: readonly RegisteredBundleInfo[];
-  /** Die URIs der registrierten Resources (Plan 7.7). */
+  /** Die URIs der registrierten Resources. */
   readonly resources: readonly string[];
   /** Der Text, der bei `initialize` mitgeht. */
   readonly instructions: string;
@@ -70,9 +70,9 @@ export interface BuiltServer {
  *
  * **Die Werkzeugliste hängt an genau einem Schalter, und das ist nicht der Nur-Lesen-Schalter.**
  * Auch bei fehlender Konfiguration und auch bei gesetztem `BB_MCP_READ_ONLY` werden alle
- * übergebenen Einträge registriert; die Absage kommt beim Aufruf und nicht durch Weglassen
- * (Plan 1.5, 6.5 Punkt 1, 6.6). Allein der Gruppenschalter `BB_MCP_TOOL_GROUPS` lässt Einträge
- * weg, und er tut es, um Kontext zu sparen (N5); die Begründung steht bei `registerTools`.
+ * übergebenen Einträge registriert; die Absage kommt beim Aufruf und nicht durch Weglassen.
+ * Allein der Gruppenschalter `BB_MCP_TOOL_GROUPS` lässt Einträge weg, und er tut es, um
+ * Kontext zu sparen; die Begründung steht bei `registerTools`.
  *
  * Beide `listChanged`-Angaben stehen ausdrücklich auf `false`: Werkzeugliste und
  * Resource-Liste sind über die gesamte Verbindung stabil, und dieser Server schickt keine
@@ -100,7 +100,7 @@ export function createServer(options: CreateServerOptions = {}): BuiltServer {
     ...(options.now === undefined ? {} : { now: options.now }),
   });
   // Die Bündelwerkzeuge hängen an der Gruppe `bundles` und an keiner Endpunktgruppe: Ein
-  // Bündel ruft die HTTP-Schicht auf und nicht die Endpunktwerkzeuge (Bauvorlage Abschnitt 7).
+  // Bündel ruft die HTTP-Schicht auf und nicht die Endpunktwerkzeuge.
   const bundles = registerBundles(server, {
     config,
     ...(options.bundles === undefined ? {} : { entries: options.bundles }),
@@ -118,7 +118,8 @@ export function createServer(options: CreateServerOptions = {}): BuiltServer {
  * Die Zahl der Werkzeuge, die dieser Start angemeldet hat: Endpunktwerkzeuge **und** Bündel.
  *
  * Die Bündel gehören in jede genannte Zahl, denn sie stehen in derselben `tools/list`-Antwort
- * wie die 54 Endpunktwerkzeuge (N1). Ohne sie meldete der Start unter
+ * wie die 54 Endpunktwerkzeuge, die unverändert bestehen bleiben. Ohne sie meldete der
+ * Start unter
  * `BB_MCP_TOOL_GROUPS=bundles` „0 Werkzeuge", während der Client fünf bekommt — und das ist
  * das empfohlene Profil für Claude Desktop. Die Rückmeldung zum Gruppenschalter ist die
  * einzige Stelle, an der jemand nachsehen kann, was seine Einstellung bewirkt hat; eine Zahl,
@@ -129,7 +130,7 @@ export function registeredToolCount(built: BuiltServer): number {
 }
 
 /**
- * Die Startmeldung zum Gruppenschalter (N5).
+ * Die Startmeldung zum Gruppenschalter `BB_MCP_TOOL_GROUPS`.
  *
  * **Zwei Wege mit Absicht.** Sind alle zwölf Gruppen aktiv, ist nichts versteckt, und die
  * Zeilen gehen als gewöhnliche `info`-Meldung heraus, die `BB_MCP_LOG_LEVEL` stummschalten
@@ -166,11 +167,11 @@ export interface RunningServer extends BuiltServer {
 }
 
 /**
- * Startet den Server auf stdio. Der Prozesseinstieg, von `src/cli.ts` benutzt (AP15).
+ * Startet den Server auf stdio. Der Prozesseinstieg, von `src/cli.ts` benutzt.
  *
- * Zur Reihenfolge: Die Konfiguration wird vor dem Öffnen des Transports aufgelöst (Plan 6.4).
+ * Zur Reihenfolge: Die Konfiguration wird vor dem Öffnen des Transports aufgelöst.
  * Ein unbrauchbarer Wert bricht dort ab, **fehlende Zugangsdaten nicht** — der Server startet,
- * meldet alle Werkzeuge an und erklärt sich bei jedem Aufruf (Plan 6.5). Ein Verbindungstest
+ * meldet alle Werkzeuge an und erklärt sich bei jedem Aufruf. Ein Verbindungstest
  * beim Start findet nicht statt; er kostete bei jedem Clientneustart ein Token aus dem
  * Minutenkontingent des Mandanten, und der Client zeigt sein Ergebnis nirgends an.
  */

@@ -1,6 +1,6 @@
 {
   "_herkunft": "Endpunkt /postings/add/free | dokumentiert | Quelle: Spezifikation PostingsAddFree_Success (ausschließlich success und message) | Struktur gemessen, Geschäftsdaten erfunden",
-  "_zweck": "die Auflösung der Schreibantwort ohne zusätzlichen Request (Umsetzungsplan 7.6): Die API meldet den angelegten Datensatz NICHT zurück, die Antwort nennt deshalb die Werte aus den Argumenten und sagt ausdrücklich, was fehlt",
+  "_zweck": "die Auflösung der Schreibantwort ohne zusätzlichen Request: Die API meldet den angelegten Datensatz NICHT zurück, die Antwort nennt deshalb die Werte aus den Argumenten und sagt ausdrücklich, was fehlt",
   "http": {
     "status": 200,
     "contentType": "application/json; charset=utf-8"

@@ -63,7 +63,7 @@ Kandidatenliste in 15.5 nicht, dort geht es um **Paket**namen und nicht um den E
 | `JAN-MCP` | https://www.jan.ai/docs/desktop/mcp und https://www.jan.ai/docs/desktop/integrations/mcp-servers | Offizielle Doku, nur über Suchtreffer ausgewertet | 2026-09-12 |
 | `NPM-REG` | Direkte HTTP-Abfragen von `https://registry.npmjs.org/<name>` für `buchhaltungsbutler-mcp`, `@dennismenken/buchhaltungsbutler-mcp`, `bb-mcp`, `bbutler-mcp`, `bbutler`, `bbutler`, `mcp-buchhaltungsbutler`, `buchhaltungsbutler-mcp-server`, `bb-buchhaltungsbutler` | Messung an der npm-Registry | 2026-09-12 |
 | `WEB-CHECK` | HTTP-Statusabfragen von `https://github.com/dennismenken`, `https://github.com/dennismenken/buchhaltungsbutler-mcp` und `https://www.npmjs.com/~dennismenken` | Messung | 2026-09-12 |
-| `DOC-GRUNDLAGEN` | `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/api/grundlagen.md` | Projektinterne Doku | 2026-09-12 |
+| `DOC-GRUNDLAGEN` | `docs/api/grundlagen.md` | Projektinterne Doku | 2026-09-12 |
 | `LOCAL-NODE` | Eigene Messung: `node --version` = v22.23.2, `npm --version` = 10.9.8, Laufzeit von `npx --version` | Messung | 2026-09-12 |
 | `LOCAL-NPM` | Quelltext der lokal installierten npm-Fassung 10.9.8, Datei `libnpmexec/lib/get-bin-from-manifest.js`, sowie die Ausgabe von `npx --help` | Messung am installierten Werkzeug | 2026-09-12 |
 | `LOCAL-YAML` | Eigene Prüfung des YAML-Verhaltens bei `@` am Anfang eines Skalars, PyYAML 6.0.3 | Messung | 2026-09-12 |
@@ -1464,9 +1464,7 @@ Optionale Variablen, als Vorschlag:
 Clients zu betreiben, die Werkzeugaufrufe pauschal freigeben, etwa Jan mit "Allow All MCP
 Tool Permissions". Das gehört in die erste Version.
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in den Abschnitten 6.1, 6.5 und 12, Streitfragen S7 und S8.** Zwei Festlegungen
-> dieses Abschnitts sind überholt:
+> **Nachgezogen am 2026-09-13.** Zwei Festlegungen dieses Abschnitts sind überholt:
 >
 > 1. **Kanonisch ist `BB_MCP_READ_ONLY`, nicht `BB_READ_ONLY`.** Der wortwörtlich
 >    vorgeschriebene Absagetext aus `tool-design.md` 9.5 nennt genau diesen Namen, und eine
@@ -1671,8 +1669,7 @@ Bei Erfolg zusätzlich den Anzeigenamen des Mandanten aus der Antwort holen, sof
 vorhanden, und zur Bestätigung anzeigen: "Verbunden mit: …". So merkt der Nutzer sofort,
 wenn er den `api_key` des falschen Mandanten eingetragen hat.
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 8.2, Schritt 4 und in Abschnitt 12, Streitfrage S24.** **Der
+> **Nachgezogen am 2026-09-13.** **Der
 > Bestätigungstext „Verbunden mit …" ist so nicht baubar.** `/accounts/get` liefert je Zeile nur
 > `name` und `postingaccount_number` und **keinen Mandantennamen**; das ist live belegt. An seine
 > Stelle tritt eine Rückfrage, die denselben Zweck erfüllt: Der Assistent zeigt die gefundenen
@@ -1681,7 +1678,8 @@ wenn er den `api_key` des falschen Mandanten eingetragen hat.
 > Assistent sagt genau das. Eine reine Anzeige ohne Frage wird überlesen; die Rückfrage ist der
 > einzige Schutz gegen den teuersten aller Einrichtungsfehler, den `api_key` eines fremden
 > Mandanten. Ebenfalls nachgezogen: Die Node-Untergrenze in Schritt 1 lautet **`>=22.19.0`**,
-> nicht `>=22.12.0` (Umsetzungsplan 13.1).
+> nicht `>=22.12.0`, weil die Laufzeitabhängigkeit `undici@8.10.2` selbst
+> `engines.node: ">=22.19.0"` deklariert; Einzelheiten in `toolchain.md` 3.3.
 
 **Schritt 4, Startvariante wählen.** npx (Vorgabe) oder globale Installation. Bei globaler
 Installation ermittelt der Assistent den absoluten Pfad des installierten Binaries und

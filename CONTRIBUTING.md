@@ -100,6 +100,16 @@ Beim Füllen eines Eintrags gelten diese Regeln:
 - **Ein Wertevorrat wird nicht geraten.** Wo die Spezifikation sich widerspricht, steht ein
   freier Text und der Widerspruch in der Parameterbeschreibung. Eine erfundene Schranke lehnt
   gültige Vorgänge unsichtbar ab, bevor die Anfrage überhaupt hinausgeht.
+- **Ein Werkzeug bildet seinen Endpunkt ab, ohne verborgene Logik.** Formt der Server etwas um,
+  beantwortet er etwas aus dem Stammdatenspeicher oder führt er ein Feld, das gar nicht an die
+  API geht, dann sagt die Beschreibung oder die Antwort das. Still geändertes Verhalten gibt es
+  nicht.
+- **Der Server sperrt keinen Aufruf; die Freigabe liegt beim Client.** Es gibt keinen Parameter
+  `confirm` und keine serverseitige Rückfrage vor dem Schreiben. Die Begründung steht in
+  [`docs/entwicklung/tool-design.md`, Abschnitt 9.4](docs/entwicklung/tool-design.md#94-bestätigung-liegt-beim-host-nicht-im-server).
+  Was der Server dem Client stattdessen mitgibt, sind korrekte Annotationen, der Pflichtsatz und
+  eine Antwort, die den Vorgang aufgelöst ausweist; die Annotationen prüft P7, den fehlenden
+  `confirm`-Parameter und den Pflichtsatz P8.
 - **Was nicht gemessen ist, wird als nicht gemessen gekennzeichnet**, im Feld `verified` und im
   Kommentar der Datei.
 
@@ -194,10 +204,13 @@ sind. Ein nicht verifizierter Satz darf an keiner Stelle als Tatsache auftreten.
 - **Die Budgetgrenzen** in `src/registry/budget.ts` und `scripts/check-size.ts`. Einzige
   Ausnahme ist die Umrechnungskonstante `CHARS_PER_TOKEN`: Sie ist keine Grenze, sondern ein
   Messwert aus `pnpm measure-tokens`.
-- **Der Umsetzungsplan** `docs/entwicklung/umsetzungsplan.md`. Er beschreibt den
-  Auslieferungszustand und wird nicht rückwirkend geändert; fortgeschrieben wird in den
-  Befunddateien unter `docs/entwicklung/` und im `CHANGELOG.md`.
-- **Die Messungen** in `docs/api/live-befunde-orchestrator.md`. Eine Messung wird ergänzt, nicht
-  überschrieben.
+- **Die Messungen** in `docs/api/live-befunde.md`. Eine Messung wird ergänzt, nicht
+  überschrieben: Sie hält fest, was an einem bestimmten Tag gegen die echte API beobachtet wurde,
+  und ein späterer Befund hebt eine frühere Beobachtung nicht auf, sondern stellt sich daneben.
+- **Die Zahlen in `docs/entwicklung/tokenbudget.md`.** Die Datei wird vollständig von
+  `scripts/measure-tokens.ts` erzeugt (`pnpm measure-tokens`); von Hand geänderte Zahlen sind
+  beim nächsten Lauf wieder weg.
+- **Vergangene Einträge im `CHANGELOG.md`.** Was sich ändert, wird als neuer Eintrag
+  fortgeschrieben und nicht rückwirkend in einem alten umgeschrieben.
 - **Der Paketname ohne Namensraum.** Er ist nicht der Name dieses Projekts und darf in keiner
   Anleitung als unser Name auftauchen, siehe [NOTICE.md](NOTICE.md).

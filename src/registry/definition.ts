@@ -5,10 +5,13 @@
 // `test/helpers/registry-fixtures.ts` und eine in `src/cli/doctor.ts`. Die ersten beiden
 // stimmten überein, die dritte zählte nur Name, Titel, Beschreibung und die Feldtexte und
 // ließ die Schemarümpfe und das gesamte `outputSchema` weg. `doctor` nannte deshalb 104.779
-// Zeichen und rund 26.195 Token, während der Client 197.528 Zeichen und 48.305 Token bekommt
-// — die Zeile, an der ein Nutzer nachsieht, warum sein Kontextfenster voll ist, unterschlug
-// 46 Prozent. Drei Nachbildungen sind zwei zu viel; seither ist diese Datei die Grundlage
-// aller drei Messstellen.
+// Zeichen und rund 26.195 Token, während der Client nach der Messung vom 2026-09-12
+// 197.528 Zeichen und 48.305 Token bekam — die Zeile, an der ein Nutzer nachsieht, warum sein
+// Kontextfenster voll ist, unterschlug 46 Prozent. Den jeweils aktuellen Stand nennen
+// `MEASURED_TOOL_DEFINITION_CHARS` und `MEASURED_TOOL_DEFINITION_TOKENS` weiter unten in dieser
+// Datei; beide werden in `test/unit/cli-doctor.test.ts` bei jedem Lauf nachgerechnet und können
+// deshalb nicht unbemerkt veralten. Drei Nachbildungen sind zwei zu viel; seither ist diese
+// Datei die Grundlage aller drei Messstellen.
 //
 // **Gebaut wird aus denselben Bausteinen, die `server/register-tools.ts` an `registerTool`
 // übergibt**: dem JSON Schema aus `schema/build.ts`, dem offenen Ausgabeschema aus
@@ -36,8 +39,8 @@ export interface RenderedToolDefinition {
  *
  * `maxItems` wird ausdrücklich auf das API-Maximum gesetzt und nicht aus der Konfiguration
  * geholt: Gemessen wird der Auslieferungszustand und nicht die Einstellung dessen, der gerade
- * `doctor` aufruft. Zur Laufzeit wirkt die konfigurierte Grenze über Q4 und Guard 5
- * (Plan 4.8); sie verschiebt die Zeichenzahl um wenige Stellen und würde die Zahl nur
+ * `doctor` aufruft. Zur Laufzeit wirkt die konfigurierte Grenze über Q4 und Guard 5;
+ * sie verschiebt die Zeichenzahl um wenige Stellen und würde die Zahl nur
  * unvergleichbar machen.
  */
 export function renderToolDefinition(entry: ToolEntry): RenderedToolDefinition {
@@ -77,13 +80,13 @@ export const MEASURED_TOOL_DEFINITION_CHARS = 197_802;
 
 /**
  * Die Tokenzahl derselben 54 Definitionen, **gemessen** mit `gpt-tokenizer@4.0.0` in der
- * Kodierung `o200k_base` (Plan 13.9), nicht über `CHARS_PER_TOKEN` geschätzt.
+ * Kodierung `o200k_base`, nicht über `CHARS_PER_TOKEN` geschätzt.
  *
  * Sie steht hier eingecheckt, weil ein Tokenizer im ausgelieferten Paket eine vierte
- * Laufzeitabhängigkeit wäre und 13.2 widerspräche: Die Definitionen liegen zum
+ * Laufzeitabhängigkeit wäre: Die Definitionen liegen zum
  * Auslieferungszeitpunkt fest, also ist ihre Tokenzahl eine Tatsache dieses Stands und keine
  * Größe, die jeder Aufruf neu ausrechnen müsste. Dieselbe Zahl nennen
- * `docs/entwicklung/befund-tokenbudget.md`, die Meldung von P11, `CHANGELOG.md` und
+ * `docs/entwicklung/tokenbudget.md`, die Meldung von P11, `CHANGELOG.md` und
  * Abschnitt 17 der README.
  *
  * Nachgerechnet wird sie in `test/unit/cli-doctor.test.ts` mit dem echten Tokenizer; ein

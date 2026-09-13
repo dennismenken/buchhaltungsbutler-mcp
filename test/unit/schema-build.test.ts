@@ -1,5 +1,5 @@
 // Aus einem Beispiel-ToolEntry entsteht ein striktes Zod-Objekt und daraus ein JSON Schema
-// Draft 2020-12 (Plan 11.2, AP05). Dazu die Vollständigkeitsprüfungen gegenüber dem Eintrag.
+// Draft 2020-12. Dazu die Vollständigkeitsprüfungen gegenüber dem Eintrag.
 
 import { describe, expect, it } from "vitest";
 import { z } from "zod";

@@ -1,12 +1,13 @@
-// Die drei Bestandszeilen aus Plan 7.5, wörtlich und auf Deutsch (E4).
+// Die drei Bestandszeilen, wörtlich und auf Deutsch: Jeder vom Agenten gelesene Text ist
+// deutsch (CONTRIBUTING.md Abschnitt 5).
 //
 // **Die zentrale Ehrlichkeitsregel: Es gibt keine Gesamttrefferzahl.** `rows` ist die
-// Zeilenzahl *dieser* Antwort (Plan 0.3 Befund L5). Es gibt kein Feld für die Gesamtzahl,
+// Zeilenzahl *dieser* Antwort. Es gibt kein Feld für die Gesamtzahl,
 // keinen Cursor, nur `limit` und `offset`. Jede Formulierung wie „100 von 500" ist eine Lüge:
 // Die Gesamtzahl steht in keiner Antwort, sie wäre also frei erfunden.
 //
-// Die Abbruchbedingung ist **„weniger Zeilen als `limit`"** und nicht `rows` (Plan 7.5 Regel
-// 3): `rows` ist ein Begleitfeld der Antwort, die Zeilen sind die Tatsache.
+// Die Abbruchbedingung ist **„weniger Zeilen als `limit`“** und nicht `rows`:
+// `rows` ist ein Begleitfeld der Antwort, die Zeilen sind die Tatsache.
 //
 // Dieses Modul formuliert; es entscheidet nichts. Ob überhaupt eine Bestandszeile entsteht,
 // hängt an der Umschlagform des Registereintrags, und die kennt `build.ts`.
@@ -81,7 +82,7 @@ export function filterHintFromFields(fieldNames: readonly string[]): string {
 }
 
 /**
- * Die Bestandszeile. Wortlaut nach Plan 7.5; eingesetzt werden ausschließlich Zahlen, der
+ * Die Bestandszeile. Wortlaut; eingesetzt werden ausschließlich Zahlen, der
  * Werkzeugname und der Filterhinweis.
  */
 export function paginationNote(options: PaginationNoteOptions): string {
@@ -113,7 +114,7 @@ export function paginationNote(options: PaginationNoteOptions): string {
 }
 
 /**
- * Der Satz für die Endpunkte ohne Paginierung (Plan 7.5 Regel 4).
+ * Der Satz für die Endpunkte ohne Paginierung.
  *
  * `/accounts/get` kennt kein `limit` und kein `offset` und liefert immer alles. Die Antwort
  * sagt das ausdrücklich, damit der Agent nicht nach `offset` sucht und die Liste für eine

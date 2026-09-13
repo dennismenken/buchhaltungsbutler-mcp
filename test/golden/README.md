@@ -1,7 +1,7 @@
 # Golden-Dateien
 
-Antwortbeispiele der BuchhaltungsButler-API für die Tests (Umsetzungsplan 9.4). Sie gehören
-zu AP09 und werden von jedem späteren Arbeitspaket gelesen, nicht geändert.
+Antwortbeispiele der BuchhaltungsButler-API für die Tests. Sie werden gelesen, nicht
+geändert.
 
 ## Die zwei Regeln
 
@@ -11,10 +11,10 @@ zu AP09 und werden von jedem späteren Arbeitspaket gelesen, nicht geändert.
    nicht aus dem, was der Code erwartet: Ein Mock, der die Annahme wiederholt, prüft nichts.
 2. **Die Geschäftsdaten sind erfunden, die Struktur nicht.** Keine echten Mandantendaten,
    keine Zugangsdaten, keine echten Kontonummern, Namen, Beträge oder Belegnummern. Feldmengen,
-   Feldnamen, Typen und die Form des Umschlags stammen dagegen aus den Messungen in
-   Umsetzungsplan 0.3 beziehungsweise aus der Spezifikation, und genau die prüfen die Tests.
+   Feldnamen, Typen und die Form des Umschlags stammen dagegen aus
+   den eigenen Live-Messungen beziehungsweise aus der Spezifikation, und genau die prüfen die Tests.
 
-## Live-Nachweis vom 2026-09-12 (AP09)
+## Live-Nachweis vom 2026-09-12
 
 Fünf lesende Aufrufe gegen die Produktivumgebung haben die vier gemessenen Strukturen erneut
 bestätigt; wiedergegeben wird nur der Struktur-, nie der Geschäftsbefund:
@@ -26,7 +26,7 @@ bestätigt; wiedergegeben wird nur der Struktur-, nie der Geschäftsbefund:
 | `POST /transactions/get` (`limit: 1`) | **6** Felder; `id_by_customer` als **JSON-Zahl**; **kein** `account` |
 | `POST /transactions/get/<wert>` | Umschlag ohne `rows`; **13** Felder; `account` als **JSON-Zahl** |
 
-Damit sind die Feldmengen aus Umsetzungsplan 0.3 L2, L3 und L5 unabhängig ein zweites Mal
+Damit sind die Feldmengen unabhängig ein zweites Mal
 belegt. Kein schreibender Aufruf.
 
 ## Form einer Datei
@@ -56,7 +56,7 @@ Pflicht aus 9.4 maschinell erzwungen und nicht nur hier beschrieben.
 
 Das `outputSchema` eines Werkzeugs beschreibt **die Antwort dieses Servers** und nicht den
 Rohumschlag der API: `endpoint`, `success`, die Paginierungstatsachen und den Datenbehälter
-(`items` bei der Listenform, `data` beim Einzelabruf; Umsetzungsplan 7.1). Ein `body` aus
+(`items` bei der Listenform, `data` beim Einzelabruf). Ein `body` aus
 diesem Verzeichnis validiert deshalb **nicht** unmittelbar gegen das `outputSchema`. Der Weg
 ist: `parseEnvelope` → `mapResponse` → `buildToolResponse`, und geprüft wird das
 `structuredContent` des Ergebnisses gegen `buildOutputSchema(entry)`. Genau dieser Weg läuft
@@ -85,7 +85,7 @@ auch im Betrieb, und nur er beantwortet die Frage, die der Test stellen will.
 | `reports-create-bwa-ack.json` | Anschlusshinweis aus 7.6, erste Zeile |
 | `reports-get-bwa-with-files.json` | Base64 in `files.pdf` und `files.csv` → nie im Textblock |
 | `receipts-get-error-400-15-catalog.json` | 400/15 mit dem Katalogtext `invalid sort field specified` |
-| `receipts-get-error-400-15-live.json` | 400/15 mit dem live gemessenen Text `invalid field specified` (Befund L6) |
+| `receipts-get-error-400-15-live.json` | 400/15 mit dem live gemessenen Text `invalid field specified` (Befund L6 in `docs/api/live-befunde.md`) |
 | `receipts-get-success-false.json` | HTTP 200 mit `success: false` |
 | `receipts-get-no-success.json` | Umschlag ohne `success` |
 | `transactions-get-literal-path-html.json` | HTML-Antwort am **literalen** Pfad `/transactions/get/id_by_customer` (gemessen, Befund 1) |

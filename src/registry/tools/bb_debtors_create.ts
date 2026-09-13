@@ -1,7 +1,7 @@
-// Werkzeug 33 von 54: `/settings/add/debtor` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 33 von 54: `/settings/add/debtor`.
 //
 // Die neun Adress- und Kontaktfelder kommen aus `contactAddressBlock()` und tragen damit das
-// Kurzmuster aus Sparmaßnahme S4 (höchstens 80 Zeichen je Feld, Plan 4.10). Sie rund 90-mal
+// Kurzmuster aus Sparmaßnahme S4 (höchstens 80 Zeichen je Feld). Sie rund 90-mal
 // auszuschreiben wäre der größte vermeidbare Posten des Kontextbudgets.
 //
 // `iban` und `bic` stehen bewusst außerhalb dieses Blocks (`vocab.ts`): Eine überschriebene
@@ -14,7 +14,7 @@
 //     verschiedene JSON-Typen für denselben fachlichen Wert.
 //  2. Das Stapelelement `SettingsDebtor` führt **kein** `email`, dieser Einzelendpunkt
 //     schon. Die Spezifikation erklärt Element und Einzelendpunkt ausdrücklich für gleich;
-//     einer der beiden Stände ist also falsch gepflegt. Regel R-A aus Plan 4.5 greift nicht,
+//     einer der beiden Stände ist also falsch gepflegt. Regel R-A greift nicht,
 //     weil sie Wertevorrat und Pflichtigkeit eines **vorhandenen** Feldes gleichzieht und
 //     kein fehlendes Feld erfindet.
 
@@ -102,9 +102,9 @@ export const bb_debtors_create: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Die Antwort trägt kein `data`: Die vergebene Kontonummer steht auf oberster Ebene des
-  // Umschlags (Plan 7.6, `docs/api/stammdaten.md`). Das ist der einzige Weg, an eine
+  // Umschlags (`docs/api/stammdaten.md`). Das ist der einzige Weg, an eine
   // automatisch vergebene Nummer zu kommen.
   responseContract: {
     container: "none",
@@ -127,7 +127,7 @@ export const bb_debtors_create: ToolEntry = {
   duplicateCheck: { tool: "bb_debtors_search", keyFields: ["name"], perBatch: true },
   crossChecks: ["Q3"],
   // Ein neuer Debitor erscheint auch in der vereinigten Kontenliste von
-  // `/settings/get/postingaccounts` (Plan 7.8, erste Zeile). Wer das übersieht, liest nach
+  // `/settings/get/postingaccounts`. Wer das übersieht, liest nach
   // dem Anlegen einen Kontenrahmen, in dem das neue Konto fehlt.
   invalidatesCache: ["bb_debtors_search", "bb_postingaccounts_search"],
 };

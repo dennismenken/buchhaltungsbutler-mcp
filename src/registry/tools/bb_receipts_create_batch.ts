@@ -1,6 +1,6 @@
-// Werkzeug 5 von 54 (Plan 3.8): `/receipts/addBatch`, bis zu 50 Belege ohne Datei.
+// Werkzeug 5 von 54: `/receipts/addBatch`, bis zu 50 Belege ohne Datei.
 //
-// **Währung, Regel R-A aus Plan 4.5.** Das Feld `currency` je Element trägt denselben
+// **Währung, Regel R-A.** Das Feld `currency` je Element trägt denselben
 // Wertevorrat, dieselbe Pflichtigkeit und wortgleich dieselbe Beschreibung wie `currency` an
 // bb_receipts_create: freier String, an beiden Pflicht, Text aus `RECEIPT_CURRENCY_SENTENCE`,
 // Schema aus `currencyReceipts()`. Beide Einträge rufen dieselbe Konstante und denselben
@@ -9,14 +9,14 @@
 // `.definitions.Receipt.properties.currency.enum` in docs/openapi/buchhaltungsbutler-v1.json)
 // **ist verworfen**: Er widerspricht dem Beschreibungstext derselben Eigenschaft, der 48 Codes
 // aufzählt, und dem Endpunkttext von `/receipts/add`, der drei nennt. Nach Regel R-B ist damit
-// kein Vorrat belegt (Plan 0.5 Korrektur 2, Anhang B Punkt 47).
+// kein Vorrat belegt.
 //
 // **Die Elementfelder tragen die Namen von bb_receipts_create**, also `receipt_type` statt
 // `type` und `payment_account_number` statt `account`, und ihre `apiNames` zeigen auf die
 // Eigenschaften der Definition `Receipt`. Grund: Die Spezifikation erklärt Stapelelement und
 // Einzelendpunkt wörtlich für gleich („A receipt has the same fields like the /receipts/add
 // endpoint has"), und `account` meint auch hier ein Zahlungskonto, während der Wert eine
-// Sachkontonummer ist — der gefährlichste Verwechslungsfall der API (Plan 3.4). Ein Werkzeugpaar,
+// Sachkontonummer ist — der gefährlichste Verwechslungsfall der API. Ein Werkzeugpaar,
 // das denselben Wert einmal `account` und einmal `payment_account_number` nennt, verschiebt die
 // Verwechslung nur in den Stapel. Die Originalnamen stehen in den Feldbeschreibungen (Anhang A).
 //
@@ -24,13 +24,13 @@
 // Das Fragment entsteht beim Laden dieses Moduls, und zu diesem Zeitpunkt ist die Konfiguration
 // noch nicht aufgelöst; `batchLimit()` ohne Übergabewert würde dort werfen. Die
 // Betreibergrenze wirkt trotzdem: Querprüfung Q4 liest sie beim Bau des Schemas und lehnt einen
-// zu großen Stapel vor dem Request ab (Plan 4.7 Q4, 6.4 Punkt 7).
+// zu großen Stapel vor dem Request ab.
 //
 // **Teilerfolg ist der Normalfall.** Die Antwort trägt `receipts` und `errors` nebeneinander und
 // weder `data` noch `rows` noch `message` (docs/api/belege.md 6.3). Der Antwortvertrag bleibt
-// deshalb leer: Beide Felder sind Arrays von Objekten, und `ContractFieldType` (Plan 2.1) kennt
+// deshalb leer: Beide Felder sind Arrays von Objekten, und `ContractFieldType` kennt
 // keinen Typ dafür. Mit `"string"` erzeugte jeder erfolgreiche Aufruf zwei
-// `_contract_warnings`; mit leerem Vertrag laufen beide Felder unverändert durch (Plan 7.3).
+// `_contract_warnings`; mit leerem Vertrag laufen beide Felder unverändert durch.
 
 import { z } from "zod";
 
@@ -52,8 +52,8 @@ import { RECEIPT_TYPES, RECEIPT_TYPE_TEXT } from "./bb_receipts_create.js";
  * `itemFields`.
  *
  * Sie sind kürzer als an bb_receipts_create, und das ist Absicht: Die Fachlichkeit trägt die
- * Einzelvariante, auf die die Werkzeugbeschreibung verweist, und dieser Eintrag ist Stufe 3
- * (Plan 4.9). Sie stehen aber an **beiden** Stellen, weil allein das Schemafragment beim
+ * Einzelvariante, auf die die Werkzeugbeschreibung verweist, und dieser Eintrag ist Stufe 3.
+ * Sie stehen aber an **beiden** Stellen, weil allein das Schemafragment beim
  * Aufrufer ankommt: Ein Text, der nur in `itemFields` stünde, würde nie ausgeliefert.
  */
 const ELEMENT_TEXTS = {
@@ -105,7 +105,7 @@ export const bb_receipts_create_batch: ToolEntry = {
   toolClass: "A",
   tier: 3,
   mandatorySentence: "U2",
-  // Stufe 3 erlaubt 480 Zeichen, und der Pflichtsatz U2 belegt davon 217 (Plan 4.9, 4.10).
+  // Stufe 3 erlaubt 480 Zeichen, und der Pflichtsatz U2 belegt davon 217.
   // Die Abgrenzung steht deshalb in Kurzform; die Fachlichkeit trägt bb_receipts_create.
   description:
     "Legt in BuchhaltungsButler bis zu 50 Belege ohne Datei an, beim Import aus einem " +
@@ -121,7 +121,7 @@ export const bb_receipts_create_batch: ToolEntry = {
       source: "body",
       required: true,
       // Der Text des Bausteins einschließlich des Mengensatzes. Wer ihn hier überschreibt,
-      // liefert eine Mengengrenze aus, die in keiner Beschreibung steht (Plan 4.8).
+      // liefert eine Mengengrenze aus, die in keiner Beschreibung steht.
       description: `${CONTAINER_TEXT} ${batchSizeSentence(API_MAX_BATCH)}`,
       schema: batchContainer(
         "bb_receipts_create_batch",
@@ -195,7 +195,7 @@ export const bb_receipts_create_batch: ToolEntry = {
           apiNames: ["currency"],
           source: "body",
           required: true,
-          // Wortgleich mit dem Feld `currency` an bb_receipts_create (Regel R-A, Plan 4.5).
+          // Wortgleich mit dem Feld `currency` an bb_receipts_create (Regel R-A).
           description: RECEIPT_CURRENCY_SENTENCE,
           schema: currencyReceipts(),
         },
@@ -259,7 +259,7 @@ export const bb_receipts_create_batch: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   responseContract: {
     // Begründung für den leeren Vertrag steht im Kopf dieser Datei.
     container: "none",

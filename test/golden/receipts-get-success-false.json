@@ -1,5 +1,5 @@
 {
-  "_herkunft": "Endpunkt /receipts/get | konstruiert aus Umsetzungsplan 5.5 Stufe 4 | Quelle: Umsetzungsplan 5.5",
+  "_herkunft": "Endpunkt /receipts/get | konstruiert Stufe 4 | Quelle: Stufe 4 der Umschlagprüfung (src/http/envelope.ts)",
   "_zweck": "dass wirklich success ausgewertet wird und nicht nur der HTTP-Status: HTTP 200 mit success false ist ein Fehler",
   "http": {
     "status": 200,

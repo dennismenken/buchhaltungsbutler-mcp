@@ -1,4 +1,4 @@
-// Guard 6: der Duplikatshinweis (Plan 1.4 Schritt 7, 6.2; AP10, Prüfpunkt 3).
+// Guard 6: der Duplikatshinweis (Prüfpunkt 3).
 //
 // Drei Zusagen werden hier nachgewiesen, und alle drei sind Zusagen an den Betreiber:
 // Im Auslieferungszustand geht **kein** Zusatzaufruf hinaus, eingeschaltet **blockiert** der
@@ -233,7 +233,7 @@ async function startServer(
     store: createMasterDataStore({ ttlMs: 0 }),
   });
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-  const client = new Client({ name: "ap10-duplicatetest", version: "0.0.0" });
+  const client = new Client({ name: "duplicatetest", version: "0.0.0" });
   await built.server.connect(serverSide);
   await client.connect(clientSide);
   return {
@@ -588,7 +588,7 @@ describe("Guard 6, der fachliche Vergleich", () => {
     expect(hint).toContain("MÖGLICHES DUPLIKAT");
 
     // Beträge werden in Ganzzahl-Cent verglichen, nicht als Zeichenkette und nie auf
-    // Gleitkomma (Plan 7.4). Deutsche und englische Schreibweise sind derselbe Wert.
+    // Gleitkomma. Deutsche und englische Schreibweise sind derselbe Wert.
     const match = await run(
       withKeyFields(CREATE_ENTRY, ["counterparty", "invoicenumber"]),
       { counterparty: "884,65", invoicenumber: "ER-2026-0001" },
@@ -610,7 +610,7 @@ describe("Guard 6, der fachliche Vergleich", () => {
     const num = await run(entry, { counterparty: 4711 }, [
       { id_by_customer: 4711, counterparty: "4711" },
     ]);
-    // Kennungen kommen gemessen mal als Zahl, mal als Zeichenkette zurück (Plan 0.3 Befund L3).
+    // Kennungen kommen gemessen mal als Zahl, mal als Zeichenkette zurück.
     expect(num.hint).toContain("id_by_customer 4711");
 
     const boolValue = await run(entry, { counterparty: true }, [

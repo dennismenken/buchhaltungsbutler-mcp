@@ -1,8 +1,8 @@
-// Der Wächter des Vertragslaufs (Plan 9.7, AP17).
+// Der Wächter des Vertragslaufs.
 //
-// Der Vertragslauf ist die EINZIGE Ausnahme von der absoluten Regel aus Plan 9.1, und er
+// Der Vertragslauf ist die EINZIGE Ausnahme von der absoluten Regel, und er
 // läuft gegen eine echte, produktive Buchhaltung. Dort gibt es keinen folgenlosen
-// Schreibvorgang (Plan 9.9 Punkt 3): Ein Kommentar ist über die API nicht löschbar, eine
+// Schreibvorgang: Ein Kommentar ist über die API nicht löschbar, eine
 // Kostenstelle verändert die Kostenstellenauswertung. Deshalb ist nicht die Auswertung des
 // Laufs seine wichtigste Eigenschaft, sondern seine Grenze.
 //
@@ -91,7 +91,7 @@ describe("Der Wächter wirft bei einem schreibenden Pfad", () => {
   it("nennt in der Meldung den abgelehnten Pfad und das Werkzeug", () => {
     // `/receipts/delete/id_by_customer` ist der gefährlichste der 39: Er trägt dieselbe
     // Pfadvorlage wie der erlaubte Einzelabruf `/receipts/get/id_by_customer` und
-    // unterscheidet sich nur in einem Segment (Plan 4.6, Live-Befunde Befund 1).
+    // unterscheidet sich nur in einem Segment (Live-Befunde Befund 1).
     let caughtError: unknown;
     try {
       assertAllowedCall(ALLOW_LIST, {
@@ -148,7 +148,7 @@ describe("Der Wächter lässt genau die lesenden Aufrufe durch", () => {
   it("lehnt einen Anfragepfad ab, der nicht zur Vorlage des Endpunkts passt", () => {
     // Alle vier Formen führen über einen erlaubten Spezifikationspfad an einen anderen
     // Endpunkt. Sie sind der Grund, warum der Wächter den GESENDETEN Pfad prüft und nicht
-    // nur den Schlüssel, unter dem nachgeschlagen wird (Plan 4.6 Regel 6).
+    // nur den Schlüssel, unter dem nachgeschlagen wird.
     const attackPaths = [
       "/receipts/get/4711/extra",
       "/receipts/get/../delete/4711",
@@ -184,7 +184,7 @@ describe("Der Wurf geschieht vor dem Absenden", () => {
   it("berührt den Absender nicht, wenn der Pfad abgelehnt wird", async () => {
     // Die Attrappe steht für den einzigen Weg dieses Projekts ins Netz. Wird sie berührt,
     // ist der Aufruf abgegangen; der Test scheitert dann, ohne dass ein Netzwerkversuch
-    // nötig wäre (Plan 9.1 sperrt ihn ohnehin).
+    // nötig wäre (der Testlauf sperrt das Netz ohnehin).
     const touched: string[] = [];
     const dispatchMock = async (call: { toolName: string }): Promise<never> => {
       touched.push(call.toolName);
@@ -258,7 +258,7 @@ describe("Aufbau der Erlaubnisliste", () => {
 
 describe("Vergleich gegen den Antwortvertrag", () => {
   it("nimmt bei id-string sowohl den String als auch die Zahl an", () => {
-    // Die Asymmetrie ist gemessen (Plan 0.3 Befund L3): dieselbe Kennung kommt bei Belegen
+    // Die Asymmetrie ist gemessen: dieselbe Kennung kommt bei Belegen
     // als String und bei Zahlungen als Zahl. Ein Lauf, der das meldete, meldete es immer.
     const observed = observeRows([{ id_by_customer: 1590 }, { id_by_customer: "2" }]);
     const deviations = compareContract(

@@ -1,5 +1,5 @@
 /**
- * Die Retry-Politik, getrennt nach Wirkung (Plan 5.3).
+ * Die Retry-Politik, getrennt nach Wirkung.
  *
  * Die wichtigste Sicherheitsregel der HTTP-Schicht: **Ein schreibender Aufruf wird niemals
  * wiederholt.** Die API kennt keinen Idempotenzschlüssel. Wer trotzdem pauschal jeden Aufruf
@@ -23,7 +23,7 @@ import { READ_ONLY_TOOL_CLASS } from "../registry/classes.js";
 import type { ToolClass } from "../registry/types.js";
 import { isTransportError, type TransportError } from "./transport-error.js";
 
-/** Höchstzahl der Versuche bei einem lesenden Werkzeug, den ersten eingeschlossen (5.3). */
+/** Höchstzahl der Versuche bei einem lesenden Werkzeug, den ersten eingeschlossen. */
 export const MAX_READ_ATTEMPTS = 3;
 
 /** Grundwartezeit der Verdopplungsfolge. */
@@ -32,7 +32,7 @@ export const BASE_DELAY_MS = 1_000;
 /** Obergrenze der Wartezeit vor dem Jitter. */
 export const MAX_DELAY_MS = 20_000;
 
-/** Der `error_code`, der an zehn schreibenden Pfaden mit HTTP 403 Drosselung bedeutet (5.6). */
+/** Der `error_code`, der an zehn schreibenden Pfaden mit HTTP 403 Drosselung bedeutet. */
 export const THROTTLE_ERROR_CODE = 15;
 
 /**
@@ -49,7 +49,7 @@ export function maxAttemptsFor(toolClass: ToolClass): number {
  * Die Wartezeit nach `failedAttempts` gescheiterten Versuchen.
  *
  * `delay = min(1000 ms × 2^(n-1), 20 s)`, tatsächliche Wartezeit `delay × (0,5 + random())`,
- * also Jitter im Bereich `[0,5; 1,5]` um den **vollen** Wert (Streitfrage S17). Ausdrücklich
+ * also Jitter im Bereich `[0,5; 1,5]` um den **vollen** Wert. Ausdrücklich
  * **nicht** `delay × random()`: Das wartet im Mittel nur die Hälfte und kommt zu früh wieder.
  * „Full jitter" im AWS-Sinn löst ein Herdenproblem, das ein stdio-Server mit wenigen
  * gleichzeitigen Aufrufen nicht hat; sein Problem ist das umgekehrte.
@@ -63,7 +63,7 @@ export function backoffDelayMs(failedAttempts: number, random: () => number = Ma
 /** Die Tatsachen, an denen die Wiederholung hängt. Ein Meldungstext ist nicht darunter. */
 export interface RetryFacts {
   /**
-   * Der unveränderte Spezifikationspfad. Er gehört zum Tripel aus 5.3 und wird mitgeführt,
+   * Der unveränderte Spezifikationspfad. Er gehört zum Tripel und wird mitgeführt,
    * damit eine Entscheidung nachvollziehbar ist. Eine Weiche hängt heute **nicht** an ihm:
    * Die Regel „`error_code` 15 nur mit HTTP 403" gilt an allen Pfaden gleich, und eine
    * zusätzliche Pfadliste wäre eine zweite Stelle, die zu pflegen ist.
@@ -78,7 +78,7 @@ export interface RetryFacts {
 }
 
 /**
- * Die Weiche aus 5.3, ausschließlich über das Tripel (`specPath`, `error_code`, HTTP-Status)
+ * Die Weiche, ausschließlich über das Tripel (`specPath`, `error_code`, HTTP-Status)
  * beziehungsweise über die Art des Scheiterns.
  *
  * **Kein Zeichenkettenvergleich gegen einen Meldungstext.** Das ist gemessen begründet (L6):
@@ -98,8 +98,8 @@ export function isRetryableRead(facts: RetryFacts): boolean {
       return false;
     case "timeout":
     case "network":
-      // 5.3 nennt Netzwerkfehler; 5.7 führt Zeitlimit und Netzwerkabbruch für die
-      // Gegenrichtung (schreibend) gemeinsam auf. Für ein lesendes Werkzeug ist beides
+      // Zeitlimit und Netzwerkabbruch gehören für die Gegenrichtung (schreibend)
+      // zusammen. Für ein lesendes Werkzeug ist beides
       // folgenlos wiederholbar.
       return true;
     case "response":
@@ -162,7 +162,7 @@ function kindOf(error: TransportError): RetryFacts["kind"] {
   }
 }
 
-/** Uhr und Zufall des Retry-Zweiges. Im Test werden beide ersetzt (Plan 9.5). */
+/** Uhr und Zufall des Retry-Zweiges. Im Test werden beide ersetzt. */
 export interface RetryRuntime {
   sleep(ms: number, signal?: AbortSignal): Promise<void>;
   random(): number;
@@ -202,7 +202,7 @@ export interface RunAttemptsOptions<T> {
    * eine Meldung sagen kann, wie oft es versucht wurde.
    *
    * **Jeder Versuch entnimmt seinen eigenen Token aus dem Rate-Limiter.** Das geschieht
-   * innerhalb dieser Funktion, also innerhalb der Schleife und nicht davor (5.3).
+   * innerhalb dieser Funktion, also innerhalb der Schleife und nicht davor.
    */
   readonly attempt: (attemptNumber: number) => Promise<T>;
   readonly signal?: AbortSignal;

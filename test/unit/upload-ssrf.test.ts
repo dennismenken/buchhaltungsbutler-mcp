@@ -20,7 +20,7 @@ import {
 import { UploadSourceError } from "../../src/upload/sniff.js";
 
 // Alle Adressen und Inhalte dieser Tests sind erfunden. Es geht kein echter Netzaufruf
-// hinaus: Der Abrufer wird eingespeist, und der Testlauf sperrt das Netz ohnehin (Plan 9.1).
+// hinaus: Der Abrufer wird eingespeist, und der Testlauf sperrt das Netz ohnehin.
 
 const PDF = new Uint8Array(Buffer.from("%PDF-1.7\n% erfundener Beleg\n", "ascii"));
 

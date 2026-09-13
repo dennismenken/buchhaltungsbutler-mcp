@@ -1,4 +1,4 @@
-// Der gemeinsame Vertrag der vier LESENDEN Bündel (Bauvorlage Abschnitte 2, 3, 6, 7).
+// Der gemeinsame Vertrag der vier LESENDEN Bündel.
 //
 // Geprüft wird hier, was für alle gilt und deshalb nicht viermal geprüft werden soll: der
 // Pflichtblock `bundle`, die Klasse als schärfste Klasse der Schritte, die Annotationen, die
@@ -188,7 +188,7 @@ describe("Ausgabeschema der lesenden Bündel", () => {
         "written",
         "continuation",
       ]);
-      // Offen wie jedes Ausgabeschema dieses Servers (S18).
+      // Offen wie jedes Ausgabeschema dieses Servers.
       expect(schema["additionalProperties"]).toBe(true);
     }
   });

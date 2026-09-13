@@ -1,9 +1,9 @@
 // Werkzeug 27, `/postings/unconfirm/receipt`: hebt die Bestätigung der Buchungen eines Belegs
-// auf und entfernt sie damit (Plan 3.8, AP12c).
+// auf und entfernt sie damit.
 //
 // Klasse D: `destructiveHint: true`, `idempotentHint: false`. Dass eine Wiederholung
 // wirkungslos wäre, ist plausibel, aber **nicht verifiziert**; ein falsches `true` lädt einen
-// Host zum automatischen Wiederholen ein (Plan 3.3, Streitfrage S6).
+// Host zum automatischen Wiederholen ein.
 //
 // Zwei Eigenheiten stehen in der Beschreibung, weil sie sonst zu einem falschen zweiten Aufruf
 // führen (`buchungen.md` 17.6):
@@ -19,7 +19,7 @@ import { idByCustomer } from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -77,7 +77,7 @@ export const bb_postings_unconfirm_for_receipt: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Erfolgsantwort `{ "success": true, "message": "" }`, ohne `data` (buchungen.md 17.3).

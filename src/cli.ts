@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Der bin-Einstieg des Pakets (Plan 8.1, AP15). Angelegt in AP01, hier verdrahtet.
+// Der bin-Einstieg des Pakets.
 //
 // Die Weiche hat genau zwei Ausgänge, und die Trennung ist der ganze Zweck dieser Datei:
 //
@@ -10,11 +10,11 @@
 //
 // Der dynamische Import ist keine Stilfrage: Ein Serverstart lädt damit keine Zeile CLI-Code,
 // und umgekehrt lädt kein Unterbefehl den Server. Das ist die Startzeit, die der
-// Paketprobelauf misst (9.6 Schritt 5), und die Zusage aus 8.1, dass ein Unterbefehl niemals
+// Paketprobelauf misst, und zugleich die Zusage, dass ein Unterbefehl niemals
 // in eine laufende MCP-Verbindung schreibt.
 //
 // `--version` liest src/generated/version.ts — die einzige Versionsquelle zur Laufzeit, kein
-// JSON-Lesen. Die Baukonstante aus AP01 ist damit abgelöst.
+// JSON-Lesen.
 // `--help` geht über src/cli/run.ts, weil die Hilfe die zwölf Clientkürzel aus der
 // Adapterliste nennt und diese Liste nur einmal existieren darf.
 

@@ -1,6 +1,5 @@
 /**
- * Der globale undici-Dispatcher: Keep-Alive und Proxy-Unterstützung aus der Umgebung
- * (Plan 5.1).
+ * Der globale undici-Dispatcher: Keep-Alive und Proxy-Unterstützung aus der Umgebung.
  *
  * Es gibt keinen zweiten HTTP-Stack. Gesprochen wird ausschließlich über das eingebaute
  * `fetch` von Node; `undici` liefert nur den Dispatcher darunter. `setGlobalDispatcher` ist
@@ -10,7 +9,7 @@
  * Unternehmensproxy nichts mehr funktioniert: Er liest `HTTP_PROXY`, `HTTPS_PROXY` und
  * `NO_PROXY` selbst aus und verhält sich ohne diese Variablen wie ein gewöhnlicher Agent mit
  * Keep-Alive. Die Auswertung der Proxy-Variablen durch Node selbst ist experimentell und
- * flaggenabhängig und deshalb keine Grundlage (Plan 13.1).
+ * flaggenabhängig und deshalb keine Grundlage.
  *
  * **Kein Cookie-Jar.** Das eingebaute `fetch` führt keinen, und es wird keiner nachgerüstet:
  * Die API setzt Sitzungs- und Load-Balancer-Cookies (`grundlagen.md` 3.3), und eine über
@@ -34,7 +33,7 @@ import { logDebug } from "../logging/stderr.js";
  * Minuten Ruhe. 30 Sekunden offenhalten erspart jedem Schub nach dem ersten Aufruf den
  * TLS-Handschlag; länger offenhalten bringt nichts, weil die Gegenstelle die Verbindung
  * ohnehin irgendwann schließt. Die Obergrenze der gleichzeitigen Verbindungen ist bewusst
- * klein: Der Rate-Limiter (5.4) begrenzt die Gleichzeitigkeit schon, und mehr Verbindungen
+ * klein: Der Rate-Limiter begrenzt die Gleichzeitigkeit schon, und mehr Verbindungen
  * würden nur das Minutenkontingent des Mandanten schneller verbrauchen.
  */
 export const KEEP_ALIVE_OPTIONS: Agent.Options = {
@@ -58,7 +57,7 @@ export function isDispatcherInstalled(): boolean {
  *
  * - Sie wurde schon aufgerufen. Ein zweiter Agent würde die offenen Verbindungen des ersten
  *   hinter sich lassen, ohne sie zu schließen.
- * - Es ist ein `MockAgent` installiert. Das ist der Testaufbau aus 9.1, dessen
+ * - Es ist ein `MockAgent` installiert. Das ist der Testaufbau, dessen
  *   `disableNetConnect()` jeden echten Netzzugriff verhindert. Ihn zu ersetzen würde die
  *   Netzsperre des Testlaufs stillschweigend aufheben — genau das, was nicht passieren darf.
  *

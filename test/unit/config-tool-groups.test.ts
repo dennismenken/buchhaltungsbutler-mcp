@@ -1,5 +1,4 @@
-// Die Auflösung der beiden Gruppenvariablen und die vier Startfehler (N5,
-// `docs/entwicklung/buendelwerkzeuge.md` Abschnitt 7).
+// Die Auflösung der beiden Gruppenvariablen und die vier Startfehler.
 //
 // Der teuerste Zustand dieses Schalters ist nicht der Abbruch, sondern die stille Wirkung: ein
 // Tippfehler, der die halbe Werkzeugliste abschaltet und nichts sagt. Jede Prüfung hier hängt

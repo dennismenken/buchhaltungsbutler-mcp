@@ -1,17 +1,17 @@
-// Werkzeug 15, `/transactions/assign-batch/receipt`: bis zu 50 Zuordnungen in einem Aufruf
-// (Plan 3.8, AP12b). Wirkung ändernd, Klasse A, Pflichtsatz U1.
+// Werkzeug 15, `/transactions/assign-batch/receipt`: bis zu 50 Zuordnungen in einem Aufruf.
+// Wirkung ändernd, Klasse A, Pflichtsatz U1.
 //
-// **Reine Umbenennung, keine Umformung** (Plan 4.8, Anhang A). Der Endpunkt führt genau einen
+// **Reine Umbenennung, keine Umformung**. Der Endpunkt führt genau einen
 // Parameter `transactions_to_receipts`, Definition `TransactionsToReceipts`, und der ist bereits
 // eine Objektliste aus `receipt_id_by_customer` und `transaction_id_by_customer`. Das
 // Werkzeugfeld heißt `assignments`, weil der Name deutlicher sagt, was darin steht; parallele
 // Arrays gibt es hier nicht, und es wird nichts umgerechnet. Der einzige umbenannte Behälter
 // der acht Stapelendpunkte ist genau dieser.
 //
-// Behälter und Element stehen vollständig in `src/schema/batch.ts`, weil Plan 4.8 sie
-// vollständig festlegt: zwei Felder, beide Pflicht. Dieser Eintrag trägt die `itemFields`, damit
-// die Deckung zweiter Stufe die beiden Eigenschaften der Elementdefinition
-// `TransactionToReceipt` prüfen kann (Plan 4.4 Punkt 3).
+// Behälter und Element stehen vollständig in `src/schema/batch.ts`, weil die Definition
+// sie vollständig festlegt: zwei Felder, beide Pflicht. Dieser Eintrag trägt die
+// `itemFields`, damit die Deckung zweiter Stufe die beiden Eigenschaften der
+// Elementdefinition `TransactionToReceipt` prüfen kann.
 
 import { assignments } from "../../schema/batch.js";
 import { API_MAX_BATCH } from "../../schema/line-items.js";
@@ -19,8 +19,8 @@ import { idByCustomer } from "../../schema/vocab.js";
 import type { ToolEntry } from "../types.js";
 
 // `maxItems` ausdrücklich mit API_MAX_BATCH: Dieser Eintrag entsteht beim Laden des Moduls, und
-// die Konfiguration ist zu diesem Zeitpunkt noch nicht aufgelöst (Plan 6.4 Punkt 7). Die
-// wirksame Grenze `min(50, BB_MCP_MAX_BATCH)` prüfen Q4 und Guard 5 zur Laufzeit (Plan 4.7 Q4).
+// die Konfiguration ist zu diesem Zeitpunkt noch nicht aufgelöst. Die
+// wirksame Grenze `min(50, BB_MCP_MAX_BATCH)` prüfen Q4 und Guard 5 zur Laufzeit.
 const ASSIGNMENTS = assignments(API_MAX_BATCH);
 
 const RECEIPT_ID = idByCustomer("des Belegs", "bb_receipts_search");
@@ -76,13 +76,13 @@ export const bb_transactions_assign_receipt_batch: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Die Erfolgsantwort trägt auf oberster Ebene die Listen `transactions_to_receipts` und
-  // `errors`. `ContractFieldType` (Plan 2.1) kennt keinen Typ für eine Liste; mit leerem
+  // `errors`. `ContractFieldType` kennt keinen Typ für eine Liste; mit leerem
   // Vertrag laufen beide unverändert durch, statt zwei `_contract_warnings` je Aufruf zu
-  // erzeugen (Plan 7.3, letzter Fall).
+  // erzeugen.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",
   concise: [],

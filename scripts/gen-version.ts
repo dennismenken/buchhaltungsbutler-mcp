@@ -1,4 +1,4 @@
-// Erzeugt src/generated/version.ts aus package.json (Plan 4.2).
+// Erzeugt src/generated/version.ts aus package.json.
 //
 // Warum überhaupt ein Generat: Zur Laufzeit soll der Server keine JSON-Datei lesen müssen.
 // Ein `import … from "../../package.json"` wäre die naheliegende Alternative, würde aber
@@ -42,7 +42,7 @@ if (typeof version !== "string" || !/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)*$/.tes
 
 const output = `// ERZEUGT von scripts/gen-version.ts aus package.json. NICHT VON HAND ÄNDERN.
 // Änderungen entstehen ausschließlich über \`pnpm generate\`; der CI-Schritt verlangt danach
-// eine leere git-Differenz (Plan 4.2).
+// eine leere git-Differenz.
 //
 // Diese Datei ist der einzige Weg, auf dem die Paketversion zur Laufzeit bekannt wird.
 // Es wird bewusst kein JSON gelesen und package.json nicht importiert.

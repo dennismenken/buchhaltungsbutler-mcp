@@ -1,5 +1,5 @@
 // Der Ablauf eines Bündels: Aufrufe zählen, Schritte protokollieren, Lücken sammeln, den Block
-// `bundle` führen (Bauvorlage 3, 5, 6).
+// `bundle` führen.
 //
 // **Die Buchführung liegt hier und nicht in den Bündeln.** Ein Bündel wertet aus; dass jeder
 // Teilaufruf gezählt wird, dass eine Lücke `complete` umlegt und dass der Eimer vor jedem
@@ -34,15 +34,19 @@ import type {
 } from "./types.js";
 
 /**
- * Fehlercodes, nach denen im selben Bündelaufruf nichts mehr besser wird (5, Regel 3): 3 und 4
- * sind Zugangsdaten und Mandant, 11 der inaktive Mandant.
+ * Fehlercodes, nach denen im selben Bündelaufruf nichts mehr besser wird: 3 und 4 sind
+ * Zugangsdaten und Mandant, 11 der inaktive Mandant. Weitere Aufrufe gegen dieselbe
+ * abgelehnte Anmeldung verbrennen nur Minutenkontingent, deshalb endet der Lauf sofort.
  */
 const FATAL_ERROR_CODES: readonly number[] = Object.freeze([3, 4, 11]);
 
 /** Ab zwei aufeinanderfolgenden 5xx desselben Endpunkts endet der Lauf sofort. */
 const CONSECUTIVE_SERVER_ERRORS_UNTIL_STOP = 2;
 
-/** Der Teiler aus Abschnitt 6 Punkt 3: ein Drittel des Minutenbudgets je Bündelaufruf. */
+/**
+ * Der Teiler der Aufrufobergrenze: Ein Bündelaufruf darf höchstens ein Drittel des
+ * Minutenbudgets verbrauchen, damit daneben noch Einzelaufrufe möglich bleiben.
+ */
 const RATE_LIMIT_DIVISOR = 3;
 
 /**
@@ -78,7 +82,7 @@ export interface BundleRunnerOptions {
   readonly now?: () => number;
   /**
    * Uhr und Warten für {@link BundleRunner.sleep}. Im Betrieb die echte, im Test eine
-   * gesteuerte (Plan 9.5): Eine Warteschleife, die im Test wirklich zwei Minuten schliefe,
+   * gesteuerte: Eine Warteschleife, die im Test wirklich zwei Minuten schliefe,
    * wäre nicht prüfbar.
    */
   readonly clock?: RateLimiterClock;
@@ -184,7 +188,10 @@ export class BundleRunner implements BundleContext {
     this.nextStepOverride = text;
   }
 
-  /** Der Eimerstand, ohne zu entnehmen. Für die Vorabprüfung aus Abschnitt 6 Punkt 4. */
+  /**
+   * Der Eimerstand, ohne zu entnehmen. Für die Vorabprüfung gegen `minTokens`: Liegen nicht
+   * genug Token ohne Warten bereit, sagt das Bündel vor dem ersten Request ab.
+   */
   peek(bucket: BucketName = "default"): { readonly available: number; readonly waitMs: number } {
     return this.limiter.peek(this.tenant, bucket);
   }
@@ -245,7 +252,7 @@ export class BundleRunner implements BundleContext {
       );
     }
 
-    // Abbruch statt Warten, und nur vor einem ZUSÄTZLICHEN Aufruf (6.5): Eine wahrheitsgemäße
+    // Abbruch statt Warten, und nur vor einem ZUSÄTZLICHEN Aufruf: Eine wahrheitsgemäße
     // Teilantwort nach zwei Sekunden ist mehr wert als eine vollständige nach vierzig.
     if (request.additional === true) {
       const seen = this.limiter.peek(this.tenant, step.bucket);
@@ -340,7 +347,7 @@ export class BundleRunner implements BundleContext {
       return this.failure("error", true, detail, detail, null);
     }
 
-    // Der vollständige Vierblocktext des bestehenden Renderers (5.8): Ein Bündel darf keine
+    // Der vollständige Vierblocktext des bestehenden Renderers: Ein Bündel darf keine
     // schlechtere Fehlermeldung liefern als das Einzelwerkzeug, das es ersetzt.
     const message = await renderTransportFailure(error, { args: this.args });
     const errorCode = error instanceof ApiResponseError ? error.errorCode : null;
@@ -394,8 +401,8 @@ export class BundleRunner implements BundleContext {
     });
 
     if (error.code === "rate-limit-give-up") {
-      // Abschnitt 6 Punkt 6: Feuert die Aufgabegrenze doch mitten im Bündel, gilt
-      // Teilfehlerregel 2 — Erfolg mit dem Gesammelten, `complete` false, Lücke mit der Ursache.
+      // Feuert die Aufgabegrenze doch mitten im Bündel, gilt der Teilfehlerfall: Erfolg mit
+      // dem Gesammelten, `complete` false, Lücke mit der Ursache.
       this.stop("rate_limit");
       return this.failure(
         "rate_limit",
@@ -416,10 +423,10 @@ export class BundleRunner implements BundleContext {
     if (this.nextStepOverride === null) {
       return { kind: "error", text: base };
     }
-    // Ersetzt wird ausschließlich die Handlungsanweisung. Der Vierblockaufbau aus 5.8 bleibt
+    // Ersetzt wird ausschließlich die Handlungsanweisung. Der Vierblockaufbau bleibt
     // erhalten, insbesondere der Zustandssatz: Ob etwas hinausgegangen ist, entscheidet die
     // Fehlerschicht und nicht das Bündel. Dasselbe Muster benutzt `register-tools.ts` für den
-    // Sonderfall aus 5.7.
+    // Der Sondertext bei offenem Ausgang.
     return {
       kind: "error",
       text: base.replace(/^\[Wie\] .*$/m, `[Wie] ${this.nextStepOverride}`),
@@ -474,7 +481,10 @@ export class BundleRunner implements BundleContext {
     );
   }
 
-  /** Der erste Fehlschlag dieses Laufs, für die Eskalation nach Abschnitt 5 Regel 1. */
+  /**
+   * Der erste Fehlschlag dieses Laufs. `registerBundleTools` beantwortet damit einen Lauf
+   * ohne einen einzigen erfolgreichen Schritt als Fehler statt als leeres Ergebnis.
+   */
   firstFailureOrNull(): (StepResult & { ok: false }) | null {
     return this.firstFailure;
   }

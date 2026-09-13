@@ -1,5 +1,5 @@
 /**
- * Dünne Hülle um das Generat `src/generated/errors.ts` (Plan 5.6, AP03).
+ * Dünne Hülle um das Generat `src/generated/errors.ts`.
  *
  * Drei Eigenschaften sind der ganze Zweck dieser Datei:
  *
@@ -10,7 +10,7 @@
  * 2. **Der Schlüssel ist immer das Paar (`specPath`, `error_code`)**, nie der Code allein:
  *    Über die 786 referenzierten Paare trägt Code 7 achtundzwanzig verschiedene Bedeutungen.
  *    Bei den vier Werkzeugen mit Pfadvorlage ist die erste Ebene der **unveränderte
- *    Spezifikationspfad** (`path.specPath`) und niemals der gebaute Pfad (Plan 4.6): Der
+ *    Spezifikationspfad** (`path.specPath`) und niemals der gebaute Pfad: Der
  *    Schlüssel `/receipts/get/2` steht in keiner Tabelle, und jeder Fehler dieser vier
  *    Werkzeuge fiele sonst auf die Rückfallregel zurück.
  * 3. **Es gelangt immer nur der eine passende Eintrag nach draußen**, nie die Tabelle.
@@ -29,10 +29,10 @@ export type { ErrorClass, ErrorEntry };
 export type ErrorCatalog = Readonly<Record<string, Readonly<Record<number, ErrorEntry>>>>;
 
 /**
- * Die Abnahmezahlen aus Plan 0.4. Sie sind am 2026-09-12 maschinell gegen
+ * Die Abnahmezahlen. Sie sind am 2026-09-12 maschinell gegen
  * `docs/openapi/buchhaltungsbutler-v1.json` ausgezählt: 786 **referenzierte** Paare über 54
  * Pfade. Ausdrücklich nicht 718 — das sind Definitionsnamen, von denen 42 in keinem
- * `responses`-Block vorkommen und damit kein belegtes Serververhalten sind (Plan 5.6).
+ * `responses`-Block vorkommen und damit kein belegtes Serververhalten sind.
  */
 export const EXPECTED_PAIR_COUNT = 786;
 export const EXPECTED_PATH_COUNT = 54;
@@ -77,7 +77,7 @@ export function resetErrorCatalogForTests(): void {
  *
  * `null` heißt: Die Spezifikation kennt diesen Code für diesen Pfad nicht. Daraus wird in
  * `classify.ts` die Rückfallregel — **kein Raten und keine Zuordnung zu einem gleichnamigen
- * Code eines anderen Pfades** (Plan 5.6).
+ * Code eines anderen Pfades**.
  */
 export function lookupInCatalog(
   catalog: ErrorCatalog,
@@ -103,7 +103,7 @@ export async function lookupErrorEntry(
   return lookupInCatalog(await loadErrorCatalog(), specPath, errorCode);
 }
 
-/** Die Zahl der Paare im Katalog. Grundlage der Abnahmebedingung aus Plan 5.6. */
+/** Die Zahl der Paare im Katalog. Grundlage der Abnahmebedingung. */
 export function countCatalogPairs(catalog: ErrorCatalog): number {
   let total = 0;
   for (const codes of Object.values(catalog)) {

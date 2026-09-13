@@ -1,4 +1,4 @@
-// Werkzeug 3 von 54 (Plan 3.8): `/receipts/assigned-transactions/get`.
+// Werkzeug 3 von 54: `/receipts/assigned-transactions/get`.
 //
 // Die Antwort trägt **Zahlungen**, nicht Belege: `id_by_customer` ist dort die Nummer der
 // Zahlung und nicht die des angefragten Belegs. Wer beides verwechselt, ruft mit einer
@@ -6,21 +6,22 @@
 // Beleg; deshalb sagt es die Beschreibung des Werkzeugs und die des Feldes ausdrücklich.
 //
 // Der Antwortvertrag ist **dokumentiert**, nicht gemessen: Gemessen wurden am 2026-09-12 nur
-// die vier Endpunkte aus Plan 0.3. Die Feldmenge stammt aus `docs/api/belege.md` 10.2 und ist
-// vom Vertragslauf (Plan 9.7, AP17) zu bestätigen. Dort ist auch vermerkt, dass
-// `id_by_customer` an den Zahlungsendpunkten live als JSON-Zahl kommt (Befund L3); der Typ
-// `id-string` führt beide Formen einheitlich zur Zeichenkette (Plan 7.4, Streitfrage S10).
+// die vier Endpunkte. Die Feldmenge stammt aus `docs/api/belege.md` 10.2 und ist
+// vom Vertragslauf zu bestätigen. Dort ist auch vermerkt, dass
+// `id_by_customer` an den Zahlungsendpunkten live als JSON-Zahl kommt (Befund L3 in
+// docs/api/live-befunde.md); der Typ
+// `id-string` führt beide Formen einheitlich zur Zeichenkette.
 //
 // `concise` bleibt leer, und das ist kein Versäumnis: Der Endpunkt liefert sechs Felder, von
 // denen keines entbehrlich ist. Eine Projektion, die fünf von sechs Feldern zeigt, spart
-// nichts und verbirgt eines (Plan 7.4).
+// nichts und verbirgt eines.
 
 import { z } from "zod";
 
 import { idByCustomer, responseFormat } from "../../schema/vocab.js";
 import type { ToolEntry } from "../types.js";
 
-/** Das serverseitige Feld der Projektion. Sein Text ist der des Bausteins (Plan 4.5). */
+/** Das serverseitige Feld der Projektion. Sein Text ist der des Bausteins. */
 const RESPONSE_FORMAT_TEXT =
   "'concise' liefert nur die Felder, die einen Datensatz erkennbar machen und den nächsten " +
   "Schritt erlauben. 'detailed' liefert den Datensatz so, wie die BuchhaltungsButler-API ihn " +
@@ -74,8 +75,8 @@ export const bb_receipts_list_transactions: ToolEntry = {
     },
   ],
   serverOnlyFields: ["response_format"],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
-  // Der Vertragslauf (AP17, Plan 9.7) hat diesen Vertrag am 2026-09-13 gegen die echte API
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
+  // Der Vertragslauf hat diesen Vertrag am 2026-09-13 gegen die echte API
   // gehalten: kein neues, kein fehlendes und kein typverändertes Feld. Der Beleg dazu stammte
   // aus einer Buchung, die Beleg und Zahlung verbindet — ein Beleg ohne zugeordnete Zahlung
   // liefert hier eine leere Liste und bestätigte keinen einzigen Feldnamen.

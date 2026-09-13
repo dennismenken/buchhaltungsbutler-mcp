@@ -2,12 +2,12 @@
 //
 // Ein Golden-Körper ist ohne seinen Antwortvertrag nicht lesbar: Erst der Eintrag sagt, welche
 // Felder bekannt sind, welchen Typ sie haben, welche Form der Umschlag hat und welche Felder
-// `concise` zeigt (Plan 2.1, 7.2). Die echten 54 Einträge entstehen in AP12a bis AP12e; bis
-// dahin stehen hier die wenigen, die AP09 zum Prüfen braucht.
+// `concise` zeigt. Die echten 54 Einträge stehen unter `src/registry/tools/`; hier stehen
+// nur die wenigen, die diese Tests zum Prüfen brauchen.
 //
 // **Das sind keine Registereinträge.** Sie liegen bewusst unter `test/` und werden nie
 // ausgeliefert. Ihre Feldmengen und Typen stammen aus denselben Quellen wie die Golden-Dateien
-// (Plan 0.3 L2 und L3, die Projektionen aus 7.4); wo der echte Eintrag später abweicht, ist das
+// (die Projektionen); wo der echte Eintrag später abweicht, ist das
 // kein Widerspruch, solange diese Tests weiter das prüfen, was sie prüfen sollen.
 
 import { z } from "zod";
@@ -25,7 +25,7 @@ import {
 } from "../../src/schema/vocab.js";
 import type { ContractFieldType, FieldSpec, ToolEntry } from "../../src/registry/types.js";
 
-/** Die Mengengrenze der Positionslisten in den Attrappen: die Vorgabe aus 6.2. */
+/** Die Mengengrenze der Positionslisten in den Attrappen: die Vorgabe des Servers. */
 export const TEST_MAX_ITEMS = 50;
 
 function field(spec: Partial<FieldSpec> & Pick<FieldSpec, "name" | "schema">): FieldSpec {
@@ -50,7 +50,7 @@ function entry(spec: Partial<ToolEntry> & Pick<ToolEntry, "name" | "path">): Too
     description: `Attrappe für ${spec.name}.`,
     fields: [],
     serverOnlyFields: [],
-    omitted: [{ apiName: "api_key", reason: "kommt aus der Konfiguration (Plan 6.2)" }],
+    omitted: [{ apiName: "api_key", reason: "kommt aus der Konfiguration" }],
     responseContract: {
       container: "data",
       fields: {},
@@ -69,7 +69,7 @@ function entry(spec: Partial<ToolEntry> & Pick<ToolEntry, "name" | "path">): Too
 
 // --- Antwortverträge ----------------------------------------------------------------
 
-/** `/receipts/get`, 16 gemessene Felder (Plan 0.3 Befund L2, L3). */
+/** `/receipts/get`, 16 gemessene Felder. */
 export const RECEIPTS_LIST_FIELDS: Readonly<Record<string, ContractFieldType>> = Object.freeze({
   filename: "string",
   id_by_customer: "id-string",
@@ -89,7 +89,10 @@ export const RECEIPTS_LIST_FIELDS: Readonly<Record<string, ContractFieldType>> =
   link_to_receipt_id_by_customer: "null-or-string",
 });
 
-/** `/receipts/get/{wert}`, 23 gemessene Felder. `e_invoice_type` kam als Zahl (Befund L3). */
+/**
+ * `/receipts/get/{wert}`, 23 gemessene Felder. `e_invoice_type` kam als Zahl
+ * (Befund L3 in docs/api/live-befunde.md).
+ */
 export const RECEIPTS_SINGLE_FIELDS: Readonly<Record<string, ContractFieldType>> = Object.freeze({
   filename: "string",
   id_by_customer: "id-string",
@@ -261,7 +264,7 @@ export const RECEIPTS_DELETE: ToolEntry = entry({
     argsFrom: { receipt_id_by_customer: "receipt_id_by_customer" },
     hint: "Das Feld deleted zeigt danach 1.",
   },
-  // Aufrufform aus L1 abgeleitet, schreibend und deshalb nicht getestet (Plan 4.6).
+  // Aufrufform aus L1 abgeleitet, schreibend und deshalb nicht getestet.
   verified: false,
 });
 
@@ -332,7 +335,7 @@ export const TRANSACTIONS_SEARCH: ToolEntry = entry({
   concise: ["id_by_customer", "to_from", "amount", "booking_date", "value_date", "purpose"],
 });
 
-/** Werkzeug 43, `/accounts/get`: ohne Paginierung, nie zwischengespeichert (Plan 7.5, 7.8). */
+/** Werkzeug 43, `/accounts/get`: ohne Paginierung, nie zwischengespeichert. */
 export const PAYMENT_ACCOUNTS_LIST: ToolEntry = entry({
   name: "bb_payment_accounts_list",
   title: "Zahlungskonten auflisten",
@@ -349,7 +352,7 @@ export const PAYMENT_ACCOUNTS_LIST: ToolEntry = entry({
   concise: ["postingaccount_number", "name"],
 });
 
-/** Werkzeug 40, `/settings/get/postingaccounts`: speicherfähig (Plan 7.8). */
+/** Werkzeug 40, `/settings/get/postingaccounts`: speicherfähig. */
 export const POSTINGACCOUNTS_SEARCH: ToolEntry = entry({
   name: "bb_postingaccounts_search",
   title: "Konten suchen",
@@ -421,7 +424,7 @@ export const POSTINGS_SEARCH: ToolEntry = entry({
   ],
 });
 
-/** Werkzeug 25, `/postings/add/free`: acht **skalare** Felder, keine Positionsliste (Plan 4.8). */
+/** Werkzeug 25, `/postings/add/free`: acht **skalare** Felder, keine Positionsliste. */
 export const POSTINGS_CREATE_FREE: ToolEntry = entry({
   name: "bb_postings_create_free",
   title: "Freie Buchung anlegen",
@@ -450,7 +453,7 @@ export const POSTINGS_CREATE_FREE: ToolEntry = entry({
   },
 });
 
-/** Werkzeug 21, `/postings/add/receipt`: Positionsliste auf oberster Ebene (Plan 4.8). */
+/** Werkzeug 21, `/postings/add/receipt`: Positionsliste auf oberster Ebene. */
 export const POSTINGS_CREATE_FOR_RECEIPT: ToolEntry = entry({
   name: "bb_postings_create_for_receipt",
   title: "Buchungen zu Beleg anlegen",
@@ -538,7 +541,7 @@ export const POSTINGS_CREATE_FOR_RECEIPT_BATCH: ToolEntry = entry({
           name: "positions",
           apiNames: [
             "postingaccounts",
-            // Spezifikationsfehler aus Plan 0.5: ReceiptPostings trägt postingstexts.
+            // Spezifikationsfehler: ReceiptPostings trägt postingstexts.
             "postingstexts",
             "vats",
             "cost_locations",
@@ -800,7 +803,7 @@ export const RECEIPTS_CREATE: ToolEntry = entry({
   },
 });
 
-/** Werkzeug 53, `/reports/create/bwa`: der Anschlusshinweis aus 7.6. */
+/** Werkzeug 53, `/reports/create/bwa`: der Anschlusshinweis. */
 export const REPORTS_CREATE_BWA: ToolEntry = entry({
   name: "bb_reports_create_bwa",
   title: "BWA anfordern",
@@ -851,17 +854,17 @@ export const REPORTS_GET_BWA: ToolEntry = entry({
     field({ name: "get_files", schema: z.boolean() }),
   ],
   // Der Antwortvertrag bleibt hier leer, und das ist ein **Befund**, keine Bequemlichkeit:
-  // `report` und `files` sind Objekte, und `ContractFieldType` (Plan 2.1) kennt keinen Typ
+  // `report` und `files` sind Objekte, und `ContractFieldType` kennt keinen Typ
   // dafür. Mit `"string"` erzeugte jeder erfolgreiche Aufruf zwei `_contract_warnings`; mit
-  // leerem Vertrag laufen beide Felder als „unbekannt" unverändert durch (Plan 7.3, letzter
-  // Fall). AP12e braucht dafür entweder einen Typ `object` im Register oder diese Lösung.
+  // leerem Vertrag laufen beide Felder als „unbekannt" unverändert durch (letzter
+  // Fall). Nötig wäre dafür entweder ein Typ `object` im Register oder diese Lösung.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",
   concise: [],
 });
 
 /**
- * Die Felder eines Positionsobjekts, nach Variante (Plan 4.8).
+ * Die Felder eines Positionsobjekts, nach Variante.
  *
  * Die Funktion steht am Ende der Datei, weil sie nur von den Attrappen oben gebraucht wird;
  * Funktionsdeklarationen sind vorgezogen und damit oben verfügbar.
@@ -871,7 +874,7 @@ function POSITION_FIELDS(
 ): FieldSpec[] {
   const withOpenItem = variant === "transaction" || variant === "transaction-batch";
   // Die abweichende Schreibweise `postingstexts` innerhalb von `ReceiptPostings` ist der
-  // benannte Spezifikationsfehler aus Plan 0.5 und hier bewusst nicht geglättet.
+  // benannte Spezifikationsfehler und hier bewusst nicht geglättet.
   const textApiName = variant === "receipt-batch" ? "postingstexts" : "postingtexts";
   const fields: FieldSpec[] = [
     field({
@@ -898,7 +901,7 @@ function POSITION_FIELDS(
       schema: costLocation().optional(),
     }),
     // Markiert als Betrag: Nur darüber findet der Request-Mapper die Umwandlung in die
-    // JSON-Zahl, und Guard 5 die Betragsgrenze (Plan 4.5).
+    // JSON-Zahl, und Guard 5 die Betragsgrenze.
     field({
       name: "amount",
       apiNames: ["amounts"],

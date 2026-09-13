@@ -1,13 +1,13 @@
 // Werkzeug 22, `/postings/add-batch/receipts`: Belegbuchungen für mehrere Belege in einem
-// Aufruf (Plan 3.8, 4.8, AP12c).
+// Aufruf.
 //
 // **Auf oberster Ebene findet hier KEINE Umformung statt.** Der Endpunkt führt genau einen
 // Parameter `receipts`, und der ist laut Definition `ReceiptsPostings` bereits eine
 // Objektliste. Die parallelen Arrays liegen **innerhalb** jedes Stapelelements, also in der
 // Elementdefinition `ReceiptPostings`; die Positionsliste wird deshalb je Element gebildet und
-// nicht oben (Plan 4.8, Tabelle am Ende).
+// nicht oben (Tabelle am Ende).
 //
-// **Der Spezifikationsfehler aus Plan 0.5 ist hier sichtbar und bewusst nicht geglättet:**
+// **Der Spezifikationsfehler ist hier sichtbar und bewusst nicht geglättet:**
 // `ReceiptPostings` schreibt das Array `postingstexts` mit eingeschobenem `s`, der
 // Einzelendpunkt `/postings/add/receipt` schreibt `postingtexts`. Beides steht so in
 // `SPEC_BUGS`; geglättet scheiterte der Aufruf am falschen Feldnamen. Das Feld des
@@ -18,7 +18,7 @@
 // einem Fehlerobjekt; ein `message` auf oberster Ebene gibt es nicht (`buchungen.md` 11.3).
 // `success: true` sagt deshalb nichts darüber, ob alles gebucht wurde.
 //
-// **Es gibt keine Querprüfung „Summe der Positionsbeträge"** (Plan 4.7): Der Belegbetrag ist
+// **Es gibt keine Querprüfung „Summe der Positionsbeträge"**: Der Belegbetrag ist
 // an diesem Endpunkt kein Argument, die API prüft die Summe selbst.
 
 import { isConfigLoaded } from "../../config/resolve.js";
@@ -37,17 +37,17 @@ import type { FieldSpec, ToolEntry } from "../types.js";
 
 /**
  * Die Mengengrenze beider Ebenen: `min(50, BB_MCP_MAX_BATCH)`, sobald die Konfiguration
- * aufgelöst ist (Plan 4.7 Q4).
+ * aufgelöst ist.
  *
  * Sie gilt für den Behälter **und** für die Positionsliste jedes einzelnen Elements, und es
  * wird nichts aufsummiert: Ein Stapel aus 50 Belegen mit je 50 Positionen reißt keine der
  * beiden Grenzen. Ohne aufgelöste Konfiguration gilt das API-Maximum, weil das Register auch
- * von den Registerprüfungen geladen wird und `batchLimit()` dann wirft (Plan 6.4 Punkt 7).
+ * von den Registerprüfungen geladen wird und `batchLimit()` dann wirft.
  */
 const ITEM_LIMIT = isConfigLoaded() ? batchLimit() : API_MAX_BATCH;
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -170,7 +170,7 @@ export const bb_postings_create_for_receipt_batch: ToolEntry = {
           name: "positions",
           apiNames: [
             "postingaccounts",
-            // Der eingeschobene Buchstabe ist der benannte Spezifikationsfehler aus Plan 0.5:
+            // Der eingeschobene Buchstabe ist der benannte Spezifikationsfehler:
             // ReceiptPostings trägt postingstexts, der Einzelendpunkt postingtexts.
             "postingstexts",
             "vats",
@@ -184,7 +184,7 @@ export const bb_postings_create_for_receipt_batch: ToolEntry = {
           schema: NESTED_POSITIONS_SCHEMA,
           transform: "parallel-arrays",
           // Die `apiNames` zielen auf die parallelen Arrays INNERHALB der Elementdefinition
-          // ReceiptPostings und nicht auf Body-Parameter (Plan 2.1, 4.4 Punkt 3).
+          // ReceiptPostings und nicht auf Body-Parameter.
           itemFields: [
             field({
               name: "postingaccount",
@@ -224,14 +224,13 @@ export const bb_postings_create_for_receipt_batch: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Die Erfolgsantwort trägt `receipts` und `errors` als Arrays von Objekten und kein
-  // `message` (buchungen.md 11.3). `ContractFieldType` (Plan 2.1) kennt keinen Typ für ein
+  // `message` (buchungen.md 11.3). `ContractFieldType` kennt keinen Typ für ein
   // Objekt oder ein Array; ein erfundener Typ erzeugte bei jedem erfolgreichen Aufruf
-  // Vertragswarnungen. Mit leerem Vertrag laufen beide Felder als unbekannt unverändert durch
-  // (Plan 7.3, letzter Fall).
+  // Vertragswarnungen. Mit leerem Vertrag laufen beide Felder als unbekannt unverändert durch.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",
   concise: [],
@@ -250,7 +249,7 @@ export const bb_postings_create_for_receipt_batch: ToolEntry = {
       "receipt_id_by_customer ihres Belegs, und gezählt wird je Beleg getrennt",
   },
   // Kein duplicateCheck: bb_postings_search nimmt receipt_id_by_customer nicht als Filter an
-  // und verlangt einen Zeitraum, den dieser Aufruf nicht trägt (Plan 2.1).
+  // und verlangt einen Zeitraum, den dieser Aufruf nicht trägt.
   crossChecks: ["Q3", "Q4"],
   invalidatesCache: [],
 };

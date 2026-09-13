@@ -1,5 +1,5 @@
 /**
- * Die Sammeldatei für Zed, Continue und Jan (Plan 8.3).
+ * Die Sammeldatei für Zed, Continue und Jan.
  *
  * Diese drei Clients werden **nicht** automatisch konfiguriert, jeder aus einem eigenen,
  * benannten Grund:
@@ -13,7 +13,7 @@
  *
  * Alle drei geben einen fertigen Block aus und schreiben nichts. `apply` und `remove` liefern
  * deshalb immer `manual` und sagen, wo der Block hingehört. Das ist kein halber Adapter: Das
- * Ergebnis ist genau das, was der Plan für diese Clients vorsieht.
+ * Ergebnis ist genau das, was für diese Clients belegt ist.
  */
 
 import path from "node:path";
@@ -235,7 +235,7 @@ export const janAdapter: ClientAdapter = createPrintOnlyAdapter({
 });
 
 /**
- * Der vierte Fall aus der Tabelle in 8.3, ohne Clientkürzel: ChatGPT im Browser. Er ist
+ * Der vierte Fall aus der Tabelle, ohne Clientkürzel: ChatGPT im Browser. Er ist
  * technisch ausgeschlossen und taucht deshalb in `--help` nicht auf; der Satz steht hier,
  * damit die Begründung im Code eine Heimat hat und `doctor` sie nennen kann.
  */

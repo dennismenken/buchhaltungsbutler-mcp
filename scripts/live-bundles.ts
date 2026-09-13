@@ -6,7 +6,7 @@
 // die ersten 400 Zeichen des Textblocks.
 //
 // **Die Grenze dieses Laufs ist seine Substanz.** Er ist wie `scripts/contract-read.ts` eine
-// Ausnahme von Plan 9.1 und läuft gegen eine echte, produktive Buchhaltung. Drei Festlegungen
+// Ausnahme und läuft gegen eine echte, produktive Buchhaltung. Drei Festlegungen
 // halten ihn lesend, und jede einzelne wirkt VOR dem ersten Byte:
 //
 //  1. `BB_MCP_READ_ONLY=true` wird für diesen Lauf erzwungen. Damit ist jedes Bündel, das nicht

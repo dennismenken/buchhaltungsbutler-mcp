@@ -1,4 +1,4 @@
-// `structuredContent` und Textblock aus **derselben** Datenstruktur (Plan 7.1).
+// `structuredContent` und Textblock aus **derselben** Datenstruktur.
 //
 // Beides ist nicht redundant: Der Textblock ist das, was ein Client ohne Unterstützung für
 // `structuredContent` anzeigt, und das, was der Nutzer im Freigabedialog und im Verlauf liest.
@@ -54,11 +54,11 @@ export interface ToolResponsePayload {
 export interface BuildResponseInput {
   readonly entry: ToolEntry;
   readonly mapped: MappedResponse;
-  /** Die geprüften Werkzeugargumente. Sie liefern `limit`, `offset` und die Auflösung (7.6). */
+  /** Die geprüften Werkzeugargumente. Sie liefern `limit`, `offset` und die Auflösung. */
   readonly args?: Readonly<Record<string, unknown>>;
-  /** Gesetzt, wenn die Antwort aus dem Stammdatenspeicher kam (Plan 7.8 Punkt 2). */
+  /** Gesetzt, wenn die Antwort aus dem Stammdatenspeicher kam. */
   readonly cacheHit?: { readonly ageMs: number };
-  /** Der Hinweis der Duplikatsabfrage, falls sie eingeschaltet war und traf (Plan 6.2, 7.6). */
+  /** Der Hinweis der Duplikatsabfrage, falls sie eingeschaltet war und traf. */
   readonly duplicateHint?: string;
   /** Abweichende weiche Grenze. Im Betrieb `BB_MCP_MAX_RESPONSE_TOKENS`. */
   readonly maxResponseTokens?: number;
@@ -87,10 +87,10 @@ function fileRequested(args: Readonly<Record<string, unknown>> | undefined): boo
 }
 
 /**
- * Der Hinweis auf einen Treffer im Stammdatenspeicher, wörtlich nach Plan 7.8 Punkt 2.
+ * Der Hinweis auf einen Treffer im Stammdatenspeicher, wörtlich.
  *
  * Er steht im Textblock **und** in `structuredContent`: Ein stillschweigend aus dem Speicher
- * beantworteter Aufruf wäre genau die verborgene Logik, die E1 ausschließt.
+ * beantworteter Aufruf wäre genau die verborgene Logik, die dieser Server ausschließt.
  */
 export function cacheHitNote(ageMs: number): string {
   const seconds = Math.max(0, Math.round(ageMs / 1000));
@@ -101,7 +101,7 @@ export function cacheHitNote(ageMs: number): string {
 }
 
 /**
- * Der aufgelöste Datensatz einer Schreibantwort (Plan 7.6).
+ * Der aufgelöste Datensatz einer Schreibantwort.
  *
  * **Es geht dafür kein zusätzlicher Request hinaus.** Die Auflösung speist sich aus genau zwei
  * Quellen: den Argumenten des Aufrufs, die der Server ohnehin hat, und den Feldern, die die
@@ -168,7 +168,7 @@ function describeList(name: string, list: readonly unknown[]): string {
  *
  * Der Aufruf selbst setzt **keinen** weiteren Request ab und liest keine Datenquelle: Alles,
  * was hier steht, stammt aus der bereits vorliegenden Antwort, aus den Argumenten und aus dem
- * Registereintrag (Plan 7.5 Regel 2, 7.6).
+ * Registereintrag.
  */
 export function buildToolResponse(input: BuildResponseInput): ToolResponsePayload {
   const { entry, mapped, args } = input;
@@ -181,7 +181,7 @@ export function buildToolResponse(input: BuildResponseInput): ToolResponsePayloa
     success: true,
   };
 
-  // 1. Die Vertragsverletzung zuerst (Plan 7.3): Sie betrifft die Zahlen, die danach kommen.
+  // 1. Die Vertragsverletzung zuerst: Sie betrifft die Zahlen, die danach kommen.
   if (mapped.warnings.length > 0) {
     lines.push(contractWarningLine(mapped.warnings, mapped.rowsReturned));
     structured[CONTRACT_WARNINGS_KEY] = warningsForStructuredContent(mapped.warnings);
@@ -243,7 +243,7 @@ interface ListOptions {
   readonly requested: boolean;
 }
 
-/** Die Listenform: Tabelle, Bestandszeile, Anschlusshinweis (Plan 7.1, 7.5). */
+/** Die Listenform: Tabelle, Bestandszeile, Anschlusshinweis. */
 function appendList(
   input: BuildResponseInput,
   structured: Record<string, unknown>,
@@ -271,7 +271,7 @@ function appendList(
   const shown = cleaned.slice(0, fit.count);
 
   // Der Textblock bekommt die binärfreie Fassung, auch wenn die Datei angefordert war:
-  // Base64 erscheint dort niemals (Plan 7.6).
+  // Base64 erscheint dort niemals.
   const table = renderTable(
     shown.map((row) => stripBinariesForText(row) as Record<string, unknown>),
   );
@@ -315,7 +315,7 @@ function appendList(
   }
 }
 
-/** Die Einzelform: lesbare Aufzählung statt Tabelle mit einer Zeile (Plan 7.1). */
+/** Die Einzelform: lesbare Aufzählung statt Tabelle mit einer Zeile. */
 function appendSingle(
   input: BuildResponseInput,
   structured: Record<string, unknown>,
@@ -345,7 +345,7 @@ function appendSingle(
   structured[OBJECT_CONTAINER] = result.value ?? null;
 }
 
-/** Die Schreibform: Satz, aufgelöster Datensatz, Weg zurück (Plan 7.1, 7.6). */
+/** Die Schreibform: Satz, aufgelöster Datensatz, Weg zurück. */
 function appendWrite(
   input: BuildResponseInput,
   structured: Record<string, unknown>,
@@ -367,7 +367,7 @@ function appendWrite(
         : entry.effect === "delete"
           ? "entfernt"
           : "ausgeführt";
-  // Der Titel eines Werkzeugs ist nach Plan 3.6 eine Infinitivwendung („Beleg als gelöscht
+  // Der Titel eines Werkzeugs ist eine Infinitivwendung („Beleg als gelöscht
   // markieren“). Als Subjekt eines Satzes, der ein Substantiv braucht, ergibt er falsches
   // Deutsch; er steht deshalb als vorangestellte Benennung und nicht im Satz selbst.
   lines.push(
@@ -473,7 +473,7 @@ function reversalDescription(toolName: string): Record<string, unknown> | null {
     : { available: true, tool: reversal.tool, args_from: reversal.argFrom, note: reversal.note };
 }
 
-/** Die geschätzte Tokenzahl einer fertigen Antwort. Für Tests und für `doctor` (Plan 8.4). */
+/** Die geschätzte Tokenzahl einer fertigen Antwort. Für Tests und für `doctor`. */
 export function estimateResponseTokens(payload: ToolResponsePayload): number {
   const text = payload.content.map((block) => block.text).join("\n");
   return estimateTokens(text) + estimateTokens(JSON.stringify(payload.structuredContent) ?? "");

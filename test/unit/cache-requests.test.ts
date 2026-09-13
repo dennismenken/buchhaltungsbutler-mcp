@@ -17,12 +17,12 @@ import {
 } from "../golden/entries.js";
 import { goldenReply } from "../golden/index.js";
 
-// Die Negativprüfung aus der Definition of Done zu AP09: „/accounts/get und alle
+// Die Negativprüfung: „/accounts/get und alle
 // Bewegungsdaten werden nie zwischengespeichert. Der Test ruft die Werkzeuge bei
 // eingeschaltetem Speicher zweimal auf und verlangt ZWEI Requests am Mock."
 //
 // Gemessen wird am MockAgent und nicht an einer Zusicherung des Speichers: Ein Guard, der zu
-// spät greift, hat den Request schon abgesetzt, und das ist nur am Mock zu sehen (Plan 9.5).
+// spät greift, hat den Request schon abgesetzt, und das ist nur am Mock zu sehen.
 
 let api: ApiMock;
 let store: MasterDataStore;
@@ -39,10 +39,10 @@ afterEach(() => {
 });
 
 /**
- * Der Ausschnitt des generischen Handlers aus Plan 1.4, der den Speicher betrifft: befragen
+ * Der Ausschnitt des generischen Handlers, der den Speicher betrifft: befragen
  * **nach** den Guards und **vor** dem Rate-Limiter, bei einem Treffer kein Request, nach einer
- * erfolgreichen Antwort füllen. Der Handler selbst gehört AP10; hier wird nur diese Reihenfolge
- * nachgestellt, damit die Zusicherung am Mock messbar ist.
+ * erfolgreichen Antwort füllen. Der Handler hat eigene Tests; hier wird nur diese
+ * Reihenfolge nachgestellt, damit die Zusicherung am Mock messbar ist.
  */
 async function callWithCache(entry: ToolEntry): Promise<{ fromCache: boolean }> {
   const specPath = "literal" in entry.path ? entry.path.literal : entry.path.specPath;
@@ -66,7 +66,7 @@ async function callWithCache(entry: ToolEntry): Promise<{ fromCache: boolean }> 
   return { fromCache: false };
 }
 
-describe("Bewegungsdaten und /accounts/get werden nie zwischengespeichert (Plan 7.8)", () => {
+describe("Bewegungsdaten und /accounts/get werden nie zwischengespeichert", () => {
   const cases: readonly [ToolEntry, string, string][] = [
     [PAYMENT_ACCOUNTS_LIST, "/accounts/get", "accounts-get-list"],
     [RECEIPTS_SEARCH, "/receipts/get", "receipts-get-list"],
@@ -111,7 +111,7 @@ describe("Die vier speicherfähigen Werkzeuge sparen den zweiten Request", () =>
     expect(api.count("/settings/get/postingaccounts")).toBe(1);
   });
 
-  it("macht aus einem Aufruf null und nie zwei (Plan 7.8 Punkt 4)", async () => {
+  it("macht aus einem Aufruf null und nie zwei", async () => {
     api.post("/settings/get/postingaccounts", goldenReply("postingaccounts-get-list"));
     for (let run = 0; run < 5; run++) {
       await callWithCache(POSTINGACCOUNTS_SEARCH);
@@ -124,7 +124,7 @@ describe("Die vier speicherfähigen Werkzeuge sparen den zweiten Request", () =>
     api.post("/settings/get/postingaccounts", goldenReply("postingaccounts-get-list"));
 
     await callWithCache(POSTINGACCOUNTS_SEARCH);
-    // Ein Debitorenwerkzeug verwirft laut Register auch den Sachkontenstand (Plan 7.8).
+    // Ein Debitorenwerkzeug verwirft laut Register auch den Sachkontenstand.
     store.invalidate(["bb_postingaccounts_search", "bb_debtors_search"]);
     await callWithCache(POSTINGACCOUNTS_SEARCH);
 

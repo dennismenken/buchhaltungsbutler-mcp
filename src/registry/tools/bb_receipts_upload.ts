@@ -1,15 +1,15 @@
-// Werkzeug 6 von 54 (Plan 3.8): `/receipts/upload`, Belegdatei hochladen.
+// Werkzeug 6 von 54: `/receipts/upload`, Belegdatei hochladen.
 //
 // Der einzige Endpunkt der API, der eine Datei entgegennimmt, und der einzige mit einem
-// eigenen Minutenlimit (zehn Aufrufe, Eimer `upload` in Plan 5.4). Die Verarbeitung umfasst
-// Texterkennung und E-Rechnungsauswertung; die Zeitlimitstufe ist deshalb `long` (Plan 5.2),
-// und ein Zeitlimit ist hier kein Fehlschlag, sondern ein ungewisser Ausgang (Plan 5.7).
+// eigenen Minutenlimit (zehn Aufrufe, Eimer `upload`). Die Verarbeitung umfasst
+// Texterkennung und E-Rechnungsauswertung; die Zeitlimitstufe ist deshalb `long`,
+// und ein Zeitlimit ist hier kein Fehlschlag, sondern ein ungewisser Ausgang.
 //
 // **Der Wertevorrat von `currency` ist hier ein dritter.** Die Spezifikation verlangt an
 // diesem Endpunkt „Has to be 'EUR' if specified“ und widerspricht damit `/receipts/add`, das
 // USD, GBP und CHF nennt. Regel R-A greift nicht, weil `/receipts/upload` keine Stapelform
 // hat; nach Regel R-B bleibt es bei einem freien String mit benanntem Widerspruch
-// (Plan 4.5 Zeile 3, Baustein `currencyUpload()`).
+// (Baustein `currencyUpload()`).
 //
 // **Belegart und die übrigen Metadaten teilen sich Text und Schema mit bb_receipts_create**,
 // weil es fachlich dieselben Felder sind; die Spezifikation führt sie an beiden Endpunkten
@@ -18,7 +18,7 @@
 //
 // **Die Datei selbst.** Das Feld `file` nimmt den base64-Inhalt, eine https-Adresse oder eine
 // file-Adresse; die beiden letzten Formen sind nur nutzbar, wenn der Betreiber sie freigegeben
-// hat (Plan 6.2). Den Inhalt beschafft `src/upload/source.ts` vor dem ersten Byte an die API,
+// hat. Den Inhalt beschafft `src/upload/source.ts` vor dem ersten Byte an die API,
 // prüft den Dateityp über die Magic Bytes und bereinigt den Dateinamen.
 
 import { z } from "zod";
@@ -216,7 +216,7 @@ export const bb_receipts_upload: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   responseContract: {
     // Die Quittung trägt id_by_customer und filename auf oberster Ebene des Umschlags, nicht
     // unter data (docs/api/belege.md 7.2). filename ist der interne Name ohne Endung.

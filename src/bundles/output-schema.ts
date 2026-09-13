@@ -1,10 +1,10 @@
-// Der Block `bundle`, den jede Bündelantwort trägt — immer, mit denselben Schlüsseln (3).
+// Der Block `bundle`, den jede Bündelantwort trägt — immer, mit denselben Schlüsseln.
 //
 // **Leitsatz: Ein Bündel gibt niemals eine Teilmenge als Ganzes aus.** Dieser Block setzt ihn
 // durch: `complete` und `stopped_because` sind Pflicht, `gaps` ist bei Vollständigkeit ein
 // leeres Array und niemals abwesend, und `api_calls` neben `api_calls_limit` macht sichtbar,
 // was der Aufruf am Minutenkontingent verbraucht hat. Feldbeschreibungen entfallen wie bei den
-// 54 Werkzeugen (S6).
+// 54 Werkzeugen (Sparmaßnahme S6 in docs/entwicklung/tokenbudget.md).
 
 /** Die Gründe, aus denen ein Bündel aufhört. Wortgleich mit {@link BundleStopReason}. */
 const STOP_REASONS = [
@@ -43,7 +43,7 @@ const GAP_SCHEMA = Object.freeze({
   additionalProperties: true,
 });
 
-/** Der Pflichtblock aus Abschnitt 3 der Bauvorlage. */
+/** Der Pflichtblock jeder Bündelantwort. */
 export const BUNDLE_BLOCK_SCHEMA = Object.freeze({
   type: "object",
   properties: {

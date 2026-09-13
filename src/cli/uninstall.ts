@@ -1,9 +1,9 @@
 /**
- * `uninstall --client <name>`: den eigenen Eintrag beim genannten Client entfernen (Plan 8.1).
+ * `uninstall --client <name>`: den eigenen Eintrag beim genannten Client entfernen.
  *
  * Entfernt wird ausschließlich der Eintrag **dieses** Servers und nichts sonst. Bei den
  * Adaptern, die eine Datei anfassen, entsteht vorher eine Sicherung, und ihr Pfad steht in
- * der Ausgabe — dieselbe Zusage wie beim Schreiben (Plan 8.2 Schritt 7).
+ * der Ausgabe — dieselbe Zusage wie beim Schreiben.
  */
 
 import {

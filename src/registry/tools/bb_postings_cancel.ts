@@ -1,4 +1,4 @@
-// Werkzeug 31, `/postings/cancel`: storniert eine einzelne Buchungszeile (Plan 3.8, AP12c).
+// Werkzeug 31, `/postings/cancel`: storniert eine einzelne Buchungszeile.
 //
 // **Zwei völlig verschiedene Wirkungen hinter einem Aufruf**, gesteuert allein durch `fixed`:
 // War die Buchung festgeschrieben, entsteht eine dauerhaft sichtbare Stornobuchung; war sie es
@@ -6,7 +6,7 @@
 // erzwingen, und **die Antwort unterscheidet sie nicht** (`buchungen.md` 20.3 und 20.6). Wer
 // wissen will, was geschehen ist, liest `fixed` vorher und prüft hinterher erneut.
 //
-// **`idempotentHint: false`** kommt aus der Klasse D (Plan 3.3) und ist hier keine Vorsicht auf
+// **`idempotentHint: false`** kommt aus der Klasse D und ist hier keine Vorsicht auf
 // Vorrat: Eine Stornobuchung lässt sich nicht erneut stornieren, die API antwortet dann mit
 // `error_code` 8. Ein `true` lüde einen Host zum automatischen Wiederholen ein, und die
 // Wiederholung träfe einen anderen Zustand als der erste Aufruf.
@@ -14,14 +14,14 @@
 // **Die Codes 8 und 9 unterscheiden sich im Englischen nur durch ein Wort** („cannot" gegen
 // „could not") und bedeuten Verschiedenes: 8 ist eine fachliche Ablehnung, 9 ein technisches
 // Scheitern. Nur bei 9 ist eine Wiederholung sinnvoll; die Unterscheidung leistet der
-// Fehlerkatalog (Plan 5.6) und nicht dieser Eintrag.
+// Fehlerkatalog und nicht dieser Eintrag.
 
 import { unwrapSchema } from "../../schema/primitives.js";
 import { ID_STRING_SENTENCE, idByCustomer } from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -81,7 +81,7 @@ export const bb_postings_cancel: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Erfolgsantwort `{ "success": true, "message": "" }`, ohne `data` und ohne Angabe darüber,

@@ -1,5 +1,5 @@
 /**
- * Claude Code: `claude mcp add-json` als Unterprozess (Plan 8.3).
+ * Claude Code: `claude mcp add-json` als Unterprozess.
  *
  * Die offizielle Kommandozeile wird aufgerufen, statt `~/.claude.json` nachzubauen. Diese
  * Datei führt neben den MCP-Servern den gesamten übrigen Zustand des Clients; sie von außen

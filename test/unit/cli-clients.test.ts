@@ -26,7 +26,7 @@ import { vscodeAdapter } from "../../src/cli/clients/vscode.js";
 import { windsurfAdapter } from "../../src/cli/clients/windsurf.js";
 import { ALL_ADAPTERS } from "../../src/cli/run.js";
 
-// Die zehn Adapter (Plan 8.3). Geschrieben wird gegen ein echtes, wegwerfbares Verzeichnis:
+// Die zehn Adapter. Geschrieben wird gegen ein echtes, wegwerfbares Verzeichnis:
 // Sicherungen, Zusammenführen und die Regel „fehlt die Datei, wird nur ausgegeben" sind
 // Dateisystemverhalten und nur dort ehrlich prüfbar.
 //

@@ -1,11 +1,11 @@
-// Zugriff auf die Golden-Dateien (Plan 9.4).
+// Zugriff auf die Golden-Dateien.
 //
 // Jede Datei trägt eine Herkunftszeile: welcher Endpunkt, welches Datum, welche Quelle. **Die
 // Geschäftsdaten sind erfunden, die Struktur nicht.** Diese Datei liest sie und macht daraus
 // eine Antwort für die HTTP-Nachbildung; die Form ist in README.md beschrieben.
 //
 // Der Grund für den Umweg über eine Datei statt eines Objektliteral im Test: Ein Mock, der die
-// Annahme des Codes wiederholt, prüft nichts (Plan 9.4). Eine Datei mit Herkunftszeile lässt
+// Annahme des Codes wiederholt, prüft nichts. Eine Datei mit Herkunftszeile lässt
 // sich gegen die Quelle halten, ein Literal im Test nicht.
 
 import { readFileSync, readdirSync } from "node:fs";
@@ -50,17 +50,17 @@ export function goldenNames(): string[] {
  * Lädt eine Golden-Datei.
  *
  * Eine fehlende Herkunftszeile ist ein Fehler und keine Nachlässigkeit: Ohne sie ist der
- * Antwortkörper eine Behauptung ohne Quelle, und genau das schließt Plan 9.4 aus.
+ * Antwortkörper eine Behauptung ohne Quelle, und genau das ist ausgeschlossen.
  */
 export function loadGolden(name: string): GoldenFile {
   const file = `${GOLDEN_DIR}${name}.json`;
   const parsed = JSON.parse(readFileSync(file, "utf8")) as RawGolden;
 
   if (typeof parsed._herkunft !== "string" || parsed._herkunft.trim() === "") {
-    throw new Error(`${name}.json trägt keine Herkunftszeile _herkunft (Plan 9.4).`);
+    throw new Error(`${name}.json trägt keine Herkunftszeile _herkunft.`);
   }
   if (typeof parsed._zweck !== "string" || parsed._zweck.trim() === "") {
-    throw new Error(`${name}.json sagt in _zweck nicht, welchen Fall es prüft (Plan 9.4).`);
+    throw new Error(`${name}.json sagt in _zweck nicht, welchen Fall es prüft.`);
   }
   const status = parsed.http?.status;
   const contentType = parsed.http?.contentType;

@@ -1,8 +1,8 @@
-// Werkzeug 35 von 54: `/settings/update/debtor` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 35 von 54: `/settings/update/debtor`.
 //
-// Klasse M, also `destructiveHint: true` und `idempotentHint: true` (Plan 3.3, Streitfrage
-// S5): Ein Überschreiben ist nicht additiv, und kein Endpunkt der API liefert den Vorzustand
-// zurück. Ein zu strenger Hint kostet eine Rückfrage, ein zu milder einen unbemerkten
+// Klasse M, also `destructiveHint: true` und `idempotentHint: true` (die Begründung steht
+// bei `TOOL_CLASSES` in src/registry/classes.ts): Ein Überschreiben ist nicht additiv, und
+// kein Endpunkt der API liefert den Vorzustand zurück. Ein zu strenger Hint kostet eine Rückfrage, ein zu milder einen unbemerkten
 // Stammdatenverlust. `idempotentHint: true` gilt, weil der Aufruf einen im Aufruf genannten
 // Zielzustand setzt, genau wie das Schreiben einer Datei.
 //
@@ -107,12 +107,12 @@ export const bb_debtors_update: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // `data` ist hier ein Objekt, kein Array. Die Feldnamen sind die **Lesenamen**:
   // `additional_addressline` ohne zweiten Unterstrich und `sales_tax_id_eu` mit Zusatz,
-  // während die Schreibparameter oben `additional_address_line` und `sales_tax_id` heißen
-  // (Plan 7.2). `customer_number` und `import_pending` führt die Spezifikation in dieser
-  // Antwort nicht; kommen sie doch, werden sie unverändert durchgereicht (Plan 7.3).
+  // während die Schreibparameter oben `additional_address_line` und `sales_tax_id` heißen.
+  // `customer_number` und `import_pending` führt die Spezifikation in dieser
+  // Antwort nicht; kommen sie doch, werden sie unverändert durchgereicht.
   responseContract: {
     container: "data",
     fields: {

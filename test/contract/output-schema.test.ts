@@ -1,8 +1,8 @@
-// Vertragstest aus Plan 9.3: **jede Golden-Antwort validiert gegen das `outputSchema` ihres
+// Vertragstest: **jede Golden-Antwort validiert gegen das `outputSchema` ihres
 // Werkzeugs.**
 //
 // Das `outputSchema` beschreibt die Antwort **dieses Servers** und nicht den Rohumschlag der
-// API (Plan 7.1): `success`, `endpoint`, die Paginierungstatsachen und den Datenbehälter —
+// API: `success`, `endpoint`, die Paginierungstatsachen und den Datenbehälter —
 // `items` bei der Listenform, `data` beim Einzelabruf. Ein Golden-Körper validiert deshalb
 // nicht unmittelbar dagegen; der Weg ist der aus `test/golden/README.md` und derselbe, den ein
 // echter Aufruf nimmt:
@@ -142,7 +142,7 @@ function validate(node: SchemaNode, value: unknown, path: string): Finding[] {
   return findings;
 }
 
-/** Die Felder, die die Antwort selbst als vertragswidrig ausweist (Plan 7.3). */
+/** Die Felder, die die Antwort selbst als vertragswidrig ausweist. */
 function reportedFields(structured: Record<string, unknown>): Set<string> {
   const rawWarnings = structured[CONTRACT_WARNINGS_KEY];
   if (!Array.isArray(rawWarnings)) {
@@ -173,7 +173,7 @@ afterAll(() => {
 /** Ein Fall, der bis zum `structuredContent` durchläuft. */
 interface SuccessCase {
   readonly tool: string;
-  /** Die Argumente des Aufrufs. Sie tragen die Auflösung einer Schreibantwort (Plan 7.6). */
+  /** Die Argumente des Aufrufs. Sie tragen die Auflösung einer Schreibantwort. */
   readonly args?: Record<string, unknown>;
 }
 
@@ -330,9 +330,9 @@ describe("structuredContent gegen das outputSchema", () => {
 
       const findings = validate(schema, structured, "structuredContent");
 
-      // **Der Fall, an dem sich zwei Regeln des Plans berühren.** 7.3 verlangt, ein bekanntes
+      // **Der Fall, an dem sich zwei Regeln berühren.** Die eine verlangt, ein bekanntes
       // Feld mit falschem Typ unverändert durchzureichen und in `_contract_warnings` zu
-      // melden; 7.1 verlangt, dass das `outputSchema` genau das beschreibt, was in
+      // melden; die andere verlangt, dass das `outputSchema` genau das beschreibt, was in
       // `structuredContent` steht. Bei `receipts-get-list-contract-violation` schließt das
       // eine das andere aus: Der rohe Wert bleibt stehen und passt dann nicht mehr zum
       // angekündigten Typ. Geprüft wird deshalb die Zusage, die beides zusammenhält — **jede**
@@ -348,8 +348,9 @@ describe("structuredContent gegen das outputSchema", () => {
       ).toEqual([]);
 
       // Zwei Zusagen des Ausgabeschemas, die ein reiner Schemavergleich nicht sichtbar macht:
-      // Es ist offen (`additionalProperties: true`, Streitfrage S18 und Finding L4) und der
-      // Datenbehälter heißt so, wie 7.1 ihn nennt.
+      // Es ist offen (`additionalProperties: true`, weil die API Felder liefert, die die
+      // Spezifikation nicht führt — Befund L4 in docs/api/live-befunde.md) und der
+      // Datenbehälter heißt so, wie das Schema ihn ankündigt.
       expect(schema.additionalProperties).toBe(true);
       expect(structured.success).toBe(true);
       if (entry.shape === "list") {

@@ -7,14 +7,19 @@ jedes einzelnen Endpunkts.
 
 ## Quellenlage und Abrufdatum
 
-Alle Angaben wurden am **2026-09-12** erhoben.
+Alle Angaben wurden am **2026-09-12** erhoben. Die vier Rahmenangaben, auf die sich die
+Endpunkt-Dossiers berufen — Basis-URL, Authentifizierung, Antwortumschlag und Rate Limit —,
+sind am **2026-09-13** eigenständig nachgemessen worden; das Protokoll steht in
+Abschnitt 2.5, und es benennt zugleich, welche der vier Angaben **nicht** aus einer Messung
+stammt.
 
 | Kürzel | Quelle | Art |
 | --- | --- | --- |
-| SPEC | `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json` (Swagger 2.0, `info.version` = 1.9.1, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json`) | Offizielle Maschinenbeschreibung |
+| SPEC | `docs/openapi/buchhaltungsbutler-v1.json` (Swagger 2.0, `info.version` = 1.9.1, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json`) | Offizielle Maschinenbeschreibung |
 | DOC | `https://app.buchhaltungsbutler.de/docs/api/v1/` | Offizielle Doku-Seite, statischer Textteil |
 | HELP | `https://wissen.buchhaltungsbutler.de/hc/de/articles/11468075328797-Einrichtung-der-API-Schnittstelle` | Hilfeartikel des Anbieters |
 | LIVE | Eigene Aufrufe gegen `https://webapp.buchhaltungsbutler.de/api/v1` am 2026-09-12 | Messung an der Produktivumgebung |
+| LIVE-13 | Eigene lesende Aufrufe gegen dieselbe Basis-URL am 2026-09-13, Protokoll in Abschnitt 2.5 | Nachmessung der Rahmenangaben |
 
 Hinweis zu LIVE: Es wurden ausschließlich lesende Endpunkte und bewusst fehlerhafte
 Anfragen gegen lesende Endpunkte aufgerufen. Alle gezeigten Antwortausschnitte sind
@@ -136,12 +141,12 @@ Detailabruf oder Zuordnung. Die SPEC weist in den Beschreibungen mehrerer Endpun
 ausdrücklich auf diese Reihenfolge hin. In den Anfragen ist sie meist als `integer`
 deklariert (SPEC, LIVE). Ein Client muss hier konvertieren.
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 0.3, Befund L3.** Der frühere Satz, `id_by_customer` werde in den
-> Antworten **immer** als String geliefert, gilt so nicht. Gemessen am 2026-09-12: Bei
-> `receipts` kommt sie als JSON-**String** (`"2"`), bei `transactions` als JSON-**Zahl**
-> (`1590`). Die Asymmetrie ist also nicht einmal zwischen den Ressourcen einheitlich und muss je
-> Feld und je Ressource behandelt werden. Einzelheiten in Abschnitt 4.5.
+> **Nachgezogen am 2026-09-13 nach eigenen lesenden Messungen vom 2026-09-12.** Der frühere
+> Satz, `id_by_customer` werde in den Antworten **immer** als String geliefert, gilt so nicht.
+> Gemessen: Bei `receipts` kommt sie als JSON-**String** (`"2"`), bei `transactions` als
+> JSON-**Zahl** (`1590`). Die Asymmetrie ist also nicht einmal zwischen den Ressourcen
+> einheitlich und muss je Feld und je Ressource behandelt werden. Einzelheiten in Abschnitt 4.5,
+> vollständige Messung in `docs/api/live-befunde.md`, Befund 3.
 
 ---
 
@@ -234,6 +239,46 @@ Diese drei Antworten sind bei **allen 54** Endpunkten definiert (SPEC: `401 (3)`
 `401 (4)` und `403 (11)` kommen je 54-mal vor). Ein Client sollte sie zentral behandeln
 und deutlich von fachlichen Validierungsfehlern unterscheiden: 3 und 4 sind
 Konfigurationsfehler, ein Retry ist sinnlos.
+
+### 2.5 Nachmessung der Rahmenangaben am 2026-09-13
+
+Die Endpunkt-Dossiers dieses Verzeichnisses wiederholen jeweils vier Rahmenangaben:
+Basis-URL, Authentifizierung, Antwortumschlag und Rate Limit. Damit diese Angaben dort
+nicht bloß als „verifiziert" behauptet werden, sondern eine nachprüfbare Quelle haben,
+sind sie am **2026-09-13** eigenständig nachgemessen worden. Vier Aufrufe, alle gegen
+lesende Endpunkte; kein schreibender Aufruf war beteiligt.
+
+| Nr. | Aufruf | Ergebnis |
+| --- | --- | --- |
+| M1 | `POST /accounts/get`, Basic Auth gesetzt, Body `{"api_key": "…"}` | HTTP **200**, `content-type: application/json; charset=utf-8`, wirksame URL `https://webapp.buchhaltungsbutler.de/api/v1/accounts/get`. Umschlag: `success` (boolean), `message` (string), `rows` (number), `data` (array) |
+| M2 | derselbe Aufruf **ohne** `Authorization`-Header | HTTP **401**, Körper wörtlich `{"success":false,"error_code":3,"message":"API credentials unknown or invalid"}` |
+| M3 | derselbe Aufruf mit gültigem Basic Auth, aber absichtlich ungültigem `api_key` | HTTP **401**, Körper wörtlich `{"success":false,"error_code":4,"message":"customer not found or invalid api client for customer or insufficient privileges"}` |
+| M4 | `POST /receipts/get`, Body `{"api_key": "…", "list_direction": "inbound", "limit": 1, "offset": 0}` | HTTP **200**, Umschlag `success`, `message`, `rows`, `data`; `rows` = 1 bei einer `data`-Länge von 1 |
+
+Was damit belegt ist:
+
+- **Basis-URL.** `https://webapp.buchhaltungsbutler.de/api/v1` beantwortet lesende
+  `POST`-Aufrufe mit HTTP 200 (M1, M4). Dass ausnahmslos `POST` definiert ist, steht
+  daneben unverändert in der SPEC (Abschnitt 1.2).
+- **Authentifizierung.** HTTP Basic Auth ist nicht nur dokumentiert, sondern **erzwungen**:
+  Ohne den Header antwortet derselbe Aufruf mit HTTP 401 und `error_code` 3 (M2). Der
+  `api_key` im Body ist davon getrennt und wählt den Mandanten; ein ungültiger Wert liefert
+  bei gültigem Basic Auth HTTP 401 mit `error_code` 4 (M3). Die ersten beiden Zeilen der
+  Tabelle in Abschnitt 2.4 sind damit nicht mehr allein der SPEC entnommen, sondern gemessen.
+- **Antwortumschlag.** Der Erfolgsfall trägt `success`, `message`, `rows` und `data`
+  (M1, M4), der Fehlerfall `success`, `error_code` und `message` (M2, M3) — in den
+  gemessenen Fällen genau so und ohne weitere Schlüssel.
+
+**Das Rate Limit ist hierbei ausdrücklich nicht gemessen.** Die Grenze von 100 Requests pro
+Mandant und Minute ist eine wörtlich zitierte Angabe der Anbieterdokumentation
+(Abschnitt 3.1, Quelle DOC) und **keine eigene Messung**. Sie absichtlich zu reißen hätte
+die Produktivbuchhaltung des Nutzers für andere Zugriffe blockiert; was der Server beim
+Überschreiten antwortet, bleibt offen (Abschnitt 3.3, letzter Absatz).
+
+Zur Nachprüfbarkeit und zum Datenschutz: Die Zugangsdaten stehen in keiner Aufrufform dieses
+Abschnitts, wo sie im Body stünden, steht `"api_key": "…"`. Die Antwortkörper von M2 und M3
+sind vollständig und unverändert wiedergegeben und enthalten keine Geschäftsdaten; aus M1
+und M4 sind ausschließlich die Strukturangaben übernommen, keine Werte.
 
 ---
 
@@ -450,9 +495,11 @@ Stelle einen schwer deutbaren Parserfehler.
 
 ### 4.5 Antwortfelder der Belege und Zahlungen
 
-> **Ergänzt am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 0.3, Befunde L2 und L3.** Dieser Abschnitt hält eine Messung fest, die
-> im übrigen Dossier fehlte und für jede Implementierung tragend ist.
+> **Ergänzt am 2026-09-13 aus eigenen lesenden Messungen vom 2026-09-12.** Dieser Abschnitt
+> hält eine Messung fest, die im übrigen Dossier fehlte und für jede Implementierung tragend
+> ist: Listen- und Einzelabruf liefern **verschiedene Feldnamen und verschiedene Feldmengen**,
+> und dieselbe Angabe trägt je nach Ressource einen anderen JSON-Typ. Wer den Antwortvertrag aus
+> der Spezifikation statt aus der gemessenen Antwort bildet, baut ihn deshalb falsch.
 
 **Listen- und Einzelabruf liefern verschiedene Feldnamen und verschiedene Feldmengen.** Gemessen
 am 2026-09-12:
@@ -649,15 +696,15 @@ Fremdwährung hat eine praktische Konsequenz, auf die die SPEC bei
 Belege in Fremdwährung muss der Beleg zuerst über `/receipts/get/id_by_customer` geholt
 und der dort berechnete Betrag verwendet werden, bevor Buchungen angelegt werden.
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 0.3, Befund L1.** **Der Fremdwährungsablauf ist durchführbar.** Der
-> frühere Vorbehalt an dieser Stelle beruhte auf vier Aufrufen in der falschen Form: Geprüft
-> waren ausschließlich Body-Varianten. Der Wert gehört in den Pfad. `POST /receipts/get/<wert>`
-> mit dem Body `{"api_key": "…"}` antwortet gemessen am 2026-09-12 mit HTTP 200 und liefert
-> `amount_original`, `currency_original` und `exchangerate`. Der Pflichtschritt vor
-> Fremdwährungsbuchungen läuft damit nicht mehr ins Leere, und die frühere Array-Hypothese ist
-> hinfällig. Derselbe Pflichtschritt steht auch in `docs/api/buchungen.md`, Abschnitt 6.2.
-> Siehe Stolperfalle 29 in Abschnitt 8 und `docs/api/live-befunde-orchestrator.md`, Befund 1.
+> **Nachgezogen am 2026-09-13 nach eigener lesender Messung vom 2026-09-12. Der
+> Fremdwährungsablauf ist durchführbar.** Der frühere Vorbehalt an dieser Stelle beruhte auf
+> vier Aufrufen in der falschen Form: Geprüft waren ausschließlich Body-Varianten. Der Wert
+> gehört in den Pfad. `POST /receipts/get/<wert>` mit dem Body `{"api_key": "…"}` antwortet
+> gemessen am 2026-09-12 mit HTTP 200 und liefert `amount_original`, `currency_original` und
+> `exchangerate`. Der Pflichtschritt vor Fremdwährungsbuchungen läuft damit nicht mehr ins
+> Leere, und die frühere Array-Hypothese ist hinfällig. Derselbe Pflichtschritt steht auch in
+> `docs/api/buchungen.md`, Abschnitt 6.2. Siehe Stolperfalle 29 in Abschnitt 8 und
+> `docs/api/live-befunde.md`, Befund 1.
 
 ### 5.7 Booleans
 
@@ -908,7 +955,7 @@ falschen oder versehentlichen Aufruf.
 | Endpunkt | Wirkung | Risiko für einen Agenten |
 | --- | --- | --- |
 | `/receipts/get` | lesend | Gering. Nur Kontingentverbrauch. Bei `limit=500` und vielen Belegen können große Antworten entstehen. |
-| `/receipts/get/id_by_customer` | lesend | Gering. Mit `get_file: true` wird die Belegdatei als Base64 mitgeliefert, das kann die Antwort sehr groß machen. **Live am 2026-09-12 benutzbar**, aber nur in der Pfadsegmentform `POST /receipts/get/<wert>`: Das Segment `id_by_customer` ist ein Platzhalter für den Wert. Die vier früher hier genannten Body-Varianten waren die falsche Aufrufform (nachgezogen am 2026-09-13 nach Umsetzungsplan 15, Sachgrund 0.3 Befund L1; Quelle `docs/api/live-befunde-orchestrator.md` Befund 1). |
+| `/receipts/get/id_by_customer` | lesend | Gering. Mit `get_file: true` wird die Belegdatei als Base64 mitgeliefert, das kann die Antwort sehr groß machen. **Live am 2026-09-12 benutzbar**, aber nur in der Pfadsegmentform `POST /receipts/get/<wert>`: Das Segment `id_by_customer` ist ein Platzhalter für den Wert. Die vier früher hier genannten Body-Varianten waren die falsche Aufrufform (nachgezogen am 2026-09-13 nach eigener lesender Messung; Quelle: `docs/api/live-befunde.md`, Befund 1). |
 | `/receipts/assigned-transactions/get` | lesend | Gering. |
 | `/receipts/add` | anlegend | Hoch. Erzeugt einen Beleg ohne Datei in der echten Buchhaltung. Kein Idempotenzschutz, Doppelaufruf erzeugt Dubletten. Es gibt keinen Endpunkt, der einen Beleg endgültig entfernt. |
 | `/receipts/addBatch` | anlegend | Sehr hoch. Bis zu 50 Belege auf einmal. Ein fehlerhafter Aufruf verschmutzt den Bestand in einem Schritt erheblich. |
@@ -921,7 +968,7 @@ falschen oder versehentlichen Aufruf.
 | Endpunkt | Wirkung | Risiko für einen Agenten |
 | --- | --- | --- |
 | `/transactions/get` | lesend | Gering. |
-| `/transactions/get/id_by_customer` | lesend | Gering. **Live am 2026-09-12 benutzbar**, aber nur in der Pfadsegmentform `POST /transactions/get/<wert>`. Der **literale** Pfad ist nicht geroutet und antwortet mit HTML statt JSON; das Segment `id_by_customer` ist ein Platzhalter für den Wert (nachgezogen am 2026-09-13 nach Umsetzungsplan 15, Sachgrund 0.3 Befund L1; Quelle `docs/api/live-befunde-orchestrator.md` Befund 1). |
+| `/transactions/get/id_by_customer` | lesend | Gering. **Live am 2026-09-12 benutzbar**, aber nur in der Pfadsegmentform `POST /transactions/get/<wert>`. Der **literale** Pfad ist nicht geroutet und antwortet mit HTML statt JSON; das Segment `id_by_customer` ist ein Platzhalter für den Wert (nachgezogen am 2026-09-13 nach eigener lesender Messung; Quelle: `docs/api/live-befunde.md`, Befund 1). |
 | `/transactions/assigned-receipts/get` | lesend | Gering. |
 | `/transactions/add` | anlegend | Sehr hoch. Erzeugt eine Zahlung auf einem echten Zahlungskonto. Eine erfundene Zahlung verfälscht Kontostand und Abstimmung unmittelbar. Unterliegt zusätzlich der Drosselung 403/15. |
 | `/transactions/addBatch` | anlegend | Sehr hoch. Bis zu 50 Zahlungen auf einmal, gleiche Risiken wie oben, multipliziert. |
@@ -1147,31 +1194,29 @@ einem hypothetischen zukünftigen `/something/get`, das schreibt.
 28. **Vorbedingungen einzelner Endpunkte.** Belegbuchungen sind nur verfügbar, wenn
     Kreditoren- oder Debitorenbuchung im Mandanten aktiviert ist. Bei Fremdwährungsbelegen
     muss der berechnete Betrag zuvor über `/receipts/get/id_by_customer` geholt werden.
-    Beides steht nur im Fließtext der Beschreibung. **Nachgezogen am 2026-09-13 nach
-    `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20), Sachgrund 0.3 Befund L1:**
-    Der Fremdwährungsablauf ist **durchführbar**. Der Einzelabruf funktioniert in der
-    Pfadsegmentform `POST /receipts/get/<wert>` (HTTP 200, gemessen am 2026-09-12) und
-    liefert `amount_original`, `currency_original` und `exchangerate`. Der frühere
-    Vorbehalt beruhte auf vier Aufrufen in der falschen Form. Siehe Punkt 29 und
-    Abschnitt 5.6.
+    Beides steht nur im Fließtext der Beschreibung. **Nachgezogen am 2026-09-13 nach eigener
+    lesender Messung vom 2026-09-12:** Der Fremdwährungsablauf ist **durchführbar**. Der
+    Einzelabruf funktioniert in der Pfadsegmentform `POST /receipts/get/<wert>` (HTTP 200,
+    gemessen am 2026-09-12) und liefert `amount_original`, `currency_original` und
+    `exchangerate`. Der frühere Vorbehalt beruhte auf vier Aufrufen in der falschen Form.
+    Siehe Punkt 29 und Abschnitt 5.6.
 
 29. **Bei vier der 54 dokumentierten Endpunkte ist `id_by_customer` im Pfad ein Platzhalter
     für den Wert, kein literales Segment.**
 
-    > **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15
-    > (AP20); Sachgrund in Abschnitt 0.3, Befund L1.** Dieser Punkt hieß zuvor „Zwei der 54
-    > dokumentierten Endpunkte waren live nicht benutzbar". Das trifft nicht zu. Die unten
-    > wiedergegebenen Messungen bleiben richtig, ihre Deutung war falsch: Geprüft war jeweils
-    > die **dokumentierte, literale** Aufrufform. Gemessen am 2026-09-12 antworten
-    > `POST /receipts/get/<wert>` und `POST /transactions/get/<wert>` mit **HTTP 200** und
-    > einem vollständigen Datensatz. Der Wert wird in den Pfad eingesetzt und vorher kodiert;
-    > ein Body-Feld `id_by_customer` wird nicht gesendet, und die Spezifikation führt an diesen
-    > Pfaden auch keines. Dasselbe gilt nach Analogieschluss für die beiden schreibenden
-    > Geschwister `/receipts/delete/id_by_customer` und `/receipts/restore/id_by_customer`;
-    > diese beiden sind **nicht verifiziert**, weil sie schreibend sind und deshalb nicht
-    > getestet wurden. Die Umgehung über die exklusiven Kennungsgrenzen bei `/transactions/get`
-    > wird nicht mehr gebraucht. Vollständige Messung:
-    > `docs/api/live-befunde-orchestrator.md`, Befund 1.
+    > **Nachgezogen am 2026-09-13 nach eigenen lesenden Messungen vom 2026-09-12.** Dieser Punkt
+    > hieß zuvor „Zwei der 54 dokumentierten Endpunkte waren live nicht benutzbar". Das trifft
+    > nicht zu. Die unten wiedergegebenen Messungen bleiben richtig, ihre Deutung war falsch:
+    > Geprüft war jeweils die **dokumentierte, literale** Aufrufform. Gemessen am 2026-09-12
+    > antworten `POST /receipts/get/<wert>` und `POST /transactions/get/<wert>` mit **HTTP 200**
+    > und einem vollständigen Datensatz. Der Wert wird in den Pfad eingesetzt und vorher
+    > kodiert; ein Body-Feld `id_by_customer` wird nicht gesendet, und die Spezifikation führt
+    > an diesen Pfaden auch keines. Dasselbe gilt nach Analogieschluss für die beiden
+    > schreibenden Geschwister `/receipts/delete/id_by_customer` und
+    > `/receipts/restore/id_by_customer`; diese beiden sind **nicht verifiziert**, weil sie
+    > schreibend sind und deshalb nicht getestet wurden. Die Umgehung über die exklusiven
+    > Kennungsgrenzen bei `/transactions/get` wird nicht mehr gebraucht. Vollständige Messung:
+    > `docs/api/live-befunde.md`, Befund 1.
 
     Der frühere Wortlaut, als Beleg für die Aufrufformen, die **nicht** funktionieren:
 
@@ -1444,7 +1489,7 @@ Typmodellierung herangezogen werden, auch für die Nicht-Batch-Endpunkte.
 Alle Auswertungen dieses Dokuments lassen sich gegen die SPEC nachvollziehen:
 
 ```bash
-SPEC=/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json
+SPEC=docs/openapi/buchhaltungsbutler-v1.json
 
 # Alle 54 Pfade
 jq -r '.paths | keys[]' "$SPEC"

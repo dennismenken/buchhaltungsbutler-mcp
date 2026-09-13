@@ -1,18 +1,18 @@
 /**
- * Der **eine** `fetch`-Aufrufer des Projekts (Plan 5.1). Alles andere spricht nur mit ihm.
+ * Der **eine** `fetch`-Aufrufer des Projekts. Alles andere spricht nur mit ihm.
  *
  * | Aspekt | Festlegung |
  * | --- | --- |
- * | Methode | ausschließlich `POST`, bei allen 54 Endpunkten (maschinell bestätigt, 0.4) |
+ * | Methode | ausschließlich `POST`, bei allen 54 Endpunkten (maschinell bestätigt) |
  * | Authentifizierung | `Authorization: Basic …` über `Buffer.from` (`auth.ts`) |
  * | Header | `Content-Type: application/json`, `Accept: application/json`, `User-Agent` |
  * | Body | immer JSON, niemals formularkodiert — das erhält Booleans, `null` in Arrays und das `order`-Objekt |
  * | `api_key` | hier in den Body gesetzt, nicht vom Register: genau ein Ort, an dem das Geheimnis den Body berührt |
- * | Zeitlimit | nach der Stufe des Registereintrags (5.2), verknüpft mit dem Abbruchsignal des Clients |
+ * | Zeitlimit | nach der Stufe des Registereintrags, verknüpft mit dem Abbruchsignal des Clients |
  * | Umleitungen | `redirect: "error"` — die API leitet nicht um; eine Umleitung ist ein Anzeichen für einen falschen Host |
  * | Cookies | kein Jar (`dispatcher.ts`) |
  *
- * Die Reihenfolge innerhalb eines Versuchs ist verbindlich (1.4 Schritte 9 bis 11): erst
+ * Die Reihenfolge innerhalb eines Versuchs ist verbindlich: erst
  * Token aus dem Rate-Limiter, dann der Request, dann die Content-Type-Prüfung, dann die
  * Zerlegung. Die Entscheidung über einen **zweiten** Versuch liegt nicht hier, sondern in
  * `retry.ts`, und sie ist an `toolClass === "R"` gebunden.
@@ -41,12 +41,12 @@ import {
   type TransportErrorContext,
 } from "./transport-error.js";
 
-/** Die drei Zeitlimitstufen aus dem Registereintrag (Plan 5.2). */
+/** Die drei Zeitlimitstufen aus dem Registereintrag. */
 export type TimeoutTier = ToolEntry["timeoutTier"];
 
 /**
- * Die Faktoren, mit denen die Stufen aus `BB_MCP_TIMEOUT_MS` hervorgehen (Plan 5.2).
- * Bei der Vorgabe 30000 ergibt das 15 s, 30 s und 120 s — genau die Tabelle des Plans.
+ * Die Faktoren, mit denen die Stufen aus `BB_MCP_TIMEOUT_MS` hervorgehen.
+ * Bei der Vorgabe 30000 ergibt das 15 s, 30 s und 120 s.
  */
 export const TIMEOUT_FACTORS: Record<TimeoutTier, number> = {
   short: 0.5,
@@ -66,11 +66,11 @@ export const USER_AGENT = `buchhaltungsbutler-mcp/${VERSION}`;
 const API_KEY_FIELD = "api_key";
 
 /**
- * Ein aufzurufender Endpunkt. Der Request-Mapper (AP09) füllt die Struktur aus dem
+ * Ein aufzurufender Endpunkt. Der Request-Mapper füllt die Struktur aus dem
  * Registereintrag und den geprüften Argumenten.
  *
- * `specPath` und `requestPath` sind getrennt und werden nie gegeneinander getauscht (4.6
- * Regel 6): Gesendet wird der gebaute Pfad, nachgeschlagen und protokolliert wird der
+ * `specPath` und `requestPath` sind getrennt und werden nie gegeneinander getauscht:
+ * Gesendet wird der gebaute Pfad, nachgeschlagen und protokolliert wird der
  * Spezifikationspfad. Bei den 50 Endpunkten ohne Vorlage sind beide gleich.
  */
 export interface EndpointCall {
@@ -113,8 +113,8 @@ export interface HttpCallResult {
 /**
  * Prüft den gebauten Pfad, bevor daraus eine URL wird.
  *
- * Der Pfad entsteht bei vier Endpunkten aus einer Vorlage mit einer Geschäftskennung
- * (4.6). `mapping/path.ts` prüft den eingesetzten Wert und kodiert ihn; diese Prüfung hier
+ * Der Pfad entsteht bei vier Endpunkten aus einer Vorlage mit einer Geschäftskennung.
+ * `mapping/path.ts` prüft den eingesetzten Wert und kodiert ihn; diese Prüfung hier
  * ist die zweite Verteidigungslinie am Ort des Absendens und fängt jeden Weg ab, der später
  * einmal an `mapping/path.ts` vorbeiführt.
  *
@@ -199,7 +199,7 @@ interface AttemptInput {
  *
  * Die Funktion ist absichtlich nicht exportiert. Wer sie von außen aufrufen könnte, könnte
  * den Retry-Zweig aus `retry.ts` umgehen — und damit die Regel, dass schreibende Aufrufe
- * nicht wiederholt werden (5.3).
+ * nicht wiederholt werden.
  */
 async function performRequest(input: AttemptInput): Promise<SuccessEnvelope> {
   const { context, url, headers, payload, timeoutMs, clientSignal } = input;
@@ -246,7 +246,7 @@ async function performRequest(input: AttemptInput): Promise<SuccessEnvelope> {
     throw new NetworkError(context, describeFetchFailure(error));
   }
 
-  // Stufe 1 bis 4 aus 5.5. Der Content-Type wird **vor** dem Parsen geprüft.
+  // Die vier Stufen der Umschlagprüfung. Der Content-Type wird **vor** dem Parsen geprüft.
   return parseEnvelope({
     status: response.status,
     contentType: response.headers.get("content-type"),
@@ -276,7 +276,7 @@ export async function callEndpoint(
     toolClass: call.toolClass,
   };
 
-  // Der Aufruf darf diese Schicht nur erreichen, wenn Guard 1 (1.4 Schritt 2) ihn
+  // Der Aufruf darf diese Schicht nur erreichen, wenn Guard 1 ihn
   // durchgelassen hat. Die Prüfung steht trotzdem hier, weil das Versprechen „genau ein
   // Ort, an dem das Geheimnis den Body berührt" sonst von einem fremden Aufrufer abhängt.
   const credentials = config.credentials;
@@ -358,8 +358,8 @@ export async function callEndpoint(
         throw new CancelledError(context, "before-request");
       }
 
-      // Schritt 9 aus 1.4: Token aus `default`, zusätzlich aus dem Sondereimer. Jeder Versuch
-      // entnimmt seine eigenen (5.3).
+      // Schritt 9: Token aus `default`, zusätzlich aus dem Sondereimer. Jeder Versuch
+      // entnimmt seine eigenen.
       let acquired;
       try {
         acquired = await limiter.acquire({
@@ -397,7 +397,7 @@ export async function callEndpoint(
         return result;
       } catch (error) {
         // Protokolliert wird der Spezifikationspfad, nie der gebaute: Der trüge eine
-        // Geschäftskennung, und im Protokoll stehen nur Namen (1.4 Schritt 14).
+        // Geschäftskennung, und im Protokoll stehen nur Namen.
         logDebug(
           `${call.toolName} ${call.specPath}: Versuch ${attemptNumber} scheiterte nach ` +
             `${Math.round(clock.now() - sentAt)} ms.`,

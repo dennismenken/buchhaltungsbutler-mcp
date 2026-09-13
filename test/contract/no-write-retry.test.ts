@@ -1,10 +1,10 @@
-// Vertragstest aus Plan 9.3: **kein automatischer Wiederholungsversuch bei schreibenden
+// Vertragstest: **kein automatischer Wiederholungsversuch bei schreibenden
 // Werkzeugen.** Für jedes der 39 schreibenden Werkzeuge liefert die HTTP-Nachbildung einmal
 // HTTP 504. Erwartet wird genau **ein** Request, kein zweiter, und eine Meldung, die den
-// Prüfweg aus `verifyWith` nennt und den Zustandssatz 3 aus 5.8 trägt.
+// Prüfweg aus `verifyWith` nennt und den Zustandssatz 3 trägt.
 //
 // **Warum dieser Test außerhalb des Registers steht.** Er prüft keine Daten, sondern eine
-// Zusage über das Verhalten: Die Regel aus 5.3 ist bauartbedingt (der Retry-Zweig wird über
+// Zusage über das Verhalten: Die Regel ist bauartbedingt (der Retry-Zweig wird über
 // `toolClass === "R"` freigeschaltet) und **nicht konfigurierbar**. Die API kennt keinen
 // Idempotenzschlüssel; wer einen schreibenden Aufruf trotzdem wiederholt, bucht doppelt. Ein
 // Test, der das nur an einem Beispiel prüfte, ließe 38 Werkzeuge ungeprüft.
@@ -41,7 +41,7 @@ import { installTestConfig, mockApi, resetTestConfig, type ApiMock } from "../he
 // Schema, und wenn sie einen Wert nicht erzeugen kann, wirft sie.
 //
 // Erzeugt wird ausschließlich das **Pflichtfeld**-Minimum. Optionale Felder bleiben weg; wo
-// eine Querprüfung aus 4.7 an einem optionalen Feld hängt, steht der Wert in OVERRIDES.
+// eine Querprüfung an einem optionalen Feld hängt, steht der Wert in OVERRIDES.
 
 /** Ein JSON-Schema-Knoten, soweit `schema/build.ts` ihn erzeugt. */
 interface SchemaNode {
@@ -184,14 +184,14 @@ const MINIMAL_PDF_BASE64 = Buffer.from("%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF\n
 
 /**
  * Die Stellen, an denen das Pflichtfeld-Minimum allein nicht durchkommt. Alle drei sind Folgen
- * einer Regel aus dem Plan und keine Nachlässigkeit des Erzeugers.
+ * einer bewussten Regel und keine Nachlässigkeit des Erzeugers.
  */
 const OVERRIDES: Readonly<Record<string, (args: Record<string, unknown>) => void>> = {
-  // Der Dateiinhalt muss dekodierbar sein und einen erkennbaren Dateityp tragen (AP13).
+  // Der Dateiinhalt muss dekodierbar sein und einen erkennbaren Dateityp tragen.
   bb_receipts_upload: (args) => {
     args.file = MINIMAL_PDF_BASE64;
   },
-  // Q8 aus 4.7: Der erste Wert des Enums `item_tax_type` ist 'S', und 'S' verlangt einen
+  // Q8: Der erste Wert des Enums `item_tax_type` ist 'S', und 'S' verlangt einen
   // Steuersatz in `item_tax_amount`. Das Feld ist optional, weil die Spezifikation sich hier
   // widerspricht; der Erzeuger setzt optionale Felder nicht.
   bb_invoices_create_einvoice: (args) => {
@@ -200,7 +200,7 @@ const OVERRIDES: Readonly<Record<string, (args: Record<string, unknown>) => void
       item.item_tax_amount = "19";
     }
   },
-  // Q9 aus 4.7: `/comments/add` verlangt genau eine von `receipt_id_by_customer` und
+  // Q9: `/comments/add` verlangt genau eine von `receipt_id_by_customer` und
   // `transaction_id_by_customer`. Beide sind einzeln optional, der Erzeuger setzt optionale
   // Felder nicht, und ohne eine von beiden lehnt Q9 vor dem Request ab.
   bb_comments_create: (args) => {
@@ -220,7 +220,7 @@ function minimalArguments(entry: ToolEntry): Record<string, unknown> {
  * Der Pfad, an dem der Request erwartet wird.
  *
  * Bei den vier Werkzeugen mit Pfadvorlage ist das der **interpolierte** Pfad und niemals der
- * Spezifikationspfad (Plan 4.6, 9.4): Nur so ist belegt, dass der Pfadbau wirklich durchlaufen
+ * Spezifikationspfad: Nur so ist belegt, dass der Pfadbau wirklich durchlaufen
  * wird. Bleibt der Server beim Spezifikationspfad, findet er keine Abfangregel, und der Test
  * wird rot — was genau richtig ist.
  */
@@ -259,7 +259,7 @@ beforeAll(async () => {
     store: createMasterDataStore({ ttlMs: config.cacheTtlMs }),
   });
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-  client = new Client({ name: "ap16-no-write-retry", version: "0.0.0" });
+  client = new Client({ name: "no-write-retry", version: "0.0.0" });
   await built.server.connect(serverSide);
   await client.connect(clientSide);
   close = async () => {
@@ -298,9 +298,9 @@ describe("HTTP 504 an einem schreibenden Werkzeug", () => {
     it(`${entry.name}: genau ein Request, kein zweiter`, { timeout: 30_000 }, async () => {
       const api: ApiMock = mockApi();
       // Der Eimer wird vor jedem Aufruf zurückgesetzt. Stapel- und Berichtseimer führen ein
-      // einziges Token je 5 beziehungsweise 10 Sekunden (Plan 5.4); ohne das Zurücksetzen
+      // einziges Token je 5 beziehungsweise 10 Sekunden; ohne das Zurücksetzen
       // wartete dieser Lauf minutenlang auf eine Drosselung, die hier nichts prüft. Das
-      // Verhalten des Limiters hat seinen eigenen Test (9.5).
+      // Verhalten des Limiters hat seinen eigenen Test.
       resetRateLimiterForTests();
 
       const args = minimalArguments(entry);
@@ -318,7 +318,7 @@ describe("HTTP 504 an einem schreibenden Werkzeug", () => {
         ).toBe(1);
         expect(result.isError).toBe(true);
 
-        // Zustandssatz 3 aus 5.8, zeichengenau. Ein Text, der Fehlschlag behauptete, wäre eine
+        // Zustandssatz 3, zeichengenau. Ein Text, der Fehlschlag behauptete, wäre eine
         // Unwahrheit: Der Ausgang ist offen.
         expect(text).toContain(STATE_UNKNOWN);
         expect(text).toContain("kennt keinen Idempotenzschlüssel");
@@ -357,7 +357,7 @@ describe("Gegenprobe: dasselbe HTTP 504 an einem lesenden Werkzeug", () => {
       const result = await client.callTool({ name: entry.name, arguments: args });
 
       expect(result.isError).toBe(true);
-      // Drei Versuche nach 5.3, jeder mit eigenem Token. Damit ist belegt, dass die
+      // Drei Versuche, jeder mit eigenem Token. Damit ist belegt, dass die
       // Nachbildung einen zweiten Versuch sehr wohl beantworten könnte — und dass die
       // schreibenden Werkzeuge oben ihn deshalb wirklich unterlassen.
       expect(api.count(path)).toBe(3);

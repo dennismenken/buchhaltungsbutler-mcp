@@ -1,21 +1,21 @@
-// Werkzeug 52 aus Plan 3.8: `/reports/get/sums/ledger`, das Kontenblatt eines Sachkontos.
+// Werkzeug 52: `/reports/get/sums/ledger`, das Kontenblatt eines Sachkontos.
 //
 // Der Endpunkt liegt unterhalb von `/reports/get/sums/`, gehört aber **nicht** zum
 // zweistufigen Muster aus Erzeugen und Abholen: Die Spezifikation sagt ausdrücklich „the
 // ledger is created on the fly", und live bestätigt ist ein Abruf ohne jeden zuvor erzeugten
 // Bericht (berichte.md 2.1 und 8.8 Punkt 1). Er ist damit das einzige Berichtswerkzeug, das
-// bei aktivem `BB_MCP_READ_ONLY` vollständig nutzbar bleibt (Plan 6.6).
+// bei aktivem `BB_MCP_READ_ONLY` vollständig nutzbar bleibt.
 //
-// **Q1 trägt dieses Werkzeug sehr wohl** (Plan 4.7): `date_from` und `date_to` sind hier
+// **Q1 trägt dieses Werkzeug sehr wohl**: `date_from` und `date_to` sind hier
 // eigene Pflichtparameter, anders als bei `bb_reports_get_bwa` und `bb_reports_get_sums`.
 //
-// Zeitlimitstufe `long` wie alle fünf Berichtswerkzeuge (Plan 5.2): Die Spezifikation warnt,
+// Zeitlimitstufe `long` wie alle fünf Berichtswerkzeuge: Die Spezifikation warnt,
 // dass ein stark bebuchtes Konto „may take a while" braucht. Paginierung gibt es nicht.
 //
 // **Der Antwortvertrag bleibt leer, und das ist ein Befund:** Die Nutzdaten stehen im
 // untypisierten Objekt `report_sums_postingaccount_ledger`, und `ContractFieldType`
-// (Plan 2.1) kennt keinen Typ für ein Objekt. So läuft das Feld als unbekannt unverändert
-// durch (Plan 7.3, letzter Fall), statt bei jedem Aufruf eine `_contract_warnings`-Zeile zu
+// kennt keinen Typ für ein Objekt. So läuft das Feld als unbekannt unverändert
+// durch, statt bei jedem Aufruf eine `_contract_warnings`-Zeile zu
 // erzeugen.
 
 import { z } from "zod";
@@ -101,11 +101,11 @@ export const bb_reports_get_ledger: ToolEntry = {
     },
   ],
   serverOnlyFields: ["response_format"],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)." }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt." }],
   // Das Wrapper-Feld heißt `report_sums_postingaccount_ledger` und folgt weder dem
   // `data`-Muster der Listen noch dem `report`-Muster der beiden anderen Abholwerkzeuge
   // (berichte.md 8.8 Punkt 3); es steht auf oberster Ebene des Umschlags.
-  // Der Vertragslauf (AP17, Plan 9.7) kann diesen Endpunkt aufrufen — er ist der einzige der
+  // Der Vertragslauf kann diesen Endpunkt aufrufen — er ist der einzige der
   // drei Abholwerkzeuge ohne schreibende Vorbedingung —, hat es am 2026-09-13 aber nicht getan:
   // Der Lauf war auf acht Aufrufe begrenzt, und die gingen an die acht Endpunkte mit einem
   // nicht leeren Antwortvertrag. Hier ist nichts nachzutragen, weil `fields` leer ist und

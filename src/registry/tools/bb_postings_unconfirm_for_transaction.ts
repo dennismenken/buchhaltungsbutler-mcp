@@ -1,8 +1,8 @@
 // Werkzeug 28, `/postings/unconfirm/transaction`: hebt die Bestätigung der Buchungen einer
-// Zahlung auf und entfernt sie damit (Plan 3.8, AP12c).
+// Zahlung auf und entfernt sie damit.
 //
 // Klasse D: `destructiveHint: true`, `idempotentHint: false`. Eine wirkungslose Wiederholung
-// ist plausibel, aber **nicht verifiziert** (Plan 3.3, Streitfrage S6).
+// ist plausibel, aber **nicht verifiziert**.
 //
 // Zwei Eigenheiten stehen in der Beschreibung (`buchungen.md` 16.6):
 //
@@ -17,7 +17,7 @@ import { ID_STRING_SENTENCE, idByCustomer } from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -75,7 +75,7 @@ export const bb_postings_unconfirm_for_transaction: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Erfolgsantwort `{ "success": true, "message": "" }`, ohne `data` (buchungen.md 16.3).

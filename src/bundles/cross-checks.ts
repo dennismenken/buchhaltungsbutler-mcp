@@ -1,4 +1,4 @@
-// Die Querprüfungen der Bündel, nach dem Muster Q1 bis Q9 aus Plan 4.7.
+// Die Querprüfungen der Bündel, nach dem Muster Q1 bis Q9.
 //
 // **Warum eigene Kennungen und kein Anhängen an Q1 bis Q9.** Die neun Querprüfungen des
 // Registers hängen an Endpunkten: Q2 schlägt das `limit`-Maximum eines Spezifikationspfades

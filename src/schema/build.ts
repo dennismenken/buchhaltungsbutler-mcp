@@ -1,20 +1,20 @@
 // ToolEntry → Zod-Objekt → JSON Schema. Die einzige Stelle, an der aus einem
-// Registereintrag ein Eingabeschema wird (Plan 2 Dateibaum, 4.1, Streitfrage S13).
+// Registereintrag ein Eingabeschema wird.
 //
 // Drei Dinge passieren hier und nirgends sonst:
 //
 //   1. Das Werkzeugobjekt entsteht, und zwar strikt: `additionalProperties: false` über
 //      {@link strictObject}. Die API ignoriert unbekannte Body-Felder kommentarlos; ohne
 //      strenge Validierung wäre ein Tippfehler im Feldnamen ein stiller Datenfehler
-//      (Guard 3, Plan 1.4).
+//      (Guard 3).
 //   2. Die Vollständigkeit gegenüber dem Eintrag wird erzwungen. Was der Eintrag behauptet,
 //      muss das Schema hergeben — sonst wirft der Bau, und zwar beim Serverstart und nicht
 //      beim ersten Werkzeugaufruf.
-//   3. Die Querprüfungen Q1 bis Q8 werden angehängt (Plan 4.7).
+//   3. Die Querprüfungen Q1 bis Q8 werden angehängt.
 //
 // Was hier ausdrücklich **nicht** geprüft wird, weil es gegen die Spezifikation und nicht
 // gegen den Eintrag läuft: die Parameterdeckung P1 bis P3, die Pflichtfelder P5 und die
-// Pflichtsätze P8. Das ist Sache der Registerprüfungen in `test/registry/` (Plan 4.4, 9.2).
+// Pflichtsätze P8. Das ist Sache der Registerprüfungen in `test/registry/`.
 // Diese Schicht kennt die OpenAPI-Datei nicht und soll sie nicht kennen.
 
 import { z } from "zod";
@@ -40,7 +40,7 @@ export interface BuiltToolSchema {
 export interface BuildOptions {
   /**
    * Die Mengengrenze `min(50, BB_MCP_MAX_BATCH)` für Q4. Ohne Angabe wird sie aus der
-   * eingefrorenen Konfiguration gelesen (Plan 6.4 Punkt 7).
+   * eingefrorenen Konfiguration gelesen.
    */
   readonly maxItems?: number;
 }
@@ -63,7 +63,7 @@ export class SchemaBuildError extends Error {
  *
  * Die Beschreibungen der Spezifikation enthalten HTML und Entities (`<br/>`, `&ldquo;`).
  * Wer eine davon abschreibt, statt sie auf Deutsch neu zu formulieren, liefert Markup im
- * Werkzeugschema aus (Plan 4.1, `grundlagen.md` 8.26). Die Liste ist absichtlich eng: Ein
+ * Werkzeugschema aus (`grundlagen.md` 8.26). Die Liste ist absichtlich eng: Ein
  * blanker Kleiner-als-Vergleich wie `date_delivery <= date` ist erlaubt.
  */
 const MARKUP_FRAGMENTS = ["<br", "</", "<b>", "<i>", "<strong", "&ldquo;", "&rdquo;", "&nbsp;"];
@@ -77,7 +77,7 @@ function assertFieldConsistency(entry: ToolEntry, field: FieldSpec, path: string
     fail("Der Feldname ist leer.");
   }
   if (field.description.trim() === "") {
-    fail("Die Beschreibung ist leer. Jedes Feld trägt eine deutsche Beschreibung (Plan 4.9).");
+    fail("Die Beschreibung ist leer. Jedes Feld trägt eine deutsche Beschreibung.");
   }
   for (const fragment of MARKUP_FRAGMENTS) {
     if (field.description.includes(fragment)) {
@@ -108,14 +108,14 @@ function assertFieldConsistency(entry: ToolEntry, field: FieldSpec, path: string
         fail('source: "server" verlangt ein leeres apiNames; der Wert verlässt den Prozess nie.');
       }
       if (!entry.serverOnlyFields.includes(field.name)) {
-        fail('source: "server", aber der Name fehlt in serverOnlyFields (Plan 4.3).');
+        fail('source: "server", aber der Name fehlt in serverOnlyFields.');
       }
       break;
     case "path":
       if (field.apiNames.length !== 0) {
         fail(
           'source: "path" verlangt ein leeres apiNames. Die Spezifikation führt den ' +
-            "Identifikator dieser vier Endpunkte überhaupt nicht (Plan 4.6).",
+            "Identifikator dieser vier Endpunkte überhaupt nicht.",
         );
       }
       if (!("template" in entry.path)) {
@@ -128,7 +128,7 @@ function assertFieldConsistency(entry: ToolEntry, field: FieldSpec, path: string
       if (field.apiNames.length === 0) {
         fail(
           'source: "body" verlangt mindestens einen Eintrag in apiNames. Ein Feld ohne ' +
-            "API-Namen wäre im Deckungstest unsichtbar (Plan 4.4 Punkt 3).",
+            "API-Namen wäre im Deckungstest unsichtbar.",
         );
       }
       break;
@@ -154,7 +154,7 @@ function assertFieldConsistency(entry: ToolEntry, field: FieldSpec, path: string
  *
  * Dort gelten zwei Regeln nicht: `apiNames` zielt auf die Eigenschaften der
  * Elementdefinition beziehungsweise auf die parallelen Array-Parameter und nicht auf
- * Body-Parameter (Plan 2.1, 4.4 Punkt 3), und `source` ist dort immer `"body"`.
+ * Body-Parameter, und `source` ist dort immer `"body"`.
  */
 function assertItemFieldConsistency(entry: ToolEntry, field: FieldSpec, path: string): void {
   if (field.source !== "body") {
@@ -177,7 +177,7 @@ function assertEntryConsistency(entry: ToolEntry): void {
   };
 
   // Eine leere Feldliste ist ausdrücklich erlaubt und kein Fehler: Vier Endpunkte führen
-  // laut Spezifikation ausschließlich api_key, und dieser wird nie ein Feld (Plan 4.3).
+  // laut Spezifikation ausschließlich api_key, und dieser wird nie ein Feld.
   // Ein Werkzeug ohne jedes Feld liefert ein leeres striktes Objekt, und das ist richtig.
   const names = new Set<string>();
   for (const field of entry.fields) {
@@ -199,7 +199,7 @@ function assertEntryConsistency(entry: ToolEntry): void {
   }
 
   // Jeder Platzhalter des Pfades braucht sein Feld, sonst entstünde ein Pfad mit einem
-  // nicht ersetzten Platzhalter (Plan 4.6 Regel 3).
+  // nicht ersetzten Platzhalter.
   if ("template" in entry.path) {
     for (const param of entry.path.params) {
       const field = entry.fields.find((candidate) => candidate.name === param);
@@ -228,7 +228,7 @@ function assertEntryConsistency(entry: ToolEntry): void {
 
 // --- Bau -----------------------------------------------------------------------------
 
-/** Der Spezifikationspfad eines Eintrags. Nachgeschlagen wird immer damit (Plan 4.6). */
+/** Der Spezifikationspfad eines Eintrags. Nachgeschlagen wird immer damit. */
 export function specPathOf(entry: ToolEntry): string {
   return "template" in entry.path ? entry.path.specPath : entry.path.literal;
 }
@@ -248,7 +248,7 @@ export function buildZodSchema(entry: ToolEntry, options: BuildOptions = {}): z.
   const shape: Record<string, z.ZodType> = {};
   for (const field of entry.fields) {
     // Die Beschreibung des Eintrags gewinnt über die des Bausteins. Bei einer
-    // Positionsliste ist das eine Falle: Der Deklarationssatz aus 4.8 steckt in der
+    // Positionsliste ist das eine Falle: Der Deklarationssatz steckt in der
     // Beschreibung des Bausteins, und wer ihn hier überschreibt, liefert eine Umformung
     // aus, die nirgends deklariert ist. Der Registereintrag übernimmt deshalb entweder die
     // Beschreibung des Bausteins wörtlich oder hängt seinen Text über
@@ -307,7 +307,7 @@ export function toJsonSchema(schema: z.ZodType): Record<string, unknown> {
   if (result["additionalProperties"] !== false) {
     throw new Error(
       "Das erzeugte JSON Schema trägt kein additionalProperties: false. Guard 3 verlangt " +
-        "strenge Validierung (Plan 1.4); ohne sie wäre ein Tippfehler im Feldnamen ein " +
+        "strenge Validierung; ohne sie wäre ein Tippfehler im Feldnamen ein " +
         "stiller Datenfehler.",
     );
   }

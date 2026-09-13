@@ -1,5 +1,5 @@
 {
-  "_herkunft": "Endpunkt /receipts/get, Fehlerfall 400/15 | LIVE gemessener Wortlaut am 2026-09-12 (weicht von beiden Spezifikationsquellen ab) | Quelle: Umsetzungsplan 0.3 Befund L6",
+  "_herkunft": "Endpunkt /receipts/get, Fehlerfall 400/15 | LIVE gemessener Wortlaut am 2026-09-12 (weicht von beiden Spezifikationsquellen ab) | Quelle: eigene Live-Messung vom 2026-09-12",
   "_zweck": "dass der gelieferte Text eine dritte Variante sein kann und deshalb kein Spezifikationstext als Wortlaut der API ausgegeben werden darf",
   "http": {
     "status": 400,

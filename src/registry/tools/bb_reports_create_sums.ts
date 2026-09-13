@@ -1,12 +1,12 @@
-// Werkzeug 54 aus Plan 3.8: `/reports/create/sums`, Erzeugung der Summen- und Saldenliste
+// Werkzeug 54: `/reports/create/sums`, Erzeugung der Summen- und Saldenliste
 // anstoßen.
 //
-// Klasse AR (Plan 3.3): `destructiveHint: true`, weil der neue Bericht den vorherigen
-// desselben Typs **ersetzt**. Pflichtsatz U7. Eimer `reports` (Plan 5.4), ein Aufruf je zehn
+// Klasse AR: `destructiveHint: true`, weil der neue Bericht den vorherigen
+// desselben Typs **ersetzt**. Pflichtsatz U7. Eimer `reports`, ein Aufruf je zehn
 // Sekunden — keine API-Regel, sondern eine Bremse gegen das Muster „create, sofort get,
 // error_code 8, sofort wieder create".
 //
-// **Q1** hängt hier (Plan 4.7): Beide Datumsfelder sind `required: true`, und ein
+// **Q1** hängt hier: Beide Datumsfelder sind `required: true`, und ein
 // vertauschter Zeitraum erzeugt einen falschen Bericht, der den vorherigen ersetzt.
 //
 // Eine Namensfalle steht in der Beschreibung, weil eine naive Zuordnung über gleiche
@@ -14,7 +14,7 @@
 // Schlüssel im `files`-Objekt von `/reports/get/sums` dagegen `csv_archive`.
 //
 // Der Anschlusshinweis nach einem erfolgreichen Aufruf steht wörtlich in
-// `src/response/next-step.ts` (`reportRequestedNote`, Plan 7.6) und wird über die Paartabelle
+// `src/response/next-step.ts` (`reportRequestedNote`) und wird über die Paartabelle
 // in `src/response/build.ts` an diesen Werkzeugnamen gehängt.
 
 import { z } from "zod";
@@ -117,7 +117,7 @@ export const bb_reports_create_sums: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)." }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt." }],
   // `id_by_customer` steht **auf oberster Ebene** des Umschlags (Spezifikation
   // `ReportsCreateSums_Success`); deshalb `container: "none"`. Als String geliefert, beim
   // Abholen als Ganzzahl erwartet (berichte.md 4.6 Punkt 5) — deshalb `id-string`.

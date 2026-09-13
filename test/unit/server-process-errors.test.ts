@@ -1,5 +1,4 @@
-// Die Randfälle des Herunterfahrens und die beiden Prozesslauscher aus `server/shutdown.ts`
-// (Plan 2, AP10).
+// Die Randfälle des Herunterfahrens und die beiden Prozesslauscher aus `server/shutdown.ts`.
 //
 // `server-lifecycle.test.ts` prüft den Regelfall am laufenden Server: ein Signal, zwei Signale,
 // stdin-Ende, ein Ziel, das beim Schließen wirft. Hier stehen die Fälle daneben, die dort nicht
@@ -140,7 +139,7 @@ describe("installProcessErrorHandlers", () => {
     expect(written()).toContain("Unbehandelte Zusage (unhandledRejection)");
     expect(written()).toContain("die Zusage ist danebengegangen");
     expect(written()).toContain("server-process-errors.test.ts");
-    // Eine abgelehnte Zusage beendet den Server ausdrücklich nicht (Plan 2, AP10).
+    // Eine abgelehnte Zusage beendet den Server ausdrücklich nicht.
     expect(fatal).toBe(0);
     expect(process.exitCode).not.toBe(1);
 

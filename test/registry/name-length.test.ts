@@ -10,8 +10,7 @@
 // Verzeichnissen und nicht an einer abgeschriebenen Zahl: Wer den Servernamen verlängert oder
 // ein Werkzeug mit langem Namen ergänzt, bekommt es an dieser Stelle gesagt und nicht beim
 // Anwender. Vorher war die Grenze nur für `bb_reports_run` und die fünf Bündel geprüft; die
-// 54 Endpunktwerkzeuge prüfte niemand, und genau dort lag der Verstoß
-// (`docs/entwicklung/buendelwerkzeuge.md` Abschnitt 12, Befund B1).
+// 54 Endpunktwerkzeuge prüfte niemand, und genau dort lag der gemessene Verstoß.
 //
 // Die Prüfung schreibt den längsten Namen bei jedem Lauf auf stderr, damit sichtbar bleibt,
 // wie viel Luft bis zur Grenze noch ist.

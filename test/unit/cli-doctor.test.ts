@@ -26,7 +26,7 @@ import {
 } from "../helpers/mock-api.js";
 import { definitionJson, ROOT as PROJECT_ROOT, tokenCount } from "../helpers/registry-fixtures.js";
 
-// `doctor` nach Plan 8.4. Der wichtigste Satz dieser Datei: Die Ausgabe enthält kein
+// `doctor`. Der wichtigste Satz dieser Datei: Die Ausgabe enthält kein
 // Geheimnis. Alles Übrige ist Diagnose, und die darf in einen Fehlerbericht.
 
 let root: string;
@@ -262,9 +262,11 @@ describe("definitionSizeLines", () => {
 
 // Der Zahlenabgleich. Er ist die Lehre aus einem echten Fehler: `doctor` zählte einmal nur
 // Name, Titel, Beschreibung und Feldtexte und nannte deshalb 104.779 Zeichen und rund 26.195
-// Token, während der Client 197.528 Zeichen und 48.305 Token bekommt — 46 Prozent zu wenig,
-// und im Widerspruch zur eigenen README. Diese Prüfung hält alle Stellen gegeneinander, an
-// denen die Zahl steht: die Messgrundlage von P11, die eingecheckten Werte, die Ausgabe von
+// Token, während der Client nach der Messung vom 2026-09-12 197.528 Zeichen und 48.305 Token
+// bekam — 46 Prozent zu wenig, und im Widerspruch zur eigenen README. Den jeweils aktuellen
+// Stand nennen MEASURED_TOOL_DEFINITION_CHARS und MEASURED_TOOL_DEFINITION_TOKENS. Diese
+// Prüfung hält alle Stellen gegeneinander, an denen die Zahl steht: die Messgrundlage von
+// P11, die eingecheckten Werte, die Ausgabe von
 // `doctor`, CHANGELOG.md und Abschnitt 17 der README.
 describe("Zahlenabgleich der Tokenangaben", () => {
   const definitions = TOOL_ENTRIES.map((entry) => toolDefinitionJson(entry));
@@ -281,11 +283,11 @@ describe("Zahlenabgleich der Tokenangaben", () => {
   it("hält die eingecheckten Werte auf dem gemessenen Stand", () => {
     expect(
       chars,
-      "Die Werkzeugdefinitionen haben sich geändert. MEASURED_TOOL_DEFINITION_CHARS in src/registry/definition.ts nachziehen, pnpm measure-tokens laufen lassen und die Zahlen in README, CHANGELOG.md und docs/entwicklung/befund-tokenbudget.md anpassen.",
+      "Die Werkzeugdefinitionen haben sich geändert. MEASURED_TOOL_DEFINITION_CHARS in src/registry/definition.ts nachziehen, pnpm measure-tokens laufen lassen und die Zahlen in README, CHANGELOG.md und docs/entwicklung/tokenbudget.md anpassen.",
     ).toBe(MEASURED_TOOL_DEFINITION_CHARS);
     expect(
       tokens,
-      "Die Tokenzahl der Werkzeugdefinitionen hat sich geändert. MEASURED_TOOL_DEFINITION_TOKENS in src/registry/definition.ts nachziehen, pnpm measure-tokens laufen lassen und die Zahlen in README, CHANGELOG.md und docs/entwicklung/befund-tokenbudget.md anpassen.",
+      "Die Tokenzahl der Werkzeugdefinitionen hat sich geändert. MEASURED_TOOL_DEFINITION_TOKENS in src/registry/definition.ts nachziehen, pnpm measure-tokens laufen lassen und die Zahlen in README, CHANGELOG.md und docs/entwicklung/tokenbudget.md anpassen.",
     ).toBe(MEASURED_TOOL_DEFINITION_TOKENS);
   });
 

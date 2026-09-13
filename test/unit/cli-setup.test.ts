@@ -16,7 +16,7 @@ import {
   type ApiMock,
 } from "../helpers/mock-api.js";
 
-// Der Einrichtungsassistent, neun Schritte (Plan 8.2).
+// Der Einrichtungsassistent, neun Schritte.
 //
 // Der Ablauf läuft gegen ein wegwerfbares Verzeichnis und gegen die HTTP-Nachbildung; es geht
 // nichts an die echte API. Die Werte in der Umgebung sind Platzhalter aus `mock-api.ts`.

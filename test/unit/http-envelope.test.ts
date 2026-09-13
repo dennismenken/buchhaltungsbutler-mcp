@@ -16,8 +16,8 @@ import {
   NonJsonResponseError,
 } from "../../src/http/transport-error.js";
 
-// Die vier Stufen aus Plan 5.5 in ihrer Reihenfolge. Die Fälle sind aus den Live-Befunden
-// aus 0.3 abgeleitet: Der Listenabruf trägt `rows`, der Einzelabruf nicht (L2), und ein
+// Die vier Stufen in ihrer Reihenfolge. Die Fälle sind aus den Live-Befunden
+// abgeleitet: Der Listenabruf trägt `rows`, der Einzelabruf nicht (L2), und ein
 // unbekannter Pfad liefert HTML statt JSON (Befund 1 der Live-Befunde).
 
 const READING_CONTEXT = {
@@ -357,9 +357,9 @@ describe("Formabgleich gegen das Feld shape", () => {
 
 describe("Der vollständige Körper bleibt erhalten", () => {
   it("reicht Felder durch, die die Spezifikation nicht kennt", () => {
-    // Belegt (L4): amount_paid und amount_paid_fixed kommen, obwohl die Spezifikation sie
-    // nicht führt. Ein geschlossenes Schema machte den Server bei der nächsten Änderung
-    // unbrauchbar (S18).
+    // Belegt (Befund L4 in docs/api/live-befunde.md): amount_paid und amount_paid_fixed
+    // kommen, obwohl die Spezifikation sie nicht führt. Ein geschlossenes Schema machte den
+    // Server bei der nächsten Änderung unbrauchbar.
     const envelope = parse({
       bodyText:
         '{"success":true,"rows":1,"data":[{"amount":"119.00","amount_paid":"0.00","amount_paid_fixed":"0"}]}',

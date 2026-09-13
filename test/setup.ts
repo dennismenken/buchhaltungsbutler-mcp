@@ -1,7 +1,7 @@
 import { MockAgent, setGlobalDispatcher } from "undici";
 
-// Globaler Testaufbau. Er läuft vor jeder Testdatei und ist die erste der drei Sicherungen
-// aus Plan 9.1: Kein Test der normalen Testläufe setzt einen Netzwerkaufruf gegen die echte
+// Globaler Testaufbau. Er läuft vor jeder Testdatei und ist die erste der drei Sicherungen:
+// Kein Test der normalen Testläufe setzt einen Netzwerkaufruf gegen die echte
 // API ab. disableNetConnect() lässt jeden nicht abgefangenen Versuch sofort scheitern.
 //
 // setGlobalDispatcher aus dem installierten undici-Paket wirkt laut Node-Dokumentation auch

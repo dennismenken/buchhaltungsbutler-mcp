@@ -1,9 +1,8 @@
 /**
- * Eingaben im Terminal: maskiert, als Auswahl, als Ja-Nein-Frage — ohne Zusatzabhängigkeit
- * (Plan 8.2, AP15).
+ * Eingaben im Terminal: maskiert, als Auswahl, als Ja-Nein-Frage — ohne Zusatzabhängigkeit.
  *
  * **Warum die maskierte Eingabe selbst geschrieben ist.** Die bekannten Bibliotheken dafür
- * wären eine weitere Laufzeitabhängigkeit in einem Paket, das mit dreien auskommt (13.2),
+ * wären eine weitere Laufzeitabhängigkeit in einem Paket, das mit dreien auskommt,
  * und sie erledigen genau das, was hier in dreißig Zeilen steht: den Rohmodus einschalten,
  * jede Taste selbst verarbeiten und statt des Zeichens einen Stern ausgeben.
  *

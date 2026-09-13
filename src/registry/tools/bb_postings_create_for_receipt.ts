@@ -1,26 +1,25 @@
-// Werkzeug 21, `/postings/add/receipt`: Buchungssätze zu einem vorhandenen Beleg (Plan 3.8,
-// 4.8, AP12c).
+// Werkzeug 21, `/postings/add/receipt`: Buchungssätze zu einem vorhandenen Beleg.
 //
-// Einer der **fünf** Endpunkte mit parallelen Arrays auf oberster Ebene (Plan 4.8). Das
+// Einer der **fünf** Endpunkte mit parallelen Arrays auf oberster Ebene. Das
 // Werkzeug nimmt stattdessen eine Positionsliste `positions` mit sechs `apiNames`; die
-// Umformung erzeugt `mapping/parallel-arrays.ts`, und der Deklarationssatz aus 4.8 steht
+// Umformung erzeugt `mapping/parallel-arrays.ts`, und der Deklarationssatz steht
 // wörtlich in der Feldbeschreibung. Damit ist die Längeninvariante der Arrays konstruktiv
-// erfüllt und die Umformung deklariert statt verborgen (E1).
+// erfüllt und die Umformung deklariert statt verborgen.
 //
-// **Es gibt keine Querprüfung „Summe der Positionsbeträge"** (Plan 4.7). Der Belegbetrag ist
+// **Es gibt keine Querprüfung „Summe der Positionsbeträge"**. Der Belegbetrag ist
 // an diesem Endpunkt kein Argument; die Prüfung wäre nur mit einem zusätzlichen lesenden
-// Aufruf möglich, und der widerspräche Regel 2 aus 7.5. Die API prüft die Summe selbst, und
-// ihre Meldung steht im Fehlerkatalog.
+// Aufruf möglich, und der widerspräche der Regel „ein Werkzeugaufruf ist ein API-Aufruf".
+// Die API prüft die Summe selbst, und ihre Meldung steht im Fehlerkatalog.
 //
 // **`creditor` und `debtor` sind beide Pflicht.** Die Spezifikation führt beide als
 // `required: true`, ihre eigenen Beschreibungen sagen dagegen „only required, if …"
 // (`buchungen.md` 10.1). `required` darf gegenüber der Spezifikation verschärft, nie
-// gelockert werden (Plan 4.3), deshalb bleiben beide Pflicht; der Widerspruch steht in ihren
+// gelockert werden, deshalb bleiben beide Pflicht; der Widerspruch steht in ihren
 // Beschreibungen, damit ein Agent die Ablehnung mit `error_code` 8 einordnen kann.
 //
 // Klasse B: Das Werkzeug legt neue Buchungszeilen an und überschreibt nichts, trägt deshalb
 // `destructiveHint: false`. Die Warnung vor der Unumkehrbarkeit läuft über den Pflichtsatz U3
-// und den `title` im Freigabedialog (Plan 3.3, 3.5).
+// und den `title` im Freigabedialog.
 
 import { isConfigLoaded } from "../../config/resolve.js";
 import {
@@ -37,17 +36,17 @@ import type { FieldSpec, ToolEntry } from "../types.js";
 
 /**
  * Die Mengengrenze der Positionsliste: `min(50, BB_MCP_MAX_BATCH)`, sobald die Konfiguration
- * aufgelöst ist (Plan 4.7 Q4, 4.8).
+ * aufgelöst ist.
  *
  * Die Abfrage auf `isConfigLoaded()` ist kein Zierrat: Das Register wird auch ohne aufgelöste
  * Konfiguration geladen, nämlich von den dreizehn Registerprüfungen, und `batchLimit()` wirft
- * dann (Plan 6.4 Punkt 7). Ohne Konfiguration gilt deshalb das API-Maximum. Die **wirksame**
+ * dann. Ohne Konfiguration gilt deshalb das API-Maximum. Die **wirksame**
  * Grenze erzwingt ohnehin Q4 zur Laufzeit aus der eingefrorenen Konfiguration.
  */
 const POSITION_LIMIT = isConfigLoaded() ? batchLimit() : API_MAX_BATCH;
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt. Das hält Schema und Registereintrag an einer Quelle (4.5). */
+ *  Eintrag keine eigene nennt. Das hält Schema und Registereintrag an einer Quelle. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -130,7 +129,7 @@ export const bb_postings_create_for_receipt: ToolEntry = {
       }),
       transform: "parallel-arrays",
       // Die `apiNames` der Positionsfelder zielen auf die parallelen Array-Parameter des
-      // Endpunkts und nicht auf ein Body-Feld gleichen Namens (Plan 2.1, 4.8). Aus derselben
+      // Endpunkts und nicht auf ein Body-Feld gleichen Namens. Aus derselben
       // Liste leitet `mapping/parallel-arrays.ts` die Spalten der Umformung ab; eine zweite
       // Liste wäre die Stelle, an der die Längeninvariante später auseinanderfiele.
       itemFields: [
@@ -183,13 +182,13 @@ export const bb_postings_create_for_receipt: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Die Erfolgsantwort ist `{ "success": true, "message": "" }` ohne `data` und ohne die
   // erzeugten Kennungen (buchungen.md 10.3). Ein Vertrag mit Feldern gäbe es hier nicht zu
   // prüfen; die Auflösung der Schreibantwort speist sich deshalb allein aus den Argumenten
-  // des Aufrufs (Plan 7.6).
+  // des Aufrufs.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",
   concise: [],
@@ -210,7 +209,7 @@ export const bb_postings_create_for_receipt: ToolEntry = {
   },
   // Kein duplicateCheck: bb_postings_search nimmt weder receipt_id_by_customer noch einen
   // Buchungstext als Filter an und verlangt zugleich einen Zeitraum, den dieser Aufruf nicht
-  // trägt. Ein Schlüssel, der sich nicht abfragen lässt, wäre keiner (Plan 2.1).
+  // trägt. Ein Schlüssel, der sich nicht abfragen lässt, wäre keiner.
   crossChecks: ["Q3", "Q4"],
   invalidatesCache: [],
 };

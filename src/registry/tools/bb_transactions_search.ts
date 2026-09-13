@@ -1,19 +1,21 @@
-// Werkzeug 9, `/transactions/get`: Zahlungen filtern und seitenweise auflisten (Plan 3.8, AP12b).
+// Werkzeug 9, `/transactions/get`: Zahlungen filtern und seitenweise auflisten.
 //
 // Zwei gemessene Eigenheiten tragen diesen Eintrag:
 //
-//   1. Die Liste liefert genau SECHS Felder und darunter KEIN `account` (Plan 0.3 Befund L2).
+//   1. Die Liste liefert genau SECHS Felder und darunter KEIN `account`.
 //      Wer das Zahlungskonto einer Zahlung braucht, holt sie einzeln mit bb_transactions_get.
-//   2. `id_by_customer` kommt hier als JSON-Zahl, bei den Belegen als String (Befund L3). Der
-//      Antwortvertrag führt das Feld deshalb als `id-string`: ausgehend immer String (S10).
+//   2. `id_by_customer` kommt hier als JSON-Zahl, bei den Belegen als String (Befund L3 in
+//      docs/api/live-befunde.md). Der Antwortvertrag führt das Feld deshalb als
+//      `id-string`: ausgehend immer String (Umwandlungsregel 2 im Kopf von
+//      src/mapping/coerce.ts).
 //
 // Eine Querprüfung zum Zusammenspiel von `id_by_customer_from`/`_to` und der Sortierung gibt es
 // ausdrücklich NICHT: `/transactions/get` führt überhaupt keinen `order`-Parameter, und die
 // Spezifikation erlaubt die Kombination mit den Datumsfeldern wörtlich. Ersatz ist der
-// Pflichtsatz aus Plan 4.7 an beiden Feldern, den P8 prüft.
+// Pflichtsatz an beiden Feldern, den P8 prüft.
 //
 // Die Umbenennung `account` → `payment_account_number` ist die Zeile aus Anhang A: Der
-// Parameter erwartet eine Sachkontonummer, meint aber ein Zahlungskonto (Plan 3.4).
+// Parameter erwartet eine Sachkontonummer, meint aber ein Zahlungskonto.
 
 import { paginationFor } from "../../schema/pagination.js";
 import { boundedText, identifierValue } from "../../schema/primitives.js";
@@ -27,14 +29,14 @@ import {
 import type { ToolEntry } from "../types.js";
 
 /**
- * Der Pflichtsatz aus Plan 4.7, wörtlich. Er steht an `id_by_customer_from` UND an
+ * Der Pflichtsatz, wörtlich. Er steht an `id_by_customer_from` UND an
  * `id_by_customer_to` und ersetzt die gestrichene Sortierprüfung; P8 prüft ihn an beiden.
  */
 const SORT_SIDE_EFFECT_SENTENCE =
   "Setzt die Sortierung auf id_by_customer ASC, auch in Kombination mit date_from und date_to.";
 
 // `limit` und `offset` kommen aus der Tabelle in pagination.ts und nicht aus diesem Eintrag:
-// Schema, Querprüfung Q2 und Bestandszeile der Antwort brauchen dieselbe Zahl (Plan 7.5).
+// Schema, Querprüfung Q2 und Bestandszeile der Antwort brauchen dieselbe Zahl.
 const { limit, offset } = paginationFor("/transactions/get");
 
 const RESPONSE_FORMAT = responseFormat();
@@ -137,8 +139,8 @@ export const bb_transactions_search: ToolEntry = {
       schema: boundedText(TO_FROM_DESCRIPTION),
     },
     // required: false, obwohl der Server das limit immer mitsendet: Die Vorgabe steckt im
-    // Schema, und Zod setzt sie auch unter .optional() ein (Plan 7.5 Regel 1). Ein
-    // required: true wäre eine Verschärfung gegenüber der Spezifikation (Plan 4.3).
+    // Schema, und Zod setzt sie auch unter .optional() ein. Ein
+    // required: true wäre eine Verschärfung gegenüber der Spezifikation.
     {
       name: "limit",
       apiNames: ["limit"],
@@ -168,11 +170,12 @@ export const bb_transactions_search: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
-  // Gemessen am 2026-09-12: genau sechs Felder, `id_by_customer` als JSON-Zahl, kein `account`
-  // (Plan 0.3 Befund L2 und L3). Der Vertrag gilt je Endpunkt und nie je Fachobjekt (7.2).
+  // Gemessen am 2026-09-12, am 2026-09-13 lesend erneut bestätigt: genau sechs Felder,
+  // `id_by_customer` als JSON-Zahl, kein `account`.
+  // Der Vertrag gilt je Endpunkt und nie je Fachobjekt.
   responseContract: {
     container: "data",
     fields: {
@@ -187,7 +190,7 @@ export const bb_transactions_search: ToolEntry = {
     measuredOn: "2026-09-12",
   },
   shape: "list",
-  // Alle sechs gelieferten Felder: Eine Projektion wäre hier sinnlos, steht aber in Plan 7.4
+  // Alle sechs gelieferten Felder: Eine Projektion wäre hier sinnlos, steht aber
   // ausgeschrieben und bleibt deshalb stehen.
   concise: ["id_by_customer", "to_from", "amount", "booking_date", "value_date", "purpose"],
   bucket: "default",

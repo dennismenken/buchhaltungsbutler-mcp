@@ -1,4 +1,4 @@
-// Bündel 4: das Kontenblatt eines Kontos mit fortgeschriebenem Saldo (Bauvorlage 4.5).
+// Bündel 4: das Kontenblatt eines Kontos mit fortgeschriebenem Saldo.
 //
 // **Der einzige Weg zum Kontostand, bei dem die Kürzung nicht genau die Zeile wegwirft, in der
 // er steht.** Gemessen (M5) wiegt ein Kontenblatt über sieben Jahre 828 Zeilen zu je 723 Byte,

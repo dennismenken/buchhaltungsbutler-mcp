@@ -1,4 +1,4 @@
-// Das Größenbudget des Pakets aus Plan 9.10 (AP16): `pnpm check-size`.
+// Das Größenbudget des Pakets: `pnpm check-size`.
 //
 // Geprüft werden **zwei** Zahlen gegen **zwei** feste Obergrenzen, und beide stammen aus
 // **einem** Aufruf von `npm pack --json`: `size` (das gepackte Tarball) und `unpackedSize`
@@ -10,13 +10,13 @@
 // Aufruf läuft hier zusätzlich mit `--dry-run`: npm misst, schreibt aber kein Archiv in das
 // Arbeitsverzeichnis. Ein veröffentlichender Befehl kommt in dieser Datei nicht vor.
 //
-// **Was bei Überschreitung geschieht, steht in Plan 9.10 und ist nicht verhandelbar:**
+// **Was bei Überschreitung geschieht, steht und ist nicht verhandelbar:**
 // Rückgabewert 1, beide gemessenen Zahlen, beide Grenzen und die zehn größten Dateien im
 // Protokoll. Zuerst wird die Ursache gesucht (Dateiliste, größte Dateien, Bündelergebnis);
 // **die Grenze anzuheben ist kein Schritt, den ein Implementierungs-Agent geht** — sie ist
 // eine Zahl des Projektinhabers und braucht einen Eintrag in `CHANGELOG.md`.
 //
-// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst (Plan 13.1).
+// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst.
 
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -24,13 +24,13 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 
-/** Obergrenze des gepackten Tarballs: 1 MiB (Plan 9.10). */
+/** Obergrenze des gepackten Tarballs: 1 MiB. */
 const MAX_PACKED_BYTES = 1_048_576;
 
-/** Obergrenze des entpackten Inhalts: 3 MiB (Plan 9.10). */
+/** Obergrenze des entpackten Inhalts: 3 MiB. */
 const MAX_UNPACKED_BYTES = 3_145_728;
 
-/** So viele der größten Dateien nennt das Protokoll (Plan 9.10). */
+/** So viele der größten Dateien nennt das Protokoll. */
 const LARGEST_FILES_COUNT = 10;
 
 /** Eine Datei des Tarballs, wie `npm pack --json` sie meldet. */
@@ -118,8 +118,8 @@ function share(value: number, limit: number): string {
 
 /**
  * Der Bericht. Er nennt **immer** beide Zahlen, beide Grenzen und die zehn größten Dateien —
- * auch im grünen Fall, denn Plan 9.10 will die Zahlen über die Versionen hinweg verfolgbar
- * haben und nicht erst dann sehen, wenn das Budget schon gerissen ist.
+ * auch im grünen Fall, denn die Zahlen sollen über die Versionen hinweg verfolgbar
+ * bleiben und nicht erst dann sichtbar werden, wenn das Budget schon gerissen ist.
  */
 function buildReport(measurement: PackMeasurement): {
   readonly lines: readonly string[];
@@ -130,7 +130,7 @@ function buildReport(measurement: PackMeasurement): {
   const exceeded = packedExceeded || unpackedExceeded;
 
   const lines: string[] = [
-    "Größenbudget des Pakets (Umsetzungsplan 9.10), gemessen mit npm pack --json:",
+    "Größenbudget des Pakets, gemessen mit npm pack --json:",
     "",
     `  gepackt   ${formatBytes(measurement.size)}` +
       `  Grenze ${formatBytes(MAX_PACKED_BYTES)}` +
@@ -159,8 +159,8 @@ function buildReport(measurement: PackMeasurement): {
   if (exceeded) {
     lines.push(
       "",
-      "Das Budget ist gerissen. Die Reihenfolge aus 9.10 gilt, und sie beginnt nicht bei der Grenze:",
-      "  1. Dateiliste gegen den Paketprobelauf halten (9.6 Schritt 1): kein src, kein test,",
+      "Das Budget ist gerissen. Die Reihenfolge unten gilt, und sie beginnt nicht bei der Grenze:",
+      "  1. Dateiliste gegen den Paketprobelauf halten: kein src, kein test,",
       "     kein docs, keine .env, keine Karte außer den Sourcemaps.",
       "  2. Die zehn größten Dateien oben lesen. Eine Spezifikations- oder Generatdatei in dist",
       "     ist der häufigste Fall.",

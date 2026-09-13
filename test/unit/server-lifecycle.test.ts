@@ -1,12 +1,11 @@
-// Der Server: initialize, tools/list, Fehlerverhalten und das Herunterfahren (AP10,
-// Prüfpunkte 4 und 5).
+// Der Server: initialize, tools/list, Fehlerverhalten und das Herunterfahren.
 //
 // Vier Nachweise stehen hier:
 //
 //  1. Der Server beantwortet `initialize` und `tools/list` mit den drei Beispieleinträgen, und
-//     die Liste hängt von keinem Schalter ab (Plan 1.5, 6.6).
+//     die Liste hängt von keinem Schalter ab.
 //  2. Ein unbekannter Werkzeugname ist der **einzige** Protokollfehler; alles andere ist
-//     `isError: true` im Ergebnis (Plan 1.4 Schritt 1, 5.8).
+//     `isError: true` im Ergebnis.
 //  3. Auf stdout steht ausschließlich JSON-RPC — auch dann, wenn im Handler etwas wirft.
 //     Nachgewiesen über einen echten StdioServerTransport auf zwei Strömen im Speicher; ein
 //     Test gegen `process.stdout` prüfte die Sperre der Lint-Regel und nicht den Server.
@@ -203,7 +202,7 @@ describe("initialize und tools/list", () => {
       store: createMasterDataStore({ ttlMs: 0 }),
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-    const client = new Client({ name: "ap10-servertest", version: "0.0.0" });
+    const client = new Client({ name: "servertest", version: "0.0.0" });
     await built.server.connect(serverSide);
     await client.connect(clientSide);
 
@@ -251,7 +250,7 @@ describe("initialize und tools/list", () => {
       store: createMasterDataStore({ ttlMs: 0 }),
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-    const client = new Client({ name: "ap10-servertest", version: "0.0.0" });
+    const client = new Client({ name: "servertest", version: "0.0.0" });
     await built.server.connect(serverSide);
     await client.connect(clientSide);
 
@@ -275,7 +274,7 @@ describe("initialize und tools/list", () => {
       store: createMasterDataStore({ ttlMs: 0 }),
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-    const client = new Client({ name: "ap10-servertest", version: "0.0.0" });
+    const client = new Client({ name: "servertest", version: "0.0.0" });
     await built.server.connect(serverSide);
     await client.connect(clientSide);
 
@@ -308,7 +307,7 @@ describe("Ein Fehler im Handler", () => {
   it("wird zu isError im Ergebnis und nicht zu einem Protokollfehler", async () => {
     const built = createServer({ config, entries: ENTRIES, bundles: [], store: explodingStore });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-    const client = new Client({ name: "ap10-servertest", version: "0.0.0" });
+    const client = new Client({ name: "servertest", version: "0.0.0" });
     await built.server.connect(serverSide);
     await client.connect(clientSide);
 
@@ -376,7 +375,7 @@ describe("stdout trägt ausschließlich JSON-RPC", () => {
         params: {
           protocolVersion: PROTOCOL_VERSION,
           capabilities: {},
-          clientInfo: { name: "ap10-stdio", version: "0.0.0" },
+          clientInfo: { name: "stdiotest", version: "0.0.0" },
         },
       });
       await waitForId(1);

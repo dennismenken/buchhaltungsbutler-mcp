@@ -1,14 +1,14 @@
 // Werkzeug 16, `/transactions/unassign/receipt`: die Zuordnung eines Belegs zu einer Zahlung
-// lösen (Plan 3.8, AP12b). Wirkung löschend, Klasse D, Pflichtsatz U1.
+// lösen. Wirkung löschend, Klasse D, Pflichtsatz U1.
 //
 // Der Name trägt das Verb `unassign` und nicht `delete`: `bb_transactions_delete_receipt` läse
 // sich, als lösche es den Beleg, und das ist im Buchhaltungskontext eine gefährliche
-// Fehllesung (Plan 3.1). Das Paar assign/unassign ist genau die Symmetrie, an der die
+// Fehllesung. Das Paar assign/unassign ist genau die Symmetrie, an der die
 // Umkehrbarkeit abzulesen ist.
 //
 // `idempotentHint` bleibt über die Klasse D bei `false`, obwohl ein zweiter Aufruf plausibel
 // wirkungslos wäre: Das ist NICHT verifiziert, und ein falsches `true` lädt einen Host zum
-// automatischen Wiederholen ein (Plan 3.3, Streitfrage S6).
+// automatischen Wiederholen ein.
 
 import { idByCustomer } from "../../schema/vocab.js";
 import type { ToolEntry } from "../types.js";
@@ -56,7 +56,7 @@ export const bb_transactions_unassign_receipt: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Die Erfolgsantwort trägt nur `success` und `message`; einen Datensatz liefert sie nicht.

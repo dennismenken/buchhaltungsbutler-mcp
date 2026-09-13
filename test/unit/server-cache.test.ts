@@ -1,10 +1,9 @@
-// Der Stammdatenspeicher im Ausführungspfad (Plan 1.4 Zwischenschritt, 7.8; AP10,
-// Prüfpunkt 6).
+// Der Stammdatenspeicher im Ausführungspfad.
 //
-// Das Modul selbst gehört AP09 und wird hier nur aufgerufen. Geprüft wird, was der Handler
-// damit tut: **befragen** nach allen Guards und vor dem Rate-Limiter, **füllen** nach einer
-// erfolgreichen Antwort, **verwerfen** nach jedem Aufruf, der in `invalidatesCache` steht, und
-// ebenso bei ungewissem Ausgang.
+// Das Modul selbst hat eigene Tests und wird hier nur aufgerufen. Geprüft wird, was der
+// Handler damit tut: **befragen** nach allen Guards und vor dem Rate-Limiter, **füllen**
+// nach einer erfolgreichen Antwort, **verwerfen** nach jedem Aufruf, der in
+// `invalidatesCache` steht, und ebenso bei ungewissem Ausgang.
 //
 // Der wichtigste Fall ist der Auslieferungszustand: Bei `BB_MCP_CACHE_TTL_MS=0` greift **kein**
 // Zweig davon, und jeder Aufruf geht hinaus.
@@ -24,7 +23,7 @@ import { installTestConfig, mockApi, resetTestConfig, type ApiMock } from "../he
 
 // --- Fixtures -------------------------------------------------------------------------
 //
-// `bb_debtors_search` ist eines der vier speicherfähigen Werkzeuge aus 7.8, und
+// `bb_debtors_search` ist eines der vier speicherfähigen Werkzeuge, und
 // `bb_debtors_create` eines der drei, die seinen Stand verwerfen.
 
 const SEARCH_ENTRY: ToolEntry = {
@@ -43,7 +42,7 @@ const SEARCH_ENTRY: ToolEntry = {
       source: "body",
       required: false,
       // Für /settings/get/debtors ist keine Obergrenze dokumentiert; deshalb trägt dieser
-      // Eintrag Q2 nicht (Plan 4.7, 7.5).
+      // Eintrag Q2 nicht.
       description: "Zeilen je Seite.",
       schema: limit(null, 100),
     },
@@ -121,7 +120,7 @@ const CREATE_ENTRY: ToolEntry = {
     hint: "nach dem Namen suchen",
   },
   crossChecks: ["Q3"],
-  // Die Zeile aus 7.8, die den Speicher überhaupt rechtfertigt.
+  // Die Zeile, die den Speicher überhaupt rechtfertigt.
   invalidatesCache: ["bb_debtors_search", "bb_postingaccounts_search"],
 };
 
@@ -202,7 +201,7 @@ async function startServer(config: ResolvedConfig): Promise<RunningTestServer> {
     store: createMasterDataStore({ ttlMs: config.cacheTtlMs }),
   });
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-  const client = new Client({ name: "ap10-cachetest", version: "0.0.0" });
+  const client = new Client({ name: "cachetest", version: "0.0.0" });
   await built.server.connect(serverSide);
   await client.connect(clientSide);
   return {
@@ -266,7 +265,7 @@ describe("Eingeschalteter Speicher", () => {
       const second = await server.client.callTool({ name: "bb_debtors_search", arguments: {} });
       const text = textOf(second);
 
-      // Ein Treffer macht aus einem Aufruf null, nie zwei (Plan 7.8 Punkt 4).
+      // Ein Treffer macht aus einem Aufruf null, nie zwei.
       expect(api.count("/settings/get/debtors")).toBe(1);
       expect(text).toContain("Aus dem Stammdatenspeicher dieses Serverprozesses");
       expect(text).toContain("BB_MCP_CACHE_TTL_MS=0");
@@ -344,7 +343,7 @@ describe("Eingeschalteter Speicher", () => {
       expect(failed.isError).toBe(true);
       expect(text).toContain("UNGEWISSER AUSGANG.");
       expect(text).toContain("Es ist UNBEKANNT, ob BuchhaltungsButler diese Anfrage verarbeitet");
-      // Kein automatischer zweiter Versuch an einem schreibenden Werkzeug (Plan 5.3).
+      // Kein automatischer zweiter Versuch an einem schreibenden Werkzeug.
       expect(api.count("/settings/update/debtor")).toBe(1);
 
       await server.client.callTool({ name: "bb_debtors_search", arguments: {} });

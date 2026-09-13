@@ -12,10 +12,10 @@ import type { ContractFieldType } from "../../src/registry/types.js";
 import { RECEIPTS_LIST_FIELDS } from "../golden/entries.js";
 import { goldenRows } from "../golden/index.js";
 
-// Plan 9.5: 100 Prozent Zweigabdeckung, weil hier stille Datenfehler entstehen. Geprüft werden
-// alle sieben Vertragstypen aus Plan 2.1 in jeder Lage, die Plan 7.4 nennt.
+// 100 Prozent Zweigabdeckung, weil hier stille Datenfehler entstehen. Geprüft werden
+// alle sieben Vertragstypen in jeder Lage, die die Projektion kennt.
 
-describe("coerceField, Beträge (Plan 7.4, Streitfrage S9)", () => {
+describe("coerceField, Beträge", () => {
   it("behält die Zeichenkette und ergänzt den Centwert", () => {
     const result = coerceField("amount", "amount-string", "884.65");
     expect(result.value).toBe("884.65");
@@ -70,9 +70,9 @@ describe("coerceField, Booleans aus Zeichenketten", () => {
   });
 });
 
-describe("coerceField, Kennungen (Streitfrage S10)", () => {
+describe("coerceField, Kennungen: ausgehend immer String", () => {
   it("liefert eine Kennung immer als String, aus beiden gemessenen Formen", () => {
-    // Gemessen: receipts liefert "2", transactions 1590 (Plan 0.3 Befund L3).
+    // Gemessen: receipts liefert "2", transactions 1590.
     expect(coerceField("id_by_customer", "id-string", "2").value).toBe("2");
     expect(coerceField("id_by_customer", "id-string", 1590).value).toBe("1590");
     expect(coerceField("id_by_customer", "id-string", 1590).warning).toBeUndefined();
@@ -159,6 +159,8 @@ describe("coerceRecord gegen die gemessene Belegzeile", () => {
     expect(result.values.due_date).toBeNull();
   });
 
+  // Befund L4 in docs/api/live-befunde.md: `amount_paid` und `amount_paid_fixed` kommen,
+  // obwohl die Spezifikation sie nicht führt.
   it("reicht ein unbekanntes Feld unverändert durch und zählt es (Befund L4)", () => {
     const [row] = goldenRows("receipts-get-list-unknown-field");
     const result = coerceRecord(RECEIPTS_LIST_FIELDS, row);
@@ -206,7 +208,7 @@ describe("centsOf", () => {
   });
 });
 
-describe("contract-violation: Zusammenfassung und Meldetexte (Plan 7.3)", () => {
+describe("contract-violation: Zusammenfassung und Meldetexte", () => {
   it("benennt jeden gesehenen Typ", () => {
     expect(seenTypeOf(undefined)).toBe("fehlt");
     expect(seenTypeOf(null)).toBe("null");
@@ -232,7 +234,7 @@ describe("contract-violation: Zusammenfassung und Meldetexte (Plan 7.3)", () => 
     expect(aggregated).toHaveLength(2);
     expect(aggregated[0]).toEqual({ warning: rawWarnings[0], rows: 2 });
     expect(aggregated[1]?.rows).toBe(1);
-    // Nach außen gehen genau die drei Schlüssel aus Plan 7.3.
+    // Nach außen gehen genau die drei Schlüssel.
     expect(warningsForStructuredContent(aggregated).map((w) => Object.keys(w))).toEqual([
       ["field", "expected", "seen"],
       ["field", "expected", "seen"],

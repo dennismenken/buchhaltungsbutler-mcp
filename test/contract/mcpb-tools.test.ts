@@ -1,4 +1,4 @@
-// Vertragstest aus Plan 9.3: Die Werkzeugliste des Bundle-Manifests gegen das Register.
+// Vertragstest: Die Werkzeugliste des Bundle-Manifests gegen das Register.
 //
 // Der Fehler, auf den diese Prüfung antwortet: Eine von Hand gepflegte Werkzeugliste im
 // Manifest driftet früher oder später von der tatsächlichen Werkzeugmenge ab. Wer das
@@ -17,7 +17,8 @@
 // dagegen ausdrücklich das gebaute Register und bricht ab, wenn `dist/` veraltet ist.
 //
 // **Die ausgelieferte Werkzeugmenge sind beide Listen zusammen**: die 54 Endpunktwerkzeuge aus
-// `TOOL_ENTRIES` und die 5 Bündelwerkzeuge aus `BUNDLE_ENTRIES` (N1). Das Manifest trägt
+// `TOOL_ENTRIES` und die 5 Bündelwerkzeuge aus `BUNDLE_ENTRIES`; die 54 bleiben neben den
+// Bündeln unverändert bestehen. Das Manifest trägt
 // `tools_generated: false` und behauptet damit eine vollständige Liste; eine Liste aus nur
 // einer der beiden Mengen wäre im Installationsdialog von Claude Desktop schlicht falsch.
 //
@@ -118,7 +119,7 @@ describe("Bundle-Manifest, Vorlage", () => {
 
   it("kennzeichnet die Werkzeugliste als vollständig und nicht zur Laufzeit erzeugt", () => {
     // tools_generated: true hieße, der Server melde zur Laufzeit weitere Werkzeuge an. Das
-    // tut er nicht: Es sind 54 Endpunktwerkzeuge, eines je Endpunkt (E1), und 5 Bündel (N1).
+    // tut er nicht: Es sind 54 Endpunktwerkzeuge, eines je Endpunkt, und 5 Bündel daneben.
     expect(template["tools_generated"]).toBe(false);
   });
 });
@@ -223,8 +224,8 @@ describe("Bundle-Manifest, Zusammenbau", () => {
 // ---------------------------------------------------------------------------------------
 //
 // `description`, `long_description` und die Beschreibung des Schalters `read_only` sind die
-// Texte, die ein Mensch im Installationsdialog von Claude Desktop liest — nach N2 der
-// Hauptclient. Sie nennen Werkzeugzahlen, und sie nennen sie als Literale: Es sind ganze
+// Texte, die ein Mensch im Installationsdialog von Claude Desktop liest, der Zielumgebung
+// dieses Servers. Sie nennen Werkzeugzahlen, und sie nennen sie als Literale: Es sind ganze
 // deutsche Sätze, und ein Platzhalterraster („{{TOOL_COUNT}} Werkzeuge") machte die Vorlage
 // unlesbar und die Beugung falsch. Die Gegenmaßnahme gegen das Veralten ist deshalb dieser
 // Block. Er rechnet jede genannte Zahl aus der ausgelieferten Werkzeugmenge nach und verlangt

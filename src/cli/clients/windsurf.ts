@@ -1,5 +1,5 @@
 /**
- * Windsurf, Cascade: `~/.codeium/windsurf/mcp_config.json` (Plan 8.3).
+ * Windsurf, Cascade: `~/.codeium/windsurf/mcp_config.json`.
  *
  * Reines JSON. Eine `${VAR}`-Ersetzung ist in der Quelle **nicht dokumentiert**; Zugangsdaten
  * stehen hier also im Klartext, wenn man sie hineinschreibt (`distribution.md` 10.1).

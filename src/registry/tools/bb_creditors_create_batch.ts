@@ -1,9 +1,9 @@
-// Werkzeug 38 von 54: `/settings/add-batch/creditors` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 38 von 54: `/settings/add-batch/creditors`.
 //
 // Ein fachlicher Parameter, `creditors`, mit einem Verweis auf die Definition
 // `SettingsCreditors`. Der Behälter wird **nicht** umbenannt (Anhang A). Die zwölf
 // Eigenschaften des Elements `SettingsCreditor` stehen als `itemFields` hier und werden von
-// der zweiten Deckungsstufe aus Plan 4.4 Punkt 3 gegen die aufgelöste Elementdefinition
+// der zweiten Deckungsstufe gegen die aufgelöste Elementdefinition
 // aufgerechnet.
 //
 // **Das Element führt kein `email`, der Einzelendpunkt `/settings/add/creditor` schon.** Wie
@@ -12,15 +12,14 @@
 //
 // **Das Erfolgsarray der Antwort heißt hier `creditors` und beim Debitorenstapel `debtors`.**
 // Beide Endpunkte sind damit nicht über einen gemeinsamen Parser lesbar, ohne den Schlüssel
-// zu parametrisieren — ein Beispiel dafür, warum der Antwortvertrag je Endpunkt gilt
-// (Plan 7.2).
+// zu parametrisieren — ein Beispiel dafür, warum der Antwortvertrag je Endpunkt gilt.
 //
 // **Zur Mengengrenze:** `maxItems` wird ausdrücklich mit `API_MAX_BATCH` gesetzt, weil dieses
 // Modul beim Import ausgewertet wird und die Konfiguration zu diesem Zeitpunkt noch nicht
-// aufgelöst ist. Die wirksame Grenze `min(50, BB_MCP_MAX_BATCH)` erzwingt Q4 zur Laufzeit
-// (Plan 4.7), zusätzlich Guard 5; das Schema ist damit höchstens weiter als die Guards, nie
+// aufgelöst ist. Die wirksame Grenze `min(50, BB_MCP_MAX_BATCH)` erzwingt Q4 zur Laufzeit,
+// zusätzlich Guard 5; das Schema ist damit höchstens weiter als die Guards, nie
 // enger. Die 50 ist an diesem Endpunkt **nicht verifiziert**, sondern defensiv aus
-// `/receipts/addBatch` übernommen (Plan 14.2).
+// `/receipts/addBatch` übernommen.
 
 import { z } from "zod";
 
@@ -164,10 +163,10 @@ export const bb_creditors_create_batch: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Die Antwort trägt weder `data` noch `rows`, sondern die beiden Arrays `creditors` und
-  // `errors` auf oberster Ebene. Arrays sind in `ContractFieldType` (Plan 2.1) nicht
-  // abbildbar; sie werden als unbekannte Felder unverändert durchgereicht (Plan 7.3).
+  // `errors` auf oberster Ebene. Arrays sind in `ContractFieldType` nicht
+  // abbildbar; sie werden als unbekannte Felder unverändert durchgereicht.
   // `success: true` bedeutet NICHT, dass alle Konten angelegt wurden.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",

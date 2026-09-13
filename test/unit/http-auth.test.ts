@@ -22,7 +22,7 @@ describe("basicAuthHeader", () => {
   });
 
   it("verträgt Zeichen außerhalb von Latin-1, an denen btoa scheitern würde", () => {
-    // Genau der Grund für Buffer.from statt btoa (Plan 5.1).
+    // Genau der Grund für Buffer.from statt btoa.
     const header = basicAuthHeader("büro", "schlüssel€");
     const encoded = header.slice("Basic ".length);
     expect(Buffer.from(encoded, "base64").toString("utf8")).toBe("büro:schlüssel€");

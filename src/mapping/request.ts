@@ -1,18 +1,18 @@
-// Werkzeugargumente → API-Body (Plan 1.4 Schritt 8, Anhang A).
+// Werkzeugargumente → API-Body.
 //
 // Vier Dinge geschehen hier und sonst nirgends:
 //
 //  1. **Die Umbenennungen aus Anhang A werden zurückübersetzt.** Die Zuordnung steht je Feld
 //     im Registereintrag (`FieldSpec.apiNames`), nicht in einer zweiten Tabelle in diesem
 //     Modul; {@link ANNEX_A_RENAMES} führt sie trotzdem vollständig auf, damit sie prüfbar
-//     bleibt und nicht nur in der Prosa des Plans steht.
-//  2. **Positionslisten werden zu parallelen Arrays** — ausschließlich an den sieben Stellen
-//     aus Plan 4.8, und `mapping/parallel-arrays.ts` weist jede andere ab.
+//     bleibt und nicht nur in Prosa steht.
+//  2. **Positionslisten werden zu parallelen Arrays** — ausschließlich an den sieben Stellen,
+// und `mapping/parallel-arrays.ts` weist jede andere ab.
 //  3. **Betragszeichenketten werden zu JSON-Zahlen.** Das Werkzeugschema nimmt die
-//     Zeichenkette, die API erwartet eine Zahl (Plan 4.5, Baustein `amountIn()`); die
+//     Zeichenkette, die API erwartet eine Zahl (Baustein `amountIn()`); die
 //     Umwandlung gehört an den Rand und läuft über Ganzzahl-Cent, nie über `parseFloat`.
 //  4. **Der Pfad wird gebaut**, falls der Eintrag eine Vorlage trägt, und der Identifikator
-//     landet dabei **nicht** im Body (Plan 4.6 Regel 5).
+//     landet dabei **nicht** im Body.
 //
 // **Zum `api_key`:** Er kommt ausschließlich aus der Konfiguration und niemals aus den
 // Argumenten. Eingesetzt wird er an genau einer Stelle, nämlich in `src/http/client.ts`
@@ -37,7 +37,7 @@ import { resolveUploadSource } from "../upload/source.js";
 
 export { PathBuildError, PositionMappingError };
 
-/** Das Feld, das den Mandanten wählt. Es kommt nie aus den Argumenten (Plan 6.2, 6.3). */
+/** Das Feld, das den Mandanten wählt. Es kommt nie aus den Argumenten. */
 export const API_KEY_FIELD = "api_key";
 
 /**
@@ -46,7 +46,7 @@ export const API_KEY_FIELD = "api_key";
  * Die Tabelle ist **Nachweis und Prüfgrundlage**, nicht der Ausführungsweg: Übersetzt wird
  * über `FieldSpec.apiNames` des Registereintrags, damit die Zuordnung dort steht, wo auch
  * Beschreibung, Schema und Deckungstest hängen. Wer eine Umbenennung ergänzt, ergänzt sie im
- * Registereintrag; diese Tabelle hält fest, welche der Plan kennt.
+ * Registereintrag; diese Tabelle hält fest, welche es überhaupt gibt.
  *
  * „Mehr Umbenennungen als diese gibt es nicht; alle übrigen rund 300 Felder tragen den Namen
  * der Spezifikation" (Anhang A).
@@ -77,7 +77,7 @@ export const ANNEX_A_RENAMES: readonly AnnexARename[] = Object.freeze([
     specPaths: ["/receipts/add", "/receipts/upload", "/transactions/add", "/transactions/get"],
     reason:
       "account erwartet eine Sachkontonummer, meint aber ein Zahlungskonto. Der Name sagt " +
-      "beides nicht (Plan 3.4).",
+      "beides nicht.",
   },
   {
     field: "account_filter",
@@ -121,7 +121,7 @@ export const ANNEX_A_RENAMES: readonly AnnexARename[] = Object.freeze([
     specPaths: ["/postings/add/receipt"],
     reason:
       "Objektorientierte Positionsliste statt paralleler Arrays, Längeninvariante " +
-      "konstruktiv erfüllt (Plan 4.8).",
+      "konstruktiv erfüllt.",
   },
   {
     field: "positions",
@@ -133,7 +133,7 @@ export const ANNEX_A_RENAMES: readonly AnnexARename[] = Object.freeze([
     field: "positions",
     apiNames: [
       "postingaccounts",
-      // Der eingeschobene Buchstabe ist der benannte Spezifikationsfehler aus Plan 0.5:
+      // Der eingeschobene Buchstabe ist der benannte Spezifikationsfehler:
       // ReceiptPostings trägt postingstexts, der Einzelendpunkt postingtexts.
       "postingstexts",
       "vats",
@@ -196,7 +196,7 @@ export const ANNEX_A_RENAMES: readonly AnnexARename[] = Object.freeze([
       "/receipts/restore/id_by_customer",
     ],
     reason:
-      "Pfadsegment. Der Identifikator fehlt in der Spezifikation ganz (Plan 4.6): " +
+      "Pfadsegment. Der Identifikator fehlt in der Spezifikation ganz: " +
       "source path, leeres apiNames, kein Body-Feld.",
   },
   {
@@ -233,7 +233,7 @@ export class RequestMappingError extends Error {
 /** Das Ergebnis der Hinrichtung. `body` trägt niemals den `api_key`. */
 export interface MappedRequest {
   readonly toolName: string;
-  /** Der unveränderte Spezifikationspfad: Nachschlagen und Protokollieren (Plan 4.6 Regel 6). */
+  /** Der unveränderte Spezifikationspfad: Nachschlagen und Protokollieren. */
   readonly specPath: string;
   /** Der tatsächlich gesendete Pfad. Bei 50 der 54 Endpunkte gleich `specPath`. */
   readonly requestPath: string;
@@ -275,7 +275,7 @@ function singleApiName(toolName: string, field: FieldSpec, fieldPath: string): s
       toolName,
       fieldPath,
       `trägt ${String(field.apiNames.length)} API-Namen. Ein Feld ohne Umformung deckt genau ` +
-        "einen Body-Parameter ab (Plan 2.1).",
+        "einen Body-Parameter ab.",
     );
   }
   return field.apiNames[0] ?? "";
@@ -285,7 +285,7 @@ function singleApiName(toolName: string, field: FieldSpec, fieldPath: string): s
  * Wandelt einen skalaren Wert in die Form, die die API erwartet.
  *
  * Derzeit gibt es genau eine Umwandlung, und sie betrifft Beträge: Das Werkzeugschema nimmt
- * die Dezimalzeichenkette, die API erwartet eine JSON-Zahl (Plan 4.5). Erkannt wird ein
+ * die Dezimalzeichenkette, die API erwartet eine JSON-Zahl. Erkannt wird ein
  * Betrag an der Markierung, die `amountIn()` setzt, und nicht an einer Namensliste — damit
  * gilt dieselbe Regel für skalare Felder und für Felder innerhalb einer Position.
  */
@@ -314,7 +314,7 @@ function convertScalar(
 interface MapContext {
   readonly toolName: string;
   readonly specPath: string;
-  /** `true` innerhalb eines Stapelelements: Dort gelten die geschachtelten Regeln aus 4.8. */
+  /** `true` innerhalb eines Stapelelements: Dort gelten die geschachtelten Regeln. */
   readonly nested: boolean;
 }
 
@@ -332,8 +332,8 @@ function mapFieldsInto(
   for (const field of fields) {
     const fieldPath = prefix === "" ? field.name : `${prefix}.${field.name}`;
 
-    // Rein serverseitige Felder verlassen den Prozess nie (Plan 4.3, 7.4), und der
-    // Identifikator der vier Endpunkte mit Pfadvorlage gehört in den Pfad (4.6 Regel 5).
+    // Rein serverseitige Felder verlassen den Prozess nie, und der
+    // Identifikator der vier Endpunkte mit Pfadvorlage gehört in den Pfad.
     if (field.source === "server" || field.source === "path") {
       continue;
     }
@@ -385,7 +385,7 @@ function assertFree(
       toolName,
       fieldPath,
       `würde den Body-Parameter ${apiName} ein zweites Mal setzen. Jeder Parameter wird von ` +
-        "genau einem Werkzeugfeld abgedeckt (Plan 2.1).",
+        "genau einem Werkzeugfeld abgedeckt.",
     );
   }
   if (apiName === API_KEY_FIELD) {
@@ -393,7 +393,7 @@ function assertFree(
       toolName,
       fieldPath,
       "würde den Mandantenschlüssel in den Body schreiben. Er kommt ausschließlich aus der " +
-        "Konfiguration (Plan 1.4 Schritt 8).",
+        "Konfiguration.",
     );
   }
 }
@@ -444,7 +444,7 @@ function convertPositions(
 
 /**
  * Eine Objektliste: die Behälter der acht Stapelendpunkte. Sie sind **bereits** Objektlisten,
- * hier findet keine Umformung statt (Plan 4.8) — wohl aber die Umbenennung der Felder
+ * hier findet keine Umformung statt — wohl aber die Umbenennung der Felder
  * **innerhalb** eines Elements und, an den Werkzeugen 22 und 24, die geschachtelte
  * Positionsliste.
  */
@@ -493,8 +493,8 @@ function mapObjectList(
 /**
  * Übersetzt geprüfte Werkzeugargumente in Pfad und Body.
  *
- * @param args Die von Zod geprüften Argumente (Guard 3 aus Plan 1.4). Der Mapper prüft keine
- *             Werte nach, er formt um; die Ausnahmen sind die Pfadprüfung aus 4.6 und die
+ * @param args Die von Zod geprüften Argumente (Guard 3). Der Mapper prüft keine
+ *             Werte nach, er formt um; die Ausnahmen sind die Pfadprüfung und die
  *             Betragsumwandlung, weil beide eine Zeichenkette in eine andere Form bringen.
  */
 export function mapRequest(
@@ -509,7 +509,9 @@ export function mapRequest(
   const body: Record<string, unknown> = {};
   mapFieldsInto(body, entry.fields, args, context, "");
 
-  // Regel 5 aus 4.6 als Zusicherung am Ergebnis, nicht als Vorsatz im Kommentar.
+  // Pfadregel 5 (Kopf von src/mapping/path.ts) als Zusicherung am Ergebnis, nicht als
+  // Vorsatz im Kommentar: An den vier Endpunkten mit Pfadvorlage trägt der Body kein Feld
+  // für den Identifikator.
   assertNoPathFieldInBody(entry, body);
 
   const serverOnly: Record<string, unknown> = {};
@@ -529,13 +531,13 @@ export function mapRequest(
 }
 
 // ---------------------------------------------------------------------------------------
-// Die Belegquelle (Plan 11.2 AP13)
+// Die Belegquelle
 // ---------------------------------------------------------------------------------------
 
 /**
  * Der einzige Endpunkt, der eine Datei entgegennimmt. Die Zuordnung hängt am
  * Spezifikationspfad und nicht am Werkzeugnamen: Der Pfad ist der Schlüssel, mit dem auch
- * Fehlerkatalog, Deckungstest und Audit-Zeile arbeiten (Plan 4.6).
+ * Fehlerkatalog, Deckungstest und Audit-Zeile arbeiten.
  */
 const UPLOAD_SPEC_PATH = "/receipts/upload";
 

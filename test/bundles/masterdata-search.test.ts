@@ -1,4 +1,4 @@
-// bb_masterdata_search: Abläufe, Teilfehler, Seitenobergrenze (Bauvorlage Abschnitt 4.1).
+// bb_masterdata_search: Abläufe, Teilfehler, Seitenobergrenze.
 //
 // Der Kern dieser Datei sind nicht die Erfolgsfälle, sondern die Aussagen über das, was FEHLT:
 // ein ausgefallener Bereich trägt `hits` = null und nicht das leere Array (R5), ein nicht

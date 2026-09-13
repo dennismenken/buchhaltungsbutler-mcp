@@ -1,15 +1,15 @@
 // Die wiederverwendbaren Zod-Bausteine der Schemaschicht: Datum, Datumzeit, Betrag und
-// Kennung (Plan 2, Dateibaum). Dazu die Markierung, über die Guard 5 die Betragsfelder
-// findet, ohne eine zweite Namensliste zu pflegen (Plan 1.4 Schritt 6, AP10).
+// Kennung (Dateibaum). Dazu die Markierung, über die Guard 5 die Betragsfelder
+// findet, ohne eine zweite Namensliste zu pflegen.
 //
 // Arbeitsteilung innerhalb der Schemaschicht, damit jede Zeichenkette genau einen Ort hat:
 //
 //   primitives.ts  die Schemaform ohne deutschen Text. Jede Funktion nimmt die fertige
 //                  Beschreibung als Argument und prüft nichts an ihr.
-//   vocab.ts       die deutschen Beschreibungsmuster aus Plan 4.5 und die dort benannten
+//   vocab.ts die deutschen Beschreibungsmuster und die dort benannten
 //                  Bausteine; sie setzen Text und Form hier zusammen.
 //
-// Deshalb heißen die Funktionen hier `…Value` und in vocab.ts wie in Plan 4.5. Wer einen
+// Deshalb heißen die Funktionen hier `…Value` und in vocab.ts wie. Wer einen
 // neuen Feldtyp braucht, baut die Form hier und den Text dort.
 
 import { z } from "zod";
@@ -29,10 +29,10 @@ const KIND_KEY = "bbKind";
 /**
  * Die Art eines Schemafragments, soweit eine andere Schicht sie erkennen muss.
  *
- * - `amount` ist die Markierung aus Plan 4.5: Guard 5 prüft `BB_MCP_MAX_AMOUNT` gegen
+ * - `amount` ist die Markierung: Guard 5 prüft `BB_MCP_MAX_AMOUNT` gegen
  *   jedes Betragsfeld der Klassen A und B, skalar wie je Position, und findet sie über
- *   diese Markierung statt über eine zweite, handgepflegte Feldliste (AP10).
- * - `positions` und `batch` markieren die beiden Arten von Mengenfeld aus Q4 (Plan 4.7).
+ *   diese Markierung statt über eine zweite, handgepflegte Feldliste.
+ * - `positions` und `batch` markieren die beiden Arten von Mengenfeld aus Q4.
  *   Sie tragen beide dieselbe Obergrenze `min(50, BB_MCP_MAX_BATCH)`; die Markierung macht
  *   den Unterschied zwischen Positionsliste und Stapelarray trotzdem sichtbar, weil die
  *   Herkunft der 50 je Art verschieden ist (API-Regel gegen eigene Mengengrenze).
@@ -101,7 +101,7 @@ export function schemaKind(schema: unknown): SchemaKind | undefined {
   return undefined;
 }
 
-/** `true`, wenn dieses Fragment ein Betrag im Sinne von Plan 4.5 ist (Guard 5, AP10). */
+/** `true`, wenn dieses Fragment ein Betrag im Sinne ist (Guard 5). */
 export function isAmountSchema(schema: unknown): boolean {
   return schemaKind(schema) === "amount";
 }
@@ -123,7 +123,7 @@ export function stripInternalMeta(node: Record<string, unknown>): void {
 /**
  * Das einzige `.strict()` des Projekts.
  *
- * Guard 3 verlangt strenge Validierung mit `additionalProperties: false` (Plan 1.4): Die
+ * Guard 3 verlangt strenge Validierung mit `additionalProperties: false`: Die
  * API ignoriert unbekannte Body-Felder kommentarlos, ohne strenge Prüfung wäre ein
  * Tippfehler im Feldnamen also ein stiller Datenfehler. Damit diese Entscheidung nicht an
  * 54 Registereinträgen hängt, gibt es genau diese eine Funktion; `src/schema/build.ts` ist
@@ -159,10 +159,10 @@ export const DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2}(?: \d{2}:\d{2}:\d{2})?$/;
  * Betrag als Dezimalzeichenkette: Punkt als Trennzeichen, höchstens zwei Nachkommastellen,
  * Minus erlaubt, kein Tausendertrennzeichen.
  *
- * Die API erwartet beim Schreiben eine JSON-Zahl und liefert beim Lesen einen String
- * (Plan 0.3 L3). Das Werkzeugschema nimmt trotzdem die Zeichenkette: Eine Gleitkommazahl
+ * Die API erwartet beim Schreiben eine JSON-Zahl und liefert beim Lesen einen String.
+ * Das Werkzeugschema nimmt trotzdem die Zeichenkette: Eine Gleitkommazahl
  * für Geld ist ein Fehler, und die Umwandlung an den Rand gehört in
- * `src/mapping/request.ts` (Plan 4.5).
+ * `src/mapping/request.ts`.
  */
 export const AMOUNT_PATTERN = /^-?\d+(?:\.\d{1,2})?$/;
 
@@ -225,7 +225,7 @@ export function isCalendarDateTime(value: string): boolean {
  *
  * Im JSON Schema steht `format: "date"` neben dem kurzen Muster. Das ist bewusst nicht
  * `z.iso.date()`: Dessen erzeugtes Muster ist rund 250 Zeichen lang, es käme an jedem
- * Datumsfeld aller 54 Werkzeuge erneut vor und kostete das Kontextbudget aus Plan 4.10
+ * Datumsfeld aller 54 Werkzeuge erneut vor und kostete das Kontextbudget
  * mehrere Tausend Zeichen, ohne dem Aufrufer etwas zu sagen, was `format: "date"` nicht
  * schon sagt. Die Schaltjahrprüfung geht dabei nicht verloren, sie läuft als Refine.
  */
@@ -254,7 +254,7 @@ export function dateTimeValue(description: string): z.ZodString {
 
 /**
  * Betrag als Dezimalzeichenkette. Das erzeugte Fragment ist als Betrag markiert, damit
- * Guard 5 `BB_MCP_MAX_AMOUNT` ohne zweite Namensliste prüfen kann (Plan 4.5, AP10).
+ * Guard 5 `BB_MCP_MAX_AMOUNT` ohne zweite Namensliste prüfen kann.
  *
  * Die Markierung sitzt auf dem Rückgabewert. Wer die Beschreibung später mit `.describe()`
  * ändert oder das Fragment mit `.optional()` umhüllt, verliert sie nicht:
@@ -271,7 +271,7 @@ export function amountValue(description: string): z.ZodString {
 /**
  * Mandantenbezogene Kennung (`id_by_customer`) als positive Ganzzahl.
  *
- * Eingehend `integer`, ausgehend immer String (Plan 12, Streitfrage S10). Die Reibung
+ * Eingehend `integer`, ausgehend immer String. Die Reibung
  * wird nicht durch Schemagymnastik gelöst, sondern durch einen Satz in der
  * Parameterbeschreibung; den setzt `vocab.ts`.
  */
@@ -287,7 +287,7 @@ export function identifierValue(description: string): z.ZodNumber {
  * Freier Text, nie leer, auf Wunsch längenbegrenzt.
  *
  * Die Untergrenze 1 ist kein Beiwerk: Ein leerer String ist bei dieser API ein
- * Validierungsfehler und bedeutet nicht „nicht gesetzt“ (Plan 4.7 Q3). Q3 prüft denselben
+ * Validierungsfehler und bedeutet nicht „nicht gesetzt“. Q3 prüft denselben
  * Sachverhalt zusätzlich über den ganzen Aufruf, weil ein Registereintrag auch ein
  * Fragment verwenden darf, das nicht von hier kommt.
  */

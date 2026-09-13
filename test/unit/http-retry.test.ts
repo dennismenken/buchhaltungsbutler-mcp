@@ -25,7 +25,7 @@ import {
   type TransportErrorContext,
 } from "../../src/http/transport-error.js";
 
-// Die Retry-Weiche ist der gefährlichste Zweig des Projekts (Plan 9.5): Ein Retry an einem
+// Die Retry-Weiche ist der gefährlichste Zweig des Projekts: Ein Retry an einem
 // schreibenden Endpunkt erzeugt Doppelbuchungen, und die fallen erst im Jahresabschluss auf.
 
 const READING_CONTEXT: TransportErrorContext = {
@@ -105,7 +105,7 @@ describe("backoffDelayMs", () => {
 
   it("streut im Bereich 0,5 bis 1,5 um den vollen Wert", () => {
     // Ausdrücklich nicht delay × random(): Das wartet im Mittel nur die Hälfte und kommt zu
-    // früh wieder (Streitfrage S17).
+    // früh wieder.
     expect(backoffDelayMs(1, () => 0)).toBe(500);
     expect(backoffDelayMs(1, () => 0.999_999)).toBe(1_500);
     expect(backoffDelayMs(2, () => 0)).toBe(1_000);
@@ -144,7 +144,7 @@ describe("isRetryableRead", () => {
 
   it("unterscheidet error_code 15 nach dem HTTP-Status", () => {
     // 403/15 ist Drosselung, 400/15 ist ein falsches Sortierfeld. Derselbe Code, zwei
-    // Bedeutungen (Plan 5.6).
+    // Bedeutungen.
     expect(isRetryableRead(facts({ status: 403, errorCode: 15 }))).toBe(true);
     expect(isRetryableRead(facts({ status: 400, errorCode: 15 }))).toBe(false);
   });
@@ -244,7 +244,7 @@ describe("runAttempts: der Zweig ist an Klasse R gebunden", () => {
           runtime,
           attempt: () => {
             attemptCount += 1;
-            // HTTP 504 ist der Fall aus 9.4: an einem schreibenden Werkzeug genau ein Request.
+            // HTTP 504 ist der Fall: an einem schreibenden Werkzeug genau ein Request.
             return Promise.reject(apiError(504, 30, context));
           },
         }),

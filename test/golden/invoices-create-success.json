@@ -1,6 +1,6 @@
 {
   "_herkunft": "Endpunkt /invoices/create | dokumentiert | Quelle: Spezifikation InvoicesCreate_Success | Struktur gemessen, Geschäftsdaten erfunden",
-  "_zweck": "die Schreibantwort mit drei Feldern auf oberster Ebene und den ausdrücklichen Hinweis, dass es keinen Weg zurück gibt (Umsetzungsplan 7.6, next-step.ts)",
+  "_zweck": "die Schreibantwort mit drei Feldern auf oberster Ebene und den ausdrücklichen Hinweis, dass es keinen Weg zurück gibt (next-step.ts)",
   "http": {
     "status": 200,
     "contentType": "application/json; charset=utf-8"

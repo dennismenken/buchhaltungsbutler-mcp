@@ -239,7 +239,7 @@ describe("Währung: kein Baustein über alle fünf Vorkommen, aber je Ressource 
     expect(text).not.toBe(RECEIPT_CURRENCY_SENTENCE);
   });
 
-  // Regel R-A aus Plan 4.5 ist damit konstruktiv erfüllt und nicht bloß verabredet: Beide
+  // Regel R-A ist damit konstruktiv erfüllt und nicht bloß verabredet: Beide
   // Werkzeuge eines Paares rufen denselben Baustein, also kann kein Wert einzeln erlaubt
   // und im Stapel verboten sein.
   it("erzeugt an Werkzeug 4 und 5 zeichengleiche Fragmente (R-A)", () => {

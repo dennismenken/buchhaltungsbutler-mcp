@@ -1,6 +1,6 @@
-// Die zweite, unabhängig gepflegte Klassenliste für P5 (Plan 9.2, AP11).
+// Die zweite, unabhängig gepflegte Klassenliste für P5.
 //
-// Sie ist von Hand aus der Tabelle in Plan 3.8 abgeschrieben, Spalte „Kl.", und liegt
+// Sie ist von Hand aus der Tabelle abgeschrieben, Spalte „Kl.", und liegt
 // bewusst GETRENNT vom Register: Eine Prüfung, die die Klasse aus derselben Datei liest, in
 // der sie steht, prüft sich selbst. Erst zwei unabhängige Quellen fangen den Fall, dass
 // jemand ein Werkzeug versehentlich umklassifiziert.
@@ -9,8 +9,8 @@
 // bb_postings_assign_receipt endet auf _receipt und ist buchend (B),
 // bb_reports_get_ledger endet auf _ledger und ist lesend (R).
 //
-// Ändert AP19b eine Klasse oder eine Annotation, wird diese Datei gemeinsam mit
-// src/registry/classes.ts und annotations.test.ts nachgezogen (Plan 3.3). Sie ist die
+// Ändert sich eine Klasse oder eine Annotation, wird diese Datei gemeinsam mit
+// src/registry/classes.ts und annotations.test.ts nachgezogen. Sie ist die
 // einzige Stelle in test/, an der die 54 Werkzeugnamen namentlich stehen; die übrigen
 // Prüfungen arbeiten gegen EXPECTED_TOOL_NAMES, damit eine fehlende Datei in jeder Prüfung
 // denselben Namen nennt.
@@ -18,9 +18,8 @@
 import type { ToolClass } from "../../src/registry/types.js";
 
 /**
- * Werkzeugname zu Klasse, alle 54 Einträge, in der Reihenfolge der Werkzeugnummern aus
- * Plan 3.8. Die Nummern stehen als Kommentar dabei, damit ein Abgleich mit dem Plan ohne
- * Zählen möglich ist.
+ * Werkzeugname zu Klasse, alle 54 Einträge, in der Reihenfolge der Werkzeugnummern.
+ * Die Nummern stehen als Kommentar dabei, damit ein Abgleich ohne Zählen möglich ist.
  */
 export const EXPECTED_TOOL_CLASSES = {
   // Belege, Werkzeuge 1 bis 8
@@ -101,7 +100,7 @@ export const EXPECTED_TOOL_CLASSES = {
 } as const satisfies Record<string, ToolClass>;
 
 /**
- * Die Anzahl je Klasse aus Plan 3.3 und 3.9, ebenfalls von Hand abgeschrieben. Summe 54.
+ * Die Anzahl je Klasse, ebenfalls von Hand abgeschrieben. Summe 54.
  * Sie ist die Quersumme zur Liste oben: Ein Tippfehler dort, der eine Klasse verschiebt,
  * fällt hier auf.
  */
@@ -119,7 +118,7 @@ export const EXPECTED_TOOL_NAMES: readonly string[] = Object.keys(EXPECTED_TOOL_
 
 /**
  * Die 39 schreibenden Werkzeuge, also alles außer Klasse R. Abgeleitet, keine zweite Quelle.
- * Sie sind die Menge, die den Nur-Lesen-Schalter nicht passiert (Plan 3.9) und die ein
+ * Sie sind die Menge, die den Nur-Lesen-Schalter nicht passiert und die ein
  * `verifyWith` sowie einen Pflichtsatz tragen muss (P8, P10).
  */
 export const EXPECTED_WRITING_TOOL_NAMES: readonly string[] = EXPECTED_TOOL_NAMES.filter(

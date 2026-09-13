@@ -8,23 +8,63 @@ Recherchen übernommen und wurden nirgends hochgestuft.
 
 | Stufe | Bedeutung |
 | --- | --- |
-| **GEMESSEN** | Ein Rechercheur hat es selbst ausgeführt und die Ausgabe gesehen. |
+| **GEMESSEN** | Selbst ausgeführt und die Ausgabe gesehen. |
 | **BELEGT** | Es steht in einer offiziellen Quelle, die abgerufen wurde, mit URL und Datum. |
 | **VERMUTUNG** | Alles andere, einschließlich Vorwissen und unbestätigter Nutzerberichte. |
+
+> **Erhebungsstand gegen Auslieferungsstand, ergänzt am 2026-09-13.** Die Erhebung dieses
+> Dossiers gilt den **54 Endpunktwerkzeugen**. Seit dem 2026-09-13 liefert der Server zusätzlich
+> **fünf Bündelwerkzeuge** aus (`bb_masterdata_search`, `bb_records_collect`,
+> `bb_assignments_get`, `bb_balances_get`, `bb_reports_run`); ihre Definitionen wiegen GEMESSEN
+> **6.852 Token**. Die Anfangslast liegt damit bei **59 Werkzeugen und rund 55.220 Token an
+> Definitionen**, nicht bei den 48.305 Token der Erhebung. Die Anteilsrechnungen je Client in 4.2
+> und 4.3 sind auf diesen Auslieferungsstand umgestellt und führen die alte Fassung daneben; die
+> Ausgangstabelle in 4.1 und die Hebelrechnungen in Abschnitt 5 beruhen weiter auf der Erhebung
+> und sagen das an Ort und Stelle. Beleg ist die Ausgabe von `bbutler-mcp doctor`, Block
+> „Werkzeuggruppen“:
+>
+> ```
+> Werkzeuggruppen
+>   Aktive Gruppen: alle 12 — postings, receipts, transactions, invoices, creditors, reports,
+>   debtors, postingaccounts, cost_locations, payment_accounts, comments, bundles
+>   Registriert: 59 Werkzeuge, rund 55.220 Token an Definitionen (gemessen, Stand 2026-09-13).
+> ```
+>
+> Daraus folgt die Lesart für den ganzen Text: Wo eine Aussage den Auslieferungszustand meint,
+> nennt sie **59**; wo sie nur die Erhebung wiedergibt, nennt sie **54 Endpunktwerkzeuge**. Ein
+> Messprotokoll behält seine Zahl, auch wenn sie 54 lautet — es wurde an einem Server ohne
+> Bündelwerkzeuge aufgenommen und wird nicht nachträglich hochgeschrieben.
 
 ---
 
 ## 1. Die Frage und warum sie für dieses Projekt zählt
 
-Der Server bietet 54 Werkzeuge an; die Definitionen wiegen zusammen 48.305 Token, die
-Server-`instructions` weitere 1.259 Token, gemessen am 2026-09-13 mit `gpt-tokenizer@4.0.0` in
-der Kodierung `o200k_base` (siehe `docs/entwicklung/befund-tokenbudget.md`). Zusammen sind das
-49.564 Token, die ein Client beim Verbinden vorgelegt bekommt. Die entscheidende Frage ist
-nicht, ob das Protokoll diese Menge überträgt (das tut es immer), sondern ob der Client sie in
-jede einzelne Modellanfrage legt oder erst dann, wenn ein Werkzeug gebraucht wird. Die Antwort
-entscheidet, ob dieser Server rund ein Viertel eines 200k-Kontextfensters verbraucht, bevor der
-Nutzer das erste Wort schreibt, oder rund zwei Prozent. Sie fällt je Client anders aus, und sie
-hat sich bei den wichtigsten Clients innerhalb der letzten zwölf Monate gedreht.
+Der Server bietet 59 Werkzeuge an: 54 Endpunktwerkzeuge und fünf Bündelwerkzeuge. Ihre
+Definitionen wiegen zusammen 55.220 Token, die Server-`instructions` weitere 1.407 Token,
+GEMESSEN am 2026-09-13 mit `gpt-tokenizer@4.0.0` in der Kodierung `o200k_base`. Zusammen sind das
+56.627 Token, die ein Client beim Verbinden vorgelegt bekommt. Die Erhebung dieses Dossiers ist
+einen Tag älter und gilt nur den 54 Endpunktwerkzeugen: 48.305 Token Definitionen plus 1.259
+Token `instructions`, zusammen 49.564 Token, gemessen am 2026-09-12. Die Ausgangstabelle in 4.1
+und die Hebelrechnungen in Abschnitt 5 beruhen weiter auf dieser kleineren Zahl; die
+Anteilsrechnungen je Client in 4.2 und 4.3 rechnen mit dem Auslieferungsstand und führen die
+alte Fassung daneben. Die entscheidende Frage ist nicht, ob das Protokoll diese Menge überträgt
+(das tut es immer), sondern ob der Client sie in jede einzelne Modellanfrage legt oder erst
+dann, wenn ein Werkzeug gebraucht wird. Die Antwort entscheidet, ob dieser Server gut ein
+Viertel eines 200k-Kontextfensters verbraucht, bevor der Nutzer das erste Wort schreibt, oder
+rund ein Prozent. Sie fällt je Client anders aus, und sie hat sich bei den wichtigsten Clients
+innerhalb der letzten zwölf Monate gedreht.
+
+Die Erhebungszahlen dieses Dossiers sind die Momentaufnahme vom 2026-09-12 und werden nicht
+nachgeführt; die Postenverteilung und die Gruppengewichte in Abschnitt 5 gehen von ihr aus.
+Seither ist zweierlei geschehen. **Erstens** sind die Werte der Endpunktwerkzeuge leicht
+gestiegen: `pnpm measure-tokens` weist am 2026-09-13 48.368 Token für deren Definitionen und
+1.407 für die `instructions` im Auslieferungszustand aus. **Zweitens**, und das wiegt schwerer,
+sind die fünf Bündelwerkzeuge hinzugekommen: weitere **6.852 Token**, die in keiner Rechnung
+dieses Dossiers stecken. Der Auslieferungsstand ist damit 55.220 Token an Definitionen plus
+1.407 Token `instructions`, zusammen **56.627 Token** — rund 14 Prozent über den 49.564 Token
+der Erhebung. Den jeweils aktuellen Stand führt `docs/entwicklung/tokenbudget.md`. An den
+Schlussfolgerungen dieses Dossiers ändert der Zuwachs nichts; an den Prozentwerten je Client
+schon, und 4.2 und 4.3 führen sie deshalb in beiden Fassungen.
 
 ---
 
@@ -109,7 +149,7 @@ bei jeder Anfrage.
 unabhängig vom Schalter geladen. #25892 ergänzt, der `tool_search`-Mechanismus erscheine
 **zusätzlich** zu den vollen Definitionen statt an ihrer Stelle, und die Einstellung setze sich
 vor der ersten Nachricht eines neuen Chats stillschweigend auf `Auto` zurück. Beides ist
-unbestätigt und wurde von keinem Rechercheur nachgemessen.
+unbestätigt und wurde hier nicht nachgemessen.
 
 **Obergrenze.** Keine dokumentierte Obergrenze für die Werkzeugzahl; GEMESSEN enthält das
 App-Bundle keine passende Konstante (`maxTools`, `MAX_TOOLS`, `toolLimit`, `tooManyTools`,
@@ -121,7 +161,7 @@ Anthropic selbst und belegt, dass Werkzeuge und Gespräch aus demselben Budget l
 
 Eine echte harte Grenze existiert bei der **Länge des Werkzeugnamens**: 64 Zeichen im API-Muster
 der Messages API. `anthropics/claude-code#19770` dokumentiert Marketplace-Tools mit 65 bis 72
-Zeichen, die dadurch ausfallen. Bei 54 Werkzeugen mit Serverpräfix lohnt die Prüfung der
+Zeichen, die dadurch ausfallen. Bei 59 Werkzeugen mit Serverpräfix lohnt die Prüfung der
 längsten Namen.
 
 **Schaltbarkeit.** Ganze Connectors je Konversation über das Plus-Menü. BELEGT mit
@@ -226,7 +266,7 @@ function Xye(){return!1}
 
 Daraus folgt zwingend: Für jedes Werkzeug mit `isMcp===true` liefert `SY` den Wert `true`, also
 „deferrable“. Keine Zählung, keine Tokenmessung, keine Schwelle. Ein MCP-Server mit einem
-einzigen Werkzeug wird behandelt wie einer mit 54 oder 700.
+einzigen Werkzeug wird behandelt wie einer mit 59 oder 700.
 
 GEMESSEN die Moduswahl:
 
@@ -241,7 +281,9 @@ Zweig `tst-auto` ruft überhaupt eine Schwellwertrechnung auf.
 GEMESSEN am eigenen Server: Ein direkter JSON-RPC-Handshake gegen `dist/cli.js` (`initialize`,
 `notifications/initialized`, `tools/list`) lieferte exakt 54 Werkzeuge, keinen `nextCursor`,
 `capabilities {tools:{listChanged:false},resources:{listChanged:false}}` und `instructions` mit
-5.336 Zeichen.
+5.336 Zeichen. Die Messung entstand vor der Registrierung der fünf Bündelwerkzeuge; der
+Auslieferungszustand liefert 59. Für die hier belegte Aussage — kein `nextCursor`, keine
+Paginierung — ändert die Zahl nichts.
 
 BELEGT: „Tool search is on by default.“ und „When it is active, tool definitions are withheld
 from the context window.“
@@ -249,7 +291,7 @@ from the context window.“
 **Die wichtige Präzisierung**, BELEGT aus der API-Doku: „defer_loading controls what enters the
 context window, not what you send in the request: You still send every tool's full definition in
 the tools array on every request, including the deferred ones.“ Und: „Internally, the API
-excludes deferred tools from the system-prompt prefix.“ Die 48.305 Token gehen also weiterhin
+excludes deferred tools from the system-prompt prefix.“ Die 55.220 Token gehen also weiterhin
 bei jeder Anfrage über die Leitung, landen aber nicht im Modellkontext und zählen nicht als
 Input-Token.
 
@@ -312,9 +354,9 @@ Und zur Größenordnung: „50 tools can use 10-20K tokens“ — unser Server l
 
 **Ladeverhalten: bei Bedarf. Belegstufe GEMESSEN.**
 
-GEMESSEN im Eigenversuch: Der Server (`dist/cli.js`, 54 Werkzeuge) wurde per CLI-Override
-(`-c mcp_servers.bbprobe.*`) in eine ephemere, schreibgeschützte Codex-Session eingehängt, ohne
-die Konfiguration des Nutzers zu ändern. Ergebnis:
+GEMESSEN im Eigenversuch: Der Server (`dist/cli.js`, damals 54 Werkzeuge, heute 59) wurde per
+CLI-Override (`-c mcp_servers.bbprobe.*`) in eine ephemere, schreibgeschützte Codex-Session
+eingehängt, ohne die Konfiguration des Nutzers zu ändern. Ergebnis:
 
 1. Das Modell nennt auf Nachfrage **alle 54 Werkzeugnamen exakt**, Präfix `mcp__bbprobe__`. Die
    Namen stehen also im Kontext.
@@ -327,7 +369,7 @@ die Konfiguration des Nutzers zu ändern. Ergebnis:
 4. Der gemessene Zuwachs der gemeldeten Tokenzahl lag bei rund 440 Token, passt also auf
    „nur Namen“.
 
-**Warnung zur Sorgfalt, vom Rechercheur selbst benannt:** In einem streng gleich formulierten
+**Warnung zur Sorgfalt, bei der Messung selbst aufgefallen:** In einem streng gleich formulierten
 Kontrolllauf („Antworte nur mit dem Wort OK.“) meldete Codex mit und ohne den Server identisch
 4.083 Token. Das kann bedeuten, dass der angezeigte Zähler die `tools`-Sektion gar nicht
 mitzählt. Die Aussage „Schemata sind nicht im Kontext“ ruht deshalb auf der Selbstauskunft des
@@ -453,7 +495,7 @@ fahre „more than 80 tools enabled, and there's no warning message at all“, u
 Dynamic Context Discovery zurück. Eine Forum-Suche nach Beiträgen seit 2026-05 ergab keinen
 einzigen neuen Bericht über eine 40er-Grenze in der IDE.
 
-**Einschätzung des Rechercheurs, ausdrücklich als VERMUTUNG gekennzeichnet:** Die 40er-Grenze
+**Einschätzung, ausdrücklich als VERMUTUNG gekennzeichnet:** Die 40er-Grenze
 dürfte mit der Umstellung auf Dynamic Context Discovery gegenstandslos geworden sein. Ein
 offizielles Dementi oder eine neue Zahl gibt es nicht.
 
@@ -652,7 +694,7 @@ Request an das Modell. Kein Deferral- oder Nachladepfad.
 `tools: IndexMap<Arc<str>, bool>`, `enable_all_context_servers: bool` und
 `context_servers: IndexMap<Arc<str>, ContextServerPreset>`. Werkzeug-IDs haben das Format
 `mcp:<server_id>:<tool_name>`. **Wichtig:** In `assets/settings/default.json` gilt für das
-Standardprofil `write` `"enable_all_context_servers": true` — alle 54 Werkzeuge sind sofort
+Standardprofil `write` `"enable_all_context_servers": true` — alle 59 Werkzeuge sind sofort
 aktiv. Für `ask` ist die Zeile auskommentiert („We don't know which of the context server tools
 are safe for the Ask profile“), `minimal` hat `false`.
 
@@ -755,7 +797,7 @@ validate due to an unresolved external $ref SHOULD be rejected rather than silen
 permissive.“ Ein serverweit gemeinsames, über eine URL referenziertes Schema ist damit
 protokollseitig ausgeschlossen.
 
-**Roadmap:** „Progressive discovery“ steht als Arbeitspaket der Core Primitives WG (Seitenstand
+**Roadmap:** „Progressive discovery“ steht als Vorhaben der Core Primitives WG (Seitenstand
 2026-08-22): „Clients learn a server's tools and resources as they need them instead of ingesting
 the full catalog up front.“ Ausdrücklich ein Vorhabenstand: „we're starting a dedicated effort
 [...] to define what an experimental server-side discovery mechanism would look like.“ Dazu
@@ -838,25 +880,27 @@ abholt, steht nicht in der Doku und wurde nicht gemessen.
 
 ---
 
-## 4. Was das für unsere 54 Werkzeuge bedeutet
+## 4. Was das für unsere 59 Werkzeuge bedeutet
 
 ### 4.1 Die Ausgangszahlen und ein Widerspruch in den Messungen
 
 | Größe | Zeichen | Token | Quelle |
 | --- | --- | --- | --- |
-| 54 Werkzeugdefinitionen, wie ausgeliefert | 197.528 | **48.305** | Projektmessung `scripts/measure-tokens.ts` |
-| dieselben, rohes `tools`-Array als JSON | 197.583 | 48.307 | Rechercheur Claude Code, unabhängig reproduziert |
-| dieselben, aus dem stdio-Handshake | **206.577** | ~51.600 geschätzt | Rechercheur OpenAI-Familie |
-| dieselben, nur was ins `tools`-Array ginge (Name, `description`, `input_schema`) | — | 37.224 | Rechercheur Claude Code |
-| `instructions`, Auslieferungszustand | 5.092 | **1.259** | Projektmessung |
-| `instructions`, alle Schalter an | 5.760 | 1.419 | Projektmessung |
-| `instructions`, am laufenden Server | 5.336 | 1.329 | zwei Rechercheure unabhängig |
+| 54 **Endpunkt**werkzeugdefinitionen, wie ausgeliefert | 197.528 | **48.305** | Projektmessung `scripts/measure-tokens.ts`, Stand 2026-09-12 |
+| dieselben, rohes `tools`-Array als JSON | 197.583 | 48.307 | eigene Messung in Claude Code, unabhängig reproduziert |
+| dieselben, aus dem stdio-Handshake | **206.577** | ~51.600 geschätzt | eigene Messung in einem Client der OpenAI-Familie |
+| dieselben, nur was ins `tools`-Array ginge (Name, `description`, `input_schema`) | — | 37.224 | eigene Messung in Claude Code |
+| 5 **Bündel**werkzeugdefinitionen, wie ausgeliefert | 28.165 | **6.852** | Projektmessung `scripts/measure-tokens.ts`, Stand 2026-09-13 |
+| alle 59 Definitionen, wie ausgeliefert | 225.967 | **55.220** | Summe der beiden Messungen vom 2026-09-13 (197.802 + 28.165 Zeichen, 48.368 + 6.852 Token); die Tokenzahl meldet `bbutler-mcp doctor` unter „Werkzeuggruppen“ |
+| `instructions`, Auslieferungszustand | 5.092 | **1.259** | Projektmessung, Stand 2026-09-12 |
+| `instructions`, alle Schalter an | 5.760 | 1.419 | Projektmessung, Stand 2026-09-12 |
+| `instructions`, am laufenden Server | 5.336 | 1.329 | zwei unabhängige eigene Messungen |
 
 **Widerspruch 1, Zeichenzahl der Definitionen.** 197.528/197.583 gegen 206.577 Zeichen, eine
 Abweichung von rund 4,5 Prozent. **Nicht aufgelöst.** Besser belegt sind die beiden ersten
 Zeilen: Sie wurden unabhängig voneinander mit demselben Tokenizer erzeugt und treffen die
-Kontrollsumme 48.305 beziehungsweise 48.307 auf zwei Token genau; ein dritter Rechercheur hat
-dieselbe Zahl aus dem Projektcode heraus ein drittes Mal reproduziert. Die 206.577 Zeichen
+Kontrollsumme 48.305 beziehungsweise 48.307 auf zwei Token genau; eine dritte, unabhängige
+Messung hat dieselbe Zahl aus dem Projektcode heraus reproduziert. Die 206.577 Zeichen
 wurden nur in Zeichen gemessen und die Tokenzahl daraus per Faktor geschätzt. **Wir rechnen mit
 48.305.**
 
@@ -872,24 +916,43 @@ den Vergleich mit dem Kontextfenster eines MCP-Clients ist **48.305** die richti
 MCP-Clients die volle Definition erhalten; für den Vergleich mit Anthropics eigenen
 Tokenangaben ist 37.224 die ehrlichere.
 
-**Summe für dieses Dossier: 48.305 + 1.259 = 49.564 Token**, aufgerundet **rund 49.500 bis
-49.600 Token je Anfrage** in einem Client, der alles sofort lädt.
+**Summe für die 54 Endpunktwerkzeuge: 48.305 + 1.259 = 49.564 Token**, aufgerundet **rund 49.500
+bis 49.600 Token je Anfrage** in einem Client, der alles sofort lädt. Das ist die Rechengrundlage
+aller folgenden Abschnitte, weil die Postenverteilung und die Gruppengewichte in Abschnitt 5 auf
+genau dieser Erhebung beruhen.
 
-Je Werkzeug: **Mittelwert 895 Token, Median 742, Spanne 376 bis 2.119** (volle Definition,
-GEMESSEN). In der schmaleren Rechenweise: Mittelwert 689, Spanne 208 (`bb_cost_locations_delete`)
-bis 1.949 (`bb_invoices_create_einvoice`).
+**Summe im Auslieferungszustand: 55.220 + 1.407 = 56.627 Token.** Sie schließt die fünf
+Bündelwerkzeuge mit GEMESSEN 6.852 Token ein und ist die Zahl, die ein Nutzer heute wirklich
+vorgelegt bekommt — **rund 14 Prozent über den 49.564 Token der Erhebung**. Beleg ist die Ausgabe
+von `bbutler-mcp doctor`, Block „Werkzeuggruppen“ (`Registriert: 59 Werkzeuge, rund 55.220 Token
+an Definitionen (gemessen, Stand 2026-09-13).`) zusammen mit `pnpm measure-tokens`
+(`Gruppe bundles: 6.852 Token (Grenze 6.950).`). Wo der Unterschied die Aussage trägt, stehen
+unten beide Fassungen.
+
+Je Endpunktwerkzeug: **Mittelwert 895 Token, Median 742, Spanne 376 bis 2.119** (volle
+Definition, GEMESSEN). In der schmaleren Rechenweise: Mittelwert 689, Spanne 208
+(`bb_cost_locations_delete`) bis 1.949 (`bb_invoices_create_einvoice`). Je Bündelwerkzeug liegt
+der Mittelwert deutlich höher: 6.852 Token auf fünf Definitionen sind **1.370 Token**, GEMESSEN
+am 2026-09-13.
 
 ### 4.2 Die teuren Clients: Cline, Continue, Zed, LM Studio, Jan, vermutlich Windsurf
 
-Hier gehen 49.564 Token bei **jeder einzelnen Anfrage** mit. Ins Verhältnis gesetzt:
+Hier gehen **56.627 Token** bei **jeder einzelnen Anfrage** mit: 55.220 Token Definitionen der 59
+Werkzeuge plus 1.407 Token `instructions`, Auslieferungszustand vom 2026-09-13. Ins Verhältnis
+gesetzt:
 
 | Kontextfenster (Größenordnung, VERMUTUNG aus Vorwissen) | Anteil unseres Servers | Was übrig bleibt |
 | --- | --- | --- |
-| 1.000.000 Token | 5,0 % | 950.436 Token |
-| 200.000 Token | **24,8 %** | 150.436 Token |
-| 128.000 Token | **38,7 %** | 78.436 Token |
-| 65.536 Token | **75,6 %** | 15.972 Token |
-| 32.768 Token | **151 %** | passt nicht |
+| 1.000.000 Token | 5,7 % | 943.373 Token |
+| 200.000 Token | **28,3 %** | 143.373 Token |
+| 128.000 Token | **44,2 %** | 71.373 Token |
+| 65.536 Token | **86,4 %** | 8.909 Token |
+| 32.768 Token | **173 %** | passt nicht |
+
+Ohne die fünf Bündelwerkzeuge, also mit den 49.564 Token der Erhebung, lauten dieselben Zeilen
+5,0 %, **24,8 %**, **38,7 %**, **75,6 %** und **151 %**. Der Unterschied ist keine Feinheit: Bei
+65.536 Token bleiben mit Bündeln 8.909 statt 15.972 Token für Gespräch und Antworten übrig,
+also rund 44 Prozent weniger Luft, als die Erhebung nahelegt.
 
 Die Kontextfenstergrößen sind **VERMUTUNG** (Vorwissen, nicht belegt und nicht gemessen); sie
 dienen nur der Größenordnung. Die Prozentwerte darüber sind reine Division.
@@ -900,25 +963,34 @@ Konkret je Client:
   32.768 Token passt unser Server schlicht nicht hinein, und die LM-Studio-Doku warnt selbst vor
   „frequent context overflows“. Ohne `allowed_tools` ist der Server dort unbrauchbar.
 - **Zed** aktiviert im Standardprofil `write` alle Kontextserver (`enable_all_context_servers: true`).
-  Die 54 Werkzeuge sind sofort und vollständig aktiv.
+  Die 59 Werkzeuge sind sofort und vollständig aktiv.
 - **Jan** greift für uns praktisch immer im Bypass: Wer nur unseren Server fährt, liegt unter der
   Schwelle von fünf Servern und bekommt die volle Liste.
 - **Cline** kann nur ganze Server abschalten, nicht einzelne Werkzeuge. Entweder alles oder nichts.
 - **Continue** filtert zwar je Werkzeug und je Gruppe, lädt aber die gefilterte Menge vollständig.
-- **Windsurf**: VERMUTUNG, siehe 3.9. Sicher ist nur die Obergrenze 100, von der wir 54 belegen.
+- **Windsurf**: VERMUTUNG, siehe 3.9. Sicher ist nur die Obergrenze 100, von der wir 59 belegen.
 
 ### 4.3 Die günstigen Clients: Claude Code, Codex, Cursor, VS Code mit Tool Search
 
 Hier liegt im Leerlauf nur eine Namensliste plus die `instructions` im Kontext.
 
-| Client | Im Leerlauf im Kontext | Anteil an 49.564 | Ersparnis |
+| Client | Im Leerlauf im Kontext | Anteil an 56.627 | Ersparnis |
 | --- | --- | --- | --- |
-| Claude Code 2.1.270 | 691 Token Namensblock + 1.259 `instructions` = **1.950** | 3,9 % | **96,1 %** |
-| Codex CLI 0.153.4 | ~380 bis 450 Token Namen + 1.259 `instructions` = **~1.640 bis 1.710** | 3,3 bis 3,5 % | **96,5 bis 96,7 %** |
+| Claude Code 2.1.270 | 691 Token Namensblock + 1.259 `instructions` = **1.950**, mit den fünf Bündelnamen rund 2.000 | 3,4 bis 3,5 % | **96,5 bis 96,6 %** |
+| Codex CLI 0.153.4 | ~380 bis 450 Token Namen + 1.259 `instructions` = **~1.640 bis 1.710**, mit den fünf Bündelnamen rund 1.695 bis 1.765 | 2,9 bis 3,1 % | **96,9 bis 97,1 %** |
 | Cursor | nur Namen plus Dateiverweis; absolute Zahl nicht ermittelt | — | im A/B-Test 46,9 % weniger Agent-Token insgesamt |
 | VS Code mit `supportsToolSearch` | Namensliste plus `tool_search`-Werkzeug; absolute Zahl nicht ermittelt | — | — |
 
-Der Claude-Code-Rechercheur rechnete mit 1.329 Token `instructions` und kam auf rund 2.020 Token
+Bezugsgröße der Anteilsspalte ist der Auslieferungszustand mit 56.627 Token; gegen die 49.564
+Token der reinen Endpunkterhebung lauteten dieselben Zeilen 3,9 % und 3,3 bis 3,5 %. Die
+Ersparnis fällt mit den Bündeln also **größer** aus, nicht kleiner: Was ein Client nicht lädt,
+wächst mit der Zahl der Werkzeuge mit.
+
+Der Namensblock selbst wurde mit 54 Werkzeugen gemessen; mit 59 ist er nicht nachgemessen. Die
+angesetzten rund 50 Token Zuwachs sind eine Hochrechnung aus dem GEMESSENEN Leerlaufpreis von 7
+bis 11 Token je Name (siehe 6b), keine eigene Messung.
+
+Die Messung in Claude Code rechnete mit 1.329 Token `instructions` und kam auf rund 2.020 Token
 im Leerlauf. Mit dem Projektwert 1.259 sind es 1.950. Die Differenz ist der Schalterstand, siehe
 4.1.
 
@@ -935,11 +1007,12 @@ die `instructions` mit 1.259 Token.** Sie liegen in jedem Fall vollständig im S
 
 Das ist der Punkt, an dem sich leicht falsche Beruhigung einstellt, und er ist BELEGT:
 
-- **Über die Leitung** gehen die vollen 48.305 Token bei jeder Anfrage weiter, auch bei
-  aktivierter Deferral. Die API braucht sie serverseitig für Suche und Expansion.
+- **Über die Leitung** gehen die vollen 55.220 Token aller 59 Definitionen bei jeder Anfrage
+  weiter, auch bei aktivierter Deferral (48.305 Token in der Erhebung, die die Bündel noch nicht
+  kannte). Die API braucht sie serverseitig für Suche und Expansion.
 - **Im Modellkontext** landen sie nicht und zählen nicht als Input-Token.
 
-Wer die 48.305 Token als Übertragungsvolumen betrachtet, hat weiterhin recht; wer sie als
+Wer diese Token als Übertragungsvolumen betrachtet, hat weiterhin recht; wer sie als
 Kontextbelastung betrachtet, hat in Claude Code und Codex seit Tool Search unrecht.
 
 Ebenso getrennt zu halten: Claude Desktop ruft `tools/list` GEMESSEN nur einmal pro App-Start
@@ -956,7 +1029,7 @@ Jede Zusage zum Kontextverbrauch muss an diese Bedingungen geknüpft werden:
   BELEGT.
 - **Codex:** Modelle älter als gpt-5.4 oder ein Provider ohne `tool_search` fallen auf die
   vollständige Einspielung zurück. BELEGT aus dem gemergten PR.
-- **VS Code:** Meldet der Modellendpunkt kein `capabilities.supports.tool_search`, gehen alle 54
+- **VS Code:** Meldet der Modellendpunkt kein `capabilities.supports.tool_search`, gehen alle 59
   Definitionen bei jeder Anfrage mit, und die 128er-Grenze gilt wieder. GEMESSEN im Code;
   **welche Modelle das heute melden, wurde nicht geprüft.**
 - **Claude Desktop Chat:** Der Default `Auto` ist undokumentiert; `On demand` ist nicht der
@@ -968,7 +1041,10 @@ Ein Kunde hinter einem Unternehmensproxy erlebt unseren Server also anders als w
 
 ## 5. Hebel auf Serverseite
 
-Grundlage der Prozentwerte ist die GEMESSENE Postenverteilung der 48.305 Token:
+Grundlage der Prozentwerte ist die GEMESSENE Postenverteilung der 48.305 Token **der 54
+Endpunktwerkzeuge**. Die fünf Bündeldefinitionen mit 6.852 Token sind darin nicht aufgeschlüsselt;
+ihr Bau liegt nach der Erhebung. Wer einen Hebel auf den Auslieferungszustand hochrechnet, teilt
+durch 55.220 statt durch 48.305 und landet rund ein Achtel tiefer im Prozentwert.
 
 | Posten | Token | Anteil |
 | --- | --- | --- |
@@ -980,7 +1056,9 @@ Grundlage der Prozentwerte ist die GEMESSENE Postenverteilung der 48.305 Token:
 | `name` und `title` | 583 | 1,2 % |
 | JSON-Rumpf der Definition | ~756 | 1,6 % |
 
-Gruppengewichte, GEMESSEN, Summe exakt 48.305:
+Gruppengewichte, GEMESSEN, Stand 2026-09-12, Summe der elf Endpunktgruppen exakt 48.305. Die
+zwölfte Gruppe `bundles` ist am 2026-09-13 dazugekommen und in dieser Summe nicht enthalten; ihre
+Zeile steht deshalb abgesetzt am Ende und trägt in der Anteilsspalte einen Strich:
 
 | Gruppe | Werkzeuge | Token | Anteil |
 | --- | --- | --- | --- |
@@ -995,6 +1073,7 @@ Gruppengewichte, GEMESSEN, Summe exakt 48.305:
 | `cost_locations` | 4 | 1.839 | 3,8 % |
 | `payment_accounts` | 2 | 1.142 | 2,4 % |
 | `comments` | 1 | 599 | 1,2 % |
+| `bundles` (Stand 2026-09-13, nicht Teil der Summe) | 5 | 6.852 | — |
 
 Die beiden Gruppennamen `cost_locations` und `payment_accounts` sind seit dem Bau des
 Gruppenschalters ausgeschrieben; frühere Fassungen dieser Tabelle führten sie als `cost` und
@@ -1032,11 +1111,13 @@ verschlechtert die Auffindbarkeit ausgerechnet unter dem Mechanismus, der das Pr
 ### H3 — Den wiederholten Umschlag der Ausgabeschemata verschlanken
 
 **Einsparung: `outputSchema` wiegt insgesamt 9.358 Token (19,4 %); allein der identische
-`_contract_warnings`-Block steckt 54-mal in 54 Ausgabeschemata, je 40 Token, zusammen 2.160
-Token (4,5 %).** GEMESSEN.
+`_contract_warnings`-Block steckt 54-mal in den 54 Ausgabeschemata der Endpunktwerkzeuge, je 40
+Token, zusammen 2.160 Token (4,5 %).** GEMESSEN.
 
 **Preis:** Wer den Umschlag verschlankt, verliert keine Zusage. Wer `outputSchema` ganz streicht,
-spart ein Fünftel, verliert aber die Zusagen aus Plan 7.1 und 7.6, die Typisierung und die
+spart ein Fünftel, verliert aber die Zusagen des Antwortvertrags — dass jede Antwort neben dem
+Textblock einen strukturierten Teil trägt und dass eine schreibende Antwort den betroffenen
+Datensatz aufgelöst samt Rückweg ausweist —, die Typisierung und die
 Grundlage für programmatic tool calling („The real fix is for server authors to provide
 outputSchema“). **BELEGT ist `outputSchema` in der Spezifikation optional.**
 
@@ -1076,7 +1157,7 @@ Token. Höchstens drei bis fünf, und nur solche, die in fast jeder Sitzung gebr
 **Einsparung: gemessene 80 Token bei 12 Vorkommen, also 0,17 Prozent. Praktisch null.**
 
 Das ist das klarste Ergebnis der Protokollrecherche, und es widerspricht der Erwartung. GEMESSEN
-stecken in den 54 Definitionen 1.210 Teilschemata unter `properties`, davon 251 verschiedene.
+stecken in den 54 Endpunktdefinitionen 1.210 Teilschemata unter `properties`, davon 251 verschiedene.
 Die Wiederholung ist groß, **liegt aber fast vollständig zwischen den Werkzeugen, nicht innerhalb
 eines Werkzeugs.** Eine Faktorisierung über alle Werkzeuge hinweg würde 9.638 Token sparen, ist
 aber **nicht ausdrückbar**: Jedes `inputSchema` und jedes `outputSchema` in der Antwort von
@@ -1140,11 +1221,13 @@ Konfiguration, Neuanmeldung.
 **Einsparung: proportional zur Zahl der wegfallenden Definitionen, im Mittel 895 Token je
 gestrichenem Werkzeug.**
 
-**Preis: der Widerspruch zur Projektentscheidung E1.** BELEGT liegt dieser Server mit 54
+**Preis: der Widerspruch zur Projektvorgabe, genau ein Werkzeug je Endpunkt auszuliefern.**
+BELEGT liegt dieser Server mit 59
 Werkzeugen über der Schwelle von 30 bis 50, ab der Anthropic die Trefferqualität der
 Werkzeugauswahl absinken sieht: „Claude's ability to pick the right tool degrades once you exceed
 30-50 available tools.“ OpenAI empfiehlt „fewer than 10 functions“ **je Namespace**. Das ist ein
-Argument fürs Zusammenlegen, nicht fürs Kürzen von Text, und es widerspricht E1. **Diesen
+Argument fürs Zusammenlegen, nicht fürs Kürzen von Text, und es widerspricht dieser Vorgabe.
+**Diesen
 Widerspruch löst die Protokollebene nicht auf; er gehört dem Projektinhaber vorgelegt.**
 
 Gegenbefund, ebenfalls BELEGT: Genau dieses Auswahlproblem löst Tool Search laut Hersteller
@@ -1164,15 +1247,16 @@ Search, und dort in voller Schärfe.
 **Das Cursor-Problem muss deutlich benannt werden.** Belegt ist eine Obergrenze von **40
 Werkzeugen über alle Server**, aus zwei Cursor-Staff-Aussagen vom 2025-06-24, und belegt ist,
 dass das Überschreiten **stillschweigend** geschieht: „Cursor cannot see the 41st tool“. Wenn
-diese Grenze heute noch gilt, sind **14 unserer 54 Werkzeuge in Cursor unsichtbar, ohne Warnung,
-ohne Fehlermeldung, und der Nutzer erfährt es nie.** Das wäre kein Kontextproblem, sondern ein
+diese Grenze heute noch gilt, sind **19 unserer 59 Werkzeuge in Cursor unsichtbar, ohne Warnung,
+ohne Fehlermeldung, und der Nutzer erfährt es nie.** Mit den fünf Bündelwerkzeugen sind es fünf
+mehr als in der Erhebung, die noch mit 14 rechnete. Das wäre kein Kontextproblem, sondern ein
 Funktionsausfall, und er würde uns als Serverfehler zugeschrieben.
 
 Die Gegenbefunde sind real, aber schwächer: Die aktuelle Cursor-Doku nennt keine Zahl; ein
 Ambassador (kein Staff) berichtet am 2026-03-03 von über 80 Werkzeugen ohne Warnung; seit
 2026-05 gibt es keinen neuen Forenbericht über die 40er-Grenze; und Dynamic Context Discovery vom
-2026-01-06 entzieht ihr die Grundlage. Der Rechercheur hält sie für gegenstandslos und
-kennzeichnet das ausdrücklich als **VERMUTUNG**. **Ein offizielles Dementi oder eine neue Zahl
+2026-01-06 entzieht ihr die Grundlage. Diese Einordnung hält sie für gegenstandslos und ist
+ausdrücklich als **VERMUTUNG** gekennzeichnet. **Ein offizielles Dementi oder eine neue Zahl
 existiert nicht.** Wir haben damit eine belegte schlechte Nachricht aus 2025 und eine vermutete
 gute aus 2026. Auf eine Vermutung darf diese Entscheidung nicht gebaut werden.
 
@@ -1180,8 +1264,8 @@ gute aus 2026. Auf eine Vermutung darf diese Entscheidung nicht gebaut werden.
 
 1. **Vor dem Release in Cursor real messen.** Das ist die billigste Messung des ganzen Dossiers
    und dauert Minuten: Server in Cursor einhängen, das Modell bitten, alle sichtbaren
-   `bb_`-Werkzeuge aufzuzählen, und die Zahl mit 54 abgleichen. Kommen 40 zurück, gilt die Grenze;
-   kommen 54 zurück, ist sie weg. Ohne diese Messung bleibt die Frage offen, und sie ist die
+   `bb_`-Werkzeuge aufzuzählen, und die Zahl mit 59 abgleichen. Kommen 40 zurück, gilt die Grenze;
+   kommen 59 zurück, ist sie weg. Ohne diese Messung bleibt die Frage offen, und sie ist die
    einzige im Dossier, die einen echten Funktionsausfall bedeuten kann.
 2. **H1 bauen: abschaltbare Werkzeuggruppen** (siehe 6c). Er ist die Antwort auf alle vier
    Clients mit Mengenproblem gleichzeitig: Cursor (40, unklar), Windsurf (100, belegt), VS Code
@@ -1197,12 +1281,12 @@ gute aus 2026. Auf eine Vermutung darf diese Entscheidung nicht gebaut werden.
    `test/registry/name-length.test.ts` (jedes Werkzeug aus `TOOL_ENTRIES` und `BUNDLE_ENTRIES`)
    und in Abschnitt 1 der Veröffentlichungs-Checkliste.
 4. **Die echte Tokenzahl über `count_tokens` der Messages API messen**, statt über
-   `gpt-tokenizer`. Unsere 48.305 Token sind in `o200k_base` gemessen; Anthropic tokenisiert
+   `gpt-tokenizer`. Unsere 55.220 Token sind in `o200k_base` gemessen; Anthropic tokenisiert
    anders. Die Größenordnung stimmt, die Zahl ist nicht übertragbar.
 
 **Was wir nicht ändern müssen:** Nichts an der Werkzeugzahl wegen Claude Code, Codex oder Cursor
 aus Kontextgründen. Dort ist die Deferral in Claude Code GEMESSEN **bedingungslos**: Der Code
-prüft bei `isMcp===true` weder Anzahl noch Tokenmenge. Ob wir 54 Werkzeuge anbieten oder 20 oder
+prüft bei `isMcp===true` weder Anzahl noch Tokenmenge. Ob wir 59 Werkzeuge anbieten oder 20 oder
 120, ändert am Kontextverhalten in Claude Code keinen einzigen Token. **Wer die Werkzeugliste
 ausdünnt, um Claude Code zu entlasten, optimiert ins Leere.** Der Schwellwert von 10 Prozent des
 Kontextfensters, den man in der Claude-Code-Doku findet, gilt ausschließlich im Modus `auto`
@@ -1213,15 +1297,23 @@ sehen für den Nutzer nicht nach einem Kontextproblem aus, sondern nach einem Fe
 Servers. In Claude Desktop gibt es beim Überschreiten keine Kürzung und keine Warnung, sondern
 „This conversation is too long to continue. Start a new chat, or remove some tools to free up
 space.“ — und kein `/compact`, die Konversation ist verloren. Das gehört in die README, zusammen
-mit der Zahl 54, der Tokenzahl und den Gruppennamen.
+mit der Zahl 59, der Tokenzahl und den Gruppennamen.
 
 ### 6b) Lohnen sich zusätzliche Bündelwerkzeuge, die mehrere Endpunkte zu einem Ablauf zusammenfassen?
 
 **Ja, aber als Zusammenlegung, nicht als Ergänzung. Drei bis fünf, nicht zehn.**
 
-Die Rechnung, getrennt nach Clientfamilie. Grundlage: ein Bündelwerkzeug kostet als Definition im
-Mittel **895 Token** (GEMESSEN, Mittelwert unserer 54); eine gesparte Modellrunde spart einen
-vollständigen Durchgang über den Kontext.
+Die Rechnung, getrennt nach Clientfamilie. Grundlage der Vorabrechnung: ein Bündelwerkzeug kostet
+als Definition im Mittel **895 Token** (GEMESSEN, Mittelwert unserer 54 Endpunktwerkzeuge); eine
+gesparte Modellrunde spart einen vollständigen Durchgang über den Kontext.
+
+> **Nachgemessen am 2026-09-13.** Der Ansatz von 895 Token war zu niedrig. Die fünf gebauten
+> Bündelwerkzeuge wiegen zusammen **6.852 Token**, im Mittel also **1.370 Token** je Definition —
+> gut die Hälfte mehr. Ein Bündel fasst mehrere Endpunkte zusammen und trägt deren Parameter und
+> Antwortverträge, es ist also erwartbar teurer als das Mittel der Einzelwerkzeuge. Für die
+> Break-even-Rechnung unten heißt das: `R = (C / 1.370) × S`, mit `C = 56.627` also **rund 41
+> Anfragen je gesparter Runde** statt 56. Die Schlussfolgerung trägt weiter — eine typische
+> Sitzung bleibt darunter —, aber der Abstand ist kleiner, als die Vorabrechnung auswies.
 
 **Clientfamilie 1, die teuren Clients (Cline, Continue, Zed, LM Studio, Jan, vermutlich
 Windsurf).**
@@ -1229,7 +1321,7 @@ Windsurf).**
 Kosten: `895 × R` Token, wobei `R` die Zahl der Modellanfragen in der Sitzung ist. Die Definition
 liegt in jeder Anfrage, ob benutzt oder nicht.
 Nutzen: `C × S`, wobei `C` die Kontextgröße zum Zeitpunkt der gesparten Runde ist und `S` die
-Zahl der gesparten Runden. In diesen Clients ist `C` mindestens 49.564 Token, weil unsere
+Zahl der gesparten Runden. In diesen Clients ist `C` mindestens 56.627 Token, weil unsere
 Definitionen darin liegen, plus Gesprächshistorie.
 Break-even: `R = (C / 895) × S`, mit `C = 50.000` also **rund 56 Anfragen je gesparter Runde**.
 
@@ -1238,8 +1330,8 @@ Sitzung auch nur einmal greift, zahlt sich in dieser Familie aus** — vorausges
 wirklich. Greift es nie, kostet es `895 × R` Token für nichts.
 
 Aber: In dieser Familie ist nicht die Tokenzahl das eigentliche Problem, sondern ob überhaupt
-etwas hineinpasst. 895 Token zusätzlich zu 49.564 ändern nichts daran, dass der Server in ein
-32k-Fenster nicht passt. Und in Cursor und Windsurf zählt die **Anzahl**: Jedes zusätzliche
+etwas hineinpasst. 1.370 Token zusätzlich zu einem Server, der mit 56.627 Token startet, ändern
+nichts daran, dass er in ein 32k-Fenster nicht passt. Und in Cursor und Windsurf zählt die **Anzahl**: Jedes zusätzliche
 Werkzeug verbraucht Budget gegen 40 beziehungsweise 100. **Ein Bündelwerkzeug, das drei
 Einzelwerkzeuge ersetzt, ist dort dreifach gut; eines, das obendrauf kommt, ist dort schlecht.**
 
@@ -1263,13 +1355,13 @@ Fall zwei Suchen und vier Aufrufrunden, mit einem Bündelwerkzeug eine Suche und
   Werkzeuge, die ein Bündel verdienen, sind die, die `anthropic/alwaysLoad` verdienen (H6).
 - **Wo ein Bündel einen Ablauf vollständig abdeckt, prüfen, ob die feingranularen Einzelwerkzeuge
   weg können.** Das ist die Stelle, an der Bündelwerkzeuge gegen die Obergrenzen von Cursor und
-  Windsurf helfen statt zu schaden, und die Stelle, an der sie den Widerspruch zu E1 (H11)
-  entschärfen statt zu verschärfen.
+  Windsurf helfen statt zu schaden, und die Stelle, an der sie den Widerspruch aus H11 —
+  ein Werkzeug je Endpunkt gegen die Trefferschwelle — entschärfen statt zu verschärfen.
 - **Vorher messen, welche Abläufe häufig sind.** Ein Bündelwerkzeug, das niemand benutzt, ist in
   Familie 1 reiner Aufschlag. Ohne Nutzungsdaten ist die Auswahl geraten, und geraten ist hier
   teuer.
 - **Nicht bauen: ein Meta- oder Katalogwerkzeug nach dem Dreischichtmuster** (`search_tools`,
-  `get_tool_details`) als Ersatz für die 54 Definitionen. Es würde uns vom Ladeverhalten der
+  `get_tool_details`) als Ersatz für die 59 Definitionen. Es würde uns vom Ladeverhalten der
   Clients unabhängig machen, aber es verlagert die Werkzeugauswahl in unseren Server, verliert
   jede Schema-Validierung auf Clientseite und bricht mit dem Muster, das alle Clients erwarten.
   Der Nutzen wäre in den vier günstigen Clients null, weil sie das Problem schon lösen; in
@@ -1284,12 +1376,14 @@ ist im SDK schon vorhanden. Standard: alle Gruppen an.**
 
 **Warum ja.** GEMESSEN sind die Gruppengewichte linear und groß: `postings` allein nimmt ein
 Viertel des Budgets (12.213 Token), `postings` plus `receipts` plus `transactions` nehmen 56,6
-Prozent (27.340 Token). Ein Nutzer, der nur Belege lesen will, kann den Server damit von 49.564
+Prozent (27.340 Token). Ein Nutzer, der nur Belege lesen will, kann den Server damit von 56.627
 auf rund 10.000 Token bringen. Kein anderer Hebel erreicht das, und keiner ist so berechenbar.
 Zusätzlich ist es die einzige Antwort auf die Werkzeugzahl-Obergrenzen von Cursor, Windsurf und
 VS Code, und die einzige Möglichkeit, den Server in LM Studio überhaupt brauchbar zu machen.
 
-**Standard: alle elf Gruppen an.** Begründung, in dieser Reihenfolge:
+**Standard: alle elf Gruppen an.** Gebaut wurden es zwölf: Die Bündelwerkzeuge bilden seit dem
+2026-09-13 die eigene Gruppe `bundles`, die sich wie jede andere abschalten lässt. Begründung, in
+dieser Reihenfolge:
 
 1. Ein Default, der Funktionen versteckt, wird als Fehler erlebt. Der Nutzer kann nicht wissen,
    was fehlt, und sucht den Fehler bei uns.
@@ -1298,8 +1392,8 @@ VS Code, und die einzige Möglichkeit, den Server in LM Studio überhaupt brauch
 3. Die Clients mit Problem sind die Minderheit, und dort trifft der Nutzer bereits bewusste
    Entscheidungen (Modellwahl, Kontextgröße, Serverauswahl).
 
-**Granularität: Gruppen, nicht einzelne Werkzeuge.** Eine Variable mit 54 Werkzeugnamen ist
-unbenutzbar. Die elf Gruppen sind bereits die fachliche Gliederung des Servers, und sie deckt
+**Granularität: Gruppen, nicht einzelne Werkzeuge.** Eine Variable mit 59 Werkzeugnamen ist
+unbenutzbar. Die elf Endpunktgruppen sind bereits die fachliche Gliederung des Servers, und sie deckt
 sich mit der belegten Empfehlung von OpenAI, nach Namespaces zu gliedern, und mit der von
 Anthropic, ein gemeinsames Präfix je Bereich zu nutzen.
 
@@ -1339,7 +1433,7 @@ Jeder Punkt mit dem Weg, wie man ihn messen würde.
 
 ### Zur Kernfrage
 
-1. **Ob Claude Desktop im Default-Modus `Auto` tatsächlich alle 54 Definitionen in jede Anfrage
+1. **Ob Claude Desktop im Default-Modus `Auto` tatsächlich alle 59 Definitionen in jede Anfrage
    legt.** Das ist die Kernfrage für den wichtigsten Zielclient, und sie ist **nicht gemessen**.
    Grund: Der Modellkontext wird serverseitig bei claude.ai zusammengesetzt und ist lokal nicht
    beobachtbar. Der direkte Weg wäre ein abfangender Proxy zwischen Claude Desktop und der
@@ -1362,7 +1456,7 @@ Jeder Punkt mit dem Weg, wie man ihn messen würde.
 4. **Ob Cursor heute eine harte Obergrenze hat und wo sie liegt.** Belegt ist nur die
    Staff-Aussage von 40 aus Juni 2025. Ohne Installation und ohne Quelltext nicht entscheidbar.
    **Messbar in Minuten:** Server einhängen, Modell alle sichtbaren `bb_`-Werkzeuge aufzählen
-   lassen, mit 54 abgleichen. Siehe 6a.
+   lassen, mit 59 abgleichen. Siehe 6a.
 5. **Ob Cursor die Paginierung von `tools/list` nutzt und auf `notifications/tools/list_changed`
    reagiert.** Nicht quelloffen, nicht dokumentiert. Messbar mit einem Testserver, der `tools/list`
    bewusst in zwei Seiten aufteilt beziehungsweise nach dem Start ein Werkzeug nachschiebt.
@@ -1372,7 +1466,7 @@ Jeder Punkt mit dem Weg, wie man ihn messen würde.
 6. **Ob in VS Code die Tool-Search-Fähigkeit bei den praktisch genutzten Modellen aktiv ist.** Der
    Code macht sie an `capabilities.supports.tool_search` des Endpunkts fest; welche Modelle das
    heute melden, war ohne laufende Copilot-Sitzung nicht prüfbar. **Das ist der Unterschied
-   zwischen 49.564 Token pro Anfrage und einer Namensliste**, und damit der zweitwichtigste offene
+   zwischen 56.627 Token pro Anfrage und einer Namensliste**, und damit der zweitwichtigste offene
    Punkt nach Cursor. Messbar, indem man in einer Copilot-Sitzung mehr als 128 Werkzeuge
    aktiviert: Erscheint der Fehler „Cannot have more than 128 tools per request.“, ist Tool Search
    aus; erscheint er nicht, ist sie an.
@@ -1478,7 +1572,7 @@ Jeder Punkt mit dem Weg, wie man ihn messen würde.
 3. **Claude Desktop Chat und die Werkzeugsuche.** Der Bundle-Text nennt ausdrücklich „Cowork,
    Code, and Chat sessions“, was für eine Geltung auch im Chat spricht. Die Nutzerberichte
    sprechen dagegen. Der Bundle-Text steht im Kontext einer Einstellung, die auf
-   Drittanbieter-Deployments beschränkt ist. **Ungeklärt**, vom Rechercheur selbst so benannt.
+   Drittanbieter-Deployments beschränkt ist. **Ungeklärt**, und hier ausdrücklich so benannt.
 4. **Cursor, 40 Werkzeuge.** BELEGT aus Staff-Aussagen von 2025-06-24, **VERMUTUNG** der
    Gegenstandslosigkeit für 2026. Besser belegt ist die 40; besser plausibel ist die
    Gegenstandslosigkeit. **Das ist genau die Konstellation, in der gemessen werden muss statt
@@ -1489,7 +1583,8 @@ Jeder Punkt mit dem Weg, wie man ihn messen würde.
 6. **Tokenzahl der `instructions`**, 1.259 gegen 1.329. **Kein echter Widerspruch**, sondern
    unterschiedlicher Schalterstand der gemessenen Instanz. Siehe 4.1.
 7. **Werkzeuge zusammenlegen oder nicht.** BELEGT fällt die Trefferqualität jenseits von 30 bis 50
-   Werkzeugen, was fürs Zusammenlegen spricht und E1 widerspricht. **Ebenfalls BELEGT** löst Tool
+   Werkzeugen, was fürs Zusammenlegen spricht und der Vorgabe „ein Werkzeug je Endpunkt"
+   widerspricht. **Ebenfalls BELEGT** löst Tool
    Search genau dieses Problem, und GEMESSEN funktioniert eine Liste von rund 700 Werkzeugen in
    Claude Code. Beides ist richtig; es gilt für verschiedene Clients. Der Widerspruch ist echt und
    **gehört dem Projektinhaber vorgelegt**, nicht im Dossier wegargumentiert.
@@ -1586,7 +1681,7 @@ Jeder Punkt mit dem Weg, wie man ihn messen würde.
 
 - `/Applications/Claude.app/Contents/Resources/app.asar`, Version 1.52386.3 — 15 Aufrufstellen von
   `listTools`, kein Cursor, `toolSearchEnabled`, `tool-search-tool-2025-10-19`
-- Claude Code 2.1.270, `/Users/dennismenken/.local/share/claude/versions/2.1.270` — `SY()`,
+- Claude Code 2.1.270, `~/.local/share/claude/versions/2.1.270` — `SY()`,
   `Xye()`, `GWe()`, `ToolSearch`-Schema, Paginierungsschleife mit `ar=20`, Metadatenschlüssel `jZ`,
   `/context`-Kategorien
 - `/Applications/ChatGPT.app/Contents/Resources/codex` — BM25-Handler, `tools.deferred_namespaces`,
@@ -1615,7 +1710,8 @@ Jeder Punkt mit dem Weg, wie man ihn messen würde.
 
 - `~/Library/Logs/Claude/mcp.log`: 41 `tools/list`-Aufrufe, 2026-09-05 bis 2026-09-11, vier
   stdio-Server, kein Cursor
-- Direkter JSON-RPC-Handshake gegen `dist/cli.js`: 54 Werkzeuge, kein `nextCursor`,
+- Direkter JSON-RPC-Handshake gegen `dist/cli.js`: 54 Werkzeuge (Stand vor der Registrierung der
+  fünf Bündelwerkzeuge am selben Tag; der Auslieferungszustand meldet 59), kein `nextCursor`,
   `capabilities {tools:{listChanged:false},resources:{listChanged:false}}`, `instructions` 5.336
   Zeichen
 - Laufende Claude-Code-Sitzung 2.1.270: Deferral-Hinweis mit rund 700 Werkzeugnamen, Abschnitt
@@ -1624,5 +1720,7 @@ Jeder Punkt mit dem Weg, wie man ihn messen würde.
   der Nutzerkonfiguration; `codex --version` 0.153.4, `codex features list`, `codex mcp list --json`
 - `claude mcp add/list/get/remove` in einem Wegwerfverzeichnis, anschließend restlos entfernt
 - Tokenmessung mit `gpt-tokenizer@4.0.0`, `o200k_base`, über `renderToolDefinition` und
-  `index.generated.ts`: Kontrollsumme 197.528 Zeichen und 48.305 Token getroffen, identisch zu
-  `docs/entwicklung/befund-tokenbudget.md`
+  `index.generated.ts`: Kontrollsumme 197.528 Zeichen und 48.305 Token getroffen, identisch zum
+  damaligen Stand vom 2026-09-12 in `docs/entwicklung/tokenbudget.md`; der Bericht weist
+  inzwischen 197.802 Zeichen und 48.368 Token für die Endpunktwerkzeuge aus, dazu 28.165 Zeichen
+  und 6.852 Token für die fünf Bündelwerkzeuge

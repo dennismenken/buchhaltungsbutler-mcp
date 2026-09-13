@@ -1,6 +1,6 @@
-// Pfadbau bei den vier Endpunkten mit Platzhaltersegment (Plan 4.6).
+// Pfadbau bei den vier Endpunkten mit Platzhaltersegment.
 //
-// Live gemessen (Plan 0.3 Befund L1, `docs/api/live-befunde-orchestrator.md` Befund 1): Das
+// Live gemessen (Befund L1 in docs/api/live-befunde.md): Das
 // Segment `id_by_customer` im Pfad der Spezifikation ist ein **Platzhalter für den Wert**,
 // kein literales Segment und kein Body-Feld. Der dokumentierte Aufruf scheitert nachweislich:
 // `POST /receipts/get/id_by_customer` mit dem Body-Feld `id_by_customer` antwortet mit
@@ -8,16 +8,38 @@
 // HTML-Fehlerseite, weil dieser Pfad gar nicht existiert. Mit dem Wert im Pfad antworten
 // beide mit HTTP 200.
 //
-// Dieses Modul gibt deshalb **immer ein Paar** zurück und nie eine einzelne Zeichenkette
-// (Regel 6): Gesendet wird der gebaute Pfad, nachgeschlagen und protokolliert wird
-// `specPath`. Fehlerkatalog, Deckungstest und Audit-Zeile schlüsseln nach `specPath`; mit dem
-// gebauten Pfad fiele jeder Fehler dieser vier Werkzeuge auf „Paar fehlt" zurück, und die
-// eingesetzte Geschäftskennung stünde im Protokoll.
+// ## Die sechs Pfadregeln
+//
+// Diese sechs Zusicherungen sind hier definiert und werden im übrigen Quelltext als
+// „Pfadregel N (Kopf von src/mapping/path.ts)" zitiert. Alle sechs sind Pflicht, keine ist
+// eine Empfehlung.
+//
+//  1. **Wertevorrat.** Der einzusetzende Wert wird **vor** dem Einsetzen gegen
+//     `PATH_SEGMENT_PATTERN` geprüft: ein bis achtzehn Ziffern, sonst nichts.
+//  2. **Kodierung.** Der Wert läuft anschließend durch `encodeURIComponent`. Nach Pfadregel 1
+//     ist das wirkungslos und genau deshalb richtig: Es ist die Absicherung gegen eine
+//     spätere Lockerung des Musters. Wer sich allein auf die Musterprüfung verlässt und das
+//     Kodieren weglässt, hat beim ersten gelockerten Muster eine Einsetzstelle für
+//     Pfadsegmente, die der Aufrufer bestimmt.
+//  3. **Rückprüfung.** Der gebaute Pfad wird gegen die Vorlage zurückgeprüft: genau ein
+//     Segment mehr als der Vorlagenstamm je Platzhalter. Schlägt das fehl, geht kein Byte
+//     hinaus.
+//  4. **Literale Pfade.** Die übrigen 50 Endpunkte tragen `literal` und können bauartbedingt
+//     keinen interpolierten Pfad erzeugen.
+//  5. **Kein Body-Feld.** Der Body trägt kein Feld für den Identifikator. Das erzwingen
+//     `assertNoPathFieldInBody` und der Request-Mapper über `source: "path"`.
+//  6. **Paar statt Zeichenkette.** Nachgeschlagen wird immer mit `specPath`, gesendet immer
+//     mit dem gebauten Pfad; deshalb ein Paar als Rückgabewert.
+//
+// Pfadregel 6 ist der Grund, warum dieses Modul **immer ein Paar** zurückgibt und nie eine
+// einzelne Zeichenkette: Fehlerkatalog, Deckungstest und Audit-Zeile schlüsseln nach
+// `specPath`; mit dem gebauten Pfad fiele jeder Fehler dieser vier Werkzeuge auf
+// „Paar fehlt" zurück, und die eingesetzte Geschäftskennung stünde im Protokoll.
 
 import type { PathSpec, ToolEntry } from "../registry/types.js";
 
 /**
- * Der erlaubte Wertevorrat eines Pfadsegments (Regel 1): ausschließlich Ziffern, ein bis
+ * Der erlaubte Wertevorrat eines Pfadsegments (Pfadregel 1): ausschließlich Ziffern, ein bis
  * achtzehn Stellen. Kein Bindestrich, kein Punkt, kein Schrägstrich, keine leere
  * Zeichenkette. Achtzehn Stellen, weil eine längere Dezimalzahl den verlustfreien
  * Ganzzahlbereich von JavaScript verlässt und damit keine Kennung mehr wäre.
@@ -32,7 +54,7 @@ export interface BuiltPath {
   readonly specPath: string;
 }
 
-/** Ein Pfad, der so nicht absetzbar ist. Es geht kein Byte hinaus (Regel 3). */
+/** Ein Pfad, der so nicht absetzbar ist. Es geht kein Byte hinaus (Pfadregel 3). */
 export class PathBuildError extends Error {
   readonly toolName: string;
   readonly specPath: string;
@@ -48,7 +70,7 @@ export class PathBuildError extends Error {
   }
 }
 
-/** Der Spezifikationspfad eines Eintrags, für beide Zweige der Union (Plan 4.6 Regel 4). */
+/** Der Spezifikationspfad eines Eintrags, für beide Zweige der Union. */
 export function specPathOf(path: PathSpec): string {
   return "literal" in path ? path.literal : path.specPath;
 }
@@ -80,23 +102,11 @@ function templateStem(template: string): string {
 /**
  * Baut den Pfad eines Werkzeugaufrufs.
  *
- * Die sechs Regeln aus Plan 4.6, alle Pflicht und alle hier:
- *
- *  1. Der einzusetzende Wert wird **vor** dem Einsetzen gegen {@link PATH_SEGMENT_PATTERN}
- *     geprüft.
- *  2. Der Wert läuft anschließend durch `encodeURIComponent`. Nach Regel 1 ist das
- *     wirkungslos und genau deshalb richtig: Es ist die Absicherung gegen eine spätere
- *     Lockerung von Regel 1. Wer sich allein auf die Musterprüfung verlässt und das
- *     Kodieren weglässt, hat beim ersten gelockerten Muster eine Einsetzstelle für
- *     Pfadsegmente, die der Aufrufer bestimmt.
- *  3. Der gebaute Pfad wird gegen die Vorlage zurückgeprüft: genau ein Segment mehr als der
- *     Vorlagenstamm je Platzhalter. Schlägt das fehl, geht kein Request ab.
- *  4. Die übrigen 50 Endpunkte tragen `literal` und können bauartbedingt keinen
- *     interpolierten Pfad erzeugen.
- *  5. Der Body trägt kein Feld für den Identifikator. Das erzwingt
- *     {@link assertNoPathFieldInBody} und der Request-Mapper über `source: "path"`.
- *  6. Nachgeschlagen wird immer mit `specPath`, gesendet immer mit dem gebauten Pfad; deshalb
- *     ein Paar als Rückgabewert.
+ * Setzt die sechs Pfadregeln um, die im Kopf dieser Datei definiert sind: Musterprüfung vor
+ * dem Einsetzen (1), `encodeURIComponent` danach (2), Rückprüfung des gebauten Pfades gegen
+ * den Vorlagenstamm (3), literaler Zweig ohne Einsetzstelle (4), kein Identifikator im Body
+ * (5, durchgesetzt von {@link assertNoPathFieldInBody}) und ein Paar aus gesendetem Pfad und
+ * `specPath` als Rückgabewert (6). Jede der sechs Stellen im Rumpf nennt ihre Nummer.
  *
  * @param args Die **geprüften** Werkzeugargumente. Gelesen wird ausschließlich der Wert zum
  *             Namen des Pfadparameters.
@@ -107,7 +117,7 @@ export function buildPath(
 ): BuiltPath {
   const specPath = specPathOf(entry.path);
 
-  // Regel 4: Der literale Zweig hat keine Vorlage und damit keine Einsetzstelle.
+  // Pfadregel 4: Der literale Zweig hat keine Vorlage und damit keine Einsetzstelle.
   if ("literal" in entry.path) {
     return { requestPath: entry.path.literal, specPath };
   }
@@ -147,8 +157,8 @@ export function buildPath(
       );
     }
 
-    // Regel 1. Eine Zahl wird vorher in ihre Dezimalschreibweise überführt, weil das
-    // Eingabeschema der Kennung `integer` ist (S10) und `4711` denselben Pfad ergibt wie
+    // Pfadregel 1. Eine Zahl wird vorher in ihre Dezimalschreibweise überführt, weil das
+    // Eingabeschema der Kennung `integer` ist und `4711` denselben Pfad ergibt wie
     // `"4711"`. Alles andere als Zahl oder Zeichenkette wird zur leeren Zeichenkette und
     // scheitert damit am Muster; ein Objekt wird nicht stillschweigend zu [object Object].
     const value =
@@ -169,11 +179,11 @@ export function buildPath(
       );
     }
 
-    // Regel 2.
+    // Pfadregel 2.
     requestPath = requestPath.replace(placeholder, encodeURIComponent(value));
   }
 
-  // Regel 3: Rückprüfung gegen den Vorlagenstamm.
+  // Pfadregel 3: Rückprüfung gegen den Vorlagenstamm.
   const expected = segmentCount(templateStem(template)) + params.length;
   if (segmentCount(requestPath) !== expected || requestPath.includes("{")) {
     throw new PathBuildError(
@@ -189,13 +199,13 @@ export function buildPath(
 }
 
 /**
- * Regel 5 als Zusicherung: An den vier Endpunkten mit Pfadvorlage trägt der Body **kein**
+ * Pfadregel 5 als Zusicherung: An den vier Endpunkten mit Pfadvorlage trägt der Body **kein**
  * Feld für den Identifikator.
  *
  * Das ist keine Auslassung, sondern deckungsgleich mit der Spezifikation: Maschinell geprüft
  * führt `/receipts/get/id_by_customer` als Parameter nur `api_key` und `get_file`, die drei
  * übrigen nur `api_key`. Der Identifikator kommt in der Parameterliste dieser vier Pfade
- * überhaupt nicht vor (Plan 4.6, Anhang A).
+ * überhaupt nicht vor.
  *
  * @throws {PathBuildError} wenn ein Pfadparameter im Body gelandet ist. Das wäre ein Fehler
  *         im Request-Mapper, und er darf nicht über die Leitung gehen.
@@ -215,7 +225,7 @@ export function assertNoPathFieldInBody(
           field.name,
           `Der Body trägt das Feld ${name}. Bei ${specPath} gehört der Identifikator ` +
             "ausschließlich in den Pfad; ein Body-Feld dieses Namens wird an diesem Endpunkt " +
-            "mit error_code 5 abgelehnt (Plan 4.6 Regel 5, live gemessen).",
+            "mit error_code 5 abgelehnt (live gemessen).",
         );
       }
     }

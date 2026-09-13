@@ -1,5 +1,5 @@
 {
-  "_herkunft": "Endpunkt /receipts/get, Fehlerfall 400/15 | Wortlaut aus der Spezifikation (properties.message.enum[0]) | Quelle: Umsetzungsplan 0.3 Befund L6",
+  "_herkunft": "Endpunkt /receipts/get, Fehlerfall 400/15 | Wortlaut aus der Spezifikation (properties.message.enum[0]) | Quelle: Spezifikationsdatei, Gegenstück zur Live-Messung vom 2026-09-12",
   "_zweck": "dass die Einstufung aus (specPath, error_code, Status) folgt und an keinem Wortlaut hängt: derselbe Fall wie in receipts-get-error-400-15-live.json",
   "http": {
     "status": 400,

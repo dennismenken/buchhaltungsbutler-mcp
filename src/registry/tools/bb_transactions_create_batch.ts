@@ -1,19 +1,18 @@
-// Werkzeug 13, `/transactions/addBatch`: bis zu 50 Zahlungen in einem Aufruf anlegen
-// (Plan 3.8, AP12b). Klasse A, Wirkung anlegend, Pflichtsatz U4.
+// Werkzeug 13, `/transactions/addBatch`: bis zu 50 Zahlungen in einem Aufruf anlegen.
+// Klasse A, Wirkung anlegend, Pflichtsatz U4.
 //
 // **Keine Umformung.** Der Endpunkt führt genau einen Parameter `transactions`, Definition
-// `Transactions`, und der ist bereits eine Objektliste (Plan 4.8). Der Behälter wird deshalb
+// `Transactions`, und der ist bereits eine Objektliste. Der Behälter wird deshalb
 // NICHT umbenannt, und die Deckung zweiter Stufe vergleicht die `apiNames` der `itemFields` mit
-// den 13 Eigenschaften der Elementdefinition `Transaction` (Plan 4.4 Punkt 3).
+// den 13 Eigenschaften der Elementdefinition `Transaction`.
 //
-// **Regel R-A, Gleichlauf mit der Einzelform (Plan 4.5):** `currency` trägt hier denselben
+// **Regel R-A, Gleichlauf mit der Einzelform:** `currency` trägt hier denselben
 // Baustein `currencyTransactions()` mit dem 48er-Enum, dieselbe Pflichtigkeit — nämlich
 // optional, `Transaction.required` führt `currency` nicht — und wörtlich denselben
-// Beschreibungstext wie an bb_transactions_create. P8 prüft den Satz aus Plan 4.3 an beiden
+// Beschreibungstext wie an bb_transactions_create. P8 prüft den Satz an beiden
 // Feldern. Belegstelle zum verworfenen Ein-Wert-Enum: `Transaction.currency` führt
 // `enum: ["EUR"]` und widerspricht damit dem eigenen Beschreibungstext mit 48 Codes; das Enum
-// wird verworfen wie das Platzhalterschema des `order`-Parameters (Plan 0.5 Korrektur 2,
-// Anhang B Punkt 47).
+// wird verworfen wie das Platzhalterschema des `order`-Parameters.
 //
 // **Der Feldname `account` bleibt innerhalb eines Stapeleintrags unverändert.** Anhang A ist
 // abschließend und führt die Umbenennung `account` → `payment_account_number` nur an
@@ -51,7 +50,7 @@ const BANK_CODE_DESCRIPTION = "Bankleitzahl oder BIC der Gegenseite, zum Beispie
 const BANK_NAME_DESCRIPTION = "Name der Bank der Gegenseite.";
 
 // Zu `purpose` und `booking_text`: Die Spezifikation erlaubt dort einen leeren String, Q3 lehnt
-// ihn an jedem Feld ab (Plan 4.7). Der Satz nennt deshalb das Weglassen als richtigen Weg.
+// ihn an jedem Feld ab. Der Satz nennt deshalb das Weglassen als richtigen Weg.
 const PURPOSE_DESCRIPTION =
   "Verwendungszweck der Zahlung. Soll er leer bleiben, das Feld weglassen: Dieser Server " +
   "lehnt leere Strings an jedem Feld ab, auch wo die Spezifikation sie zulässt.";
@@ -94,9 +93,9 @@ const TRANSACTION_ITEM = strictObject({
 
 // `maxItems` wird ausdrücklich mit API_MAX_BATCH gebaut und nicht über `batchLimit()` aus der
 // Konfiguration geholt: Dieser Eintrag entsteht beim Laden des Moduls, und zu diesem Zeitpunkt
-// ist die Konfiguration noch nicht aufgelöst — `getConfig()` würde werfen (Plan 6.4 Punkt 7).
+// ist die Konfiguration noch nicht aufgelöst — `getConfig()` würde werfen.
 // Die wirksame Grenze `min(50, BB_MCP_MAX_BATCH)` prüfen Q4 beim Bau des Schemas und Guard 5
-// vor dem Request (Plan 4.7 Q4).
+// vor dem Request.
 const TRANSACTIONS_CONTAINER = batchContainer("bb_transactions_create_batch", TRANSACTION_ITEM, {
   description:
     "Die Zahlungen, die angelegt werden sollen. Ein Eintrag trägt dieselben Felder wie " +
@@ -104,7 +103,7 @@ const TRANSACTIONS_CONTAINER = batchContainer("bb_transactions_create_batch", TR
   maxItems: API_MAX_BATCH,
 });
 
-/** Die 13 Felder eines Stapeleintrags; die `apiNames` zielen auf `Transaction` (Plan 2.1). */
+/** Die 13 Felder eines Stapeleintrags; die `apiNames` zielen auf `Transaction`. */
 const ITEM_FIELDS: FieldSpec[] = [
   {
     name: "account",
@@ -245,12 +244,12 @@ export const bb_transactions_create_batch: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Die Erfolgsantwort trägt auf oberster Ebene die Listen `transactions` und `errors`.
-  // `ContractFieldType` (Plan 2.1) kennt keinen Typ für eine Liste; mit einem leeren Vertrag
-  // laufen beide Felder als unbekannt unverändert durch (Plan 7.3, letzter Fall), statt bei
+  // `ContractFieldType` kennt keinen Typ für eine Liste; mit einem leeren Vertrag
+  // laufen beide Felder als unbekannt unverändert durch, statt bei
   // jedem erfolgreichen Aufruf zwei `_contract_warnings` zu erzeugen.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",
@@ -262,7 +261,7 @@ export const bb_transactions_create_batch: ToolEntry = {
     tool: "bb_transactions_search",
     // Auf oberster Ebene trägt dieser Aufruf kein to_from: Die Werte stehen je Eintrag in
     // transactions. Der Text setzt dort deshalb „nicht gesendet" ein, und der Hinweis nennt
-    // die Quelle. Erfunden wird nichts (Plan 5.7).
+    // die Quelle. Erfunden wird nichts.
     argsFrom: { to_from: "to_from" },
     hint:
       "je Eintrag des Stapels to_from, booking_date und amount von dort übernehmen und damit " +

@@ -1,39 +1,38 @@
-// P13 aus Plan 9.2: Antwortvertrag gegen Projektion.
+// P13: Antwortvertrag gegen Projektion.
 //
 // P13 prüft Daten und nicht Text: Jeder Name in `concise` muss als Schlüssel in
-// `responseContract.fields` desselben Eintrags vorkommen. Ohne P13 wäre die Projektion aus
-// Plan 7.4 der einzige Teil eines Registereintrags, dessen Inhalt keine Prüfung berührt — und
+// `responseContract.fields` desselben Eintrags vorkommen. Ohne P13 wäre die Projektion der
+// einzige Teil eines Registereintrags, dessen Inhalt keine Prüfung berührt — und
 // ein Projektionsfeld, das es in der Antwort nicht gibt, fällt zur Laufzeit nicht auf: Es
 // fehlt einfach still in der Ausgabe.
 //
-// Der Antwortvertrag gilt JE ENDPUNKT und nie je Fachobjekt (Plan 7.2). Wer einen gemeinsamen
+// Der Antwortvertrag gilt JE ENDPUNKT und nie je Fachobjekt. Wer einen gemeinsamen
 // Receipt-Typ baut, erzeugt genau den stillen Datenfehler, den ein Buchhaltungswerkzeug nicht
 // machen darf: ein due_date, das beim Einzelabruf immer leer aussieht, weil das Feld dort
-// date_payment_due heißt (Plan 0.3 Befund L2).
+// date_payment_due heißt.
 
 import { describe, expect, it } from "vitest";
 
 import { REGISTRY, entryByName, missingEntry, specPathOf } from "../helpers/registry-fixtures.js";
 
 /**
- * Die Projektionslisten aus Plan 7.4, von Hand abgeschrieben. Jeder Eintrag ist ein exakter
+ * Die Projektionslisten, von Hand abgeschrieben. Jeder Eintrag ist ein exakter
  * API-Feldname und keine Umschreibung. Die vier ersten Listen stammen aus den GEMESSENEN
- * Feldmengen (Plan 0.3 Befund L2), die übrigen aus den Feldtabellen der Dossiers.
+ * Feldmengen, die übrigen aus den Feldtabellen der Dossiers.
  *
  * `type` und `subtype` bleiben bei bb_postingaccounts_search immer in der Projektion; das ist
- * Maßnahme 4 aus Plan 3.4 und nicht verhandelbar: Wer die Liste liest, sieht sofort, dass
+ * Maßnahme 4 und nicht verhandelbar: Wer die Liste liest, sieht sofort, dass
  * 1200 ein Zahlungskonto und 4980 ein Sachkonto ist.
  *
- * **Eine Zeile weicht bewusst von der Tabelle in Plan 7.4 ab.** `bb_postings_search` führt
- * zusätzlich `cost_location` und `transaction_id_by_customer`. Die Tabelle des Plans ist vor
- * dem Evaluationslauf entstanden; dieser hat die Lücke dann gemessen (Befund V5 in
- * docs/entwicklung/befund-evaluation.md, erneut als S8 in
- * docs/entwicklung/skeptiker-befunde.md): Ohne `cost_location` ist die gefilterte Kostenstelle
+ * **Eine Zeile weicht bewusst von der Tabelle ab.** `bb_postings_search` führt
+ * zusätzlich `cost_location` und `transaction_id_by_customer`. Die ursprüngliche Tabelle
+ * ist vor dem Evaluationslauf entstanden; dieser hat die Lücke dann gemessen: Ohne
+ * `cost_location` ist die gefilterte Kostenstelle
  * in der Antwort nicht ablesbar und Aufgabe 7 braucht einen Aufruf je Kostenstelle; ohne
  * `transaction_id_by_customer` weicht Aufgabe 11 auf `response_format="detailed"` mit 38
- * Feldern je Zeile aus. Die Erwartung steht hier deshalb auf dem korrigierten Stand und nicht
- * auf dem der Plantabelle — P13 soll die geltende Projektion festhalten, nicht eine
- * überholte. Begründung im Kopf von src/registry/tools/bb_postings_search.ts.
+ * Feldern je Zeile aus. Die Erwartung steht hier deshalb auf dem korrigierten Stand und
+ * nicht auf dem der ursprünglichen Tabelle — P13 soll die geltende Projektion festhalten,
+ * nicht eine überholte. Begründung im Kopf von src/registry/tools/bb_postings_search.ts.
  */
 const PROJECTIONS: Readonly<Record<string, readonly string[]>> = {
   bb_receipts_search: [
@@ -80,8 +79,8 @@ const PROJECTIONS: Readonly<Record<string, readonly string[]>> = {
     "currency",
     "purpose",
   ],
-  // Abweichung von Plan 7.4, siehe den Kommentar oben: cost_location und
-  // transaction_id_by_customer sind nach Befund V5 nachgetragen.
+  // Abweichung, siehe den Kommentar oben: cost_location und
+  // transaction_id_by_customer sind nach dem Evaluationslauf nachgetragen.
   bb_postings_search: [
     "id_by_customer",
     "date",
@@ -103,9 +102,9 @@ const PROJECTIONS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /**
- * Die vier Endpunkte, deren Antwortvertrag am 2026-09-12 live gemessen wurde (Plan 0.3).
+ * Die vier Endpunkte, deren Antwortvertrag am 2026-09-12 live gemessen wurde.
  * Nur sie dürfen `source: "gemessen"` tragen; bei allen übrigen ist der Vertrag aus den
- * Dossiers übernommen und durch den Vertragslauf in AP17 zu bestätigen.
+ * Dossiers übernommen und durch den Vertragslauf zu bestätigen.
  */
 const MEASURED_TOOLS: readonly string[] = [
   "bb_receipts_search",
@@ -153,7 +152,7 @@ describe("P13 Antwortvertrag gegen Projektion", () => {
     expectNoIssues(problems);
   });
 
-  it("trägt bei den zehn Werkzeugen aus Plan 7.4 genau die dort festgelegte Projektion", () => {
+  it("trägt bei den zehn Werkzeugen genau die dort festgelegte Projektion", () => {
     const problems: string[] = [];
 
     for (const [name, expected] of Object.entries(PROJECTIONS)) {
@@ -164,7 +163,7 @@ describe("P13 Antwortvertrag gegen Projektion", () => {
       }
       if (tool.concise.length === 0) {
         problems.push(
-          `${name}: leeres concise. Plan 7.4 legt für dieses Werkzeug ${expected.join(", ")} fest.`,
+          `${name}: leeres concise. Für dieses Werkzeug sind ${expected.join(", ")} festgelegt.`,
         );
         continue;
       }
@@ -172,10 +171,10 @@ describe("P13 Antwortvertrag gegen Projektion", () => {
       const missing = expected.filter((field) => !tool.concise.includes(field));
       const extra = tool.concise.filter((field) => !expected.includes(field));
       if (missing.length > 0) {
-        problems.push(`${name}: concise missing ${missing.join(", ")} (Plan 7.4).`);
+        problems.push(`${name}: concise missing ${missing.join(", ")}.`);
       }
       if (extra.length > 0) {
-        problems.push(`${name}: concise nennt zusätzlich ${extra.join(", ")} (Plan 7.4).`);
+        problems.push(`${name}: concise nennt zusätzlich ${extra.join(", ")}.`);
       }
     }
 
@@ -189,7 +188,7 @@ describe("P13 Antwortvertrag gegen Projektion", () => {
     for (const tool of REGISTRY) {
       if (tool.concise.length > 0 && tool.responseContract.container !== "data") {
         problems.push(
-          `${tool.name}: concise ist gesetzt, aber container ist "${tool.responseContract.container}". Eine Projektion ohne Datenbehälter projiziert nichts (Plan 7.4).`,
+          `${tool.name}: concise ist gesetzt, aber container ist "${tool.responseContract.container}". Eine Projektion ohne Datenbehälter projiziert nichts.`,
         );
       }
       if (
@@ -197,7 +196,7 @@ describe("P13 Antwortvertrag gegen Projektion", () => {
         Object.keys(tool.responseContract.fields).length === 0
       ) {
         problems.push(
-          `${tool.name}: container "data" ohne ein einziges Feld im Antwortvertrag. Bekannte Felder werden typisiert, unbekannte durchgereicht — ohne bekannte Felder gibt es keinen Vertrag (Plan 7.2, 1.2).`,
+          `${tool.name}: container "data" ohne ein einziges Feld im Antwortvertrag. Bekannte Felder werden typisiert, unbekannte durchgereicht — ohne bekannte Felder gibt es keinen Vertrag.`,
         );
       }
     }
@@ -216,12 +215,12 @@ describe("P13 Herkunft des Antwortvertrags", () => {
 
       if (shouldBeMeasured && !isMeasured) {
         problems.push(
-          `${tool.name} (${specPathOf(tool)}): source "${tool.responseContract.source}". Die Feldmenge dieses Endpunkts ist am 2026-09-12 gemessen (Plan 0.3 Befund L2).`,
+          `${tool.name} (${specPathOf(tool)}): source "${tool.responseContract.source}". Die Feldmenge dieses Endpunkts ist am 2026-09-12 gemessen.`,
         );
       }
       if (!shouldBeMeasured && isMeasured) {
         problems.push(
-          `${tool.name}: source "gemessen", obwohl für diesen Endpunkt keine Messung vorliegt. Gemessen sind ausschließlich ${MEASURED_TOOLS.join(", ")} (Plan 0.3).`,
+          `${tool.name}: source "gemessen", obwohl für diesen Endpunkt keine Messung vorliegt. Gemessen sind ausschließlich ${MEASURED_TOOLS.join(", ")}.`,
         );
       }
     }
@@ -237,7 +236,7 @@ describe("P13 Herkunft des Antwortvertrags", () => {
       const measuredDate = tool.responseContract.measuredOn;
       if (measuredDate === undefined || !MEASUREMENT_DATE_PATTERN.test(measuredDate)) {
         problems.push(
-          `${tool.name}: measuredOn ist ${String(measuredDate)}. Bei source "gemessen" ist das ISO-Datum der Messung Pflicht (Plan 2.1).`,
+          `${tool.name}: measuredOn ist ${String(measuredDate)}. Bei source "gemessen" ist das ISO-Datum der Messung Pflicht.`,
         );
       }
     }
@@ -245,12 +244,14 @@ describe("P13 Herkunft des Antwortvertrags", () => {
     expectNoIssues(problems);
   });
 
+  // Befund L2 in docs/api/live-befunde.md: Liste und Einzelabruf benennen denselben
+  // Sachverhalt verschieden.
   it("trägt bei den vier gemessenen Endpunkten die getrennten Feldnamen aus Befund L2", () => {
     const problems: string[] = [];
 
     // Die Listenform nennt delivery_date und due_date, der Einzelabruf date_delivery und
     // date_payment_due. Wer beide Endpunkte über einen gemeinsamen Fachtyp abbildet, verliert
-    // genau hier Daten (Plan 0.3 Befund L2, 7.2).
+    // genau hier Daten.
     const splitFieldRows = [
       {
         tool: "bb_receipts_search",
@@ -274,14 +275,14 @@ describe("P13 Herkunft des Antwortvertrags", () => {
       for (const field of row.included) {
         if (!fieldNames.includes(field)) {
           problems.push(
-            `${row.tool}: responseContract.fields führt ${field} nicht, obwohl der Endpunkt es liefert (Plan 0.3 Befund L2).`,
+            `${row.tool}: responseContract.fields führt ${field} nicht, obwohl der Endpunkt es liefert.`,
           );
         }
       }
       for (const field of row.forbidden) {
         if (fieldNames.includes(field)) {
           problems.push(
-            `${row.tool}: responseContract.fields führt ${field}; dieses Feld liefert der andere Endpunkt, nicht dieser (Plan 0.3 Befund L2, 7.2).`,
+            `${row.tool}: responseContract.fields führt ${field}; dieses Feld liefert der andere Endpunkt, nicht dieser.`,
           );
         }
       }
@@ -296,14 +297,14 @@ describe("P13 Herkunft des Antwortvertrags", () => {
 
     if (tool === undefined) {
       problems.push(
-        `${missingEntry("bb_receipts_get")} Erwartet werden amount_original und currency_original im Antwortvertrag (Plan 4.6, 0.3 Befund L2).`,
+        `${missingEntry("bb_receipts_get")} Erwartet werden amount_original und currency_original im Antwortvertrag.`,
       );
     } else {
       const fieldNames = Object.keys(tool.responseContract.fields);
       for (const field of ["amount_original", "currency_original"]) {
         if (!fieldNames.includes(field)) {
           problems.push(
-            `bb_receipts_get: responseContract.fields führt ${field} nicht. Die Spezifikation kennt das Feld nicht, der Endpunkt liefert es (Plan 0.3 Befunde L2 und L4).`,
+            `bb_receipts_get: responseContract.fields führt ${field} nicht. Die Spezifikation kennt das Feld nicht, der Endpunkt liefert es.`,
           );
         }
       }

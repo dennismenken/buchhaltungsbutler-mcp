@@ -1,14 +1,15 @@
-// P1, P2 und P3 aus Plan 9.2, dazu die Punkte 4 bis 7 des Deckungstests aus Plan 4.4.
+// P1, P2 und P3, dazu die Punkte 4 bis 7 des Deckungstests.
 //
-// Das ist der Test, der E1 („genau ein Werkzeug je API-Endpunkt") und E6
-// („Vollständigkeit vor Bequemlichkeit") maschinell beweist, statt sie zu behaupten.
+// Das ist der Test, der die beiden Vorgaben aus CONTRIBUTING.md Abschnitt 2 maschinell
+// beweist, statt sie zu behaupten: genau ein Werkzeug je API-Endpunkt, und jeder Parameter
+// des Endpunkts genau einmal im Werkzeug (Vollständigkeit vor Bequemlichkeit).
 // Geprüft wird gegen src/generated/endpoints.ts, also gegen die maschinell aus
 // docs/openapi/buchhaltungsbutler-v1.json erzeugte Parametermenge, und für die zweite
 // Deckungsstufe zusätzlich gegen die Definitionen der Spezifikationsdatei selbst.
 //
 // Gegen das leere Register läuft jede Prüfung dieser Datei rot, und jede Meldung nennt den
 // betroffenen Pfad und die noch nicht abgedeckten Parameternamen. Das ist beabsichtigt: Die
-// rote Ausgabe ist die Arbeitsliste für AP12a bis AP12e (AP11, Definition of Done).
+// rote Ausgabe ist die Arbeitsliste beim Nachrüsten.
 
 import { describe, expect, it } from "vitest";
 
@@ -26,13 +27,13 @@ import {
   topLevelApiNames,
 } from "../helpers/registry-fixtures.js";
 
-// Prüfgrößen aus Plan 0.4, maschinell ausgezählt und hier nicht gerundet.
+// Prüfgrößen, maschinell ausgezählt und hier nicht gerundet.
 const PATH_COUNT = 54;
 const PARAMETERS_TOTAL = 371;
 const PARAMETER_API_KEY = 54;
 const PARAMETERS_DOMAIN = 317;
 
-/** Die vier Endpunkte mit Pfadvorlage (Plan 4.6). `id_by_customer` ist dort ein Platzhalter. */
+/** Die vier Endpunkte mit Pfadvorlage. `id_by_customer` ist dort ein Platzhalter. */
 const PLACEHOLDER_PATHS: readonly string[] = [
   "/receipts/get/id_by_customer",
   "/receipts/delete/id_by_customer",
@@ -41,7 +42,7 @@ const PLACEHOLDER_PATHS: readonly string[] = [
 ];
 
 /**
- * Die zweispaltige Zuordnung der zweiten Deckungsstufe aus Plan 4.4 Punkt 3, von Hand
+ * Die zweispaltige Zuordnung der zweiten Deckungsstufe, von Hand
  * abgeschrieben. Behälter und Element unterscheiden sich nur durch ein `s`; wer die falsche
  * Definition liest, hält ein Array für ein Objekt. Genau deshalb stehen hier zwei Spalten
  * und nicht ein Pfeil je Zeile.
@@ -110,8 +111,8 @@ const SECOND_TIER_ROWS = [
 ] as const;
 
 /**
- * Die beiden bekannten Spezifikationsfehler aus Plan 0.5, als benannte Ausnahmeeinträge und
- * nicht stillschweigend ignoriert (Plan 4.4 Punkt 6). Der Test schlägt auch dann fehl, wenn
+ * Die beiden bekannten Spezifikationsfehler, als benannte Ausnahmeeinträge und
+ * nicht stillschweigend ignoriert. Der Test schlägt auch dann fehl, wenn
  * ein Eintrag NICHT MEHR zutrifft, weil der Anbieter die Spezifikation korrigiert hat: Eine
  * verschwundene Ausnahme ist genauso berichtenswert wie eine neue.
  */
@@ -153,7 +154,7 @@ describe("P1 Vollständigkeit: Pfadmenge des Registers gleich Pfadmenge des Gene
         problems.push(
           `${endpoint.path}: ${String(matches.length)} Registereinträge (${matches
             .map((tool) => tool.name)
-            .join(", ")}). E1 verlangt genau einen.`,
+            .join(", ")}). Je Endpunkt ist genau ein Registereintrag zulässig.`,
         );
       }
     }
@@ -169,7 +170,7 @@ describe("P1 Vollständigkeit: Pfadmenge des Registers gleich Pfadmenge des Gene
       const path = specPathOf(tool);
       if (!knownPaths.has(path)) {
         problems.push(
-          `${tool.name}: Pfad ${path} steht nicht in der Spezifikation. Bei den vier Endpunkten mit Pfadvorlage ist path.specPath der unveränderte Schlüssel der Spezifikation (Plan 4.6).`,
+          `${tool.name}: Pfad ${path} steht nicht in der Spezifikation. Bei den vier Endpunkten mit Pfadvorlage ist path.specPath der unveränderte Schlüssel der Spezifikation.`,
         );
       }
     }
@@ -201,7 +202,9 @@ describe("P2 Eineindeutigkeit: kein Pfad zweimal, kein Name zweimal", () => {
       const path = specPathOf(tool);
       const existing = pathToName.get(path);
       if (existing !== undefined) {
-        problems.push(`${path}: von ${existing} und ${tool.name} belegt. E1 verlangt genau eines.`);
+        problems.push(
+          `${path}: von ${existing} und ${tool.name} belegt. Je Spezifikationspfad ist genau ein Werkzeug zulässig.`,
+        );
         continue;
       }
       pathToName.set(path, tool.name);
@@ -232,7 +235,7 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
       for (const parameter of endpoint.parameters) {
         if (!covered.has(parameter.name)) {
           problems.push(
-            `${tool.name} (${endpoint.path}): Parameter ${parameter.name} ist in keinem Feld und nicht in omitted. E6 verlangt jeden Parameter genau einmal.`,
+            `${tool.name} (${endpoint.path}): Parameter ${parameter.name} ist in keinem Feld und nicht in omitted. Jeder Parameter des Endpunkts kommt genau einmal vor.`,
           );
         }
       }
@@ -279,7 +282,7 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
       if (endpoint === undefined) continue;
 
       // Der erlaubte Vorrat für geschachtelte Felder ist die Vereinigung zweier Mengen, weil
-      // die apiNames der itemFields zwei verschiedene Dinge bezeichnen (Plan 2.1): bei den
+      // die apiNames der itemFields zwei verschiedene Dinge bezeichnen: bei den
       // acht Stapelbehältern die Eigenschaften der ELEMENTdefinition, bei den Positionslisten
       // der Werkzeuge 17, 18, 19, 21 und 23 die parallelen Array-Parameter des Endpunkts.
       const allowedNames = new Set(endpoint.parameters.map((parameter) => parameter.name));
@@ -296,7 +299,7 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
         for (const apiName of field.apiNames) {
           if (!allowedNames.has(apiName)) {
             problems.push(
-              `${tool.name}, Feld ${path}: apiName ${apiName} ist weder ein Parameter von ${endpoint.path} noch eine Eigenschaft einer seiner Elementdefinitionen (Plan 4.4 Punkt 4).`,
+              `${tool.name}, Feld ${path}: apiName ${apiName} ist weder ein Parameter von ${endpoint.path} noch eine Eigenschaft einer seiner Elementdefinitionen.`,
             );
           }
         }
@@ -340,14 +343,14 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
         if (field.source === "body") {
           if (field.apiNames.length === 0) {
             problems.push(
-              `${tool.name}, Feld ${path}: source "body" ohne apiNames. Ein Body-Feld deckt mindestens einen Parameter ab (Plan 2.1).`,
+              `${tool.name}, Feld ${path}: source "body" ohne apiNames. Ein Body-Feld deckt mindestens einen Parameter ab.`,
             );
           }
           continue;
         }
         if (field.apiNames.length > 0) {
           problems.push(
-            `${tool.name}, Feld ${path}: source "${field.source}" trägt apiNames (${field.apiNames.join(", ")}), erwartet ist ein leeres apiNames (Plan 4.4 Punkt 3, 4.6 Regel 5).`,
+            `${tool.name}, Feld ${path}: source "${field.source}" trägt apiNames (${field.apiNames.join(", ")}), erwartet ist ein leeres apiNames.`,
           );
         }
       }
@@ -363,7 +366,7 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
       const names = tool.omitted.map((item) => item.apiName);
       if (!names.includes("api_key")) {
         problems.push(
-          `${tool.name}: api_key fehlt in omitted. Er erscheint nie als Feld und wird vom Request-Mapper gesetzt (Plan 4.3).`,
+          `${tool.name}: api_key fehlt in omitted. Er erscheint nie als Feld und wird vom Request-Mapper gesetzt.`,
         );
       }
       for (const omitted of tool.omitted) {
@@ -372,7 +375,7 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
         }
         if (omitted.apiName !== "api_key") {
           problems.push(
-            `${tool.name}: omitted nennt ${omitted.apiName}. Im Auslieferungszustand ist api_key der einzige zulässige Eintrag (Plan 4.4 Punkt 3, E6).`,
+            `${tool.name}: omitted nennt ${omitted.apiName}. Im Auslieferungszustand ist api_key der einzige zulässige Eintrag.`,
           );
         }
       }
@@ -417,7 +420,7 @@ describe("P3 Parameterdeckung, zweite Stufe", () => {
 
       if (resolved.branch === "none") {
         problems.push(
-          `${row.path}, Parameter ${row.parameter}: ${row.container} ließ sich nicht auflösen (${resolved.reason}). Weder $ref noch properties ist ein Fehlschlag und keine leere Menge (Plan 4.4 Punkt 3 Regel 4).`,
+          `${row.path}, Parameter ${row.parameter}: ${row.container} ließ sich nicht auflösen (${resolved.reason}). Weder $ref noch properties ist ein Fehlschlag und keine leere Menge.`,
         );
         continue;
       }
@@ -434,7 +437,7 @@ describe("P3 Parameterdeckung, zweite Stufe", () => {
         );
       } else if (resolved.elementDefinition !== row.element) {
         problems.push(
-          `${row.container}.items verweist auf ${resolved.elementDefinition}, erwartet ist ${row.element}. Behälter und Element unterscheiden sich nur durch ein s (Plan 4.4 Punkt 3).`,
+          `${row.container}.items verweist auf ${resolved.elementDefinition}, erwartet ist ${row.element}. Behälter und Element unterscheiden sich nur durch ein s.`,
         );
       }
 
@@ -482,9 +485,7 @@ describe("P3 Parameterdeckung, zweite Stufe", () => {
 
       const containerField = tool.fields.find((field) => field.apiNames.includes(row.parameter));
       if (containerField === undefined) {
-        problems.push(
-          `${tool.name}: kein Feld deckt den Behälterparameter ${row.parameter} ab (Plan 4.4 Punkt 3).`,
-        );
+        problems.push(`${tool.name}: kein Feld deckt den Behälterparameter ${row.parameter} ab.`);
         continue;
       }
       if (containerField.apiNames.length !== 1) {
@@ -494,7 +495,7 @@ describe("P3 Parameterdeckung, zweite Stufe", () => {
       }
       if (containerField.itemFields === undefined) {
         problems.push(
-          `${tool.name}, Feld ${containerField.name}: ohne itemFields bleibt das Innere von ${row.element ?? row.container} ungeprüft (Plan 2.1, 4.4 Punkt 3).`,
+          `${tool.name}, Feld ${containerField.name}: ohne itemFields bleibt das Innere von ${row.element ?? row.container} ungeprüft.`,
         );
         continue;
       }
@@ -523,7 +524,7 @@ describe("P3 Parameterdeckung, zweite Stufe", () => {
   });
 });
 
-describe("Plan 4.4 Punkt 5: Pflichtfelder", () => {
+describe("Pflichtfelder", () => {
   it("führt jeden Pflichtparameter der Spezifikation als Pflichtfeld", () => {
     const problems: string[] = [];
 
@@ -538,7 +539,7 @@ describe("Plan 4.4 Punkt 5: Pflichtfelder", () => {
         if (field === undefined) continue;
         if (!field.required) {
           problems.push(
-            `${tool.name}, Feld ${field.name}: Parameter ${parameter.name} ist laut Spezifikation required, das Feld aber optional. required darf verschärft, nie gelockert werden (Plan 4.3).`,
+            `${tool.name}, Feld ${field.name}: Parameter ${parameter.name} ist laut Spezifikation required, das Feld aber optional. required darf verschärft, nie gelockert werden.`,
           );
         }
       }
@@ -549,7 +550,7 @@ describe("Plan 4.4 Punkt 5: Pflichtfelder", () => {
 
   it("führt jede Pflichteigenschaft der acht Elementdefinitionen als Pflichtfeld", () => {
     const problems: string[] = [];
-    // Der bekannte Spezifikationsfehler aus Plan 0.5: PostingsFree.items.required nennt
+    // Der bekannte Spezifikationsfehler: PostingsFree.items.required nennt
     // amounts, die Eigenschaft heißt amount. Ein Pflichtfeld dazu gibt es nicht, weil es
     // die Eigenschaft nicht gibt.
     const exceptions = new Set<string>(
@@ -592,7 +593,7 @@ describe("Plan 4.4 Punkt 5: Pflichtfelder", () => {
       );
 
       // Nur die oberste Body-Ebene: Felder mit source "path" oder "server" haben ein leeres
-      // apiNames und sind deshalb gegenüber der Spezifikation nicht vergleichbar (Plan 4.6).
+      // apiNames und sind deshalb gegenüber der Spezifikation nicht vergleichbar.
       for (const field of tool.fields) {
         if (field.source !== "body" || !field.required) continue;
         if (field.apiNames.some((apiName) => requiredNames.has(apiName))) continue;
@@ -601,21 +602,21 @@ describe("Plan 4.4 Punkt 5: Pflichtfelder", () => {
         );
         if (field.requiredReason === undefined || field.requiredReason.trim() === "") {
           missingReasons.push(
-            `${tool.name}, Feld ${field.name}: Verschärfung ohne requiredReason. Der Grund nennt die Belegstelle (Plan 4.3).`,
+            `${tool.name}, Feld ${field.name}: Verschärfung ohne requiredReason. Der Grund nennt die Belegstelle.`,
           );
         }
       }
     }
 
     expectNoIssues(missingReasons);
-    // Plan 4.3, letzter Absatz: Der Auslieferungszustand enthält keine Verschärfung. Wird
+    // Der Auslieferungszustand enthält keine Verschärfung. Wird
     // später eine bewusst entschieden, sind Erwartungswert und requiredReason gemeinsam zu
     // setzen; genau das hält den Vorgang sichtbar.
     expectNoIssues(stricterFields);
   });
 });
 
-describe("Plan 4.4 Punkt 6: die beiden bekannten Spezifikationsfehler", () => {
+describe("Die beiden bekannten Spezifikationsfehler", () => {
   it("trifft noch zu: ReceiptPostings schreibt postingstexts, der Einzelendpunkt postingtexts", () => {
     const bug = SPEC_BUGS[0];
     const element = definitionOf(bug.def);
@@ -639,7 +640,7 @@ describe("Plan 4.4 Punkt 6: die beiden bekannten Spezifikationsfehler", () => {
   });
 });
 
-describe("Plan 4.4 Punkt 7: die vier Endpunkte mit Pfadvorlage", () => {
+describe("Die vier Endpunkte mit Pfadvorlage", () => {
   it("führt an diesen vier Pfaden keinen Parameter id_by_customer", () => {
     const problems: string[] = [];
 
@@ -651,7 +652,7 @@ describe("Plan 4.4 Punkt 7: die vier Endpunkte mit Pfadvorlage", () => {
       }
       if (endpoint.parameters.some((parameter) => parameter.name === "id_by_customer")) {
         problems.push(
-          `${path}: die Spezifikation führt hier einen Parameter id_by_customer. Plan 4.6 beruht darauf, dass sie das nicht tut.`,
+          `${path}: die Spezifikation führt hier einen Parameter id_by_customer. Der Pfadbau beruht darauf, dass sie das nicht tut.`,
         );
       }
     }
@@ -666,14 +667,14 @@ describe("Plan 4.4 Punkt 7: die vier Endpunkte mit Pfadvorlage", () => {
       const tool = entryBySpecPath(templatePath);
       if (tool === undefined) {
         problems.push(
-          `${templatePath}: kein Registereintrag. Erwartet wird path: { template, params, specPath: "${templatePath}" } und ein Feld mit source "path" (Plan 4.6).`,
+          `${templatePath}: kein Registereintrag. Erwartet wird path: { template, params, specPath: "${templatePath}" } und ein Feld mit source "path".`,
         );
         continue;
       }
 
       if ("literal" in tool.path) {
         problems.push(
-          `${tool.name}: trägt path.literal. Bei diesem Endpunkt ist id_by_customer ein Platzhalter für den Wert (Plan 0.3 Befund L1, 4.6).`,
+          `${tool.name}: trägt path.literal. Bei diesem Endpunkt ist id_by_customer ein Platzhalter für den Wert.`,
         );
         continue;
       }
@@ -704,12 +705,12 @@ describe("Plan 4.4 Punkt 7: die vier Endpunkte mit Pfadvorlage", () => {
       for (const { path, field } of flatFields(tool)) {
         if (field.name === "id_by_customer") {
           problems.push(
-            `${tool.name}, Feld ${path}: der Identifikator heißt im Werkzeugschema nicht id_by_customer, und er geht nie in den Body (Plan 4.6 Regel 5).`,
+            `${tool.name}, Feld ${path}: der Identifikator heißt im Werkzeugschema nicht id_by_customer, und er geht nie in den Body.`,
           );
         }
         if (field.apiNames.includes("id_by_customer")) {
           problems.push(
-            `${tool.name}, Feld ${path}: apiName id_by_customer. An diesen vier Pfaden gibt es diesen Parameter nicht (Plan 4.6 Regel 5).`,
+            `${tool.name}, Feld ${path}: apiName id_by_customer. An diesen vier Pfaden gibt es diesen Parameter nicht.`,
           );
         }
       }
@@ -727,7 +728,7 @@ describe("Plan 4.4 Punkt 7: die vier Endpunkte mit Pfadvorlage", () => {
       if (templatePaths.has(path)) continue;
       if (!("literal" in tool.path)) {
         problems.push(
-          `${tool.name}: trägt eine Pfadvorlage, obwohl ${path} konstant ist. Nur die vier Endpunkte aus Plan 4.6 tragen eine Vorlage.`,
+          `${tool.name}: trägt eine Pfadvorlage, obwohl ${path} konstant ist. Nur die vier Endpunkte tragen eine Vorlage.`,
         );
       }
     }

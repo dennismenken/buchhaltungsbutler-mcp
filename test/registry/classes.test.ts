@@ -1,4 +1,4 @@
-// P5 und P6 aus Plan 9.2.
+// P5 und P6.
 //
 // P5 hält die Klasse jedes Eintrags gegen test/registry/class-list.ts, die zweite und
 // unabhängig gepflegte Klassenliste. P6 hält die Wirkung jedes Eintrags gegen
@@ -6,7 +6,7 @@
 // Beide Listen liegen bewusst getrennt vom Register: Eine Prüfung, die ihre Erwartung aus
 // derselben Datei liest, die sie prüft, prüft sich selbst.
 //
-// Die Klasse wird niemals aus dem Namen abgeleitet (Plan 3.3): bb_postings_assign_receipt
+// Die Klasse wird niemals aus dem Namen abgeleitet: bb_postings_assign_receipt
 // endet auf _receipt und ist buchend, bb_reports_get_ledger endet auf _ledger und ist lesend.
 
 import { describe, expect, it } from "vitest";
@@ -43,7 +43,7 @@ describe("P5 Klassen", () => {
     for (const tool of REGISTRY) {
       if (!CLASSES.includes(tool.toolClass)) {
         problems.push(
-          `${tool.name}: toolClass "${tool.toolClass}" ist keine der sechs Klassen ${CLASSES.join(", ")} (Plan 3.3).`,
+          `${tool.name}: toolClass "${tool.toolClass}" ist keine der sechs Klassen ${CLASSES.join(", ")}.`,
         );
       }
     }
@@ -64,7 +64,7 @@ describe("P5 Klassen", () => {
       const expected = EXPECTED_TOOL_CLASSES[name as keyof typeof EXPECTED_TOOL_CLASSES];
       if (tool.toolClass !== expected) {
         problems.push(
-          `${name}: Register sagt ${tool.toolClass}, test/registry/class-list.ts sagt ${expected} (Plan 3.8).`,
+          `${name}: Register sagt ${tool.toolClass}, test/registry/class-list.ts sagt ${expected}.`,
         );
       }
     }
@@ -76,7 +76,7 @@ describe("P5 Klassen", () => {
     const knownNames = new Set(EXPECTED_TOOL_NAMES);
     const problems = REGISTRY.filter((tool) => !knownNames.has(tool.name)).map(
       (tool) =>
-        `${tool.name}: steht nicht in test/registry/class-list.ts. Ein neues Werkzeug wird dort gemeinsam eingetragen (Plan 3.3, AP19b).`,
+        `${tool.name}: steht nicht in test/registry/class-list.ts. Ein neues Werkzeug wird dort gemeinsam eingetragen.`,
     );
 
     expectNoIssues(problems);
@@ -94,7 +94,7 @@ describe("P5 Klassen", () => {
         );
       }
       // Dieselbe Zahl steht in src/registry/classes.ts. Laufen die beiden Quellen
-      // auseinander, ist das ein Fund und keine Nebensache (Plan 3.3).
+      // auseinander, ist das ein Fund und keine Nebensache.
       if (TOOL_CLASSES[cls].count !== expected) {
         problems.push(
           `Klasse ${cls}: src/registry/classes.ts nennt ${String(TOOL_CLASSES[cls].count)}, test/registry/class-list.ts nennt ${String(expected)}.`,
@@ -111,7 +111,7 @@ describe("P6 Wirkungsabgleich", () => {
   it("trägt je Eintrag genau eine der vier Wirkungen", () => {
     const problems = REGISTRY.filter((tool) => !EFFECTS.includes(tool.effect)).map(
       (tool) =>
-        `${tool.name}: effect "${tool.effect}" ist keine der vier Wirkungen ${EFFECTS.join(", ")} (Plan 2.1).`,
+        `${tool.name}: effect "${tool.effect}" ist keine der vier Wirkungen ${EFFECTS.join(", ")}.`,
     );
 
     expectNoIssues(problems);
@@ -179,12 +179,12 @@ describe("P6 Wirkungsabgleich", () => {
       const isReadEffect = tool.effect === "read";
       if (isReadOnlyClass && !isReadEffect) {
         problems.push(
-          `${tool.name}: Klasse R, aber Wirkung ${tool.effect}. Der Nur-Lesen-Schalter liest die Klassenspalte; ein schreibendes Werkzeug mit Klasse R würde ihn passieren (Plan 3.9).`,
+          `${tool.name}: Klasse R, aber Wirkung ${tool.effect}. Der Nur-Lesen-Schalter liest die Klassenspalte; ein schreibendes Werkzeug mit Klasse R würde ihn passieren.`,
         );
       }
       if (isReadEffect && !isReadOnlyClass) {
         problems.push(
-          `${tool.name}: Wirkung lesend, aber Klasse ${tool.toolClass}. Ein lesendes Werkzeug außerhalb von R bekäme keinen Retry und würde im Nur-Lesen-Modus ohne Grund absagen (Plan 3.9, 5.3).`,
+          `${tool.name}: Wirkung lesend, aber Klasse ${tool.toolClass}. Ein lesendes Werkzeug außerhalb von R bekäme keinen Retry und würde im Nur-Lesen-Modus ohne Grund absagen.`,
         );
       }
     }

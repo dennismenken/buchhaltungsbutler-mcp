@@ -1,4 +1,4 @@
-// Die zweite, unabhängig gepflegte Namensliste der fünf Bündelwerkzeuge (N3, N4).
+// Die zweite, unabhängig gepflegte Namensliste der fünf Bündelwerkzeuge.
 //
 // Sie liegt aus demselben Grund getrennt vom Register wie `test/registry/class-list.ts` und
 // `test/registry/group-list.ts`: Eine Prüfung, die die Namen aus derselben Datei liest, in der
@@ -12,15 +12,15 @@
 // Die Liste wird niemals aus dem Register abgeleitet, und sie darf es auch nicht: Eine aus
 // `BUNDLE_ENTRIES` erzeugte Sollliste kann keinen fehlenden Eintrag melden.
 //
-// **Ein sechstes Bündel ist eine Entscheidung des Projektinhabers** (N3, N4; die Liste der
+// **Ein sechstes Bündel ist eine Entscheidung des Projektinhabers** (die Liste der
 // Bündel ist nach `src/bundles/index.ts` abschließend). Wer hier einen Namen ergänzt oder
 // streicht, ohne dass diese Entscheidung vorliegt, hebelt die Prüfung aus, statt sie zu
 // erfüllen.
 //
-// Reihenfolge ist die der Bauvorlage und zugleich die Registrierreihenfolge.
+// Reihenfolge ist zugleich die Registrierreihenfolge.
 
 /**
- * Die fünf erwarteten Bündelnamen, von Hand aus der Bauvorlage abgeschrieben, in der
+ * Die fünf erwarteten Bündelnamen, von Hand abgeschrieben, in der
  * Reihenfolge, in der sie registriert werden.
  */
 export const EXPECTED_BUNDLE_NAMES: readonly string[] = [

@@ -1,5 +1,5 @@
 /**
- * `print-config --client <name>`: den fertigen Block ausgeben, nichts schreiben (Plan 8.1).
+ * `print-config --client <name>`: den fertigen Block ausgeben, nichts schreiben.
  *
  * Der Block enthält **niemals** einen echten Wert. Wo Zugangsdaten hingehören, stehen
  * Platzhalter oder — wo der Client eine Ersetzung kennt — eine Variablenreferenz. Das ist
@@ -134,7 +134,8 @@ export function runPrintConfig(options: RunPrintConfigOptions): Promise<number> 
   printPreview(terminal, adapter, adapter.preview(plan, host));
   terminal.write("");
 
-  // Dieselbe Angabe wie in der Startmeldung und in doctor (N5, Rückmeldung an drei Stellen).
+  // Dieselbe Angabe wie in der Startmeldung und in doctor: Der Gruppenschalter meldet an genau
+  // diesen drei Stellen zurück, was er bewirkt hat.
   // Gezählt werden Endpunktwerkzeuge und Bündel zusammen, also genau das, was tools/list
   // ausliefert; die Bündel hängen an der Gruppe `bundles` und an keiner Endpunktgruppe.
   const activeGroups = new Set<ToolGroup>(config.toolGroups.active);

@@ -10,11 +10,11 @@ import {
   reversalText,
 } from "../../src/response/next-step.js";
 
-// Plan 7.6: Jede Antwort eines schreibenden Werkzeugs nennt den Weg zurück, „sofern es einen
+// Jede Antwort eines schreibenden Werkzeugs nennt den Weg zurück, „sofern es einen
 // gibt, und ausdrücklich dessen Fehlen, wo es keinen gibt". Die Tabelle folgt der
-// Werkzeugtabelle in Plan 3.8 und dem Wegweiser in 3.7.
+// Werkzeugtabelle und dem Buchungswegweiser.
 
-/** Die 39 schreibenden Werkzeuge aus Plan 3.8 (24 anlegend, 8 ändernd, 7 löschend). */
+/** Die 39 schreibenden Werkzeuge (24 anlegend, 8 ändernd, 7 löschend). */
 const WRITING_TOOLS = [
   "bb_receipts_create",
   "bb_receipts_create_batch",
@@ -101,7 +101,7 @@ describe("Die Tabelle deckt alle schreibenden Werkzeuge ab", () => {
     const reversalMissingTools = Object.entries(REVERSAL_BY_TOOL)
       .filter(([, reversal]) => reversal.kind === "none")
       .map(([name]) => name);
-    // Belegt in Plan 3.8: Rechnungen, Zuordnung an freie Buchung, Storno, Debitoren,
+    // Belegt: Rechnungen, Zuordnung an freie Buchung, Storno, Debitoren,
     // Kreditoren, Sachkonten, Zahlungskonten, Kommentare, Berichte, Zahlungen, Updates.
     expect(reversalMissingTools).toContain("bb_invoices_create");
     expect(reversalMissingTools).toContain("bb_postings_assign_receipt");
@@ -146,7 +146,7 @@ describe("Der Satz „Weg zurück“", () => {
   });
 });
 
-describe("Die vier Anschlusshinweise aus Plan 7.6", () => {
+describe("Die vier Anschlusshinweise", () => {
   it("schreibt den Hinweis nach einer angeforderten Auswertung wörtlich", () => {
     expect(
       reportRequestedNote({

@@ -1,5 +1,5 @@
 // Bündel 1: Stammdaten über den Namen finden; ohne Suchbegriff der Arbeitskontext für den
-// Sitzungsanfang (Bauvorlage `docs/entwicklung/buendelwerkzeuge.md` 4.1, N3c und N4).
+// Sitzungsanfang.
 //
 // Drei Befunde tragen den Entwurf. Kein Stammdatenendpunkt kennt einen Namensfilter, und der
 // Kontenrahmen dieses Mandanten wiegt gemessen 1.281 Zeilen und grob 60.000 Token — das
@@ -260,7 +260,8 @@ async function run(ctx: BundleContext, args: Record<string, unknown>): Promise<B
   // Drei Lagen beenden den Lauf sofort, in jedem Modus: error_code 3 und 4 (Zugangsdaten,
   // Mandant), error_code 11 (Mandant inaktiv) sowie zwei aufeinanderfolgende 5xx desselben
   // Endpunkts. Die werden innerhalb desselben Aufrufs nicht besser, und weitere Aufrufe gegen
-  // dieselbe abgelehnte Anmeldung verbrennen nur Minutenkontingent (Abschnitt 5, Regel 3).
+  // dieselbe abgelehnte Anmeldung verbrennen nur Minutenkontingent (`FATAL_ERROR_CODES` und
+  // `CONSECUTIVE_SERVER_ERRORS_UNTIL_STOP` in src/bundles/runtime.ts).
   let halted = false;
 
   // --- Zahlungskonten: ein Aufruf, keine Paginierung, konstruktiv vollständig -----------

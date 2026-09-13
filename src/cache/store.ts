@@ -1,13 +1,13 @@
-// Der optionale Stammdatenspeicher (Plan 7.8, Streitfrage S23).
+// Der optionale Stammdatenspeicher.
 //
-// **Im Auslieferungszustand ist er vollständig aus** (`BB_MCP_CACHE_TTL_MS=0`, Plan 6.2).
+// **Im Auslieferungszustand ist er vollständig aus** (`BB_MCP_CACHE_TTL_MS=0`).
 // Begründung: Ein veralteter Stammdatensatz ist in einer Buchhaltung ein schwer zu findender
 // Fehler, und die Ersparnis lohnt erst, wenn ein Agent in einer Schleife nachschlägt. Der
 // Schalter ist da, wenn das Minutenlimit drückt; er drängt sich niemandem auf.
 //
 // Drei Festlegungen, die dieses Modul bindend umsetzt:
 //
-//  1. **Speicherfähig sind ausschließlich die vier Werkzeuge aus der Tabelle in 7.8.**
+//  1. **Speicherfähig sind ausschließlich die vier Werkzeuge der Tabelle unten.**
 //     `/accounts/get` und alle Bewegungsdaten werden **nie** zwischengespeichert; ein
 //     `write` für ein anderes Werkzeug legt nichts ab und meldet das zurück.
 //  2. **Die Invalidierung kommt aus dem Register** (`ToolEntry.invalidatesCache`) und wird
@@ -19,7 +19,7 @@
 //     damit er ohne Warten prüfbar ist.
 //
 // Der Speicher ist prozesslokal, überlebt keinen Neustart, wird nicht auf die Platte
-// geschrieben und von zwei Clients nicht geteilt (Plan 7.8 Punkt 5).
+// geschrieben und von zwei Clients nicht geteilt.
 
 import { getConfig } from "../config/resolve.js";
 import { logDebug } from "../logging/stderr.js";
@@ -35,10 +35,10 @@ export const systemCacheClock: CacheClock = {
 };
 
 /**
- * Die vier speicherfähigen Werkzeuge (Plan 7.8, erste Spalte der Invalidierungstabelle).
+ * Die vier speicherfähigen Werkzeuge (erste Spalte der Invalidierungstabelle).
  *
  * `bb_payment_accounts_list` steht hier **bewusst nicht**: Es ist das Werkzeug zu
- * `/accounts/get`, und dafür gilt der Satz aus 7.8 ohne Ausnahme. Die Kontenliste des
+ * `/accounts/get`, und dafür gilt der Satz ohne Ausnahme. Die Kontenliste des
  * Mandanten ist die Grundlage jeder Zahlungszuordnung; ein veralteter Stand wäre hier am
  * teuersten.
  */
@@ -49,7 +49,7 @@ export const CACHEABLE_TOOLS: readonly string[] = Object.freeze([
   "bb_cost_locations_search",
 ]);
 
-/** Das Werkzeug hinter der Resource `bb://postingaccounts` (Plan 7.7). */
+/** Das Werkzeug hinter der Resource `bb://postingaccounts`. */
 export const POSTINGACCOUNTS_TOOL = "bb_postingaccounts_search";
 
 /** `true`, wenn dieses Werkzeug überhaupt zwischengespeichert werden darf. */
@@ -65,8 +65,8 @@ export interface CacheHit {
 
 /**
  * Die Schnittstelle des Speichers, bewusst schmal: ablegen, lesen, verwerfen, und die Frage
- * „ist er eingeschaltet". Mehr braucht weder der generische Handler (AP10) noch die Resource
- * `bb://postingaccounts` (AP14); damit muss keines der beiden Pakete diese Datei ändern.
+ * „ist er eingeschaltet". Mehr braucht weder der generische Handler noch die Resource
+ * `bb://postingaccounts`; damit muss keines der beiden Pakete diese Datei ändern.
  */
 export interface MasterDataStore {
   /** `false` bei `BB_MCP_CACHE_TTL_MS=0`, also im Auslieferungszustand. */
@@ -91,7 +91,7 @@ interface StoreEntry {
 }
 
 export interface CreateStoreOptions {
-  /** Abweichende Haltbarkeit. Ohne Angabe die eingefrorene Konfiguration (Plan 6.2, 6.4). */
+  /** Abweichende Haltbarkeit. Ohne Angabe die eingefrorene Konfiguration. */
   readonly ttlMs?: number;
   readonly clock?: CacheClock;
 }
@@ -100,7 +100,7 @@ export interface CreateStoreOptions {
  * Baut einen Speicher.
  *
  * Die Haltbarkeit wird **einmal beim Bau** gelesen und danach nicht mehr: Die Konfiguration
- * ist eingefroren (Plan 6.4), und ein Speicher, der seine eigene Grenze zur Laufzeit ändern
+ * ist eingefroren, und ein Speicher, der seine eigene Grenze zur Laufzeit ändern
  * könnte, wäre nicht prüfbar.
  */
 export function createMasterDataStore(options: CreateStoreOptions = {}): MasterDataStore {
@@ -125,7 +125,7 @@ export function createMasterDataStore(options: CreateStoreOptions = {}): MasterD
     read(tool: string): CacheHit | undefined {
       // Bei ausgeschaltetem Speicher endet die Abfrage hier. Es gibt bewusst keinen Zweig,
       // in dem danach doch noch ein Wert gelesen würde: Bei ttl = 0 ist die Karte leer,
-      // und diese Rückgabe ist die einzige mögliche Antwort (Plan 7.8, AP09).
+      // und diese Rückgabe ist die einzige mögliche Antwort.
       if (!enabled) {
         return undefined;
       }
@@ -148,7 +148,7 @@ export function createMasterDataStore(options: CreateStoreOptions = {}): MasterD
       }
       if (!isCacheableTool(tool)) {
         // Kein Fehler, aber auch keine stille Ablage: Bewegungsdaten und /accounts/get
-        // gehören nie in den Speicher (Plan 7.8).
+        // gehören nie in den Speicher.
         logDebug(
           `Stammdatenspeicher: ${tool} ist nicht speicherfähig; es wurde nichts abgelegt. ` +
             `Speicherfähig sind ausschließlich ${CACHEABLE_TOOLS.join(", ")}.`,
@@ -199,10 +199,11 @@ export function resetMasterDataStoreForTests(): void {
 }
 
 /**
- * Der Absagetext der Resource `bb://postingaccounts`, wenn der Speicher aus ist (Plan 7.7).
+ * Der Absagetext der Resource `bb://postingaccounts`, wenn der Speicher aus ist.
  *
  * Er steht hier, damit die Resource ihn nicht neu formulieren muss und damit der Name der
- * Variablen an einer Stelle gepflegt wird; geschrieben wird die Resource in AP14.
+ * Variablen an einer Stelle gepflegt wird; die Resource selbst steht in
+ * `src/server/resources.ts`.
  */
 export function cacheDisabledNotice(): string {
   return (

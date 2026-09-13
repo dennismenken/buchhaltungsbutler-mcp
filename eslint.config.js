@@ -25,7 +25,7 @@ export default tseslint.config(
     },
     rules: {
       // stdout gehört dem MCP-Protokoll. Jede andere Ausgabe des Servers geht nach stderr
-      // (Plan 1.3, src/logging/stderr.ts); eine Zeile auf stdout zerstört die JSON-RPC-Sitzung.
+      // (src/logging/stderr.ts); eine Zeile auf stdout zerstört die JSON-RPC-Sitzung.
       "no-console": ["error", { allow: ["error"] }],
       "no-restricted-properties": [
         "error",
@@ -39,7 +39,7 @@ export default tseslint.config(
     },
   },
   {
-    // Die Unterbefehle laufen in einem Terminal und nie in einer MCP-Verbindung (Plan 8.1).
+    // Die Unterbefehle laufen in einem Terminal und nie in einer MCP-Verbindung.
     // Für sie ist stdout der richtige Weg.
     files: ["src/cli.ts", "src/cli/**/*.ts"],
     rules: {

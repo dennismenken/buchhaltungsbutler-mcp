@@ -6,7 +6,7 @@ dist/
 *.tsbuildinfo
 *.mcpb
 
-# Erzeugter Registerindex. Einziges Generat, das nicht eingecheckt wird (Plan 4.2):
+# Erzeugter Registerindex. Einziges Generat, das nicht eingecheckt wird:
 # Es leitet sich allein aus dem Inhalt von src/registry/tools/ ab und wird vor build,
 # test und typecheck neu erzeugt. Eingecheckt wäre es die eine geteilte Datei, die alle
 # fünf Registerpakete gleichzeitig anfassen müssten.

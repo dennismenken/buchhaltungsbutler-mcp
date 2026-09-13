@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { VERSION } from "../../src/generated/version.js";
 
-// Die Weiche aus `src/cli.ts` in beiden Richtungen (Plan 8.1, AP15 Punkt 5).
+// Die Weiche aus `src/cli.ts` in beiden Richtungen.
 //
 // Zwei Nachweise, weil einer allein lückenhaft wäre:
 //

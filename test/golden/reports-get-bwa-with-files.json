@@ -1,6 +1,6 @@
 {
   "_herkunft": "Endpunkt /reports/get/bwa mit get_files | dokumentiert, NICHT gemessen | Quelle: Spezifikation ReportsGetBwa_Success (files mit den Schlüsseln csv und pdf, je base64) | Struktur gemessen, Geschäftsdaten erfunden",
-  "_zweck": "dass Base64 nie im Textblock erscheint, sondern als Zeile mit Art und Größe, und dass eine angeforderte Datei im strukturierten Teil erhalten bleibt (Umsetzungsplan 7.6)",
+  "_zweck": "dass Base64 nie im Textblock erscheint, sondern als Zeile mit Art und Größe, und dass eine angeforderte Datei im strukturierten Teil erhalten bleibt",
   "http": {
     "status": 200,
     "contentType": "application/json; charset=utf-8"

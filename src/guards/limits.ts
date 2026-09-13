@@ -1,4 +1,4 @@
-// Guard 5 aus Plan 1.4: Betrags- und Stapelgrenze (Plan 6.2, 4.7 Q4).
+// Guard 5: Betrags- und Stapelgrenze.
 //
 // Dieses Modul führt **keine Feldliste**, und das ist seine wichtigste Eigenschaft. Beide
 // Grenzen werden über die Struktur des Registereintrags gefunden:
@@ -8,16 +8,16 @@
 //                 Positionsliste innerhalb eines Stapelelements (Werkzeuge 22 und 24). Beide
 //                 Ebenen werden getrennt geprüft, es wird nichts aufsummiert.
 //   Betragsgrenze jedes Feld, dessen Schemabaustein die Markierung `amount` trägt, die
-//                 `vocab.ts#amountIn()` setzt (Plan 4.5, `schema/primitives.ts`). Skalar wie
+//                 `vocab.ts#amountIn()` setzt (`schema/primitives.ts`). Skalar wie
 //                 je Position.
 //
 // Eine zweite, handgepflegte Namensliste gäbe es sonst doppelt: einmal im Register und einmal
 // hier. Sie liefe auseinander, und zwar unbemerkt, weil ein Werkzeug mit einem übersehenen
 // Betragsfeld nicht scheitert, sondern die Grenze stillschweigend nicht prüft.
 //
-// Die Grenzen werden hier **erneut** geprüft, obwohl `maxItems` schon im Schema steht (Plan
-// 4.8) und Q4 dieselbe Menge prüft (Plan 4.7): Dieser Guard wertet ohnehin
-// `BB_MCP_MAX_AMOUNT` aus, und ein Abbruch an dieser Stelle trägt den Zustandssatz 1 aus 5.8.
+// Die Grenzen werden hier **erneut** geprüft, obwohl `maxItems` schon im Schema steht
+// und Q4 dieselbe Menge prüft: Dieser Guard wertet ohnehin
+// `BB_MCP_MAX_AMOUNT` aus, und ein Abbruch an dieser Stelle trägt den Zustandssatz 1.
 // Doppelt geprüft ist billiger als die Frage, welche der beiden Stellen im Zweifel gilt.
 
 import type { ResolvedConfig } from "../config/resolve.js";
@@ -28,7 +28,7 @@ import { isAmountSchema } from "../schema/primitives.js";
 import { batchLimit } from "../schema/line-items.js";
 import type { FieldSpec, ToolEntry } from "../registry/types.js";
 
-/** Die beiden Klassen mit Betragsfeldern, für die `BB_MCP_MAX_AMOUNT` gilt (Plan 6.2). */
+/** Die beiden Klassen mit Betragsfeldern, für die `BB_MCP_MAX_AMOUNT` gilt. */
 const AMOUNT_LIMIT_CLASSES: readonly ToolEntry["toolClass"][] = ["A", "B"];
 
 /** Eine gerissene Grenze, positionsgenau. */
@@ -119,7 +119,7 @@ function checkAmount(
   maxAmountCents: number,
   out: LimitViolation[],
 ): void {
-  // Beträge sind im Werkzeugschema Zeichenketten (Plan 4.5). Ein anderer Typ hat Guard 3
+  // Beträge sind im Werkzeugschema Zeichenketten. Ein anderer Typ hat Guard 3
   // nicht passiert und wird hier nicht nachträglich gedeutet.
   if (typeof value !== "string") {
     return;
@@ -156,7 +156,7 @@ export function inspectLimits(
   maxItemsOverride?: number,
 ): LimitCheckResult {
   const maxItems = batchLimit(maxItemsOverride ?? config.maxBatch);
-  // Die Betragsgrenze gilt ausschließlich für die Klassen A und B (Plan 6.2). Ein lesendes
+  // Die Betragsgrenze gilt ausschließlich für die Klassen A und B. Ein lesendes
   // Werkzeug mit einem Betragsfilter soll sie nicht spüren: Es ändert nichts, und eine
   // abgelehnte Suche nach einem großen Betrag wäre eine Sperre ohne Schutzwirkung.
   const maxAmountCents = AMOUNT_LIMIT_CLASSES.includes(entry.toolClass)
@@ -168,7 +168,7 @@ export function inspectLimits(
   return { violations, maxItems, maxAmountCents };
 }
 
-/** Der Vierblocktext zu einem Satz Verstöße (Plan 5.8). */
+/** Der Vierblocktext zu einem Satz Verstöße. */
 function formatRefusal(entry: ToolEntry, result: LimitCheckResult): string {
   const batch = result.violations.filter((violation) => violation.kind === "batch");
   const amount = result.violations.filter((violation) => violation.kind === "amount");
@@ -215,7 +215,7 @@ function formatRefusal(entry: ToolEntry, result: LimitCheckResult): string {
 /**
  * Prüft Mengen- und Betragsgrenze.
  *
- * @returns Die Absage im Vierblockaufbau aus 5.8 mit dem Zustandssatz 1, oder `undefined`,
+ * @returns Die Absage im Vierblockaufbau mit dem Zustandssatz 1, oder `undefined`,
  *          wenn der Aufruf weiterlaufen darf.
  */
 export function checkLimits(

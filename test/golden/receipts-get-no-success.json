@@ -1,5 +1,5 @@
 {
-  "_herkunft": "Endpunkt /receipts/get | konstruiert aus Umsetzungsplan 5.5 Stufe 3 | Quelle: Umsetzungsplan 5.5, 7.3 zweite Zeile",
+  "_herkunft": "Endpunkt /receipts/get | konstruiert Stufe 3 | Quelle: Stufe 3 der Umschlagprüfung (src/http/envelope.ts)",
   "_zweck": "dass ein Umschlag ohne success als Umschlagbruch gilt und nicht als Erfolg durchgeht",
   "http": {
     "status": 200,

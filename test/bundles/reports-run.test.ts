@@ -1,4 +1,4 @@
-// `bb_reports_run`: das einzige schreibende Bündel (Bauvorlage 4.4, Entscheidung N3a).
+// `bb_reports_run`: das einzige schreibende Bündel.
 //
 // **Der gesamte schreibende Pfad wird ausschließlich gegen die Nachbildung geprüft.**
 // `/reports/create/bwa` und `/reports/create/sums` erzeugen serverseitig einen Bericht und
@@ -179,7 +179,7 @@ describe("bb_reports_run im Erfolgsfall", () => {
     const data = dataOf(outcome);
     expect(data.status).toBe("done");
     expect(data.report_type).toBe("bwa");
-    // Ausgehend immer String (S10), obwohl der Abholendpunkt eine Ganzzahl verlangt.
+    // Ausgehend immer String, obwohl der Abholendpunkt eine Ganzzahl verlangt.
     expect(data.report_id_by_customer).toBe("123");
     expect(data.attempts).toBe(1);
     expect(data.integrity_error).toBe(false);
@@ -339,8 +339,9 @@ describe("die Warteschleife", () => {
   });
 
   it("hört an der Aufrufobergrenze des Betreibers auf und erfindet dafür keinen Grund", async () => {
-    // BB_MCP_RATE_LIMIT=10 ergibt nach Abschnitt 6 Punkt 3 eine wirksame Obergrenze von
-    // floor(10/3) = 3 Aufrufen: ein Anlegen und zwei Abholversuche.
+    // Ein Bündel darf höchstens ein Drittel des Minutenbudgets verbrauchen;
+    // BB_MCP_RATE_LIMIT=10 ergibt damit eine wirksame Obergrenze von floor(10/3) = 3
+    // Aufrufen: ein Anlegen und zwei Abholversuche.
     const config = installTestConfig({ BB_MCP_RATE_LIMIT: "10" });
     api?.post(CREATE_BWA, createdReply("77"));
     api?.post(GET_BWA, apiError(8, "report generation has not been finished yet"));
@@ -409,7 +410,7 @@ describe("Nebenläufigkeit", () => {
     });
 
     expect(outcome.kind).toBe("error");
-    // Genau ein Versuch: Ein schreibender Aufruf wird nie wiederholt (Plan 5.3), auch nicht
+    // Genau ein Versuch: Ein schreibender Aufruf wird nie wiederholt, auch nicht
     // nach einem 5xx. Der Bericht kann trotzdem entstanden sein.
     expect(api?.count(CREATE_SUMS)).toBe(1);
     expect(api?.count(GET_SUMS)).toBe(0);

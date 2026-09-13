@@ -1,19 +1,20 @@
-// Werkzeug 1 von 54 (Plan 3.8): `/receipts/get`, die Belegsuche.
+// Werkzeug 1 von 54: `/receipts/get`, die Belegsuche.
 //
 // Drei Dinge an diesem Eintrag sind nicht beliebig:
 //
-//  1. Der Antwortvertrag ist GEMESSEN (Plan 0.3 Befund L2, 2026-09-12) und gilt
+//  1. Der Antwortvertrag ist GEMESSEN (2026-09-12) und gilt
 //     ausschließlich für diesen Endpunkt. Das Leistungsdatum heißt hier `delivery_date`,
 //     die Fälligkeit `due_date`; der Einzelabruf bb_receipts_get nennt dieselben
 //     Sachverhalte `date_delivery` und `date_payment_due`. Ein gemeinsamer Belegtyp über
-//     beide Endpunkte erzeugte genau hier eine still leere Fälligkeit (Plan 7.2).
+//     beide Endpunkte erzeugte genau hier eine still leere Fälligkeit.
 //  2. `amount_paid` und `amount_paid_fixed` stehen im Vertrag, obwohl die Spezifikation
-//     sie nicht führt: Die API liefert sie an beiden Belegendpunkten (Befund L4). **Beide
-//     sind in diesem Mandanten funktionslos**, und zwar gemessen: Am 2026-09-13 lieferte
+//     sie nicht führt: Die API liefert sie an beiden Belegendpunkten (Befund L4 in
+//     docs/api/live-befunde.md). **Beide sind in diesem Mandanten funktionslos**, und zwar
+//     gemessen: Am 2026-09-13 lieferte
 //     `/receipts/get` mit `list_direction` 'inbound' und `limit` 50 genau 50 Zeilen, alle
 //     50 mit gesetztem `payment_date` und alle 50 mit `amount_paid` **und**
-//     `amount_paid_fixed` durchgehend `"0.00"`; dieselben Werte zeigten die Messungen M2
-//     und M3 (Befunde B2 und B3 in docs/entwicklung/buendelwerkzeuge.md Abschnitt 12).
+//     `amount_paid_fixed` durchgehend `"0.00"`; dieselben Werte zeigten zwei weitere
+//     Messungen desselben Endpunkts.
 //     Weder eine Teilzahlung noch ein offener Betrag folgt daraus. Deshalb trägt die
 //     Werkzeugbeschreibung den Warnsatz: Ein Modell, das `amount_paid` für bare Münze
 //     nimmt, meldet jeden bezahlten Beleg als unbezahlt. Die **Bedeutung** von
@@ -24,14 +25,15 @@
 //  3. Das Schema des Parameters `order` ist in der Spezifikation ein Platzhalter, nämlich
 //     eine einzige Eigenschaft `field` mit dem Enum ['ASC','DESC']; daraus erzeugte ein
 //     Generator {"field": "ASC"}, was die API ablehnt. Der Platzhalter ist verworfen, der
-//     Wertevorrat stammt aus dem Beschreibungstext (Plan 4.1, Anhang B Punkt 47). Der
+//     Wertevorrat stammt aus dem Beschreibungstext. Der
 //     Baustein steht in src/schema/order.ts.
 //
 // Zur Beschreibung des Feldes `order`: Sie nennt `invoicingparty` ausdrücklich als den
 // Sortierschlüssel, der in der Antwort `counterparty` heißt, und sagt über `invoicenumber`
 // KEINE Umbenennung. Das ist Absicht: Gemessen liefert dieser Endpunkt das Feld
-// `invoicenumber` (Befund L2), während der Baustein in src/schema/order.ts dem Text der
-// Spezifikation folgt und `invoice_number` behauptet. Die Messung geht vor (Plan 0.1).
+// `invoicenumber`; die gemessene Listenzeile unter Befund L4 in docs/api/live-befunde.md
+// führt es wörtlich. Der Baustein in src/schema/order.ts folgt dagegen dem Text der
+// Spezifikation folgt und `invoice_number` behauptet. Die Messung geht vor.
 
 import { z } from "zod";
 
@@ -41,7 +43,7 @@ import { boundedText, dateTimeValue, dateValue } from "../../schema/primitives.j
 import { EMPTY_STRING_SENTENCE, responseFormat } from "../../schema/vocab.js";
 import type { ToolEntry } from "../types.js";
 
-/** Das serverseitige Feld der Projektion. Sein Text ist der des Bausteins (Plan 4.5). */
+/** Das serverseitige Feld der Projektion. Sein Text ist der des Bausteins. */
 const RESPONSE_FORMAT_TEXT =
   "'concise' liefert nur die Felder, die einen Datensatz erkennbar machen und den nächsten " +
   "Schritt erlauben. 'detailed' liefert den Datensatz so, wie die BuchhaltungsButler-API ihn " +
@@ -210,11 +212,11 @@ export const bb_receipts_search: ToolEntry = {
     },
   ],
   serverOnlyFields: ["response_format"],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   responseContract: {
     container: "data",
-    // Die 16 gemessenen Felder des Listenabrufs (Plan 0.3 Befunde L2 und L3). Beträge bleiben
-    // als Zeichenkette führend und bekommen zusätzlich ein Ganzzahl-Cent-Feld (Plan 7.4);
+    // Die 16 gemessenen Felder des Listenabrufs. Beträge bleiben
+    // als Zeichenkette führend und bekommen zusätzlich ein Ganzzahl-Cent-Feld;
     // `deleted` kommt als "0"/"1" und wird zu einem echten Boolean.
     fields: {
       filename: "string",

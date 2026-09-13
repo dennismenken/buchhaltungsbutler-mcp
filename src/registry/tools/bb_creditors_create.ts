@@ -1,4 +1,4 @@
-// Werkzeug 37 von 54: `/settings/add/creditor` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 37 von 54: `/settings/add/creditor`.
 //
 // Wie `bb_debtors_create`, mit **drei** Unterschieden, die in der Spezifikation leicht
 // übersehen werden und hier deshalb ausgeschrieben sind:
@@ -14,7 +14,7 @@
 //     Pflegefehler der Spezifikation und keine fachliche Aussage über Debitoren.
 //
 // Die neun Adress- und Kontaktfelder kommen aus `contactAddressBlock()` und tragen damit das
-// Kurzmuster aus Sparmaßnahme S4 (höchstens 80 Zeichen je Feld, Plan 4.10). Das Element
+// Kurzmuster aus Sparmaßnahme S4 (höchstens 80 Zeichen je Feld). Das Element
 // `SettingsCreditor` der Stapelvariante führt dieselben Felder **ohne** `email`.
 
 import { z } from "zod";
@@ -125,7 +125,7 @@ export const bb_creditors_create: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Kein `data`: Die vergebene Kontonummer steht auf oberster Ebene des Umschlags.
   responseContract: {
     container: "none",
@@ -147,6 +147,6 @@ export const bb_creditors_create: ToolEntry = {
   duplicateCheck: { tool: "bb_creditors_search", keyFields: ["name"], perBatch: true },
   crossChecks: ["Q3"],
   // Ein neuer Kreditor erscheint auch in der vereinigten Kontenliste von
-  // `/settings/get/postingaccounts` (Plan 7.8, erste Zeile).
+  // `/settings/get/postingaccounts`.
   invalidatesCache: ["bb_creditors_search", "bb_postingaccounts_search"],
 };

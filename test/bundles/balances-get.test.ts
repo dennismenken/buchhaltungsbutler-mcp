@@ -1,4 +1,4 @@
-// bb_balances_get: Kontostand, Namensauflösung, Kürzung in der Mitte (Abschnitt 4.5).
+// bb_balances_get: Kontostand, Namensauflösung, Kürzung in der Mitte.
 //
 // Der Kern: **Der Saldo steht in der letzten Zeile, also darf bei einer Kürzung nie die letzte
 // Zeile wegfallen.** Dazu die beiden Ehrlichkeitsregeln: Ein leeres Kontenblatt ist kein Saldo

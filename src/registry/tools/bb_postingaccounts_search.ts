@@ -1,21 +1,21 @@
-// Werkzeug 40 von 54: `/settings/get/postingaccounts` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 40 von 54: `/settings/get/postingaccounts`.
 //
 // Stufe 1 des Beschreibungsbudgets, weil dies der gefährlichste Verwechslungsfall der ganzen
-// API ist (Plan 3.4): Die Liste ist eine **Vereinigung** aus Sachkonten, Zahlungskonten,
+// API ist: Die Liste ist eine **Vereinigung** aus Sachkonten, Zahlungskonten,
 // Debitoren und Kreditoren. Sie sind nur an `type` und `subtype` zu unterscheiden.
 //
-// **`type` und `subtype` stehen deshalb immer in `concise`** — Maßnahme 4 aus Plan 3.4 und
+// **`type` und `subtype` stehen deshalb immer in `concise`** — Maßnahme 4 und
 // ausdrücklich nicht verhandelbar. Ohne sie sähe eine gekürzte Antwort so aus, als sei 1200
 // dasselbe wie 4980.
 //
-// **Kein `maximum` für `limit`, und deshalb auch kein Q2** (Plan 7.5, 4.7, 14.2): Die API
+// **Kein `maximum` für `limit`, und deshalb auch kein Q2**: Die API
 // nennt hier den Standardwert 1000, aber keine Obergrenze. Ein erfundenes Maximum lehnte
 // gültige Aufrufe unsichtbar vor dem Request ab. Statt der Prüfung trägt die Feldbeschreibung
 // den Warnsatz aus `pagination.ts`.
 //
 // **Q7 gilt hier sehr wohl:** `/settings/get/postingaccounts` ist einer der drei Endpunkte
 // mit `order`, und jeder der drei hat eine andere Syntax. `'name ASC'` ist hier gültig und an
-// `/postings/get` nicht (Plan 4.7).
+// `/postings/get` nicht.
 //
 // Beobachtete Werte (live 2026-09-12, `docs/api/stammdaten.md`): `type` war
 // 'postingaccount', 'account', 'debtor', 'debtor collective', 'creditor' oder
@@ -103,14 +103,14 @@ export const bb_postingaccounts_search: ToolEntry = {
     },
   ],
   serverOnlyFields: ["response_format"],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Sechs Felder, live geprüft am 2026-09-12 und deckungsgleich mit
-  // `docs/api/stammdaten.md`. `source` bleibt "dokumentiert", weil Plan 2.1 und P13 den Wert
-  // "gemessen" ausschließlich den vier in Plan 0.3 gemessenen Endpunkten vorbehalten.
+  // `docs/api/stammdaten.md`. `source` bleibt "dokumentiert", weil P13 den Wert
+  // "gemessen" ausschließlich den vier live gemessenen Endpunkten vorbehält.
   // `parent_name` kam durchgehend als null und `parent_postingaccount_number` als leerer
-  // String; beide Formen trägt der Vertrag (Plan 7.3, Anhang B Punkt 11).
+  // String; beide Formen trägt der Vertrag.
   //
-  // Der Vertragslauf (AP17, Plan 9.7) hat diesen Vertrag am 2026-09-13 gegen die echte API
+  // Der Vertragslauf hat diesen Vertrag am 2026-09-13 gegen die echte API
   // gehalten: kein neues, kein fehlendes und kein typverändertes Feld. `parent_name` war
   // erneut in allen ausgewerteten Zeilen null; der Typ `null-or-string` ist damit weiterhin
   // nicht widerlegt und nicht bestätigt, und `null` erzeugt an einem bekannten Feld ohnehin

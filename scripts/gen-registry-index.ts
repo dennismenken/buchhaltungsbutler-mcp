@@ -1,21 +1,21 @@
 // Erzeugt src/registry/index.generated.ts aus den Dateien in src/registry/tools/.
 //
-// Warum es diesen Generator gibt (Plan 4.2, 12 Streitfrage S15): Es gibt eine Datei je
+// Warum es diesen Generator gibt: Es gibt eine Datei je
 // Werkzeug, und niemand soll beim Nachrüsten eines Werkzeugs eine Sammeldatei anfassen
-// müssen. Erst dadurch können die fünf Registerpakete AP12a bis AP12e echt parallel laufen,
+// müssen. Erst dadurch können mehrere Registerpakete echt parallel laufen,
 // ohne sich in dieselbe Datei zu schreiben.
 //
 // Die Ausgabe wird als einziges Generat NICHT eingecheckt; sie steht in .gitignore und wird
 // vor build, test und typecheck neu erzeugt. Sie leitet sich allein aus dem Verzeichnisinhalt
 // ab und trägt keine Information, die nicht schon versioniert wäre.
 //
-// Drei Zusagen, auf die sich die Arbeitspakete verlassen:
+// Drei Zusagen, auf die sich jeder Beitrag verlassen kann:
 //   1. Gegen ein leeres oder fehlendes Verzeichnis läuft der Generator fehlerfrei durch.
 //   2. Er ist mehrfach ausführbar ohne Nebenwirkung: Bei gleichem Inhalt wird nicht geschrieben.
 //   3. Gleicher Verzeichnisinhalt ergibt zeichengleiche Ausgabe. Sortiert wird nach Dateiname
 //      in Codepunktfolge, nicht über localeCompare, damit zwei Rechner nicht auseinanderlaufen.
 //
-// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst; ab der in 13.1
+// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst; ab der
 // festgelegten Untergrenze >=22.19.0 braucht es dafür keinen TypeScript-Starter.
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -26,17 +26,17 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const toolsDir = join(root, "src", "registry", "tools");
 const outFile = join(root, "src", "registry", "index.generated.ts");
 
-// Dasselbe Namensschema wie in Plan 3.1 und P4. Der Generator prüft es nicht, um P4
-// vorwegzunehmen, sondern weil der Dateiname als Bezeichner in die erzeugte Datei
-// eingesetzt wird: Ein Name, der kein gültiger Bezeichner ist, erzeugte keinen Fehlschlag
-// im Test, sondern eine Datei, die sich nicht übersetzen lässt.
+// Dasselbe Namensschema wie im Register und in P4 (test/registry/names.test.ts). Der
+// Generator prüft es nicht, um P4 vorwegzunehmen, sondern weil der Dateiname als Bezeichner
+// in die erzeugte Datei eingesetzt wird: Ein Name, der kein gültiger Bezeichner ist, erzeugte
+// keinen Fehlschlag im Test, sondern eine Datei, die sich nicht übersetzen lässt.
 const TOOL_NAME_PATTERN = /^bb_[a-z][a-z0-9_]{2,37}$/;
 const MAX_TOOL_NAME_LENGTH = 40;
 
 const errors: string[] = [];
 
-/** Verzeichnisinhalt einlesen. Ein fehlendes Verzeichnis ist kein Fehler: Zum Zeitpunkt von
- *  AP04 gibt es noch keinen einzigen Registereintrag, und AP12a legt es mit der ersten Datei an. */
+/** Verzeichnisinhalt einlesen. Ein fehlendes Verzeichnis ist kein Fehler: Vor dem ersten
+ *  Registereintrag gibt es das Verzeichnis nicht; die erste Werkzeugdatei legt es an. */
 function readToolFiles(): string[] {
   let entries;
   try {
@@ -96,7 +96,7 @@ function checkFile(fileName: string, toolName: string): void {
   const namePattern = new RegExp(`(^|[\\s{,])name\\s*:\\s*["']${toolName}["']`, "m");
   if (!namePattern.test(source)) {
     errors.push(
-      `${fileName}: enthält kein Feld name: "${toolName}". Dateiname und das Feld name des Eintrags müssen übereinstimmen (Plan 2.1, P12).`,
+      `${fileName}: enthält kein Feld name: "${toolName}". Dateiname und das Feld name des Eintrags müssen übereinstimmen.`,
     );
   }
 }
@@ -105,7 +105,7 @@ function render(toolNames: readonly string[]): string {
   const lines: string[] = [
     "// Erzeugt von scripts/gen-registry-index.ts. Nicht von Hand ändern.",
     "//",
-    "// Diese Datei wird nicht eingecheckt (Plan 4.2). Sie steht in .gitignore und entsteht vor",
+    "// Diese Datei wird nicht eingecheckt. Sie steht in .gitignore und entsteht vor",
     "// build, test und typecheck neu aus dem Inhalt von src/registry/tools/.",
     "",
     'import type { ToolEntry } from "./types.js";',
@@ -134,7 +134,7 @@ function render(toolNames: readonly string[]): string {
     ");",
     "",
     "/** Nachschlagen nach dem unveränderten Spezifikationspfad. Bei den vier Endpunkten mit",
-    " *  Pfadvorlage ist das specPath und nicht der gebaute Pfad (Plan 4.6). */",
+    " *  Pfadvorlage ist das specPath und nicht der gebaute Pfad. */",
     "export const TOOL_BY_SPEC_PATH: ReadonlyMap<string, ToolEntry> = new Map(",
     "  TOOL_ENTRIES.map((entry): [string, ToolEntry] => [",
     '    "literal" in entry.path ? entry.path.literal : entry.path.specPath,',
@@ -155,7 +155,7 @@ for (const fileName of files) {
 
   if (!TOOL_NAME_PATTERN.test(toolName) || toolName.length > MAX_TOOL_NAME_LENGTH) {
     errors.push(
-      `${fileName}: "${toolName}" erfüllt das Namensschema ^bb_[a-z][a-z0-9_]{2,37}$ mit höchstens ${String(MAX_TOOL_NAME_LENGTH)} Zeichen nicht (Plan 3.1).`,
+      `${fileName}: "${toolName}" erfüllt das Namensschema ^bb_[a-z][a-z0-9_]{2,37}$ mit höchstens ${String(MAX_TOOL_NAME_LENGTH)} Zeichen nicht.`,
     );
     continue;
   }

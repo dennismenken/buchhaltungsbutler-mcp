@@ -1,18 +1,17 @@
-// Die vier MCP-Resources aus Plan 7.7 (AP14).
+// Die vier MCP-Resources.
 //
 // Sie kosten nur dann Kontext, wenn der Agent sie liest, und nehmen genau die Inhalte auf, die
-// sonst 54-mal in Werkzeugbeschreibungen stünden (Plan 4.10, Weg 2 gegen den Kontextpreis von
-// E1). Drei der vier sind reiner Text und hängen von nichts ab; die vierte liest den
-// Stammdatenspeicher aus AP09 und ist im Auslieferungszustand abgeschaltet, weil der Speicher
-// es ist.
+// sonst 54-mal in Werkzeugbeschreibungen stünden. Drei der vier sind reiner Text und hängen
+// von nichts ab; die vierte liest den Stammdatenspeicher (`src/cache/store.ts`) und ist im
+// Auslieferungszustand abgeschaltet, weil der Speicher es ist.
 //
 // **Dieses Modul ruft das Cache-Modul nur auf und ändert es nicht.** Es schreibt nichts in den
 // Speicher, holt nichts von der API nach und setzt keinen Request ab: Eine Resource, die still
 // ein Token aus dem Minutenkontingent des Mandanten zöge, wäre genau die verborgene Logik, die
-// Plan 1.5 ausschließt.
+// dieser Server ausschließt.
 //
-// Die Inhalte sind deutsch (E4). Feldnamen, Werkzeugnamen und API-Werte stehen unverändert im
-// Original, API-Werte in einfachen Anführungszeichen (Plan 4.9).
+// Die Inhalte sind deutsch, wie jeder vom Agenten gelesene Text (CONTRIBUTING.md Abschnitt 5). Feldnamen, Werkzeugnamen und API-Werte stehen unverändert im
+// Original, API-Werte in einfachen Anführungszeichen.
 
 import type { McpServer } from "@modelcontextprotocol/server";
 
@@ -20,7 +19,7 @@ import type { MasterDataStore } from "../cache/store.js";
 import { POSTINGACCOUNTS_TOOL, cacheDisabledNotice, getMasterDataStore } from "../cache/store.js";
 import { VAT_KEYS } from "../schema/vocab.js";
 
-/** Die vier URIs aus Plan 7.7, in Registrierreihenfolge. */
+/** Die vier URIs, in Registrierreihenfolge. */
 export const RESOURCE_URIS = {
   accounts: "bb://guide/accounts",
   postings: "bb://guide/postings",
@@ -38,15 +37,15 @@ export const RESOURCE_URIS = {
 const MIME_TYPE = "text/plain";
 
 // ---------------------------------------------------------------------------------------
-// bb://guide/postings — der Wegweiser aus Plan 3.7
+// bb://guide/postings — der Wegweiser
 // ---------------------------------------------------------------------------------------
 
 /**
- * Der Wegweiser durch die zwölf Buchungswerkzeuge, wörtlich nach Plan 3.7 Ebene 3.
+ * Der Wegweiser durch die zwölf Buchungswerkzeuge, wörtlich Ebene 3.
  *
  * Er steht genau einmal: hier als Resource `bb://guide/postings` und, über diesen Export, im
  * Servertext aus `instructions.ts`. Zwölf Beschreibungen, die ihn je einzeln tragen, wären nach
- * der Rechnung in 4.9 rund 3.450 Zeichen teurer und liefen bei der ersten Änderung auseinander.
+ * der Rechnung rund 3.450 Zeichen teurer und liefen bei der ersten Änderung auseinander.
  *
  * Die Ausrichtung ist Absicht: Die linke Spalte ist die Frage, die der Agent an sich selbst
  * stellt, die rechte die Antwort. Eine Fließtextfassung derselben zehn Regeln liest sich als
@@ -68,11 +67,11 @@ export const POSTINGS_GUIDE = `Welches Buchungswerkzeug brauche ich?
   Einen Beleg an eine freie Buchung binden        → bb_postings_assign_receipt (kein Weg zurück)`;
 
 // ---------------------------------------------------------------------------------------
-// bb://guide/accounts — die Kontenkunde aus Plan 3.4
+// bb://guide/accounts — die Kontenkunde
 // ---------------------------------------------------------------------------------------
 
 /**
- * Maßnahme 5 aus Plan 3.4, die lange Fassung.
+ * Maßnahme 5, die lange Fassung.
  *
  * Die fünf Zeilen in den `instructions` sagen, dass es vier Begriffe gibt und welches Werkzeug
  * nachschlägt. Hier steht, warum die Verwechslung teuer ist, welches Feld welche Nummer
@@ -152,7 +151,7 @@ account.`;
  * und nicht erst der Agent an einer Liste, die nichts mehr mit dem Schema zu tun hat.
  *
  * Hier stehen die Bezeichnungen und nicht in sechs Werkzeugbeschreibungen: Mit Labels kosten
- * sie rund 1.100 Zeichen je Vorkommen (Sparmaßnahme S3 aus Plan 4.10).
+ * sie rund 1.100 Zeichen je Vorkommen (Sparmaßnahme S3).
  */
 const VAT_KEY_LABELS = {
   "0_none": "keine Ust.",
@@ -235,7 +234,7 @@ function count(value: number, singular: string, plural: string): string {
 }
 
 /**
- * Der Hinweis auf das Alter eines Standes, im Muster aus Plan 7.8 Punkt 2.
+ * Der Hinweis auf das Alter eines Standes, im Muster.
  *
  * Gerundet auf ganze Sekunden: Eine Millisekundenangabe suggeriert eine Genauigkeit, die für
  * die Frage „ist das noch aktuell" nichts beiträgt. Mindestens eine Sekunde, weil „vor 0
@@ -252,11 +251,11 @@ function ageSentence(ageMs: number): string {
 /**
  * Der Kontenrahmen als Text, gruppiert nach `type`.
  *
- * Gruppiert wird, weil genau diese Gruppierung den Verwechslungsfall aus Plan 3.4 sichtbar
+ * Gruppiert wird, weil genau diese Gruppierung den Verwechslungsfall sichtbar
  * macht: Wer die Liste liest, sieht auf einen Blick, dass 1200 ein Zahlungskonto und 4980 ein
  * Sachkonto ist. Unbekannte Zeilenformen werden übersprungen und gezählt, nicht geraten: Der
  * Speicher trägt die Antwort der API, und die liefert nachweislich Felder, die keine
- * Spezifikation kennt (Plan 0.3, Befund L4).
+ * Spezifikation kennt.
  */
 function renderChartOfAccounts(rows: readonly unknown[], ageMs: number): string {
   const groups = new Map<string, string[]>();
@@ -318,8 +317,8 @@ function renderChartOfAccounts(rows: readonly unknown[], ageMs: number): string 
 /**
  * Der Text der Resource `bb://postingaccounts`, in allen drei möglichen Zuständen.
  *
- * Der Absagetext bei abgeschaltetem Speicher steht nicht hier, sondern in `cache/store.ts`
- * (Plan 7.7, letzte Zeile): Er nennt die Umgebungsvariable und das Werkzeug, und beides gehört
+ * Der Absagetext bei abgeschaltetem Speicher steht nicht hier, sondern in `cache/store.ts`:
+ * Er nennt die Umgebungsvariable und das Werkzeug, und beides gehört
  * an dieselbe Stelle wie der Speicher selbst.
  */
 function chartOfAccountsText(store: MasterDataStore): string {
@@ -340,7 +339,7 @@ function chartOfAccountsText(store: MasterDataStore): string {
   }
 
   if (!Array.isArray(hit.payload)) {
-    // Der Speicher nimmt nur Listen auf (Plan 7.8). Eine andere Form ist ein Fehler im
+    // Der Speicher nimmt nur Listen auf. Eine andere Form ist ein Fehler im
     // Befüllen, und daraus einen Kontenrahmen zu bauen hieße, geratene Daten als echte
     // auszugeben.
     return (
@@ -381,11 +380,11 @@ interface TextResource {
 }
 
 /**
- * Registriert die vier MCP-Resources aus Plan 7.7 am Server.
+ * Registriert die vier MCP-Resources am Server.
  *
  * @returns Die URIs der registrierten Resources, in Registrierreihenfolge. Der Rückgabewert
  *          ist kein Zierrat — er ist die Angabe, die der Zustandsblock der `instructions` und
- *          ein Test gegen die Liste in 7.7 halten können, ohne den Server zu befragen.
+ *          ein Test gegen die Liste halten können, ohne den Server zu befragen.
  */
 export function registerResources(
   server: McpServer,

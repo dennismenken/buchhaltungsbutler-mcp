@@ -9,7 +9,8 @@
 // diesem Projekt deutsch —, und schwerer wiegend der Informationsverlust. „Invalid input:
 // expected string, received undefined" sagt bei einem **fehlenden** Pflichtfeld dasselbe wie
 // bei einem Typfehler, während die deutsche Fassung „das Feld fehlt" schreibt. Der Unterschied
-// zwischen „nachtragen" und „umformen" ist der ganze Zweck der Meldung (Befund V2/E-3).
+// zwischen „nachtragen" und „umformen" ist der ganze Zweck der Meldung; im Evaluationslauf
+// hat genau diese Verwechslung einen Irrweg erzeugt.
 //
 // Seitdem benutzen beide Registrierpfade `src/errors/zod-issue.ts`. Diese Datei ist der
 // Regressionsschutz dagegen, dass der Bündelpfad wieder eine eigene Fassung bekommt.
@@ -274,7 +275,7 @@ for (const name of EXPECTED_BUNDLE_NAMES) {
               : `${name} (${testCase.category}): In der Antwort fehlt "${fragment}":\n${result.text}`,
           ).toBe("");
         }
-        // Der Vierblockaufbau aus 5.8 bleibt auch bei einer Schemaabsage erhalten.
+        // Der Vierblockaufbau bleibt auch bei einer Schemaabsage erhalten.
         expect(result.text).toContain("[Warum]");
         expect(result.text).toContain("[Zustand]");
       });

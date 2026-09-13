@@ -1,4 +1,4 @@
-// P10 aus Plan 9.2: Sind die schreibenden Einträge vollständig ausgestattet?
+// P10: Sind die schreibenden Einträge vollständig ausgestattet?
 //
 // Drei Dinge entscheiden nach einem Zeitlimit darüber, ob ein Agent den Vorgang ein zweites
 // Mal auslöst und damit eine Doppelbuchung erzeugt: ein Prüfweg (`verifyWith`), eine
@@ -23,7 +23,7 @@ import {
 } from "./class-list.js";
 
 /**
- * Die vier Endpunkte ohne lesendes Gegenstück (Plan 2.1). Für sie trägt `verifyWith` die
+ * Die vier Endpunkte ohne lesendes Gegenstück. Für sie trägt `verifyWith` die
  * Form `{ kind: "none", reason: … }` und sagt ausdrücklich, dass die API keinen Leseweg
  * anbietet und in der Weboberfläche nachzusehen ist.
  */
@@ -34,7 +34,7 @@ const NO_READ_COUNTERPART_TOOLS: readonly string[] = [
   "bb_invoices_create_einvoice",
 ];
 
-/** Die acht Stapelwerkzeuge. Ihr Eimer ist `batch`, ihre Zeitlimitstufe `long` (Plan 5.2, 5.4). */
+/** Die acht Stapelwerkzeuge. Ihr Eimer ist `batch`, ihre Zeitlimitstufe `long`. */
 const BATCH_TOOLS: readonly string[] = [
   "bb_receipts_create_batch",
   "bb_transactions_create_batch",
@@ -48,7 +48,7 @@ const BATCH_TOOLS: readonly string[] = [
 
 /** Die fünf Berichtswerkzeuge. Zeitlimitstufe `long`, die beiden erzeugenden zusätzlich im
  *  Eimer `reports` — keine API-Regel, sondern eine Bremse gegen das Muster „create, sofort
- *  get, error_code 8, sofort wieder create" (Plan 5.4). */
+ *  get, error_code 8, sofort wieder create". */
 const REPORT_TOOLS: readonly string[] = [
   "bb_reports_get_bwa",
   "bb_reports_get_sums",
@@ -59,7 +59,7 @@ const REPORT_TOOLS: readonly string[] = [
 
 const UPLOAD_TOOL = "bb_receipts_upload";
 
-/** Die dreizehn Werkzeuge aus Plan 4.7 Q4: Stapelbehälter, Positionslisten und beides
+/** Die dreizehn Werkzeuge: Stapelbehälter, Positionslisten und beides
  *  zugleich. Es ist genau die Menge der Werkzeuge mit einem Feld, das `itemFields` trägt. */
 const Q4_TOOLS: readonly string[] = [
   "bb_receipts_create_batch",
@@ -77,7 +77,7 @@ const Q4_TOOLS: readonly string[] = [
   "bb_creditors_create_batch",
 ];
 
-/** Das API-Maximum aus Plan 4.7. Der wirksame Wert ist min(50, BB_MCP_MAX_BATCH); im
+/** Das API-Maximum. Der wirksame Wert ist min(50, BB_MCP_MAX_BATCH); im
  *  Auslieferungszustand fallen beide Faktoren auf 50 zusammen. */
 const MAX_BATCH = 50;
 
@@ -98,7 +98,8 @@ const CROSS_CHECKS: readonly CrossCheckId[] = [
 /**
  * Die beiden Werkzeuge, deren Aufrufform abgeleitet und nicht gemessen ist: Sie verwenden
  * dieselbe Pfadsegmentform wie die live bestätigten Einzelabrufe, sind aber schreibend und
- * wurden deshalb nicht getestet (Plan 4.6, Klärung in AP19, Nachziehen in AP19b).
+ * wurden deshalb nicht getestet; die Klärung braucht ein Testmandat außerhalb der
+ * Produktivbuchhaltung.
  */
 const NOT_VERIFIED: readonly string[] = ["bb_receipts_delete", "bb_receipts_restore"];
 
@@ -106,7 +107,7 @@ function expectNoIssues(problems: readonly string[]): void {
   expect(problems.join("\n")).toBe("");
 }
 
-/** Der erwartete Eimer eines Werkzeugs nach der Tabelle in Plan 5.4. */
+/** Der erwartete Eimer eines Werkzeugs nach der Tabelle. */
 function expectedBucket(name: string): string {
   if (name === UPLOAD_TOOL) return "upload";
   if (BATCH_TOOLS.includes(name)) return "batch";
@@ -114,7 +115,7 @@ function expectedBucket(name: string): string {
   return "default";
 }
 
-/** Die erwartete Zeitlimitstufe nach der Tabelle in Plan 5.2. */
+/** Die erwartete Zeitlimitstufe nach der Tabelle. */
 function expectedTimeoutTier(tool: ToolEntry): string {
   if (
     tool.name === UPLOAD_TOOL ||
@@ -138,7 +139,7 @@ describe("P10 Prüfweg nach einem Zeitlimit", () => {
       }
       if (tool.verifyWith === undefined) {
         problems.push(
-          `${name}: kein verifyWith. Nach einem Zeitlimit ist ohne Prüfweg nur noch Raten möglich, und Raten heißt hier doppelt buchen (Plan 5.3, 5.7).`,
+          `${name}: kein verifyWith. Nach einem Zeitlimit ist ohne Prüfweg nur noch Raten möglich, und Raten heißt hier doppelt buchen.`,
         );
       }
     }
@@ -157,7 +158,7 @@ describe("P10 Prüfweg nach einem Zeitlimit", () => {
       const expectsNoReadPath = NO_READ_COUNTERPART_TOOLS.includes(name);
       if (expectsNoReadPath && verify.kind !== "none") {
         problems.push(
-          `${name}: die API bietet für diesen Endpunkt keinen Leseweg; erwartet ist { kind: "none", reason: … } (Plan 2.1).`,
+          `${name}: die API bietet für diesen Endpunkt keinen Leseweg; erwartet ist { kind: "none", reason: … }.`,
         );
       }
       if (!expectsNoReadPath && verify.kind === "none") {
@@ -192,7 +193,7 @@ describe("P10 Prüfweg nach einem Zeitlimit", () => {
       }
       if (Object.keys(verify.argsFrom).length === 0) {
         problems.push(
-          `${name}: verifyWith ohne argsFrom. Der Prüfweg sagt, welche Argumente aus dem fehlgeschlagenen Aufruf zu übernehmen sind (Plan 2.1).`,
+          `${name}: verifyWith ohne argsFrom. Der Prüfweg sagt, welche Argumente aus dem fehlgeschlagenen Aufruf zu übernehmen sind.`,
         );
       }
       if (verify.hint.trim() === "") {
@@ -214,7 +215,7 @@ describe("P10 Mengengrenzen", () => {
         const max = topLevelMaxItems(schema);
         if (max === undefined) {
           problems.push(
-            `${tool.name}, Feld ${path}: kein maxItems. Stapelbehälter, Positionsliste und geschachtelte Positionsliste tragen die Grenze gleichermaßen (Plan 4.7 Q4, 4.8).`,
+            `${tool.name}, Feld ${path}: kein maxItems. Stapelbehälter, Positionsliste und geschachtelte Positionsliste tragen die Grenze gleichermaßen.`,
           );
           continue;
         }
@@ -245,7 +246,7 @@ describe("P10 Mengengrenzen", () => {
       }
       if (containerFields(tool).length === 0) {
         problems.push(
-          `${name}: kein Feld mit itemFields, obwohl Plan 4.7 Q4 das Werkzeug führt (Stapelbehälter oder Positionsliste).`,
+          `${name}: kein Feld mit itemFields, obwohl Q4 das Werkzeug führt (Stapelbehälter oder Positionsliste).`,
         );
       }
       if (!tool.crossChecks.includes("Q4")) {
@@ -255,9 +256,7 @@ describe("P10 Mengengrenzen", () => {
 
     for (const tool of REGISTRY) {
       if (containerFields(tool).length > 0 && !Q4_TOOLS.includes(tool.name)) {
-        problems.push(
-          `${tool.name}: führt ein Behälterfeld, steht aber nicht in der Q4-Liste aus Plan 4.7.`,
-        );
+        problems.push(`${tool.name}: führt ein Behälterfeld, steht aber nicht in der Q4-Liste.`);
       }
     }
 
@@ -270,7 +269,7 @@ describe("P10 Mengengrenzen", () => {
     for (const tool of REGISTRY) {
       for (const id of tool.crossChecks) {
         if (!CROSS_CHECKS.includes(id)) {
-          problems.push(`${tool.name}: crossChecks nennt ${id}; es gibt nur Q1 bis Q9 (Plan 4.7).`);
+          problems.push(`${tool.name}: crossChecks nennt ${id}; es gibt nur Q1 bis Q9.`);
         }
       }
       const duplicateIds = tool.crossChecks.filter(
@@ -286,7 +285,7 @@ describe("P10 Mengengrenzen", () => {
 });
 
 describe("P10 Eimer und Zeitlimit", () => {
-  it("ordnet jedem Eintrag einen der vier Eimer aus Plan 5.4 zu", () => {
+  it("ordnet jedem Eintrag einen der vier Eimer zu", () => {
     const problems: string[] = [];
 
     for (const name of EXPECTED_TOOL_NAMES) {
@@ -303,14 +302,14 @@ describe("P10 Eimer und Zeitlimit", () => {
       }
       const expected = expectedBucket(name);
       if (tool.bucket !== expected) {
-        problems.push(`${name}: bucket ${tool.bucket}, nach Plan 5.4 ist es ${expected}.`);
+        problems.push(`${name}: bucket ${tool.bucket}, erwartet wird ${expected}.`);
       }
     }
 
     expectNoIssues(problems);
   });
 
-  it("ordnet jedem Eintrag eine der drei Zeitlimitstufen aus Plan 5.2 zu", () => {
+  it("ordnet jedem Eintrag eine der drei Zeitlimitstufen zu", () => {
     const problems: string[] = [];
 
     for (const name of EXPECTED_TOOL_NAMES) {
@@ -324,9 +323,7 @@ describe("P10 Eimer und Zeitlimit", () => {
       }
       const expected = expectedTimeoutTier(tool);
       if (tool.timeoutTier !== expected) {
-        problems.push(
-          `${name}: timeoutTier ${tool.timeoutTier}, nach Plan 5.2 ist es ${expected}.`,
-        );
+        problems.push(`${name}: timeoutTier ${tool.timeoutTier}, erwartet wird ${expected}.`);
       }
     }
 
@@ -362,7 +359,7 @@ describe("P10 übrige Ausstattung", () => {
 
       if (tool.effect !== "create") {
         problems.push(
-          `${tool.name}: duplicateCheck an einem Werkzeug mit Wirkung ${tool.effect}. Der Duplikatshinweis gehört zu anlegenden Werkzeugen mit tragfähigem Schlüssel (Plan 2.1).`,
+          `${tool.name}: duplicateCheck an einem Werkzeug mit Wirkung ${tool.effect}. Der Duplikatshinweis gehört zu anlegenden Werkzeugen mit tragfähigem Schlüssel.`,
         );
       }
       if (!knownNames.has(duplicate.tool)) {
@@ -385,12 +382,12 @@ describe("P10 übrige Ausstattung", () => {
       const shouldNotBeVerified = NOT_VERIFIED.includes(tool.name);
       if (shouldNotBeVerified && tool.verified !== false) {
         problems.push(
-          `${tool.name}: erwartet ist verified: false. Die Aufrufform ist von der gemessenen abgeleitet, aber schreibend und deshalb nicht getestet (Plan 4.6).`,
+          `${tool.name}: erwartet ist verified: false. Die Aufrufform ist von der gemessenen abgeleitet, aber schreibend und deshalb nicht getestet.`,
         );
       }
       if (!shouldNotBeVerified && tool.verified === false) {
         problems.push(
-          `${tool.name}: verified: false ohne Grund. Nur ${NOT_VERIFIED.join(" und ")} tragen den Vermerk (Plan 4.6, AP19).`,
+          `${tool.name}: verified: false ohne Grund. Nur ${NOT_VERIFIED.join(" und ")} tragen den Vermerk.`,
         );
       }
     }
@@ -406,13 +403,13 @@ describe("P10 übrige Ausstattung", () => {
       for (const name of tool.serverOnlyFields) {
         if (name !== "response_format") {
           problems.push(
-            `${tool.name}: serverOnlyFields nennt ${name}. response_format ist der einzige erlaubte Name (Plan 4.3).`,
+            `${tool.name}: serverOnlyFields nennt ${name}. response_format ist der einzige erlaubte Name.`,
           );
         }
       }
       if (tool.serverOnlyFields.length > 0 && !readingToolNames.has(tool.name)) {
         problems.push(
-          `${tool.name}: serverOnlyFields an einem schreibenden Werkzeug. response_format steuert die Projektion einer Antwort (Plan 4.3, 7.4).`,
+          `${tool.name}: serverOnlyFields an einem schreibenden Werkzeug. response_format steuert die Projektion einer Antwort.`,
         );
       }
       for (const name of tool.serverOnlyFields) {
@@ -422,13 +419,11 @@ describe("P10 übrige Ausstattung", () => {
           );
         }
       }
-      // response_format steht bei JEDEM lesenden Werkzeug (Plan 7.4). /postings/get liefert
+      // response_format steht bei JEDEM lesenden Werkzeug. /postings/get liefert
       // rund 38 Felder je Buchung; eine Seite mit 100 Buchungen im Rohformat ist ein
       // Kontextfresser ersten Ranges.
       if (readingToolNames.has(tool.name) && !tool.serverOnlyFields.includes("response_format")) {
-        problems.push(
-          `${tool.name}: lesendes Werkzeug ohne serverseitiges Feld response_format (Plan 7.4).`,
-        );
+        problems.push(`${tool.name}: lesendes Werkzeug ohne serverseitiges Feld response_format.`);
       }
     }
 

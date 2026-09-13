@@ -1,13 +1,13 @@
-// Werkzeug 11, `/transactions/assigned-receipts/get`: die Belege einer Zahlung (Plan 3.8, AP12b).
+// Werkzeug 11, `/transactions/assigned-receipts/get`: die Belege einer Zahlung.
 //
 // Der Endpunkt liefert je zugeordnetem Beleg nur `id_by_customer` und `filename` und keine
 // Beträge. Der Antwortvertrag ist deshalb `dokumentiert` und nicht `gemessen`: Er ist aus der
-// Spezifikation übernommen und wird durch den Vertragslauf in AP17 bestätigt oder berichtigt
-// (Plan 7.2). Gemessen sind ausschließlich die vier Endpunkte aus Plan 0.3.
+// Spezifikation übernommen und wird durch den Vertragslauf bestätigt oder berichtigt.
+// Gemessen sind ausschließlich die vier Endpunkte.
 //
 // Die Kennung steht hier im BODY und nicht im Pfad: Dieser Endpunkt trägt den Parameter
 // `transaction_id_by_customer` laut Spezifikation selbst und gehört nicht zu den vier
-// Endpunkten mit Pfadvorlage aus Plan 4.6.
+// Endpunkten mit Pfadvorlage.
 
 import { z } from "zod";
 
@@ -67,10 +67,10 @@ export const bb_transactions_list_receipts: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
-  // Der Vertragslauf (AP17, Plan 9.7) hat diesen Vertrag am 2026-09-13 gegen die echte API
+  // Der Vertragslauf hat diesen Vertrag am 2026-09-13 gegen die echte API
   // gehalten: kein neues, kein fehlendes und kein typverändertes Feld. Der Endpunkt liefert
   // tatsächlich nur diese beiden Felder und nicht den vollen Belegdatensatz — wer aus der
   // Zuordnung Betrag oder Gegenpartei ablesen will, braucht zusätzlich bb_receipts_get.
@@ -84,7 +84,7 @@ export const bb_transactions_list_receipts: ToolEntry = {
   },
   shape: "list",
   // Beide gelieferten Felder. Die Projektion ändert hier nichts und steht trotzdem, damit
-  // response_format an diesem Werkzeug eine bestimmte Bedeutung hat (Plan 7.4).
+  // response_format an diesem Werkzeug eine bestimmte Bedeutung hat.
   concise: ["id_by_customer", "filename"],
   bucket: "default",
   timeoutTier: "short",

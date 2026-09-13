@@ -1,5 +1,5 @@
 /**
- * LM Studio: `~/.lmstudio/mcp.json`, **nur wenn vorhanden** (Plan 8.3, „ja, mit Vorbehalt").
+ * LM Studio: `~/.lmstudio/mcp.json`, **nur wenn vorhanden** („ja, mit Vorbehalt").
  *
  * Zwei benannte Unsicherheiten, beide aus `distribution.md` 10.5:
  *

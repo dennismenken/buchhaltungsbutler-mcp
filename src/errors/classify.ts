@@ -1,9 +1,9 @@
 /**
- * Einordnung einer Fehlerantwort in eine der fünf Klassen aus Plan 5.6.
+ * Einordnung einer Fehlerantwort in eine der fünf Klassen.
  *
  * **Die Weiche hängt am Tripel (`specPath`, `error_code`, HTTP-Status) und an keiner Stelle
- * an einem Vergleich gegen einen Meldungstext.** Das ist gemessen begründet (Plan 0.3
- * Befund L6): `/receipts/get` liefert zu Code 15 live `invalid field specified` und damit
+ * an einem Vergleich gegen einen Meldungstext.** Das ist gemessen begründet:
+ * `/receipts/get` liefert zu Code 15 live `invalid field specified` und damit
  * weder den Text der `description` (`invalid sort field is specified`) noch den des
  * `message`-Enums (`invalid sort field specified`). Eine Weiche auf einen dieser Texte wäre
  * ein stiller Fehlschlag in Wartestellung — sie griffe einfach nie.
@@ -14,7 +14,7 @@
  * {@link containsInsensitive}, und genau einen `toLowerCase`-Aufruf; ein Test hält beides
  * fest (`test/unit/errors-classify.test.ts`).
  *
- * Die Klasse steht als `cls` im Generat und wird dort beim Erzeugen bestimmt (AP03). Diese
+ * Die Klasse steht als `cls` im Generat und wird dort beim Erzeugen bestimmt. Diese
  * Datei schlägt sie nach, setzt ihr aber für die Codes, an denen der **HTTP-Status** die
  * Bedeutung entscheidet, eine eigene, von Hand gepflegte Regeltabelle voran. Das ist keine
  * Doppelung aus Bequemlichkeit: Der Katalog führt je Paar genau einen Status, die Antwort
@@ -34,7 +34,7 @@ import {
 
 /**
  * Die zehn Pfade, die `error_code` 15 mit HTTP 403 als vorübergehende Drosselung führen
- * (Plan 5.6, Fußnote; `grundlagen.md` 7.3 nennt dieselben zehn).
+ * (Fußnote; `grundlagen.md` 7.3 nennt dieselben zehn).
  *
  * Die Liste ist hier **absichtlich ein zweites Mal** gepflegt, unabhängig von der Liste im
  * Generator. Sie entscheidet über Retry ja oder nein, und eine Liste, die nur an einer Stelle
@@ -67,7 +67,7 @@ export type ClassOrigin = "catalog" | "runtime-rule" | "fallback";
 
 /** Die Tatsachen, über die eingeordnet wird. Ein Meldungstext ist nur bei `special` dabei. */
 export interface FailureFacts {
-  /** Der unveränderte Spezifikationspfad, niemals der gebaute Pfad (Plan 4.6 Regel 6). */
+  /** Der unveränderte Spezifikationspfad, niemals der gebaute Pfad. */
   readonly specPath: string;
   readonly errorCode: number | null;
   /** Der **tatsächliche** HTTP-Status der Antwort; `null`, wenn keine Antwort zustande kam. */
@@ -95,7 +95,7 @@ export interface Classification {
   readonly field: string | null;
   /** Bei `special` die erkannte Lesart; `null`, wenn kein Muster griff. */
   readonly reading: SpecialReading | null;
-  /** Der Sonderfalltext zu diesem Paar aus Plan 5.6, unabhängig von der Klasse. */
+  /** Der Sonderfalltext zu diesem Paar, unabhängig von der Klasse. */
   readonly guidance: string | null;
   /**
    * `true`, wenn die Rückfallregel gegriffen hat: Das Paar fehlt im Katalog, oder es ist als
@@ -106,8 +106,8 @@ export interface Classification {
 }
 
 // ---------------------------------------------------------------------------------------
-// Handgepflegte Regeltabelle: die Codes, bei denen der HTTP-Status die Bedeutung entscheidet
-// (Plan 5.3, 5.6). Reihenfolge ist bedeutsam, die erste passende Regel gewinnt.
+// Handgepflegte Regeltabelle: die Codes, bei denen der HTTP-Status die Bedeutung entscheidet.
+// Reihenfolge ist bedeutsam, die erste passende Regel gewinnt.
 // ---------------------------------------------------------------------------------------
 
 interface StatusRule {
@@ -122,7 +122,7 @@ interface StatusRule {
 
 const STATUS_RULES: readonly StatusRule[] = [
   // Zugangsdaten und Mandantenstatus. Diese drei Codes tragen endpunktübergreifend dieselbe
-  // Bedeutung (Plan 5.6, `fehlercodes.md` A) und sind deshalb vom Status unabhängig.
+  // Bedeutung (`fehlercodes.md` A) und sind deshalb vom Status unabhängig.
   { id: "credentials", code: 3, status: null, paths: null, cls: "config" },
   { id: "customer", code: 4, status: null, paths: null, cls: "config" },
   { id: "customer-inactive", code: 11, status: null, paths: null, cls: "config" },
@@ -146,9 +146,9 @@ const STATUS_RULES: readonly StatusRule[] = [
 ];
 
 // ---------------------------------------------------------------------------------------
-// Die vier Sonderfälle aus Plan 5.6, ausformuliert. Schlüssel ist `<specPath>|<error_code>`.
+// Die vier Sonderfälle, ausformuliert. Schlüssel ist `<specPath>|<error_code>`.
 //
-// Die Werkzeugnamen stammen aus der Tabelle in Plan 3.8. Sie stehen hier wörtlich, weil der
+// Die Werkzeugnamen stammen aus der Tabelle. Sie stehen hier wörtlich, weil der
 // Hinweis ein ANDERES Werkzeug nennt als das aufgerufene und der Registereintrag des
 // aufgerufenen Werkzeugs diesen Verweis nicht kennt.
 // ---------------------------------------------------------------------------------------
@@ -380,7 +380,7 @@ export function describeAmbiguity(specPath: string, errorCode: number | null): s
  * Die Reihenfolge ist Absicht:
  *
  * 1. Fehlt das Paar im Katalog, greift die Rückfallregel. **Kein Raten, keine Zuordnung zu
- *    einem gleichnamigen Code eines anderen Pfades** (Plan 5.6).
+ *    einem gleichnamigen Code eines anderen Pfades**.
  * 2. Passt eine Statusregel, gewinnt sie. Sie wertet den **tatsächlichen** Status aus.
  * 3. Sonst gilt die Klasse des Katalogs. Sie wurde beim Erzeugen bestimmt; ein abweichender
  *    Live-Text kann sie nicht kippen.
@@ -449,7 +449,7 @@ export function classifyWithCatalog(catalog: ErrorCatalog, facts: FailureFacts):
   return { cls, origin, entry, field, reading: null, guidance, fallback: false };
 }
 
-/** Wie {@link classifyWithCatalog}, lädt den Katalog aber selbst nach (dynamisch, Plan 5.6). */
+/** Wie {@link classifyWithCatalog}, lädt den Katalog aber selbst nach (dynamisch). */
 export async function classifyFailure(facts: FailureFacts): Promise<Classification> {
   return classifyWithCatalog(await loadErrorCatalog(), facts);
 }

@@ -1,6 +1,5 @@
 // Bündel 4: BWA oder Summen- und Saldenliste erzeugen, auf die serverseitige Berechnung warten
-// und die fertige Auswertung im selben Aufruf zurückliefern (Bauvorlage
-// `docs/entwicklung/buendelwerkzeuge.md` 4.4, Entscheidung N3a).
+// und die fertige Auswertung im selben Aufruf zurückliefern.
 //
 // **Das einzige Bündel dieses Satzes, das schreibt.** Klasse AR, `readOnlyHint` false,
 // `destructiveHint` true, Pflichtsatz U7, im Nur-Lesen-Modus gesperrt. Daraus folgt alles
@@ -82,14 +81,14 @@ export type ReportRunStatus = "done" | "still_running" | "failed";
 /** Die kleinste zulässige Wartezeit in Sekunden. Darunter lohnt die Warteschleife nicht. */
 export const MIN_WAIT_SECONDS = 10;
 
-/** Die größte zulässige Wartezeit in Sekunden (Bauvorlage 4.4, Obergrenzen). */
+/** Die größte zulässige Wartezeit in Sekunden. */
 export const MAX_WAIT_SECONDS = 240;
 
 /** Die Vorgabe, wenn der Aufrufer nichts sagt. */
 export const DEFAULT_WAIT_SECONDS = 60;
 
 /**
- * Der Warteplan zwischen zwei Abholversuchen, in Sekunden (Bauvorlage 4.4).
+ * Der Warteplan zwischen zwei Abholversuchen, in Sekunden.
  *
  * Acht Abstände für neun Versuche: Der erste Versuch läuft unmittelbar nach dem `create`. Er
  * kostet einen Token aus `default` und beantwortet den einzigen Fall, in dem gar nicht gewartet
@@ -174,7 +173,7 @@ const BASE_DESCRIPTION =
 // Der Text nennt beide Fristen, weil nur eine davon hier gesetzt wird: Die zweite gehört dem
 // Client, und ein Feld, das bis 240 Sekunden zulässt, darf nicht verschweigen, dass der Weg
 // dorthin gewöhnlich bei etwa 60 Sekunden endet. Er bleibt trotzdem knapp, weil jede Zeile in
-// jeder Anfrage eines Wirts liegt, der alle Definitionen lädt (N2).
+// jeder Anfrage eines Wirts wie Claude Desktop liegt, der alle Definitionen lädt.
 const MAX_WAIT_DESCRIPTION =
   "Wie lange dieser Aufruf höchstens auf die Berechnung wartet, in Sekunden. Ohne Angabe " +
   `${String(DEFAULT_WAIT_SECONDS)}, erlaubt ${String(MIN_WAIT_SECONDS)} bis ` +
@@ -223,7 +222,8 @@ function numberOf(record: unknown, field: string): number | null {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }
-  // Dieselbe API liefert Zahlen, Beträge und Booleans auch als Zeichenketten (Befund L3).
+  // Dieselbe API liefert Zahlen, Beträge und Booleans auch als Zeichenketten (Befund L3 in
+  // docs/api/live-befunde.md).
   if (typeof value === "string" && /^-?\d+$/.test(value.trim())) {
     return Number.parseInt(value.trim(), 10);
   }
@@ -340,7 +340,7 @@ function alreadyRunningNextStep(reportType: ReportType): string {
 /**
  * Eine Kette je (`api_key`-Hash, Berichtstyp). Ein zweiter Aufruf desselben Typs im selben
  * Prozess **wartet**, statt ein zweites `/reports/create/*` abzusetzen, das den gerade
- * laufenden Bericht entwertet (Bauvorlage 4.4 Risiko 1).
+ * laufenden Bericht entwertet.
  *
  * Die Kette lehnt nie ab, damit ein gescheiterter Lauf die Serialisierung nicht abreißen
  * lässt — dieselbe Bauart wie im Token-Eimer (`src/http/rate-limiter.ts`).
@@ -547,7 +547,8 @@ async function runLocked(
 
   // Der Folgeaufruf, der genau dort weitermacht, wo dieser Lauf aufgehört hat. Die Kennung
   // steht hier als ZAHL, weil der Abholendpunkt eine Ganzzahl verlangt; im Datenblock steht
-  // sie nach S10 als Zeichenkette. Nach error_code 7 gibt es keinen Anschluss: Genau diese
+  // sie als Zeichenkette, wie jede Kennung dieses Servers (Umwandlungsregel 2 im Kopf von
+  // src/mapping/coerce.ts). Nach error_code 7 gibt es keinen Anschluss: Genau diese
   // Kennung ist dann wertlos.
   if (result.status !== "done" && lastFailure?.errorCode !== NOT_FOUND_CODE) {
     ctx.continueWith({ tool: report.getTool, report_id_by_customer: reportId });
@@ -633,8 +634,8 @@ function outcome(
     kind: "ok",
     data: {
       report_type: reportType,
-      // Ausgehend immer String (Streitfrage S10), auch wenn der Abholendpunkt eine Ganzzahl
-      // verlangt.
+      // Ausgehend immer String (Umwandlungsregel 2 im Kopf von src/mapping/coerce.ts), auch
+      // wenn der Abholendpunkt eine Ganzzahl verlangt.
       report_id_by_customer: reportId === null ? null : String(reportId),
       period: { date_from: period.dateFrom, date_to: period.dateTo, base: period.base },
       status: result.status,
@@ -750,10 +751,10 @@ export const bb_reports_run: BundleEntry = {
     stepFromTool(bb_reports_create_bwa, "create_bwa", "required"),
     stepFromTool(bb_reports_create_sums, "create_sums", "required"),
     // Die beiden Abholschritte entnehmen aus `default` und nicht aus `reports`; das ist die
-    // Eimerbelegung ihrer Registereinträge und zugleich die eine begründete Ausnahme aus
-    // Abschnitt 6 Festlegung 1 der Bauvorlage: Der Eimer `reports` fasst einen Token je zehn
-    // Sekunden, und jeder Abholversuch wartete sonst die volle Bremszeit ab — die
-    // Warteschleife wäre durch ihre eigene Bremse unbrauchbar.
+    // Eimerbelegung ihrer Registereinträge und zugleich die eine begründete Ausnahme: Der
+    // Eimer `reports` fasst einen Token je zehn Sekunden, und jeder Abholversuch wartete
+    // sonst die volle Bremszeit ab — die Warteschleife wäre durch ihre eigene Bremse
+    // unbrauchbar.
     stepFromTool(bb_reports_get_bwa, "get_bwa", "required"),
     stepFromTool(bb_reports_get_sums, "get_sums", "required"),
   ],
@@ -761,7 +762,7 @@ export const bb_reports_run: BundleEntry = {
   // create-Paare und genau der dazu passende Abholschritt.
   maxCalls: 10,
   // Ein Token genügt: Ohne das create gibt es nichts abzuholen, und mit ihm steht bereits die
-  // Kennung fest, mit der ein späterer Aufruf den Bericht holt (Abschnitt 6 Festlegung 4).
+  // Kennung fest, mit der ein späterer Aufruf den Bericht holt.
   minTokens: 1,
   failureMode: "abort",
   crossChecks: ["Q1", "Q3"],

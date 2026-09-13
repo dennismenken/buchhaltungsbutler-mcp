@@ -1,12 +1,12 @@
-// P12 aus Plan 9.2: Dateiaufbau des Registers.
+// P12: Dateiaufbau des Registers.
 //
 // Eine Datei je Werkzeug, Dateiname gleich exportiertem `name` plus `.ts`. Erst dadurch hat
 // die Frage „wo ändere ich bb_postings_cancel" genau eine Antwort, und erst dadurch können
-// die fünf Registerpakete AP12a bis AP12e gleichzeitig arbeiten, ohne sich in dieselbe Datei
-// zu schreiben (Plan 1.2).
+// mehrere Bearbeiter gleichzeitig arbeiten, ohne sich in dieselbe Datei
+// zu schreiben.
 //
-// Der Index src/registry/index.generated.ts ist NICHT eingecheckt (Plan 4.2). Er entsteht
-// zur Testlaufzeit, weil `pnpm test` `pnpm generate` als ersten Schritt aufruft (AP01).
+// Der Index src/registry/index.generated.ts ist NICHT eingecheckt. Er entsteht
+// zur Testlaufzeit, weil `pnpm test` `pnpm generate` als ersten Schritt aufruft.
 // Diese Prüfung vergleicht deshalb den frisch erzeugten Index mit dem Verzeichnisinhalt und
 // setzt keine eingecheckte Datei voraus; ein Test, der das täte, scheiterte auf einem
 // frischen Klon.
@@ -36,7 +36,7 @@ describe("P12 Dateiaufbau", () => {
 
     for (const name of EXPECTED_TOOL_NAMES) {
       if (!present.has(name)) {
-        problems.push(`src/registry/tools/${name}.ts fehlt (AP12a bis AP12e).`);
+        problems.push(`src/registry/tools/${name}.ts fehlt.`);
       }
     }
 
@@ -44,7 +44,7 @@ describe("P12 Dateiaufbau", () => {
     for (const name of files) {
       if (!expectedNames.has(name)) {
         problems.push(
-          `src/registry/tools/${name}.ts ist zu viel: Der Dateiname ist zugleich der Werkzeugname, und ${name} steht in keiner Liste (Plan 3.8).`,
+          `src/registry/tools/${name}.ts ist zu viel: Der Dateiname ist zugleich der Werkzeugname, und ${name} steht in keiner Liste.`,
         );
       }
     }
@@ -81,7 +81,7 @@ describe("P12 Dateiaufbau", () => {
     const files = new Set(registryFileNames());
     const problems = REGISTRY.filter((tool) => !files.has(tool.name)).map(
       (tool) =>
-        `${tool.name}: das Feld name deckt sich mit keinem Dateinamen. Dateiname und name müssen übereinstimmen (Plan 2.1, P12).`,
+        `${tool.name}: das Feld name deckt sich mit keinem Dateinamen. Dateiname und name müssen übereinstimmen.`,
     );
 
     expectNoIssues(problems);
@@ -97,7 +97,7 @@ describe("P12 Dateiaufbau", () => {
       const path = specPathOf(tool);
       if (TOOL_BY_SPEC_PATH.get(path) !== tool) {
         problems.push(
-          `${tool.name}: über TOOL_BY_SPEC_PATH mit ${path} nicht auffindbar. Nachgeschlagen wird immer mit dem Spezifikationspfad (Plan 4.6).`,
+          `${tool.name}: über TOOL_BY_SPEC_PATH mit ${path} nicht auffindbar. Nachgeschlagen wird immer mit dem Spezifikationspfad.`,
         );
       }
     }

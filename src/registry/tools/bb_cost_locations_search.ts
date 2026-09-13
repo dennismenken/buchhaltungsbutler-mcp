@@ -1,6 +1,6 @@
-// Werkzeug 46 von 54: `/cost-locations/get` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 46 von 54: `/cost-locations/get`.
 //
-// **Dieses Werkzeug trägt Q2, die drei `settings`-Listen nicht** (Plan 4.7, 7.5): Für
+// **Dieses Werkzeug trägt Q2, die drei `settings`-Listen nicht**: Für
 // `/cost-locations/get` nennt die Spezifikation die Obergrenze 1000 ausdrücklich („NOTE: the
 // maximum limit is 1000!“). Damit gibt es eine belegte Schranke, gegen die Q2 prüfen kann,
 // und `maximum` steht im Schema.
@@ -11,7 +11,7 @@
 //
 // Der Testmandant führte am 2026-09-12 keine einzige Kostenstelle (`rows: 0`); der
 // Antwortvertrag stammt deshalb unverändert aus `docs/api/stammdaten.md` und ist durch den
-// Vertragslauf (Plan 9.7, AP17) zu bestätigen. `code` steht als `id-string` im Vertrag, weil
+// Vertragslauf zu bestätigen. `code` steht als `id-string` im Vertrag, weil
 // er der Identifikator ist: Käme er an einem Mandanten mit rein numerischen Codes als Zahl
 // zurück, wäre das sonst an jeder Zeile eine Vertragswarnung.
 
@@ -75,8 +75,8 @@ export const bb_cost_locations_search: ToolEntry = {
     },
   ],
   serverOnlyFields: ["response_format"],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
-  // Der Vertragslauf (AP17, Plan 9.7) hat diesen Endpunkt am 2026-09-13 aufgerufen und KEINE
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
+  // Der Vertragslauf hat diesen Endpunkt am 2026-09-13 aufgerufen und KEINE
   // Bestätigung erreicht: Der Mandant führt keine Kostenstelle, die Antwort war eine leere
   // Liste. Das ist kein Fehler und keine Abweichung — es ist die eine Stelle, an der der Lauf
   // nichts lernen kann. Die beiden Feldnamen bleiben damit aus `docs/api/stammdaten.md`

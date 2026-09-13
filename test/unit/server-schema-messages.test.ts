@@ -1,4 +1,4 @@
-// Die Meldungen von Guard 3 an den **echten** 54 Werkzeugen (Plan 1.4 Schritt 4, 5.8; AP10).
+// Die Meldungen von Guard 3 an den **echten** 54 Werkzeugen.
 //
 // Geprüft wird das, wovon der Agent seinen nächsten Aufruf ableitet: Sagt die Absage, ob er
 // etwas **nachtragen** oder etwas **umformen** muss, und benennt sie die Stelle so, dass er
@@ -7,7 +7,7 @@
 //   Enum-Felder    Zod 4 erzeugt an jedem Enum den Code `invalid_value` und dazu den
 //                  englischen Rohtext „Invalid option: expected one of …" — auch dann, wenn
 //                  das Pflichtfeld schlicht fehlt. 54 Enum-Felder in 31 der 54 Werkzeuge
-//                  fielen damit aus der deutschen Fehlersprache heraus (E4) und verschwiegen
+//                  fielen damit aus der deutschen Fehlersprache heraus und verschwiegen
 //                  zugleich, was übergeben wurde.
 //   Listenstellen  Die frühere Klammernotation zählte ab 1 und schrieb damit `items[2]` für
 //                  das zweite Element. In JSON und JavaScript ist das ausnahmslos das dritte;
@@ -64,7 +64,7 @@ function textOf(result: { content?: unknown }): string {
 /**
  * Der Block `[Warum]` ohne seine Beschriftung.
  *
- * Er steht laut Plan 5.8 auf genau einer Zeile; die Befunde eines Aufrufs stehen also alle in
+ * Er steht auf genau einer Zeile; die Befunde eines Aufrufs stehen also alle in
  * dieser einen Zeile und müssen sich dort voneinander abheben.
  */
 function reasonOf(text: string): string {

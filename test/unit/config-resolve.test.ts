@@ -153,7 +153,7 @@ describe("Zustand nicht konfiguriert, 6.5", () => {
     expect(warnings.some((warning) => warning.code === "not-configured")).toBe(true);
   });
 
-  it("liefert den Absagetext aus 6.5 Punkt 4 wörtlich", () => {
+  it("liefert den Absagetext wörtlich", () => {
     const { config } = resolve({ BB_API_CLIENT: ENV_CLIENT });
 
     expect(formatNotConfiguredToolError("bb_receipts_search", config)).toBe(
@@ -258,7 +258,7 @@ describe("unbekannte BB_*-Variablen", () => {
 });
 
 describe("das Konfigurationsobjekt", () => {
-  it("trägt jeden Wert aus 6.2 und ist eingefroren", () => {
+  it("trägt jeden Vorgabewert und ist eingefroren", () => {
     const { config } = resolve({
       BB_API_CLIENT: ENV_CLIENT,
       BB_API_SECRET: ENV_SECRET,
@@ -308,7 +308,7 @@ describe("das Konfigurationsobjekt", () => {
     expect(resolve({}).config.maxAmountCents).toBeNull();
   });
 
-  it("setzt die Vorgaben aus 6.2, wenn nichts gesetzt ist", () => {
+  it("setzt die Vorgaben ein, wenn nichts gesetzt ist", () => {
     const { config } = resolve({});
 
     expect(config.readOnly).toBe(false);

@@ -1,12 +1,11 @@
-// Baut das `.mcpb`-Bundle für Claude Desktop (Plan 2, AP21): `pnpm build-mcpb`.
+// Baut das `.mcpb`-Bundle für Claude Desktop: `pnpm build-mcpb`.
 //
 // **Dieses Skript veröffentlicht nichts.** Es erzeugt eine Datei im Projektverzeichnis und
 // setzt keinen einzigen Netzwerkaufruf ab. Weder `npm publish` noch `git tag` noch `git push`
-// kommen hier vor; beide unumkehrbaren Schritte führt der Projektinhaber selbst aus
-// (Plan 11.2, AP21).
+// kommen hier vor; beide unumkehrbaren Schritte führt der Projektinhaber selbst aus.
 //
 // **Das Verpackungswerkzeug wird ausschließlich aus `node_modules` aufgerufen, niemals über
-// `npx`** (Plan 13.5). Der Grund ist ein Befund und keine Vorliebe: Das Bundle-Werkzeug heißt
+// `npx`**. Der Grund ist ein Befund und keine Vorliebe: Das Bundle-Werkzeug heißt
 // `@anthropic-ai/mcpb` und liefert ein `bin` namens `mcpb`. Der **unscoped** Name `mcpb`
 // existiert auf npm am 2026-09-12 nicht (`npm view mcpb` → HTTP 404). `npx mcpb` bräche heute
 // also ab — und führte, sobald jemand den freien Namen registriert, in einem
@@ -14,14 +13,15 @@
 // Der Name ist unbesetzt und damit besetzbar. Aufgerufen wird deshalb die Datei, die der
 // Auflöser unter dem gescopten Namen findet, und nur sie.
 //
-// **Die Werkzeugliste des Manifests wird aus dem Register erzeugt und nie von Hand gepflegt**
-// (Plan 2, 9.3). Die Vorlage `.mcpb/manifest.template.json` trägt dafür eine leere Liste und
+// **Die Werkzeugliste des Manifests wird aus dem Register erzeugt und nie von Hand gepflegt**.
+// Die Vorlage `.mcpb/manifest.template.json` trägt dafür eine leere Liste und
 // eine Platzhalterversion; dieses Skript setzt beides ein und bricht ab, wenn die Vorlage die
 // Platzhalter nicht mehr trägt. `test/contract/mcpb-tools.test.ts` prüft das Ergebnis
 // anschließend gegen das Register.
 //
 // **Die Liste führt beide Werkzeugmengen: die 54 Endpunktwerkzeuge und die 5 Bündelwerkzeuge**
-// (N1). Das Manifest trägt `tools_generated: false` und behauptet damit eine vollständige
+// Die 54 bleiben neben den Bündeln unverändert bestehen. Das Manifest trägt
+// `tools_generated: false` und behauptet damit eine vollständige
 // Liste; führte sie nur `TOOL_ENTRIES`, läse der Nutzer im Installationsdialog von Claude
 // Desktop 54 Werkzeuge, während der Server 59 anmeldet. Registriert werden beide Mengen in
 // `src/server/create-server.ts`, und `dist/index.js` führt beide aus.
@@ -35,7 +35,7 @@
 //                     Fehlersuche an einem Bundle, das sich nicht installieren lässt.
 //   --help            diese Übersicht.
 //
-// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst (Plan 13.1).
+// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst.
 
 import { spawnSync } from "node:child_process";
 import {
@@ -114,7 +114,7 @@ export function readManifestTemplate(file: string = TEMPLATE_FILE): Manifest {
   if (!Array.isArray(tools) || tools.length > 0) {
     throw new Error(
       `${file}: Das Feld tools muss eine leere Liste sein. Die Werkzeugliste wird aus dem ` +
-        "Register erzeugt (Plan 9.3); eine von Hand gepflegte Liste wäre eine zweite Quelle.",
+        "Register erzeugt; eine von Hand gepflegte Liste wäre eine zweite Quelle.",
     );
   }
 
@@ -126,7 +126,7 @@ export function readManifestTemplate(file: string = TEMPLATE_FILE): Manifest {
  *
  * Übernommen werden `name` und `description` unverändert. Gekürzt wird nichts: Was der Nutzer
  * vor der Installation liest, ist derselbe Text, den der Agent nach der Installation sieht
- * (E6, Vollständigkeit vor Bequemlichkeit). Sortiert wird nach Name in Codepunktfolge, damit
+ * (Vollständigkeit vor Bequemlichkeit). Sortiert wird nach Name in Codepunktfolge, damit
  * zwei Bauläufe zeichengleiche Manifeste ergeben.
  */
 export function buildToolList(entries: readonly ToolListSource[]): ManifestTool[] {
@@ -280,7 +280,7 @@ export function resolveMcpbCli(): string {
   } catch {
     throw new Error(
       "@anthropic-ai/mcpb liegt nicht in node_modules. Das Bundle wird ausschließlich mit dem " +
-        "installierten Werkzeug gebaut, nie über npx (Plan 13.5). Zuerst " +
+        "installierten Werkzeug gebaut, nie über npx. Zuerst " +
         "pnpm install --frozen-lockfile ausführen.",
     );
   }
@@ -358,7 +358,7 @@ export function parseArgs(argv: readonly string[]): Options {
   return { out, keepStaging, help };
 }
 
-const HELP_TEXT = `Baut das .mcpb-Bundle für Claude Desktop (Plan 2, AP21).
+const HELP_TEXT = `Baut das .mcpb-Bundle für Claude Desktop.
 
   node scripts/build-mcpb.ts [--out <datei>] [--keep-staging]
 

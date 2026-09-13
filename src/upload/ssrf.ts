@@ -1,8 +1,8 @@
 /**
  * `https://` als Belegquelle: Adressprüfung **je Weiterleitungssprung**, Sperre der privaten
- * Netzbereiche und Link-Local-Adressen, laufende Bytezählung (Plan 11.2 AP13).
+ * Netzbereiche und Link-Local-Adressen, laufende Bytezählung.
  *
- * Der Schalter `BB_MCP_UPLOAD_FROM_URL` ist standardmäßig aus (6.2). Ist er an, holt dieser
+ * Der Schalter `BB_MCP_UPLOAD_FROM_URL` ist standardmäßig aus. Ist er an, holt dieser
  * Server eine Datei von einer Adresse, die der Agent bestimmt — und der Agent hat seine
  * Eingaben von Dritten. Ohne Schutz wäre das eine Abfrage aus dem Netz des Betreibers heraus
  * (SSRF): Ein Nachbardienst, ein Router auf `192.168.*` oder der Metadatendienst einer Cloud

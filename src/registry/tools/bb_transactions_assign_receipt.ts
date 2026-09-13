@@ -1,12 +1,12 @@
-// Werkzeug 14, `/transactions/assign/receipt`: einen Beleg einer Zahlung zuordnen
-// (Plan 3.8, AP12b). Wirkung ändernd, Klasse A, Pflichtsatz U1.
+// Werkzeug 14, `/transactions/assign/receipt`: einen Beleg einer Zahlung zuordnen.
+// Wirkung ändernd, Klasse A, Pflichtsatz U1.
 //
 // Klasse A und nicht D oder B: Die Zuordnung ist eine Verbindung, die dieselbe API wieder
 // lösen kann (bb_transactions_unassign_receipt). Genau diese Umkehrbarkeit steht als U1 in der
-// Beschreibung, und der Umkehrweg ist dort namentlich genannt (Plan 3.5).
+// Beschreibung, und der Umkehrweg ist dort namentlich genannt.
 //
 // Die Zuordnung erzeugt KEINEN Buchungssatz. Das ist der häufigste Irrtum an dieser Stelle und
-// steht deshalb als Negation in der Beschreibung (Plan 4.9 Punkt 4).
+// steht deshalb als Negation in der Beschreibung.
 
 import { idByCustomer } from "../../schema/vocab.js";
 import type { ToolEntry } from "../types.js";
@@ -54,7 +54,7 @@ export const bb_transactions_assign_receipt: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Die Erfolgsantwort trägt nur `success` und `message`; einen Datensatz liefert sie nicht.

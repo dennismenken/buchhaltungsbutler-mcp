@@ -1,12 +1,12 @@
 /**
- * Content-Type-Prüfung und Umschlagzerlegung, vier Stufen in fester Reihenfolge (Plan 5.5).
+ * Content-Type-Prüfung und Umschlagzerlegung, vier Stufen in fester Reihenfolge.
  *
  * 1. **Content-Type.** Beginnt der Wert nicht mit `application/json`, wird der Körper nicht
  *    geparst, sondern ein {@link NonJsonResponseError} geworfen. Die Prüfung läuft über den
  *    Header und nicht über ein `try` um `JSON.parse`: Ein `try` fängt den Fehler zwar auch,
  *    verliert aber die Information, dass die Gegenstelle gar nicht als API geantwortet hat.
  *    Der Fall ist belegt — der literale Pfad `/transactions/get/id_by_customer` liefert eine
- *    HTML-Fehlerseite (Plan 4.6, `live-befunde-orchestrator.md` Befund 1).
+ *    HTML-Fehlerseite (Befund L1 in docs/api/live-befunde.md).
  * 2. **JSON-Zerlegung.**
  * 3. **Umschlagform.** Objekt mit booleschem `success`.
  * 4. **Erfolg oder Fehler.** Geprüft wird `success === false`, nicht das Vorhandensein von
@@ -14,7 +14,7 @@
  *
  * Bei Erfolg wird die Form gegen das Feld `shape` des Registereintrags gehalten: `list`
  * erwartet ein Array in `data`, `object` ein Objekt (der Einzelabruf liefert **kein** `rows`,
- * Befund L2), `ack` gar keine Nutzdaten.
+ * Befund L2 in docs/api/live-befunde.md), `ack` gar keine Nutzdaten.
  */
 
 import { redact } from "../config/redact.js";
@@ -27,10 +27,10 @@ import {
   type TransportErrorContext,
 } from "./transport-error.js";
 
-/** Die drei erwarteten Umschlagformen aus dem Registereintrag (Plan 5.5, 2.1). */
+/** Die drei erwarteten Umschlagformen aus dem Registereintrag. */
 export type EnvelopeShape = ToolEntry["shape"];
 
-/** Zahl der Zeichen, die aus einem nicht verwertbaren Körper übernommen werden (Plan 5.5). */
+/** Zahl der Zeichen, die aus einem nicht verwertbaren Körper übernommen werden. */
 export const FOREIGN_TEXT_LIMIT = 200;
 
 /**
@@ -51,7 +51,7 @@ interface EnvelopeBase {
   readonly status: number;
   /** Das Feld `message` der Antwort, wörtlich; `null`, wenn es fehlte oder leer war. */
   readonly message: string | null;
-  /** Der vollständige Antwortkörper. Unbekannte Felder bleiben darin erhalten (S18). */
+  /** Der vollständige Antwortkörper. Unbekannte Felder bleiben erhalten, nichts entfällt. */
   readonly body: Readonly<Record<string, unknown>>;
   readonly warnings: readonly EnvelopeWarning[];
 }
@@ -60,7 +60,10 @@ interface EnvelopeBase {
 export type SuccessEnvelope =
   | (EnvelopeBase & {
       readonly shape: "list";
-      /** Die Zeilenzahl **dieser Antwort**, niemals eine Gesamttrefferzahl (Befund L5). */
+      /**
+       * Die Zeilenzahl **dieser Antwort**, niemals eine Gesamttrefferzahl
+       * (Befund L5 in docs/api/live-befunde.md).
+       */
       readonly rows: number;
       readonly data: readonly unknown[];
     })
@@ -91,8 +94,8 @@ export function isJsonContentType(value: string | null): boolean {
  * Text optisch umsortieren lässt. Zeilenumbrüche und Tabulatoren werden zu Leerzeichen.
  *
  * Der Wortlaut bleibt dabei erhalten; es wird kein Zeichen ersetzt, das etwas bedeutet. Die
- * vollständige Neutralisierung von Fremdtext in Antworten ist Sache von `response/sanitize.ts`
- * (AP09); hier geschieht nur das Nötige, damit ein Fehlertext nicht manipulierbar ist.
+ * vollständige Neutralisierung von Fremdtext in Antworten ist Sache von `response/sanitize.ts`;
+ * hier geschieht nur das Nötige, damit ein Fehlertext nicht manipulierbar ist.
  */
 export function stripUnsafeCharacters(text: string): string {
   // Zuerst die Zeilenstruktur: Tabulator, Zeilenumbruch und Wagenrücklauf werden zu einem
@@ -168,7 +171,8 @@ function readMessage(body: Record<string, unknown>): string | null {
  *
  * Gemessen liefert die API eine JSON-Zahl. Eine Zahl in Anführungszeichen wird trotzdem
  * angenommen, weil dieselbe API Beträge, Kennungen und Booleans als Zeichenketten führt
- * (Befund L3) und ein hier verworfener Code den ganzen Fehlerkatalog umgehen würde.
+ * (Befund L3 in docs/api/live-befunde.md) und ein hier verworfener Code den ganzen
+ * Fehlerkatalog umgehen würde.
  */
 function readErrorCode(body: Record<string, unknown>): number | null {
   const raw = body.error_code;
@@ -202,13 +206,13 @@ export interface ParseEnvelopeInput {
   readonly status: number;
   readonly contentType: string | null;
   readonly bodyText: string;
-  /** Die im Registereintrag erwartete Form (Plan 5.5). */
+  /** Die im Registereintrag erwartete Form. */
   readonly shape: EnvelopeShape;
   readonly context: TransportErrorContext;
 }
 
 /**
- * Zerlegt die Antwort nach den vier Stufen aus 5.5.
+ * Zerlegt die Antwort in vier Stufen.
  *
  * @returns Die Erfolgsantwort, passend zur erwarteten Form.
  * @throws {NonJsonResponseError} Stufe 1.

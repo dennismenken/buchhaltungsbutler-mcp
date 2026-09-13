@@ -1,21 +1,22 @@
-// Guard 6 aus Plan 1.4: der Duplikatshinweis. **Im Auslieferungszustand abgeschaltet**
-// (`BB_MCP_DUPLICATE_CHECK=off`, Plan 6.2).
+// Guard 6: der Duplikatshinweis. **Im Auslieferungszustand abgeschaltet**
+// (`BB_MCP_DUPLICATE_CHECK=off`).
 //
 // Vier Eigenschaften sind verbindlich und alle vier stehen als Code in diesem Modul:
 //
 //  1. **Er blockiert nie.** Ein Treffer wandert in die Antwort, der Aufruf läuft weiter. Eine
-//     serverseitige Sperre, die der Nutzer aus dem Gespräch heraus nicht aufheben kann, ist
-//     genau das Muster, das E2 ausschließt; zwei fachlich gleiche Belege am selben Tag sind
-//     zudem ein zulässiger Fall (`tool-design.md` 9.6 Punkt 4).
+//     serverseitige Sperre, die der Nutzer aus dem Gespräch heraus nicht aufheben kann,
+//     widerspricht der Festlegung, dass die Freigabe beim Client liegt und nicht im Server
+//     (`tool-design.md` 9.4); zwei fachlich gleiche Belege am selben Tag sind zudem ein
+//     zulässiger Fall (`tool-design.md` 9.6 Punkt 4).
 //  2. **Er läuft bei Stapelwerkzeugen genau einmal für den ganzen Stapel** (`perBatch: true`),
 //     nicht je Element. Ein Stapel mit 50 Belegen darf nicht 50 Zusatzaufrufe auslösen.
 //  3. **Ist der Schalter aus, geht kein Zusatzaufruf hinaus.** Dann bleibt ein Werkzeugaufruf
-//     genau ein API-Aufruf (Plan 7.5 Regel 2).
+//     genau ein API-Aufruf.
 //  4. **Er scheitert nie laut.** Jeder Fehler der Nachschlage-Abfrage endet als Zeile auf
 //     stderr und nicht als Fehler des eigentlichen Aufrufs: Der Hinweis ist eine Zugabe, und
 //     eine Zugabe darf den Vorgang nicht kippen.
 //
-// Der Preis ist benannt und steht im Zustandsblock der `instructions` (Plan 6.7 Punkt 1): Bei
+// Der Preis ist benannt und steht im Zustandsblock der `instructions`: Bei
 // `on` verbraucht jeder anlegende Aufruf ein zweites Token aus dem Minutenkontingent des
 // Mandanten.
 
@@ -97,10 +98,10 @@ function keyTuples(
 /**
  * Vergleicht zwei Werte fachlich.
  *
- * Zwei Formen sind gemessen verschieden und bedeuten dasselbe (Plan 0.3 Befund L3): Kennungen
+ * Zwei Formen sind gemessen verschieden und bedeuten dasselbe: Kennungen
  * kommen bei `receipts` als Zeichenkette und bei `transactions` als Zahl zurück, und Beträge
  * kommen durchgehend als Zeichenkette. Deshalb wird ein Betrag in Ganzzahl-Cent verglichen und
- * alles andere als Zeichenkette; auf Gleitkomma wird nie gerechnet (Plan 7.4).
+ * alles andere als Zeichenkette; auf Gleitkomma wird nie gerechnet.
  */
 function valuesMatch(left: unknown, right: unknown): boolean {
   const leftText = scalarText(left);
@@ -246,7 +247,7 @@ export async function checkDuplicates(input: DuplicateCheckInput): Promise<strin
   const spec = input.entry.duplicateCheck;
   if (spec === undefined || input.config.duplicateCheck !== "on") {
     // Der Auslieferungszustand. Hier endet der Guard, ohne etwas zu tun, und vor allem ohne
-    // einen Zusatzaufruf: Ein Werkzeugaufruf bleibt genau ein API-Aufruf (Plan 7.5 Regel 2).
+    // einen Zusatzaufruf: Ein Werkzeugaufruf bleibt genau ein API-Aufruf.
     return undefined;
   }
 

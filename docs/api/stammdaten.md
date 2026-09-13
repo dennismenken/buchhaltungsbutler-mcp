@@ -8,7 +8,7 @@ Accounts, Cost-Locations und Comments.
 
 | Quelle | Art | Abrufdatum |
 | --- | --- | --- |
-| `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json` | Offizielle Swagger-2.0-Beschreibung, Version 1.9.1, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json` | 2026-09-12 |
+| `docs/openapi/buchhaltungsbutler-v1.json` | Offizielle Swagger-2.0-Beschreibung, Version 1.9.1, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json` | 2026-09-12 |
 | `https://app.buchhaltungsbutler.de/docs/api/v1/` | Offizielle API-Dokumentation, Abschnitte Authentifizierung und Rate Limit | 2026-09-12 |
 | `https://wissen.buchhaltungsbutler.de/hc/de/articles/11465983139101-Kontenrahmen-und-Sachkontenlänge-wählen` | Wissensdatenbank, Kontenrahmen und Kontenlängen | 2026-09-12 |
 | `https://wissen.buchhaltungsbutler.de/hc/de/articles/11465877273757-Informationen-zu-Basiskonten-und-zur-Einrichtung` | Wissensdatenbank, Basiskonten | 2026-09-12 |
@@ -2465,7 +2465,7 @@ Alle Live-Beobachtungen stammen vom 2026-09-12, erhoben mit 6 lesenden Requests 
 # Anhang B: Innere Widersprüche der Spezifikation
 
 Alle aus der Datei
-`/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json`,
+`docs/openapi/buchhaltungsbutler-v1.json`,
 Stand 2026-09-12. Nicht live prüfbar, weil dazu fehlerhafte Requests nötig gewesen wären.
 
 | Nr | Ort | Widerspruch |

@@ -39,7 +39,7 @@ describe("Bündelregister", () => {
       .filter((name) => !expected.has(name))
       .map(
         (name) =>
-          `${name} ist zu viel: Der Eintrag steht in BUNDLE_ENTRIES, aber in keiner Namensliste. Ein weiteres Bündel ist eine Entscheidung des Projektinhabers (N3, N4).`,
+          `${name} ist zu viel: Der Eintrag steht in BUNDLE_ENTRIES, aber in keiner Namensliste. Ein weiteres Bündel ist eine Entscheidung des Projektinhabers.`,
       );
 
     expectNoIssues(problems);
@@ -50,7 +50,7 @@ describe("Bündelregister", () => {
     expect(BUNDLE_ENTRIES).toHaveLength(EXPECTED_BUNDLE_COUNT);
   });
 
-  it("hält die Registrierreihenfolge der Bauvorlage ein", () => {
+  it("hält die festgelegte Registrierreihenfolge ein", () => {
     expect(registeredNames).toEqual([...EXPECTED_BUNDLE_NAMES]);
   });
 
@@ -74,7 +74,7 @@ describe("Bündelregister", () => {
   it("trägt bei jedem Eintrag die Gruppe bundles", () => {
     const problems = BUNDLE_ENTRIES.filter((entry) => entry.group !== BUNDLE_TOOL_GROUP).map(
       (entry) =>
-        `${entry.name}: group ist ${String(entry.group)} statt ${BUNDLE_TOOL_GROUP}. Damit verschwände das Bündel unter einem Wert von BB_MCP_TOOL_GROUPS, mit dem niemand rechnet (N5).`,
+        `${entry.name}: group ist ${String(entry.group)} statt ${BUNDLE_TOOL_GROUP}. Damit verschwände das Bündel unter einem Wert von BB_MCP_TOOL_GROUPS, mit dem niemand rechnet.`,
     );
 
     expectNoIssues(problems);

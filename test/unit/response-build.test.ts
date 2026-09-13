@@ -26,8 +26,8 @@ import {
 } from "../golden/entries.js";
 import { loadGolden } from "../golden/index.js";
 
-// Plan 7.1, 7.5 und 7.6: structuredContent und Textblock entstehen aus derselben
-// Datenstruktur. Zusätzlich der Nachweis, dass das offene outputSchema (7.1, S18) wirklich
+// structuredContent und Textblock entstehen aus derselben Datenstruktur. Zusätzlich der
+// Nachweis, dass das offene outputSchema wirklich
 // auf die erzeugte Antwort passt — ein Schema, das die eigene Antwort verwirft, wäre keine
 // Zusage, sondern eine Zierde.
 
@@ -67,7 +67,7 @@ function mapGolden(
 
 // --- Ein kleiner Schemaprüfer --------------------------------------------------------
 // Kein zusätzliches Paket: Geprüft werden Pflichtfelder und deklarierte Typen, und genau das
-// verlangt Plan 7.1 vom offenen Ausgabeschema.
+// verlangt das offene Ausgabeschema.
 
 function typeMatches(value: unknown, type: unknown): boolean {
   const types = Array.isArray(type) ? type : [type];
@@ -117,13 +117,13 @@ function check(value: unknown, schema: Record<string, unknown>, path = "$"): str
       if (subSchema !== undefined) {
         problems.push(...check(fieldValue, subSchema, `${path}.${name}`));
       }
-      // Unbekannte Felder sind erlaubt: additionalProperties bleibt offen (S18).
+      // Unbekannte Felder sind erlaubt: additionalProperties bleibt offen.
     }
   }
   return problems;
 }
 
-describe("Die Listenantwort (Plan 7.1, 7.5)", () => {
+describe("Die Listenantwort", () => {
   it("trägt die Tatsachen der Seite und die Zeilen", () => {
     const response = buildToolResponse({
       entry: RECEIPTS_SEARCH,
@@ -200,7 +200,7 @@ describe("Die Listenantwort (Plan 7.1, 7.5)", () => {
   });
 });
 
-describe("Kürzung und Binärinhalte (Plan 7.6)", () => {
+describe("Kürzung und Binärinhalte", () => {
   it("kürzt eine lange Liste, weist die Kürzung aus und lügt dabei nicht", () => {
     const rows = Array.from({ length: 400 }, (_, index) => ({
       success: true,
@@ -300,7 +300,7 @@ describe("Vertragsverletzung und Speicherherkunft stehen vorn", () => {
     expect(response.structuredContent._contract_warnings).toBeDefined();
   });
 
-  it("weist einen Treffer aus dem Stammdatenspeicher wörtlich aus (Plan 7.8 Punkt 2)", () => {
+  it("weist einen Treffer aus dem Stammdatenspeicher wörtlich aus", () => {
     const response = buildToolResponse({
       entry: POSTINGACCOUNTS_SEARCH,
       mapped: mapGolden(POSTINGACCOUNTS_SEARCH, "postingaccounts-get-list"),
@@ -327,7 +327,7 @@ describe("Vertragsverletzung und Speicherherkunft stehen vorn", () => {
   });
 });
 
-describe("Die Schreibantwort (Plan 7.6)", () => {
+describe("Die Schreibantwort", () => {
   const freePosting = {
     date: "2026-08-14",
     postingtext: "Büromaterial August",
@@ -546,7 +546,7 @@ describe("Die übrigen Bestandteile der Schreibantwort", () => {
   });
 });
 
-describe("Das offene outputSchema passt auf die erzeugte Antwort (Plan 7.1, S18)", () => {
+describe("Das offene outputSchema passt auf die erzeugte Antwort", () => {
   const cases: readonly [ToolEntry, string, Record<string, unknown>][] = [
     [RECEIPTS_SEARCH, "receipts-get-list", { list_direction: "inbound", limit: 100, offset: 0 }],
     [

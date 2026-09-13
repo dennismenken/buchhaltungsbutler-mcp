@@ -7,7 +7,7 @@ import { ENDPOINTS, ENDPOINTS_BY_PATH } from "../../src/generated/endpoints.js";
 import { ERRORS } from "../../src/generated/errors.js";
 import { PACKAGE_NAME, SERVER_INFO, VERSION } from "../../src/generated/version.js";
 
-// Prüfgrößen, keine Zierde (Plan 0.4, AP03). Jede dieser Zahlen ist am 2026-09-12 maschinell
+// Prüfgrößen, keine Zierde. Jede dieser Zahlen ist am 2026-09-12 maschinell
 // gegen docs/openapi/buchhaltungsbutler-v1.json ausgezählt. Ändert sich eine, hat sich die
 // Spezifikationsdatei geändert — und dann ist das eine Entscheidung und kein Nebenbefund:
 // Der Test schlägt fehl, die Zahl wird bewusst nachgezogen, und die Änderung steht im Diff.
@@ -19,7 +19,7 @@ const ERROR_PAIR_COUNT = 786;
 const MISMATCHED_MESSAGE_PAIRS = 179;
 
 // Die vier Pfade mit dem Platzhaltersegment id_by_customer. Sie stehen im Generat und im
-// Fehlerkatalog UNVERÄNDERT; der Pfadbau geschieht erst zur Laufzeit (Plan 4.6).
+// Fehlerkatalog UNVERÄNDERT; der Pfadbau geschieht erst zur Laufzeit.
 const PLACEHOLDER_PATHS = [
   "/receipts/get/id_by_customer",
   "/receipts/delete/id_by_customer",
@@ -38,7 +38,7 @@ describe("src/generated/endpoints.ts", () => {
     const allParams = ENDPOINTS.flatMap((endpoint) => endpoint.parameters);
     expect(allParams).toHaveLength(PARAMETER_COUNT);
     expect(allParams.filter((parameter) => parameter.name === "api_key")).toHaveLength(PATH_COUNT);
-    // 371 minus 54 sind die 317 fachlichen Parameter aus Plan 0.4.
+    // 371 minus 54 sind die 317 fachlichen Parameter.
     expect(allParams.length - PATH_COUNT).toBe(317);
   });
 
@@ -66,7 +66,7 @@ describe("src/generated/endpoints.ts", () => {
     );
     expect(withSchema).toHaveLength(PARAMETERS_WITH_SCHEMA);
     // Acht der neun verweisen über $ref auf eine Definition, der neunte trägt ein
-    // Inline-Schema: der Platzhalter `order` an /receipts/get (Plan 4.1).
+    // Inline-Schema: der Platzhalter `order` an /receipts/get.
     expect(withSchema.filter((parameter) => parameter.ref !== undefined)).toHaveLength(8);
     const order = ENDPOINTS_BY_PATH.get("/receipts/get")?.parameters.find(
       (parameter) => parameter.name === "order",
@@ -76,7 +76,7 @@ describe("src/generated/endpoints.ts", () => {
   });
 
   it("macht den Widerspruch in PostingsFree sichtbar, statt ihn zu glätten", () => {
-    // `amounts` steht in required, es gibt aber nur `amount` (Plan 0.5, Korrektur 1).
+    // `amounts` steht in required, es gibt aber nur `amount`.
     const freePostings = ENDPOINTS_BY_PATH.get("/postings/add-batch/free")?.parameters.find(
       (parameter) => parameter.name === "free_postings",
     );
@@ -103,7 +103,7 @@ describe("src/generated/endpoints.ts", () => {
       expect(ENDPOINTS_BY_PATH.has(path), `${path} fehlt im Generat`).toBe(true);
     }
     // Der Identifikator kommt in der Parameterliste dieser vier Pfade nicht vor; er steht
-    // im Pfad und nie im Body (Plan 4.6, Regel 5).
+    // im Pfad und nie im Body.
     for (const path of PLACEHOLDER_PATHS) {
       const names = ENDPOINTS_BY_PATH.get(path)?.parameters.map((parameter) => parameter.name);
       expect(names, `${path} führt id_by_customer als Body-Parameter`).not.toContain(
@@ -143,14 +143,14 @@ describe("src/generated/errors.ts", () => {
   it("hält die Zahl der abweichenden Meldungspaare auf 179", () => {
     // message stammt aus properties.message.enum[0], summary aus responses[…].description.
     // Keiner der beiden Texte ist aus dem anderen abgeleitet; weicht die Zahl ab, hat sich
-    // die Spezifikationsdatei geändert (Plan 5.6).
+    // die Spezifikationsdatei geändert.
     const mismatched = pairs.filter(({ entry }) => entry.message !== entry.summary);
     expect(mismatched).toHaveLength(MISMATCHED_MESSAGE_PAIRS);
   });
 
   it("stuft die elf Paare mit error_code 15 über den HTTP-Status ein", () => {
     // Zehn Pfade führen ihn mit HTTP 403 als vorübergehende Drosselung, /receipts/get als
-    // einziger mit HTTP 400 als Eingabefehler (Plan 5.6, Fußnote).
+    // einziger mit HTTP 400 als Eingabefehler (Fußnote).
     const code15Pairs = pairs.filter(({ code }) => code === 15);
     expect(code15Pairs).toHaveLength(11);
     for (const { path, entry } of code15Pairs) {
@@ -161,7 +161,7 @@ describe("src/generated/errors.ts", () => {
     expect(ERRORS["/transactions/add"]?.[15]?.cls).toBe("transient");
   });
 
-  it("bildet das Beispiel aus Plan 5.6 genau ab", () => {
+  it("bildet das Beispiel genau ab", () => {
     expect(ERRORS["/receipts/get"]?.[5]).toEqual({
       status: 400,
       message: "invalid list_direction specified",
@@ -190,7 +190,7 @@ describe("src/generated/errors.ts", () => {
 });
 
 describe("src/generated/version.ts", () => {
-  // Der Test gegen das stille Scheitern (AP03): Ein Generat mit leerer oder falscher Version
+  // Der Test gegen das stille Scheitern: Ein Generat mit leerer oder falscher Version
   // fiele im Betrieb niemandem auf, weil die Version nur bei `initialize` gemeldet wird.
   const pkg = JSON.parse(readFileSync(resolve(process.cwd(), "package.json"), "utf8")) as {
     name?: unknown;

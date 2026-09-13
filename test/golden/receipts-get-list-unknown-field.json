@@ -1,6 +1,6 @@
 {
-  "_herkunft": "Endpunkt /receipts/get (Liste) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L2, L3 und L5 sowie docs/api/belege.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden | ergänzt um ein Feld, das keine Quelle kennt (erfunden, steht für eine künftige Anbieteränderung)",
-  "_zweck": "dass unbekannte Felder unverändert durchgereicht und gezählt werden (Umsetzungsplan 0.3 Befund L4, 7.3 letzter Fall) und das outputSchema offen bleibt",
+  "_herkunft": "Endpunkt /receipts/get (Liste) | gemessen 2026-09-12 | Quelle: Live-Messung vom 2026-09-12 sowie docs/api/belege.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden | ergänzt um ein Feld, das keine Quelle kennt (erfunden, steht für eine künftige Anbieteränderung)",
+  "_zweck": "dass unbekannte Felder unverändert durchgereicht und gezählt werden und das outputSchema offen bleibt",
   "http": {
     "status": 200,
     "contentType": "application/json; charset=utf-8"

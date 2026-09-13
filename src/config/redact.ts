@@ -2,7 +2,7 @@
  * Schwärzung der drei Geheimnisse.
  *
  * Jede Zeichenkette, die diesen Prozess verlässt — stderr-Protokoll, Fehlertext eines
- * Werkzeugs, Antworttext, Resource-Inhalt — läuft durch {@link redact} (Plan 5.8).
+ * Werkzeugs, Antworttext, Resource-Inhalt — läuft durch {@link redact}.
  *
  * Ein Geheimnis kann in mehr als einer Verpackung auftreten, und genau daran scheitert eine
  * naive Suche nach dem Klartext: Der API Client und das API Secret stehen im
@@ -162,7 +162,7 @@ function rebuild(): void {
  * Meldet einen auffällig kurzen Wert auf stderr — höchstens einmal je Wert und Prozesslauf.
  *
  * Die Meldung nennt den Wert nicht und auch seine Länge nicht, sondern nur die Grenze. Sie
- * geht nach stderr, denn stdout gehört dem MCP-Protokoll (Plan 1.3).
+ * geht nach stderr, denn stdout gehört dem MCP-Protokoll.
  *
  * Genannt werden beide möglichen Fundorte. Ein zu kurzer Wert kann aus einer der drei
  * Umgebungsvariablen stammen, genauso aber aus dem verwendeten Profil der Zugangsdatendatei;

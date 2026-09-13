@@ -1,5 +1,5 @@
 {
-  "_herkunft": "Endpunkt /transactions/get (Liste) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L2 und L3, docs/api/transaktionen.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden | Feldmenge und Typen am 2026-09-12 in AP09 erneut live gegen die Produktivumgebung geprüft (lesend, 5 Aufrufe): Umschlag, Feldzahl und Typen stimmen (6 Felder, id_by_customer als JSON-Zahl, kein account)",
+  "_herkunft": "Endpunkt /transactions/get (Liste) | gemessen 2026-09-12 | Quelle: Live-Messung vom 2026-09-12, docs/api/transaktionen.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden | Feldmenge und Typen am 2026-09-12 erneut live gegen die Produktivumgebung geprüft (lesend, 5 Aufrufe): Umschlag, Feldzahl und Typen stimmen (6 Felder, id_by_customer als JSON-Zahl, kein account)",
   "_zweck": "die Typ-Asymmetrie: id_by_customer ist hier eine JSON-Zahl, bei Belegen ein String; die Liste liefert genau sechs Felder und KEIN account",
   "http": {
     "status": 200,

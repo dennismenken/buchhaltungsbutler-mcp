@@ -1,18 +1,18 @@
-// Die Objektarrays der acht Stapelendpunkte (Plan 2 Dateibaum, 4.4 Punkt 3, 4.8).
+// Die Objektarrays der acht Stapelendpunkte.
 //
 // Acht Body-Parameter verweisen statt auf einen Typ auf eine Definition, und jede dieser
 // Definitionen ist ein Array von Objekten. Dieses Modul trägt die Tabelle dazu und baut den
 // Behälter; die Felder **eines Elements** stehen im Registereintrag, weil sie dort ihre
-// deutschen Beschreibungen tragen und je Ressource verschieden sind (AP12a bis AP12e).
+// deutschen Beschreibungen tragen und je Ressource verschieden sind.
 //
 // Behälter und Element unterscheiden sich in der Spezifikation oft nur durch ein `s`
 // (`Receipts` gegen `Receipt`, `ReceiptsPostings` gegen `ReceiptPostings`). Wer die falsche
 // Definition liest, hält ein Array für ein Objekt; deshalb steht hier beides getrennt in der
-// Tabelle und nicht ein Pfeil je Zeile (Plan 4.4).
+// Tabelle und nicht ein Pfeil je Zeile.
 //
 // `maxItems` ist derselbe Wert wie bei den Positionslisten, nämlich `min(50,
 // BB_MCP_MAX_BATCH)`. Er kommt aus `line-items.ts#batchLimit`, damit es ihn genau einmal
-// gibt (Plan 4.7 Q4).
+// gibt.
 
 import { z } from "zod";
 
@@ -22,7 +22,7 @@ import { idByCustomer } from "./vocab.js";
 
 /** Ein Stapelendpunkt, vollständig beschrieben. */
 export interface BatchContainerSpec {
-  /** Werkzeugname aus Plan 3.8. */
+  /** Werkzeugname. */
   readonly tool: string;
   /** Feldname im Werkzeugschema. */
   readonly field: string;
@@ -41,7 +41,7 @@ export interface BatchContainerSpec {
   readonly itemProperties: number;
   /**
    * `true`, wenn die Spezifikation die Obergrenze 50 für diesen Endpunkt ausdrücklich
-   * nennt. Bei `false` ist sie **nicht verifiziert** und defensiv übernommen (Plan 14.2).
+   * nennt. Bei `false` ist sie **nicht verifiziert** und defensiv übernommen.
    */
   readonly maxDocumented: boolean;
 }
@@ -195,7 +195,7 @@ export function batchArray<T extends z.ZodType>(item: T, options: BatchArrayOpti
   if (!(item instanceof z.ZodObject)) {
     throw new Error(
       "Ein Stapelbehälter nimmt ein Objektschema als Element. Die acht Stapelendpunkte " +
-        "erwarten ausnahmslos Objektlisten (Plan 4.4 Punkt 3).",
+        "erwarten ausnahmslos Objektlisten.",
     );
   }
   const max = batchLimit(options.maxItems);
@@ -229,8 +229,8 @@ export function batchContainer<T extends z.ZodType>(
  * Das Element von `/transactions/assign-batch/receipt` (Werkzeug 15), Definition
  * `TransactionToReceipt`.
  *
- * Dieses eine Element steht vollständig hier und nicht im Registereintrag, weil Plan 4.8 es
- * vollständig festlegt: genau zwei Felder, beide Pflicht, keine Umformung, reine
+ * Dieses eine Element steht vollständig hier und nicht im Registereintrag, weil es
+ * vollständig festliegt: genau zwei Felder, beide Pflicht, keine Umformung, reine
  * Umbenennung des Behälters. Die übrigen sieben Elemente haben zwischen acht und dreizehn
  * Feldern mit ressourceneigenen Beschreibungen und gehören deshalb in die Registerpakete.
  */

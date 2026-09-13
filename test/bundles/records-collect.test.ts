@@ -1,4 +1,4 @@
-// bb_records_collect: Blättern, Kennzahlen, Teilfehler, Namensauflösung (Abschnitt 4.2).
+// bb_records_collect: Blättern, Kennzahlen, Teilfehler, Namensauflösung.
 //
 // Die beiden wichtigsten Zusagen dieser Datei: **Keine Kennzahl ohne Vollständigkeit** (R1) —
 // eine abgebrochene Sammlung liefert keine Summe, sondern die Zahl der gelesenen Zeilen und das

@@ -3,7 +3,7 @@
 ## Warum das hier besonders wichtig ist
 
 Dieser Server arbeitet auf **echten Buchhaltungsdaten eines echten Mandanten**. Er hält die
-Zugangsdaten zu einer Finanzbuchhaltung im Prozess, und 39 seiner 54 Werkzeuge schreiben. Eine
+Zugangsdaten zu einer Finanzbuchhaltung im Prozess, und 40 seiner 59 Werkzeuge schreiben. Eine
 Lücke in diesem Programm ist deshalb keine Unannehmlichkeit, sondern kann Belege, Zahlungen,
 Buchungen und Stammdaten eines fremden Unternehmens betreffen. Buchungen und Rechnungen lassen
 sich über die Schnittstelle nicht löschen; ein Schaden ist also nicht immer rückgängig zu machen.

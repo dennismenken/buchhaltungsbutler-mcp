@@ -1,10 +1,10 @@
-// Werkzeug 44 von 54: `/accounts/add` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 44 von 54: `/accounts/add`.
 //
 // **Umbenennung nach Anhang A:** Der Parameter `type` heißt im Werkzeugschema
 // `payment_account_type`. `type` ist in der Spezifikation siebenfach mit unterschiedlicher
 // Bedeutung belegt; ein Feld dieses Namens sagt dem Aufrufer nichts.
 //
-// **Der Wertevorrat ist hier ein echtes Enum** (Plan 4.3): 'cash', 'bank/institution' und
+// **Der Wertevorrat ist hier ein echtes Enum**: 'cash', 'bank/institution' und
 // 'other' sind abzählbar, mandantenunabhängig und in der Parameterbeschreibung der
 // Spezifikation wörtlich aufgezählt. Mandantendaten wie die Kontonummer sind dagegen nie ein
 // Enum, sondern tragen den Verweis auf das Nachschlagewerkzeug.
@@ -14,11 +14,11 @@
 // Stornozahlung verschwinden. Die Spezifikation schreibt ausdrücklich, dass die Angabe nur
 // bei Kassen wirkt.
 //
-// **`invalidatesCache` ist leer, und das ist eine Vorgabe des Plans** (7.8, AP12d):
+// **`invalidatesCache` ist leer, und das ist beabsichtigt**:
 // `/accounts/get` wird nie zwischengespeichert, deshalb gibt es dort nichts zu verwerfen.
 // Zu bedenken bleibt, dass ein neues Zahlungskonto auch in der vereinigten Kontenliste von
-// `/settings/get/postingaccounts` erscheint (dort als type 'account'); der Plan führt diesen
-// Fall in der Invalidierungstabelle nicht, und er wird hier nicht eigenmächtig ergänzt.
+// `/settings/get/postingaccounts` erscheint (dort als type 'account'); die Invalidierungstabelle
+// führt diesen Fall nicht, und er wird hier nicht eigenmächtig ergänzt.
 
 import { z } from "zod";
 
@@ -105,7 +105,7 @@ export const bb_payment_accounts_create: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Kein `data`: Die Kontonummer steht auf oberster Ebene des Umschlags.
   responseContract: {
     container: "none",
@@ -130,6 +130,6 @@ export const bb_payment_accounts_create: ToolEntry = {
     perBatch: true,
   },
   crossChecks: ["Q3"],
-  // Leer nach Plan 7.8: `/accounts/get` wird nie zwischengespeichert.
+  // Leer: `/accounts/get` wird nie zwischengespeichert.
   invalidatesCache: [],
 };

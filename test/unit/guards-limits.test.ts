@@ -1,4 +1,4 @@
-// Guard 5: Betrags- und Stapelgrenze, positionsgenau (Plan 6.2, 4.7 Q4; AP10).
+// Guard 5: Betrags- und Stapelgrenze, positionsgenau.
 //
 // Der Kern dieses Tests ist der Nachweis, dass Guard 5 **ohne Feldliste** auskommt: Die
 // Mengenfelder findet er über `itemFields` des Registereintrags, die Betragsfelder über die
@@ -114,7 +114,7 @@ function batchEntry(): ToolEntry {
     verifyWith: { kind: "tool", tool: "bb_postings_search", argsFrom: {}, hint: "" },
     // Q4 fehlt bewusst: Sonst meldete Q4 (Guard 4) die zu lange Liste, und Guard 5 käme
     // in diesem Test nie an die Reihe. Ein echter Eintrag trägt Q4 zusätzlich, und das ist
-    // die doppelte Absicherung aus Plan 4.7.
+    // die doppelte Absicherung.
     crossChecks: [],
     invalidatesCache: [],
   };
@@ -262,7 +262,7 @@ describe("Guard 5, Betragsgrenze", () => {
 });
 
 describe("Guard 5, Absagetext", () => {
-  it("nennt beide Grenzen, wenn beide gerissen sind, und trägt Satz 1 aus 5.8", () => {
+  it("nennt beide Grenzen, wenn beide gerissen sind, und trägt Satz 1", () => {
     const stricterConfig = installTestConfig({
       BB_MCP_MAX_AMOUNT: "100.00",
       BB_MCP_MAX_BATCH: "2",
@@ -294,7 +294,7 @@ describe("Guard 5, Absagetext", () => {
       store: createMasterDataStore({ ttlMs: 0 }),
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-    const client = new Client({ name: "ap10-limittest", version: "0.0.0" });
+    const client = new Client({ name: "limittest", version: "0.0.0" });
     await built.server.connect(serverSide);
     await client.connect(clientSide);
 

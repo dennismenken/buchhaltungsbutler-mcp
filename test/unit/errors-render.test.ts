@@ -71,7 +71,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("Der Vierblock (Plan 5.8)", () => {
+describe("Der Vierblock", () => {
   it("trägt vier Blöcke in fester Reihenfolge", async () => {
     const message = await renderTransportFailure(
       apiError(READ_CONTEXT, 400, 5, "invalid list_direction specified"),
@@ -108,7 +108,7 @@ describe("Die drei Zustandsformulierungen", () => {
     expect(selectStateSentence("not-sent", false)).toBe(STATE_NOTHING_SENT);
     expect(selectStateSentence("rejected", false)).toBe(STATE_REJECTED);
     expect(selectStateSentence("unclear", false)).toBe(STATE_UNKNOWN);
-    // Ein vorübergehender Zustand an einem schreibenden Werkzeug weitet die Lage auf (5.6).
+    // Ein vorübergehender Zustand an einem schreibenden Werkzeug weitet die Lage auf.
     expect(selectStateSentence("rejected", true)).toBe(STATE_UNKNOWN);
   });
 
@@ -202,9 +202,10 @@ describe("Die drei Zustandsformulierungen", () => {
   });
 });
 
-describe("Der Wortlaut der Antwort gewinnt (Plan 5.6, AP08 Punkt 1)", () => {
+describe("Der Wortlaut der Antwort gewinnt", () => {
   it("zitiert den live gemessenen Text, der in keiner Spezifikationsquelle steht", async () => {
-    // Befund L6: /receipts/get lieferte zu Code 15 den Text `invalid field specified` — weder
+    // Befund L6 in docs/api/live-befunde.md: /receipts/get lieferte zu Code 15 den Text
+    // `invalid field specified` — weder
     // die description (`invalid sort field is specified`) noch das message-Enum
     // (`invalid sort field specified`).
     const message = await renderTransportFailure(
@@ -379,7 +380,7 @@ describe("Der Sonderfall 5.7 in der Meldung", () => {
   });
 
   it("erzeugt ihn bei einer Drosselung an einem schreibenden Werkzeug", async () => {
-    // 5.6, Zeile `transient`: Retry nur bei Klasse R, sonst der Text aus 5.7. Auch bei
+    // Zeile `transient`: Retry nur bei Klasse R, sonst der Sondertext. Auch bei
     // HTTP 403, weil nicht belegt ist, ob die Einschränkung vor oder nach dem Schreiben griff.
     const context: TransportErrorContext = {
       toolName: "bb_transactions_create",
@@ -416,7 +417,7 @@ describe("Der Sonderfall 5.7 in der Meldung", () => {
   });
 });
 
-describe("Was nie in einen Fehlertext gelangt (Plan 5.8)", () => {
+describe("Was nie in einen Fehlertext gelangt", () => {
   it("gibt keinen angemeldeten Geheimniswert aus", async () => {
     registerSecret("streng-geheimes-secret");
     const message = await renderTransportFailure(

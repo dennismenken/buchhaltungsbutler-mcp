@@ -1,7 +1,7 @@
-// Werkzeug 41 von 54: `/settings/add/postingaccount` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 41 von 54: `/settings/add/postingaccount`.
 //
 // Drei Pflichtfelder, alle drei laut Spezifikation `required: true`; verschärft wird hier
-// nichts (Plan 4.3). `postingaccount_number` und `parent_postingaccount_number` sind an
+// nichts. `postingaccount_number` und `parent_postingaccount_number` sind an
 // diesem Endpunkt **Ganzzahlen**, anders als beim Anlegen eines Debitors oder Kreditors, wo
 // dasselbe Feld eine Zeichenkette ist.
 //
@@ -13,7 +13,7 @@
 //
 // Die Antwort trägt kein `data`; beide Nummern stehen auf oberster Ebene des Umschlags und
 // kommen als **Zeichenkette** zurück, obwohl sie als Ganzzahl gesendet werden. Der Vertrag
-// führt sie deshalb als `id-string` (Plan 7.4, Streitfrage S10).
+// führt sie deshalb als `id-string`.
 
 import { boundedText, identifierValue } from "../../schema/primitives.js";
 import type { ToolEntry } from "../types.js";
@@ -70,7 +70,7 @@ export const bb_postingaccounts_create: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   responseContract: {
     container: "none",
     fields: { postingaccount_number: "id-string", parent_postingaccount_number: "id-string" },

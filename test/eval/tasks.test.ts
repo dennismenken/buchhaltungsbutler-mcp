@@ -1,10 +1,10 @@
-// Der Evaluationslauf aus Plan 9.8 (AP18): die elf Aufgaben gegen aufgezeichnete Mocks.
+// Der Evaluationslauf: die elf Aufgaben gegen aufgezeichnete Mocks.
 //
 // **Was hier gemessen wird und was nicht.** Gemessen wird die Wirkung von Werkzeugnamen,
 // Beschreibungen, Antworten und Fehlermeldungen auf die Werkzeugwahl eines Agenten. Nicht
 // gemessen wird die Serverlogik; die haben die Registerprüfungen, die Vertragstests und die
 // Einheitstests. Ein Fehlschlag hier ist deshalb ein Befund **gegen den Text der Werkzeuge**
-// (Plan 9.8, tool-design.md 10.2 letzter Absatz).
+// (tool-design.md 10.2 letzter Absatz).
 //
 // **Wie die Transkripte entstanden sind, ohne Beschönigung.** Ein Sprachmodell hat die elf
 // Aufgaben am 2026-09-13 einmal durchgearbeitet. Als Entscheidungsgrundlage dienten
@@ -19,17 +19,16 @@
 // Aufgaben gelöst hat, ist dasselbe Modell, das diesen Test und den Bericht geschrieben hat,
 // und es kannte die beiden Nulltoleranz-Kennzahlen. Ein Lauf mit dieser Voreingenommenheit
 // kann zeigen, dass ein Fehler auftritt, aber nicht beweisen, dass keiner auftritt. Ein Lauf
-// ist zudem ein Lauf: Über die Streuung sagt er nichts. Alles Weitere in
-// `docs/entwicklung/befund-evaluation.md`.
+// ist zudem ein Lauf: Über die Streuung sagt er nichts.
 //
 // **Geschäftsdaten sind erfunden.** Kennungen, Beträge, Namen und Verwendungszwecke in diesem
 // Test sind frei erfunden und stammen aus keinem echten Mandanten. Erfunden ist nur der
-// Inhalt; die Struktur der Antworten folgt den gemessenen Befunden aus Plan 0.3 (L2, L3, L5)
+// Inhalt; die Struktur der Antworten folgt den gemessenen Befunden (L2, L3, L5)
 // und den Golden-Dateien unter `test/golden/`. Zugangsdaten kommen nicht vor, hier so wenig
 // wie anderswo: Der Testaufbau setzt Platzhalter.
 //
 // **Der Lauf setzt keinen Netzwerkaufruf ab.** `test/setup.ts` sperrt das Netz; die Basis-URL
-// der Testumgebung ist nicht auflösbar (Plan 9.1).
+// der Testumgebung ist nicht auflösbar.
 //
 // Die vollständigen Transkripte lassen sich ausgeben; sie gehen nach stderr, weil stdout in
 // diesem Projekt dem MCP-Protokoll gehört:
@@ -79,7 +78,7 @@ interface EvalStep {
   /**
    * Nur bei den Klassen D und B: der Datensatz, in den geschrieben wird. Der Harnisch prüft,
    * ob ein **vorangehender lesender Schritt** diesen Wert wirklich geliefert hat; sonst ist
-   * der Aufruf blindes Schreiben im Sinne von Plan 9.8.
+   * der Aufruf blindes Schreiben im Sinne.
    */
   readonly target?: { readonly field: string; readonly value: string };
   /** Zeichenketten, die in der Antwort stehen müssen. Sie tragen das Ergebnis der Aufgabe. */
@@ -111,12 +110,15 @@ interface EvalTask {
  */
 const SUPPLIER_X = "Erfundene Bürobedarf GmbH";
 
-/** Der Umschlag einer Listenantwort (Plan 0.3 Befund L5: `rows` ist die Zeilenzahl DIESER Antwort). */
+/** Der Umschlag einer Listenantwort: `rows` ist die Zeilenzahl DIESER Antwort. */
 function listEnvelope(rows: readonly Record<string, unknown>[]): Record<string, unknown> {
   return { success: true, message: "", rows: rows.length, data: rows };
 }
 
-/** Der Umschlag eines Einzelabrufs: `data` als Objekt, **ohne** `rows` (Befund L2). */
+/**
+ * Der Umschlag eines Einzelabrufs: `data` als Objekt, **ohne** `rows`
+ * (Befund L2 in docs/api/live-befunde.md).
+ */
 function singleEnvelope(record: Record<string, unknown>): Record<string, unknown> {
   return { success: true, message: "", data: record };
 }
@@ -136,7 +138,7 @@ function ackEnvelope(extra: Record<string, unknown> = {}): Record<string, unknow
 
 /**
  * Eine Zeile von `/receipts/get`: alle 16 gemessenen Felder, `id_by_customer` als String,
- * `amount` als String mit Punkt, `deleted` als `"0"` (Plan 0.3 L2 und L3).
+ * `amount` als String mit Punkt, `deleted` als `"0"`.
  */
 function receiptRow(over: Record<string, unknown>): Record<string, unknown> {
   return {
@@ -190,7 +192,10 @@ function receiptDetailRow(over: Record<string, unknown>): Record<string, unknown
   };
 }
 
-/** Eine Zeile von `/transactions/get`: 6 Felder, `id_by_customer` als **Zahl** (Befund L3). */
+/**
+ * Eine Zeile von `/transactions/get`: 6 Felder, `id_by_customer` als **Zahl**
+ * (Befund L3 in docs/api/live-befunde.md).
+ */
 function transactionRow(over: Record<string, unknown>): Record<string, unknown> {
   return {
     id_by_customer: 0,
@@ -1120,7 +1125,7 @@ const TASKS: readonly EvalTask[] = [
     question:
       "Auf welchem Zahlungskonto liegt die Zahlung von Lieferant X, und auf welches Sachkonto " +
       "wurde sie gebucht?",
-    source: "umsetzungsplan.md 9.8, elfte Aufgabe",
+    source: "Evaluationslauf, elfte Aufgabe",
     result:
       "Zahlungskonto 1200 (Geschäftskonto Erfundene Bank), gebucht im Soll auf Sachkonto 4980.",
     success: true,
@@ -1237,7 +1242,7 @@ interface TranscriptEntry {
   readonly args: Record<string, unknown>;
   readonly reason: string;
   readonly isError: boolean;
-  /** Der Textblock, also das, was ein Client ohne `structuredContent` anzeigt (Plan 7.1). */
+  /** Der Textblock, also das, was ein Client ohne `structuredContent` anzeigt. */
   readonly text: string;
   /** Der strukturierte Teil derselben Antwort. Beide entstehen aus einer Datenstruktur. */
   readonly structured: Record<string, unknown>;
@@ -1255,7 +1260,7 @@ async function startServer(config: ResolvedConfig): Promise<RunningTestServer> {
     store: createMasterDataStore({ ttlMs: config.cacheTtlMs }),
   });
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-  const client = new Client({ name: "ap18-eval", version: "0.0.0" });
+  const client = new Client({ name: "evaluationslauf", version: "0.0.0" });
   await built.server.connect(serverSide);
   await client.connect(clientSide);
   return {
@@ -1331,7 +1336,7 @@ async function runTask(task: EvalTask): Promise<TranscriptEntry[]> {
  *
  * Die Herleitung darf nicht aus dem Transkript stammen, sonst misst die Kennzahl nichts. Sie
  * kommt deshalb aus `POSTINGS_GUIDE`, also aus genau dem Text, den der Agent in den
- * `instructions` und in der Resource `bb://guide/postings` vor sich hat (Plan 3.7).
+ * `instructions` und in der Resource `bb://guide/postings` vor sich hat.
  */
 function expectedPostingTool(situation: string): string {
   const lines = POSTINGS_GUIDE.split("\n").filter((line) => line.includes("→"));
@@ -1368,7 +1373,7 @@ afterEach(() => {
   resetTestConfig();
 });
 
-describe("Evaluationslauf, die elf Aufgaben aus Plan 9.8", () => {
+describe("Evaluationslauf, die elf Aufgaben", () => {
   for (const task of TASKS) {
     it(`Aufgabe ${String(task.number)}: ${task.question}`, async () => {
       const transcript = await runTask(task);
@@ -1413,7 +1418,7 @@ describe("Evaluationslauf, die elf Aufgaben aus Plan 9.8", () => {
   }
 });
 
-describe("Nulltoleranz-Kennzahlen aus Plan 9.8", () => {
+describe("Nulltoleranz-Kennzahlen", () => {
   it("falsche Werkzeugwahl bei den zwölf Buchungswerkzeugen: 0", () => {
     expect(transcriptsByTask.size, "Es wurden nicht alle elf Aufgaben gelaufen.").toBe(11);
 
@@ -1442,7 +1447,7 @@ describe("Nulltoleranz-Kennzahlen aus Plan 9.8", () => {
           expectedPostingTool(entry.step.situation ?? ""),
       ),
       "Nulltoleranz-Kennzahl gerissen. Das ist ein Befund für den Projektinhaber und kein " +
-        "Anlass, die Aufgabe umzuformulieren (Plan 9.8).",
+        "Anlass, die Aufgabe umzuformulieren.",
     ).toEqual([]);
   });
 
@@ -1486,17 +1491,15 @@ describe("Nulltoleranz-Kennzahlen aus Plan 9.8", () => {
     expect(
       blind,
       "Nulltoleranz-Kennzahl gerissen. Gemessen wird die Wirkung von Beschreibung und " +
-        "Annotationen, nicht eine Serversperre (Plan 9.8, E2).",
+        "Annotationen, nicht eine Serversperre.",
     ).toEqual([]);
   });
 });
 
 describe("Weitere Kennzahlen, Zielwerte nach dem ersten Lauf justiert", () => {
-  // Plan 9.8 führt diese Zielwerte ausdrücklich als **Annahme, nach dem ersten Lauf zu
+  // Diese Zielwerte waren ausdrücklich eine **Annahme, nach dem ersten Lauf zu
   // justieren**. Die Zahlen unten sind die Messwerte dieses Laufs; sie stehen hier als
-  // Grundlinie, damit eine Verschlechterung auffällt. Die Abweichungen zu den angenommenen
-  // Zielwerten stehen in docs/entwicklung/befund-evaluation.md und sind dort nicht
-  // weggerechnet.
+  // Grundlinie, damit eine Verschlechterung auffällt.
 
   it("Erfolgsquote, Werkzeugaufrufe und Fehlversuche bleiben auf der Grundlinie", () => {
     expect(transcriptsByTask.size, "Es wurden nicht alle elf Aufgaben gelaufen.").toBe(11);
@@ -1525,14 +1528,14 @@ describe("Befunde dieses Laufs, als Prüfung festgehalten", () => {
   // Verhalten. Sie bleiben an dieser Stelle, weil ein Befund, der ausschließlich in einem
   // Dokument steht, beim nächsten Umbau still zurückkehrt.
   //
-  // Zuordnung zu den Verwirrungsmustern des Berichts und zur Behebung:
-  //   E-1 → V4  Vorzeichenverlust, src/response/sanitize.ts — behoben: Ein Vorzeichen
-  //             unmittelbar vor einer Ziffer gilt nicht mehr als Markdown am Zeilenanfang.
-  //   E-2 → V6  Kürzung der Berichtsnutzdaten, src/response/table.ts — behoben: Die Grenze
-  //             je Feld folgt dem Tokenbudget, und jede Kürzung wird beziffert.
-  //   E-3 → V2  Schemameldung nennt Werte „undefined", src/server/register-tools.ts —
-  //             behoben: Der übergebene Wert wird über `issue.path` aus den Rohargumenten
-  //             nachgeschlagen, statt aus `issue.input`, das Zod 4 nicht mehr führt.
+  // Die drei Mängel und ihre Behebung:
+  //   E-1  Vorzeichenverlust, src/response/sanitize.ts — behoben: Ein Vorzeichen unmittelbar
+  //        vor einer Ziffer gilt nicht mehr als Markdown am Zeilenanfang.
+  //   E-2  Kürzung der Berichtsnutzdaten, src/response/table.ts — behoben: Die Grenze je Feld
+  //        folgt dem Tokenbudget, und jede Kürzung wird beziffert.
+  //   E-3  Schemameldung nennt Werte „undefined", src/server/register-tools.ts — behoben: Der
+  //        übergebene Wert wird über `issue.path` aus den Rohargumenten nachgeschlagen, statt
+  //        aus `issue.input`, das Zod 4 nicht mehr führt.
 
   function stepAt(taskNumber: number, index: number): TranscriptEntry {
     const entry = transcriptsByTask.get(taskNumber)?.[index];

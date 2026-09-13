@@ -194,7 +194,7 @@ Optimierung, nicht als Startbedingung, dokumentiert.
 Quelle: `npm view @modelcontextprotocol/sdk@1.30.0 dependencies peerDependencies engines --json`
 sowie dieselbe Abfrage für `@modelcontextprotocol/server@2.0.0`, `@modelcontextprotocol/client@2.0.0`
 und `@modelcontextprotocol/core@2.0.0`, abgerufen 2026-09-12. Ergänzend das Schwesterdossier
-`/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/entwicklung/mcp-sdk-typescript.md`
+`docs/entwicklung/mcp-sdk-typescript.md`
 (Stand 2026-09-12), das beide Linien in einer eigenen Testumgebung installiert und ausgeführt hat;
 dessen Belegkennungen (Q1, Q2, Q10, Q11, Q14, Q16) sind hier übernommen.
 
@@ -344,8 +344,7 @@ jener Datei fest, damit die Auflösung nachvollziehbar bleibt.
 |---|---|---|---|
 | `engines.node` | `>=22.12.0` | `>=20` | **`>=22.19.0`**, siehe Kasten |
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 13.1.** **`engines.node` lautet `>=22.19.0`, nicht `>=22.12.0`.** Grund
+> **Nachgezogen am 2026-09-13.** **`engines.node` lautet `>=22.19.0`, nicht `>=22.12.0`.** Grund
 > ist keine Vorliebe, sondern eine Laufzeitabhängigkeit: `undici@8.10.2` deklariert selbst
 > `engines.node: ">=22.19.0"` und wird produktiv für Proxy-Unterstützung und Keep-Alive
 > gebraucht. Ein Paket, das `>=22.12.0` verspricht und eine Abhängigkeit mit `>=22.19.0` zieht,
@@ -743,8 +742,7 @@ vergeben und gehört nicht diesem Projekt.
 verwendet werden.** Dies ist keine Kleinigkeit, sondern muss vor jeder weiteren
 Implementierungsarbeit an `package.json` entschieden werden.
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund: Entscheidung E3 des Projektinhabers und Umsetzungsplan 13.6.** Der Befund oben gilt
+> **Nachgezogen am 2026-09-13; Sachgrund ist eine Entscheidung des Projektinhabers.** Der Befund oben gilt
 > unverändert: Der unscoped Name ist auf npm vergeben und wird nicht benutzt. **Der
 > Entscheidungsbedarf unten ist jedoch erledigt, und der dort vorgeschlagene Namensraum `@init4`
 > ist überholt.** Verbindlich ist **`@dennismenken/buchhaltungsbutler-mcp`** (am 2026-09-12 auf
@@ -1131,8 +1129,7 @@ vermischt werden.
 
 ### 13.2 Hinweise zu einzelnen Feldern
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 12, Streitfrage S22.** **Der `packageManager`-Konflikt ist entschieden:
+> **Nachgezogen am 2026-09-13.** **Der `packageManager`-Konflikt ist entschieden:
 > `"packageManager": "pnpm@10.34.3"`.** Das ist die Version, die in der Entwicklungsumgebung
 > tatsächlich installiert und am 2026-09-12 als lauffähig belegt ist. Ein `packageManager`-Feld,
 > das auf eine nicht vorhandene Version zeigt, ist eine Startfalle für jeden Mitwirkenden und
@@ -1295,10 +1292,10 @@ Empfehlung dieses Dossiers, keine aus einer externen Quelle zitierte Vorgabe.
   sowie dieselbe Abfrage für `@modelcontextprotocol/server@2.0.0`,
   `@modelcontextprotocol/client@2.0.0` und `@modelcontextprotocol/core@2.0.0` — npm-Registry,
   abgerufen 2026-09-12, Grundlage der Abhängigkeitsflächen in Abschnitt 3.1.
-- `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/entwicklung/mcp-sdk-typescript.md`
+- `docs/entwicklung/mcp-sdk-typescript.md`
   — Schwesterdossier dieses Repositories, Stand 2026-09-12; Quelle der Belegkennungen Q1, Q2,
   Q10, Q11, Q14, Q16 und der Vorgaben aus dessen Abschnitten 10.1 bis 10.4. Die vier
   Widersprüche zwischen beiden Dossiers sind in Abschnitt 3.3 aufgelöst, ein fünfter
   (gekürztes Zitat des v1-`dependencies`-Blocks) ist in Abschnitt 3.1 benannt.
-- `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json`
+- `docs/openapi/buchhaltungsbutler-v1.json`
   — lokale Projektdatei, geprüft 2026-09-12.

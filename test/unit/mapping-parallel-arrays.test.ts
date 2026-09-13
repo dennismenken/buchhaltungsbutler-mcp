@@ -21,7 +21,7 @@ import {
   TRANSACTIONS_ASSIGN_RECEIPT_BATCH,
 } from "../golden/entries.js";
 
-// Plan 4.8 und 9.5: „eine Positionsliste mit drei Einträgen erzeugt Arrays mit je drei
+// Die Zusage: „eine Positionsliste mit drei Einträgen erzeugt Arrays mit je drei
 // Elementen; null in oi_receipts_ids_by_customer überlebt die JSON-Kodierung".
 
 function positionsField(entry: ToolEntry, name = "positions"): FieldSpec {
@@ -183,7 +183,7 @@ describe("Die Spaltenliste kommt aus dem Registereintrag", () => {
     ]);
   });
 
-  it("kennt die abweichende Schreibweise postingstexts je Stapelelement (Plan 0.5)", () => {
+  it("kennt die abweichende Schreibweise postingstexts je Stapelelement", () => {
     const container = positionsField(POSTINGS_CREATE_FOR_RECEIPT_BATCH, "receipts");
     const nested = container.itemFields?.find((field) => field.name === "positions");
     expect(nested).toBeDefined();
@@ -264,7 +264,7 @@ describe("Die Umformung findet ausschließlich an den benannten Endpunkten statt
   });
 });
 
-describe("Wo keine Umformung stattfindet (Plan 4.8, die fünf Korrekturen)", () => {
+describe("Wo keine Umformung stattfindet (die fünf Korrekturen)", () => {
   it("/postings/add/free bleibt skalar", () => {
     const mapped = mapRequest(POSTINGS_CREATE_FREE, {
       date: "2026-08-14",

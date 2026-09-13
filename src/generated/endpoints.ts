@@ -1,13 +1,13 @@
 // ERZEUGT von scripts/gen-endpoints.ts aus docs/openapi/buchhaltungsbutler-v1.json.
 // NICHT VON HAND ÄNDERN. Änderungen entstehen ausschließlich über `pnpm generate`; der
-// CI-Schritt verlangt danach eine leere git-Differenz (Plan 4.2).
+// CI-Schritt verlangt danach eine leere git-Differenz.
 //
 // Quelle: BuchhaltungsButler API, info.version 1.9.1.
 //
 // Diese Datei ist die maschinelle Wahrheit über den UMFANG der API: 54 Pfade mit
 // zusammen 371 Body-Parametern. Sie ist ausdrücklich KEIN Auslieferungsschema. Die
 // Spezifikation ist handgepflegt und nachweislich fehlerhaft; ihre Fehler sind hier sichtbar
-// gemacht statt geglättet (Plan 4.1):
+// gemacht statt geglättet:
 //
 //   - itemsMissing: 32 Array-Parameter führen kein `items`, darunter alle parallelen Arrays.
 //   - schema:      9 Parameter führen `schema` statt `type`; ihr Elementaufbau ist hier aufgelöst.
@@ -15,10 +15,10 @@
 //     einzigen Parameter-`enum`; ein zu enges Enum lehnt gültige Vorgänge vor dem Netzaufruf ab.
 //   - successFields: Feldname und Typ laut Spezifikation. AUSDRÜCKLICH UNZUVERLÄSSIG — die API
 //     liefert nachweislich Felder, die die Spezifikation nicht kennt, und verwendet zwischen
-//     Listen- und Einzelabruf verschiedene Namen (Plan 0.3, Befunde L2 und L4).
+//     Listen- und Einzelabruf verschiedene Namen.
 //
 // Die vier Pfade mit dem Segment `id_by_customer` stehen hier UNVERÄNDERT. Das Segment ist
-// ein Platzhalter für den Wert und kein literales Segment (Plan 4.6); der Pfadbau geschieht
+// ein Platzhalter für den Wert und kein literales Segment; der Pfadbau geschieht
 // in src/mapping/path.ts, nachgeschlagen wird weiterhin mit dem Spezifikationspfad.
 
 /** Ein Feld eines Stapelelements, aufgelöst über `$ref`. */
@@ -40,7 +40,7 @@ export interface GeneratedSchemaInfo {
   readonly itemRef?: string;
   readonly itemRequired: readonly string[];
   readonly itemFields: readonly GeneratedItemField[];
-  /** Namen aus `required`, zu denen es keine Eigenschaft gibt (Plan 0.5, Korrektur 1). */
+  /** Namen aus `required`, zu denen es keine Eigenschaft gibt. */
   readonly requiredWithoutProperty: readonly string[];
 }
 

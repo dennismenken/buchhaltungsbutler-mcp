@@ -1,6 +1,6 @@
 {
   "_herkunft": "Endpunkt /settings/get/postingaccounts | dokumentiert, teils live belegt | Quelle: Spezifikation SettingsPostingaccountsGet_Success und docs/api/stammdaten.md (Verteilung von type und subtype, live am 2026-09-12) | Struktur gemessen, Geschäftsdaten erfunden",
-  "_zweck": "die Vereinigungsliste aus Sachkonten, Zahlungskonten, Debitoren und Kreditoren mit type und subtype (Umsetzungsplan 3.4 Maßnahme 4) und die Auflösung sprechender Kontobezeichnungen aus dem Stammdatenspeicher (7.4)",
+  "_zweck": "die Vereinigungsliste aus Sachkonten, Zahlungskonten, Debitoren und Kreditoren mit type und subtype und die Auflösung sprechender Kontobezeichnungen aus dem Stammdatenspeicher",
   "http": {
     "status": 200,
     "contentType": "application/json; charset=utf-8"

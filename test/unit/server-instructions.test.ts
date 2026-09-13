@@ -282,7 +282,7 @@ describe("die Werkzeugnamen im Servertext", () => {
   // Kontenkunde; unter BB_MCP_TOOL_GROUPS_EXCLUDE=postings neun. Der Gruppenblock sagte drei
   // Absätze vorher „Werkzeuge dieser Gruppen gibt es hier nicht. Nicht danach suchen und
   // keinen Umweg bauen". Ein Agent, der dem Text folgt, ruft ein Werkzeug auf, das tools/list
-  // nicht führt, und das ist genau die Rückmeldungslücke, gegen die N5 gebaut wurde.
+  // nicht führt, und das ist genau die Rückmeldungslücke, gegen die der Gruppenblock steht.
   for (const profile of NAME_PROFILES) {
     it(`nennt im Profil „${profile.label}" nur angemeldete Werkzeuge`, async () => {
       const started = await start(installTestConfig(profile.env));

@@ -1,4 +1,4 @@
-// Die sechs Werkzeugklassen und die Wirkungstabelle, beide als Daten (Plan 3.3, 2.1).
+// Die sechs Werkzeugklassen und die Wirkungstabelle, beide als Daten.
 //
 // Die Klasse wird NIEMALS aus dem Namen abgeleitet: bb_postings_assign_receipt endet auf
 // _receipt und ist buchend, bb_reports_get_ledger endet auf _ledger und ist lesend. Jeder
@@ -19,10 +19,10 @@ export interface ToolClassAnnotations {
 }
 
 export interface ToolClassDefinition {
-  /** Deutsche Bedeutung der Klasse, Wortlaut aus der Tabelle in Plan 3.3. */
+  /** Deutsche Bedeutung der Klasse, Wortlaut aus der Tabelle. */
   readonly meaning: string;
   readonly annotations: ToolClassAnnotations;
-  /** Anzahl der Werkzeuge dieser Klasse im Auslieferungszustand (Plan 3.3, 3.9). */
+  /** Anzahl der Werkzeuge dieser Klasse im Auslieferungszustand. */
   readonly count: number;
 }
 
@@ -35,21 +35,21 @@ export interface ToolClassDefinition {
  *   MCP-Schema definiert den Hint mit „If false, the tool performs only additive updates";
  *   ein Überschreiben ist nicht additiv, und kein Endpunkt liefert den Vorzustand zurück
  *   (grundlagen.md 7.3). Ein zu strenger Hint kostet eine Rückfrage, ein zu milder einen
- *   unbemerkten Stammdatenverlust (Plan 3.3, Streitfrage S5).
+ *   unbemerkten Stammdatenverlust.
  * - Klasse B trägt destructiveHint: false, obwohl sie die folgenreichste Klasse ist. Ihre
  *   zehn Werkzeuge legen neue Buchungszeilen, Rechnungen oder Belegbindungen an; sie
  *   überschreiben nichts und löschen nichts. Unumkehrbarkeit und Destruktivität fallen hier
- *   auseinander. Die Warnung läuft über die Pflichtsätze U3 und U4 (3.5) und den title (3.6).
+ *   auseinander. Die Warnung läuft über die Pflichtsätze U3 und U4 und den title.
  *
  * idempotentHint ist nur bei R und M true, also nur dort, wo eine Wiederholung beweisbar
  * denselben Zustand ergibt. Bei delete, restore, unconfirm, unassign und cancel ist das
  * plausibel, aber nicht verifiziert, und ein falsches true lädt einen Host zum automatischen
- * Wiederholen ein (Streitfrage S6).
+ * Wiederholen ein.
  *
- * Die Zahlen beschreiben den Auslieferungszustand. Belegt AP19 ein Wiederholungsverhalten
- * oder dass bb_postings_assign_receipt einen bestehenden Belegbezug ersetzt, zieht AP19b
- * diese Tabelle, die zweite Liste in test/registry/ und annotations.test.ts gemeinsam nach;
- * ab dann gelten die Zahlen aus docs/entwicklung/befund-schreibend.md (Plan 3.3).
+ * Die Zahlen beschreiben den Auslieferungszustand. Belegt eine spätere Messung ein
+ * Wiederholungsverhalten oder dass bb_postings_assign_receipt einen bestehenden
+ * Belegbezug ersetzt, sind diese Tabelle, die zweite Liste in test/registry/ und
+ * annotations.test.ts gemeinsam nachzuziehen.
  */
 export const TOOL_CLASSES = {
   R: {
@@ -115,7 +115,7 @@ export const TOOL_CLASSES = {
 } as const satisfies Record<ToolClass, ToolClassDefinition>;
 
 /** Die Klasse, die den Nur-Lesen-Schalter passieren darf. Sie ist genau die Menge der
- *  lesenden Endpunkte (Plan 3.9), weshalb der Schalter keine zweite Pfadliste braucht. */
+ *  lesenden Endpunkte, weshalb der Schalter keine zweite Pfadliste braucht. */
 export const READ_ONLY_TOOL_CLASS = "R" as const satisfies ToolClass;
 
 export interface ToolEffectDefinition {
@@ -126,8 +126,9 @@ export interface ToolEffectDefinition {
 }
 
 /**
- * Die eineindeutige Zuordnung der englischen effect-Werte zur deutschen Wirkungsbenennung
- * (Plan 2.1). Bezeichner und Aufzählungswerte im Code sind englisch (E4), jeder vom Agenten
+ * Die eineindeutige Zuordnung der englischen effect-Werte zur deutschen Wirkungsbenennung.
+ * Bezeichner und Aufzählungswerte im Code sind englisch (CONTRIBUTING.md Abschnitt 5), jeder
+ * vom Agenten
  * gelesene Text ist deutsch; diese Tabelle ist die einzige Stelle, an der beides zusammenfindet.
  */
 export const TOOL_EFFECTS = {

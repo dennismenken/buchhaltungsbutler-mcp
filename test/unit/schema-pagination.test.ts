@@ -22,7 +22,7 @@ function property(schema: z.ZodType, name: string): Record<string, unknown> {
 }
 
 describe("die sieben Endpunkte mit limit und offset", () => {
-  it("führt genau die sieben aus Plan 7.5", () => {
+  it("führt genau die sieben", () => {
     expect(Object.keys(PAGINATION_BY_PATH).sort()).toEqual(
       [
         "/cost-locations/get",
@@ -90,7 +90,8 @@ describe("limit", () => {
     expect(schema.safeParse(500).success).toBe(true);
   });
 
-  it("setzt die Vorgabe ein, wenn der Aufrufer nichts schickt (Regel 1 aus 7.5)", () => {
+  // Kein Listenaufruf geht ohne ausdrückliches `limit` hinaus; die Vorgabe steht im Schema.
+  it("setzt die Vorgabe ein, wenn der Aufrufer nichts schickt", () => {
     expect(strictObject({ limit: limit(500, 100) }).parse({})).toEqual({ limit: 100 });
   });
 });
@@ -103,7 +104,7 @@ describe("offset", () => {
     expect(offset().safeParse(-1).success).toBe(false);
   });
 
-  it("nennt das Beispiel aus Plan 4.5", () => {
+  it("nennt das Beispiel", () => {
     expect(offset().description ?? "").toContain("offset=100");
   });
 });

@@ -1,6 +1,6 @@
 // Bausteine, die mehr als ein Bündel braucht: Feldvorlagen, Textvergleich, Summen, Gruppen.
 //
-// Gerechnet wird in Ganzzahl-Cent über `mapping/decimal.ts`, nie in Binär-Gleitkomma (7.4, S9).
+// Gerechnet wird in Ganzzahl-Cent über `mapping/decimal.ts`, nie in Binär-Gleitkomma.
 // Ein nicht zerlegbarer Betrag wird gezählt und gemeldet, statt als 0 in eine Summe einzugehen:
 // Eine Summe, die stillschweigend Zeilen auslässt, ist der teurere Fehler.
 
@@ -190,7 +190,7 @@ export interface ContractWarningBlock {
  * Die Vertragsverletzungen der gelesenen Zeilen, für Textblock und `structuredContent`.
  *
  * Ein Bündel darf nicht weniger melden als das Einzelwerkzeug, das es ersetzt: Die 54 legen
- * dieselbe Meldung unter `_contract_warnings` ab und stellen sie VOR die Zahlen (7.3, R6).
+ * dieselbe Meldung unter `_contract_warnings` ab und stellen sie VOR die Zahlen (R6).
  * Ohne sie verschwände eine Änderung der API in einer Bündelantwort spurlos.
  */
 export function contractWarnings(

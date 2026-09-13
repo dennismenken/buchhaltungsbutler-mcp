@@ -1,16 +1,16 @@
-// Die `instructions` des Servers nach Plan 6.7 (AP14).
+// Die `instructions` des Servers.
 //
 // Dies ist das einzige Dokument, das jeder Agent ohnehin sieht. Es trägt deshalb alles, was
-// für jedes Werkzeug gleich gilt, **genau einmal** statt einmal je Definition
-// (Plan 1.1, Sparmaßnahme S1 aus 4.10): Zustand, Selbstauskunft, Kontenkunde,
-// Querschnittsregeln, Paginierung, Buchungswegweiser, Schreibhinweis, Resource-Liste.
+// für jedes Werkzeug gleich gilt, **genau einmal** statt einmal je Definition: Zustand,
+// Selbstauskunft, Kontenkunde, Querschnittsregeln, Paginierung, Buchungswegweiser,
+// Schreibhinweis, Resource-Liste.
 //
 // Zwei Grenzen halten diesen Text kurz, und beide sind gemessen und nicht geschätzt:
-// 2.100 Token (INSTRUCTIONS_TOKEN_BUDGET, geprüft in P11 mit dem echten Tokenizer aus
-// Plan 13.9) und die Regel aus 4.10, dass alles Weitere in eine Resource gehört, weil eine
-// Resource nur dann Kontext kostet, wenn der Agent sie liest.
+// 2.100 Token (INSTRUCTIONS_TOKEN_BUDGET, geprüft in P11 mit dem echten Tokenizer) und die
+// Regel, dass alles Weitere in eine Resource gehört, weil eine Resource nur dann Kontext
+// kostet, wenn der Agent sie liest.
 //
-// Die Datei kennt den Schalterzustand und **keinen einzigen Endpunkt** (Plan 2, Dateibaum);
+// Die Datei kennt den Schalterzustand und **keinen einzigen Endpunkt**;
 // sie importiert nichts aus dem SDK. Aus den beiden Registern holt sie ausschließlich
 // **Zahlen** — wie viele Werkzeuge diese Installation anmeldet und wie viele davon lesend
 // sind. Das ist neu und hat einen belegten Grund: Die Zahlen standen hier als Literale (54,
@@ -23,19 +23,19 @@
 // Serverstarts. Endpunktnamen, Pfade und Parameter bleiben draußen.
 //
 // Den Buchungswegweiser holt sie aus `resources.ts`, wo er als Resource `bb://guide/postings`
-// ohnehin steht; damit wird die Regel an einer Stelle gepflegt (Plan 3.7: „Der Wegweiser steht
-// genau einmal"). Den Gruppenblock holt sie aus `config/tool-groups.ts`: Der Gruppenschalter
+// ohnehin steht; damit wird die Regel an einer Stelle gepflegt: Der Wegweiser steht genau
+// einmal. Den Gruppenblock holt sie aus `config/tool-groups.ts`: Der Gruppenschalter
 // ist ein Schalterzustand, und sein Wortlaut steht dort einmal für Startmeldung, `doctor` und
-// diesen Text (N5).
+// diesen Text.
 //
 // **Jeder Werkzeugname in diesem Text hängt an seiner Gruppe.** Das ist keine Feinheit, sondern
-// dieselbe Rückmeldungslücke, gegen die N5 gebaut wurde, nur von der anderen Seite: Der
+// dieselbe Rückmeldungslücke, gegen die der Gruppenblock steht, nur von der anderen Seite: Der
 // Gruppenblock sagt „Werkzeuge dieser Gruppen gibt es hier nicht“, und drei Absätze weiter
 // stand bis eben eine Tabelle mit zehn `bb_postings_*`-Zeilen, die unter
 // `BB_MCP_TOOL_GROUPS=bundles` kein einziges angemeldetes Werkzeug bezeichnete — gemessen elf
 // nicht angemeldete Namen in diesem Profil, neun unter `BB_MCP_TOOL_GROUPS_EXCLUDE=postings`.
 // Ein Agent, der ein Werkzeug aus `tools/list` nicht findet, baut Umwege oder behauptet eine
-// fehlende Fähigkeit der API; in der Zielumgebung Claude Desktop (N2) wiegt der Wegweiser
+// fehlende Fähigkeit der API; in der Zielumgebung Claude Desktop wiegt der Wegweiser
 // obendrein in jeder Anfrage. Genannt wird deshalb nur, was diese Installation auch anmeldet:
 // der Wegweiser nur bei aktiver Gruppe `postings`, die Nachschlagewerkzeuge der Kontenkunde je
 // nach `payment_accounts` beziehungsweise `postingaccounts` und sonst das Bündel
@@ -159,7 +159,7 @@ function toolWord(count: number): string {
 }
 
 /**
- * Der Zustandsblock aus Plan 6.7 Punkt 1.
+ * Der Zustandsblock.
  *
  * Er nennt, was der Agent nicht erraten kann und was ihm sonst 54 Werkzeugbeschreibungen
  * einzeln sagen müssten: ob der Server konfiguriert ist, ob der Nur-Lesen-Schalter greift,
@@ -271,7 +271,7 @@ function stateBlock(config: ResolvedConfig): string {
 }
 
 /**
- * Punkt 2 aus 6.7: was dieser Server ist. Kurz und ohne Werbung.
+ * Punkt 2: was dieser Server ist. Kurz und ohne Werbung.
  *
  * Zwei Angaben hängen am Gruppenschalter, und beide sind gerechnet. Die Werkzeugzahl: Bei
  * abgeschalteter Gruppe meldet diese Installation weniger an als den vollen Umfang, und beide
@@ -322,7 +322,7 @@ function identityBlock(config: ResolvedConfig): string {
 }
 
 /**
- * Punkt 3 aus 6.7: die Kontenkunde in fünf Zeilen, Maßnahme 5 aus Plan 3.4.
+ * Punkt 3: die Kontenkunde in fünf Zeilen, Maßnahme 5.
  *
  * Der gefährlichste Verwechslungsfall der ganzen API steht damit im Servertext und nicht in
  * den Beschreibungen der neun Werkzeuge, die eine Kontonummer entgegennehmen. Die lange
@@ -340,7 +340,7 @@ function accountsBlock(config: ResolvedConfig): string {
   const posting = lookupTool(active, "postingaccounts", "bb_postingaccounts_search");
 
   // Fällt beides auf dasselbe Bündel, steht der Satz einmal statt zweimal: In der Zielumgebung
-  // Claude Desktop (N2) liegt dieser Text im ungünstigsten Modus in jeder Anfrage.
+  // Claude Desktop liegt dieser Text im ungünstigsten Modus in jeder Anfrage.
   const shared = payment !== null && payment === posting;
 
   const lines: string[] = [
@@ -370,10 +370,10 @@ function accountsBlock(config: ResolvedConfig): string {
 }
 
 /**
- * Punkt 4 aus 6.7: die Querschnittsregeln.
+ * Punkt 4: die Querschnittsregeln.
  *
  * Genau diese sechs Regeln wiederholt die Spezifikation dutzendfach in ihren
- * Parametertexten. Sie stehen deshalb hier und in keinem einzigen Parameter (S1 aus 4.10).
+ * Parametertexten. Sie stehen deshalb hier und in keinem einzigen Parameter (S1).
  */
 const RULES_BLOCK = [
   "REGELN FÜR ALLE WERKZEUGE",
@@ -394,7 +394,7 @@ const RULES_BLOCK = [
   "JSON-Pfade und zählen wie in JSON ab 0, etwa data[0].file_content.",
 ].join("\n");
 
-/** Punkt 5 aus 6.7: die Paginierungsregel, die zentrale Ehrlichkeitsregel aus Plan 7.5. */
+/** Punkt 5: die Paginierungsregel, die zentrale Ehrlichkeitsregel. */
 const PAGINATION_BLOCK = [
   "PAGINIERUNG",
   "Die API nennt zu keinem Zeitpunkt eine Gesamttrefferzahl. rows ist die Zeilenzahl DIESER",
@@ -406,7 +406,7 @@ const PAGINATION_BLOCK = [
   "Enger filtern ist in der Regel billiger als blättern.",
 ].join("\n");
 
-/** Punkt 7 aus 6.7: der Schreibhinweis. */
+/** Punkt 7: der Schreibhinweis. */
 const WRITE_BLOCK = [
   "SCHREIBENDE AUFRUFE",
   "Dieser Server fragt nicht nach. Es gibt kein confirm und keinen Trockenlauf; die Freigabe",
@@ -418,7 +418,7 @@ const WRITE_BLOCK = [
 ].join("\n");
 
 /**
- * Punkt 8 aus 6.7: die Liste der vier Resources aus 7.7.
+ * Punkt 8: die Liste der vier Resources.
  *
  * Die Zeile zu `bb://guide/postings` verweist mit „der Wegweiser oben" auf einen Block, den es
  * ohne die Gruppe `postings` in diesem Text nicht gibt; sie entfällt dann. Die Resource selbst
@@ -446,7 +446,7 @@ function resourcesBlock(active: ReadonlySet<ToolGroup>): string {
 /**
  * Die `instructions`, die der Server bei `initialize` mitschickt.
  *
- * Die Reihenfolge ist die aus Plan 6.7 und keine Geschmacksfrage: Der Zustandsblock steht
+ * Die Reihenfolge ist die und keine Geschmacksfrage: Der Zustandsblock steht
  * oben, weil ein Agent, der die Absage eines gesperrten Werkzeugs erst nach dem Aufruf liest,
  * bereits eine Runde verloren hat.
  *
@@ -459,7 +459,7 @@ export function buildInstructions(config: ResolvedConfig): string {
   const active = activeGroups(config);
   const sections: string[] = [
     // Der Vorspann steht **vor** jeder Überschrift, nicht in der zweiten Zeile unter einer:
-    // Plan 6.5 Punkt 3 verlangt ihn am Anfang, und ein Agent, der nur den Anfang liest, soll
+    // Er gehört an den Anfang, und ein Agent, der nur den Anfang liest, soll
     // sofort wissen, dass jeder Aufruf scheitern wird.
     config.configured ? "" : NOT_CONFIGURED_INSTRUCTIONS_PREFIX,
     stateBlock(config),

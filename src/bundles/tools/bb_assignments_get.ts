@@ -1,5 +1,5 @@
 // Bündel 3: ein Vorgang samt seinen Zuordnungen, aus beiden Richtungen mit einer Definition
-// (Bauvorlage 4.3, N3d).
+// Zuordnungen in beide Richtungen.
 //
 // **Die wichtigste Einzelregel des Satzes steht hier.** Scheitert der Zuordnungsabruf, während
 // der Hauptsatz geladen wurde, ist `assignments` NULL und nicht das leere Array,
@@ -49,7 +49,8 @@ const RESERVED_CHARS = 2_500;
  *
  * Fehlen sie, ist die Zeile für eine Buchhalterin wertlos: Ein Dateiname nennt weder
  * Gegenpartei noch Betrag. Entschieden wird an der tatsächlich zurückgekommenen Zeile und
- * nicht an der Spezifikation — Live-Befund 2 hat gezeigt, dass die Spezifikation Antwortfelder
+ * nicht an der Spezifikation — Befund L2 in docs/api/live-befunde.md hat gezeigt, dass die
+ * Spezifikation Antwortfelder
  * unterschlägt, und die Feldmenge von `/transactions/assigned-receipts/get` ist in diesem
  * Projekt nicht gemessen.
  */

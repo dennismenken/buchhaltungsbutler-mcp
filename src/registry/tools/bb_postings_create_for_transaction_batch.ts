@@ -1,12 +1,12 @@
 // Werkzeug 24, `/postings/add-batch/transactions`: Zahlungsbuchungen für mehrere Zahlungen in
-// einem Aufruf (Plan 3.8, 4.8, AP12c). Mit 40 Zeichen der längste Werkzeugname des Satzes.
+// einem Aufruf. Mit 40 Zeichen der längste Werkzeugname des Satzes.
 //
 // **Auf oberster Ebene findet keine Umformung statt.** Der Endpunkt führt genau einen
 // Parameter `transactions`, laut Definition `TransactionsPostings` bereits eine Objektliste.
 // Die parallelen Arrays liegen **innerhalb** jedes Elements, also in `TransactionPostings`;
 // dort heißt das Textarray `postingtexts` **ohne** eingeschobenes `s` — anders als in
 // `ReceiptPostings`, wo derselbe Sachverhalt `postingstexts` heißt. Beide Schreibweisen sind
-// geprüft und keine Verwechslung (Plan 0.5, 4.8).
+// geprüft und keine Verwechslung.
 //
 // **`oi_receipts_ids_by_customer` ist Teil der geschachtelten Positionsliste.** Die
 // Elementdefinition deklariert den Elementtyp als `integer` und schließt `null` damit formal
@@ -17,7 +17,7 @@
 // **Der Stapel ist nicht transaktional**: `success: true` auf oberster Ebene sagt nichts über
 // die einzelnen Einträge; das Array `errors` nennt die gescheiterten (`buchungen.md` 13.3).
 //
-// **Es gibt keine Querprüfung „Summe der Positionsbeträge"** (Plan 4.7): Der Zahlungsbetrag ist
+// **Es gibt keine Querprüfung „Summe der Positionsbeträge"**: Der Zahlungsbetrag ist
 // kein Argument, die API prüft die Summe selbst.
 
 import { isConfigLoaded } from "../../config/resolve.js";
@@ -34,11 +34,11 @@ import { strictObject, unwrapSchema } from "../../schema/primitives.js";
 import { ID_STRING_SENTENCE, idByCustomer } from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
-/** Mengengrenze beider Ebenen, getrennt geprüft und nie aufsummiert (Plan 4.7 Q4). */
+/** Mengengrenze beider Ebenen, getrennt geprüft und nie aufsummiert. */
 const ITEM_LIMIT = isConfigLoaded() ? batchLimit() : API_MAX_BATCH;
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -92,7 +92,7 @@ const NESTED_POSITIONS_SCHEMA = postingPositions("transaction-batch", {
  * Der Zugriff läuft über eine Namenskarte und nicht über `.shape.<feld>`, weil
  * `postingPositionItem()` je nach Variante zwei verschiedene Objektschemata liefert und
  * TypeScript diese Union an der siebten Spalte nicht auflöst. Die Bausteine bleiben damit
- * dieselben, die auch das ausgelieferte Schema benutzt (Plan 4.5).
+ * dieselben, die auch das ausgelieferte Schema benutzt.
  */
 const POSITION_SHAPE: Readonly<Record<string, FieldSpec["schema"]>> =
   postingPositionItem(true).shape;
@@ -161,7 +161,7 @@ export const bb_postings_create_for_transaction_batch: ToolEntry = {
           apiNames: [
             "postingaccounts",
             // Ohne eingeschobenes `s`: TransactionPostings schreibt postingtexts wie der
-            // Einzelendpunkt. Der Spezifikationsfehler betrifft allein ReceiptPostings (0.5).
+            // Einzelendpunkt. Der Spezifikationsfehler betrifft allein ReceiptPostings.
             "postingtexts",
             "vats",
             "cost_locations",
@@ -175,7 +175,7 @@ export const bb_postings_create_for_transaction_batch: ToolEntry = {
           schema: NESTED_POSITIONS_SCHEMA,
           transform: "parallel-arrays",
           // Die `apiNames` zielen auf die parallelen Arrays INNERHALB der Elementdefinition
-          // TransactionPostings und nicht auf Body-Parameter (Plan 2.1, 4.4 Punkt 3).
+          // TransactionPostings und nicht auf Body-Parameter.
           itemFields: [
             field({
               name: "postingaccount",
@@ -221,7 +221,7 @@ export const bb_postings_create_for_transaction_batch: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Erfolgsantwort mit den Arrays `transactions` und `errors` und ohne `message`
@@ -243,7 +243,7 @@ export const bb_postings_create_for_transaction_batch: ToolEntry = {
       "transaction_id_by_customer ihrer Zahlung, und gezählt wird je Zahlung getrennt",
   },
   // Kein duplicateCheck: bb_postings_search nimmt transaction_id_by_customer nicht als Filter
-  // an und verlangt einen Zeitraum, den dieser Aufruf nicht trägt (Plan 2.1).
+  // an und verlangt einen Zeitraum, den dieser Aufruf nicht trägt.
   crossChecks: ["Q3", "Q4"],
   invalidatesCache: [],
 };

@@ -1,16 +1,16 @@
 // ERZEUGT von scripts/gen-errors.ts aus docs/openapi/buchhaltungsbutler-v1.json.
 // NICHT VON HAND ÄNDERN. Änderungen entstehen ausschließlich über `pnpm generate`; der
-// CI-Schritt verlangt danach eine leere git-Differenz (Plan 4.2).
+// CI-Schritt verlangt danach eine leere git-Differenz.
 //
 // Quelle: BuchhaltungsButler API, info.version 1.9.1.
 //
 // 786 Paare (Pfad, error_code) über 54 Pfade. Bei 179 Paaren weichen
 // `message` und `summary` voneinander ab; die Zahl ist ein Driftanzeiger und wird von
-// test/unit/generated.test.ts festgehalten (Plan 5.6).
+// test/unit/generated.test.ts festgehalten.
 //
 // Verteilung der Klassen: config 168, input 397, transient 118, final 95, special 8.
 //
-// ZWEI REGELN FÜR JEDEN, DER DIESEN KATALOG LIEST (Plan 5.6, Befund L6):
+// ZWEI REGELN FÜR JEDEN, DER DIESEN KATALOG LIEST:
 //   1. Kein Text aus dieser Datei wird als Wortlaut der API ausgegeben. Zitiert wird das
 //      `message`-Feld der TATSÄCHLICHEN Antwort. Der Katalogtext tritt nur ein, wenn die
 //      Antwort keinen verwertbaren Text trägt, und dann mit dem Zusatz „Text laut
@@ -20,7 +20,7 @@
 //
 // Der Katalog wird dynamisch geladen und gelangt nie vollständig in den Modellkontext.
 
-/** Die fünf Fehlerklassen aus Plan 5.6. */
+/** Die fünf Fehlerklassen. */
 export type ErrorClass = "config" | "input" | "transient" | "final" | "special";
 
 /** Ein Paar (Pfad, error_code) mit beiden Texten der Spezifikation. */
@@ -39,7 +39,7 @@ export interface ErrorEntry {
 
 /**
  * Schlüssel der ersten Ebene ist IMMER der Spezifikationspfad, bei den vier Werkzeugen mit
- * Pfadvorlage also `path.specPath` und nicht der gebaute Pfad (Plan 4.6). Schlüssel der
+ * Pfadvorlage also `path.specPath` und nicht der gebaute Pfad. Schlüssel der
  * zweiten Ebene ist der `error_code`.
  */
 export const ERRORS: Record<string, Record<number, ErrorEntry>> = {

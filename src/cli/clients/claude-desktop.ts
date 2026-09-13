@@ -1,5 +1,5 @@
 /**
- * Claude Desktop: `claude_desktop_config.json` lesen, ergänzen, zurückschreiben (Plan 8.3).
+ * Claude Desktop: `claude_desktop_config.json` lesen, ergänzen, zurückschreiben.
  *
  * Reines JSON, also verlustfrei änderbar. Claude Desktop kennt **keine** `${VAR}`-Ersetzung;
  * wer hier Zugangsdaten will, bekommt sie im Klartext in einer Datei im Benutzerprofil

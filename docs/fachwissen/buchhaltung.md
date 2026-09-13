@@ -11,7 +11,7 @@ Quelle oder die OpenAPI-Spezifikation belegt ist, wird ausdrücklich als "Annahm
 "nicht verifiziert" gekennzeichnet.
 
 Quelle für alle API-Pfade und Parameter, sofern nicht anders angegeben:
-`/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json`
+`docs/openapi/buchhaltungsbutler-v1.json`
 (Abruf/Stand der lokalen Kopie: 2026-09-12).
 
 ---

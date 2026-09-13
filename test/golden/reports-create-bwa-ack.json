@@ -1,6 +1,6 @@
 {
   "_herkunft": "Endpunkt /reports/create/bwa | dokumentiert, NICHT gemessen (schreibend, der Live-Zugriff war auf lesende Pfade begrenzt) | Quelle: Spezifikation ReportsCreateBwa_Success | Struktur gemessen, Geschäftsdaten erfunden",
-  "_zweck": "den Anschlusshinweis aus Umsetzungsplan 7.6, erste Zeile der Hinweistabelle",
+  "_zweck": "den Anschlusshinweis der Hinweistabelle",
   "http": {
     "status": 200,
     "contentType": "application/json; charset=utf-8"

@@ -103,7 +103,7 @@ export function projectRows(
   return { rows: mapped.items, warnings: mapped.warnings };
 }
 
-/** Projizierte Zeilen samt den Vertragsverletzungen, die dabei aufgefallen sind (Plan 7.3). */
+/** Projizierte Zeilen samt den Vertragsverletzungen, die dabei aufgefallen sind. */
 export interface ProjectedRows {
   readonly rows: readonly Record<string, unknown>[];
   readonly warnings: readonly AggregatedWarning[];

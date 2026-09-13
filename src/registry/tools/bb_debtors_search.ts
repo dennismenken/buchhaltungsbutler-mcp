@@ -1,20 +1,20 @@
-// Werkzeug 32 von 54: `/settings/get/debtors` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 32 von 54: `/settings/get/debtors`.
 //
 // Debitoren sind die Kundenkonten des Mandanten. Der Endpunkt führt außer dem Zugangsdatum
 // nur `limit` und `offset`: Es gibt keinen Namens- und keinen Nummernfilter, gesucht wird in
 // der gelieferten Liste.
 //
-// Drei Eigenheiten stehen hier und nicht in der Beschreibung, weil sie das Kontextbudget aus
-// Plan 4.10 kosten würden, ohne dem Agenten beim Aufruf zu helfen:
+// Drei Eigenheiten stehen hier und nicht in der Beschreibung, weil sie Kontextbudget
+// kosten würden, ohne dem Agenten beim Aufruf zu helfen:
 //
 //  1. **Kein `maximum` für `limit`, und deshalb auch kein Q2.** Die Obergrenze ist nicht
-//     dokumentiert und nicht verifiziert (Plan 7.5, 14.2). Ein erfundenes Maximum lehnte
+//     dokumentiert und nicht verifiziert. Ein erfundenes Maximum lehnte
 //     gültige Aufrufe unsichtbar vor dem Request ab; ohne belegte Schranke gibt es zugleich
-//     nichts, wogegen Q2 prüfen könnte (Plan 4.7). Statt der Prüfung trägt die
+//     nichts, wogegen Q2 prüfen könnte. Statt der Prüfung trägt die
 //     Feldbeschreibung den Warnsatz aus `pagination.ts`.
 //  2. **Der Serverstandard beträgt 25 Zeilen.** Deshalb sendet dieser Server `limit` immer
-//     mit (Plan 7.5 Regel 1); 25 Zeilen sähen sonst aus wie das vollständige Ergebnis.
-//  3. **Schreib- und Lesename weichen ab** (Plan 7.2): Geschrieben wird
+//     mit; 25 Zeilen sähen sonst aus wie das vollständige Ergebnis.
+//  3. **Schreib- und Lesename weichen ab**: Geschrieben wird
 //     `additional_address_line` und `sales_tax_id`, gelesen `additional_addressline` und
 //     `sales_tax_id_eu`. Der Antwortvertrag trägt die Lesenamen; ein gemeinsamer Fachtyp über
 //     Schreib- und Leseseite erzeugte hier stille Datenverluste.
@@ -67,16 +67,16 @@ export const bb_debtors_search: ToolEntry = {
     },
   ],
   serverOnlyFields: ["response_format"],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Die 16 Feldnamen stammen aus `docs/api/stammdaten.md` und decken sich mit einem lesenden
-  // Kontrollaufruf vom 2026-09-12. `source` bleibt trotzdem "dokumentiert": Plan 2.1 und P13
-  // behalten den Wert "gemessen" ausschließlich den vier in Plan 0.3 gemessenen Endpunkten
+  // Kontrollaufruf vom 2026-09-12. `source` bleibt trotzdem "dokumentiert": P13 behält
+  // den Wert "gemessen" ausschließlich den vier live gemessenen Endpunkten
   // vor. `uid_ch` kam live durchgehend als null, `import_pending` als Zahl.
   //
-  // Der Vertragslauf (AP17, Plan 9.7) hat diesen Vertrag am 2026-09-13 gegen die echte API
+  // Der Vertragslauf hat diesen Vertrag am 2026-09-13 gegen die echte API
   // gehalten: kein neues, kein fehlendes und kein typverändertes Feld. `import_pending` kam
   // erneut als JSON-Zahl, `uid_ch` erneut durchgehend als null. Anders als bei den Kreditoren
-  // war `customer_number` hier gesetzt — das ist der Unterschied, den Plan 7.4 benennt.
+  // war `customer_number` hier gesetzt — genau der Unterschied, den die Projektion benennt.
   responseContract: {
     container: "data",
     fields: {

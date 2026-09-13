@@ -1,10 +1,10 @@
-// Werkzeug 34 von 54: `/settings/add-batch/debtors` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 34 von 54: `/settings/add-batch/debtors`.
 //
 // Der Endpunkt führt genau einen fachlichen Parameter, `debtors`, und der verweist auf die
 // Definition `SettingsDebtors`. Der Behälter wird **nicht** umbenannt (Anhang A): Er ist
 // bereits eine Objektliste, und ein zweiter Name für dasselbe wäre eine Umbenennung ohne
 // Gewinn. Die zwölf Eigenschaften des Elements `SettingsDebtor` stehen als `itemFields` hier
-// und werden von der zweiten Deckungsstufe aus Plan 4.4 Punkt 3 gegen die aufgelöste
+// und werden von der zweiten Deckungsstufe gegen die aufgelöste
 // Elementdefinition aufgerechnet.
 //
 // **Das Element führt kein `email`, der Einzelendpunkt `/settings/add/debtor` schon.** Das
@@ -16,7 +16,7 @@
 // aus der Konfiguration geholt. Der Grund ist die Ladereihenfolge: Dieses Modul wird beim
 // Import ausgewertet, die Konfiguration ist zu diesem Zeitpunkt noch nicht aufgelöst, und
 // `batchLimit()` ohne Vorgabe würde werfen. Die wirksame Grenze `min(50, BB_MCP_MAX_BATCH)`
-// erzwingt Q4 zur Laufzeit aus der dann aufgelösten Konfiguration (Plan 4.7), zusätzlich
+// erzwingt Q4 zur Laufzeit aus der dann aufgelösten Konfiguration, zusätzlich
 // Guard 5; das Schema ist damit höchstens weiter als die Guards, nie enger.
 
 import { batchContainer } from "../../schema/batch.js";
@@ -139,11 +139,11 @@ export const bb_debtors_create_batch: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Die Antwort trägt weder `data` noch `rows`, sondern zwei parallele Arrays `debtors` und
-  // `errors` auf oberster Ebene. Beide sind Listen und damit in `ContractFieldType` (Plan
-  // 2.1) nicht abbildbar; sie werden als unbekannte Felder unverändert durchgereicht
-  // (Plan 7.3, letzte Zeile). `success: true` bedeutet hier NICHT, dass alle Konten angelegt
+  // `errors` auf oberster Ebene. Beide sind Listen und damit in `ContractFieldType`
+  // nicht abbildbar; sie werden als unbekannte Felder unverändert durchgereicht.
+  // `success: true` bedeutet hier NICHT, dass alle Konten angelegt
   // wurden — `errors` ist zwingend auszuwerten.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",

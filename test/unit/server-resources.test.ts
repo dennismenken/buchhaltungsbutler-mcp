@@ -1,4 +1,4 @@
-// Die vier MCP-Resources aus Plan 7.7 (AP14).
+// Die vier MCP-Resources.
 //
 // Geprüft wird hier ohne laufenden Server: `registerResources` bekommt eine Attrappe, die jede
 // Anmeldung mitschreibt, und die Lesefunktionen werden danach einzeln aufgerufen. Das ist die
@@ -89,7 +89,7 @@ afterEach(() => {
 // --- Anmeldung -------------------------------------------------------------------------
 
 describe("registerResources", () => {
-  it("meldet genau die vier URIs aus Plan 7.7 mit Titel, Beschreibung und Medientyp an", () => {
+  it("meldet genau die vier URIs mit Titel, Beschreibung und Medientyp an", () => {
     const byUri = register(createMasterDataStore({ ttlMs: 0 }));
 
     expect([...byUri.keys()]).toEqual([
@@ -138,7 +138,7 @@ describe("Die drei festen Resources", () => {
     );
 
     // Der Wegweiser steht genau einmal. Weicht die Resource vom Export ab, liefe der
-    // Servertext mit einer anderen Fassung als die Resource (Plan 4.10, Weg 2).
+    // Servertext mit einer anderen Fassung als die Resource (Weg 2).
     expect(text).toBe(POSTINGS_GUIDE);
     expect(text).toContain("bb_postings_create_for_receipt");
   });

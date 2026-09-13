@@ -1,9 +1,9 @@
-// Werkzeug 10, `/transactions/get/id_by_customer`: eine einzelne Zahlung holen (Plan 3.8, AP12b).
+// Werkzeug 10, `/transactions/get/id_by_customer`: eine einzelne Zahlung holen.
 //
-// Dieser Eintrag ist einer der vier mit Pfadvorlage (Plan 4.6). Das Segment `id_by_customer` im
+// Dieser Eintrag ist einer der vier mit Pfadvorlage. Das Segment `id_by_customer` im
 // Pfad der Spezifikation ist ein PLATZHALTER für den Wert und kein literales Segment; live
-// bestätigt am 2026-09-12 mit HTTP 200 (Plan 0.3 Befund L1, `live-befunde-orchestrator.md`
-// Befund 1). Der dokumentierte Aufruf mit dem literalen Pfad scheitert dort nachweislich mit
+// bestätigt am 2026-09-12 mit HTTP 200 (Befund L1 in docs/api/live-befunde.md). Der
+// dokumentierte Aufruf mit dem literalen Pfad scheitert dort nachweislich mit
 // einer HTML-Fehlerseite, weil dieser Pfad gar nicht existiert.
 //
 // Daraus folgt dreierlei für diesen Eintrag:
@@ -14,10 +14,14 @@
 //      Spezifikation führt an diesem Pfad nur `api_key`. Ein Body-Feld `id_by_customer` gibt
 //      es nicht, und der Request-Mapper darf den Wert niemals in den Body schreiben.
 //   3. Die Aufrufform ist gemessen, nicht abgeleitet. Der Eintrag trägt deshalb KEIN
-//      `verified: false` und die Beschreibung keinen Einschränkungssatz (Plan 4.6).
+//      `verified: false` und die Beschreibung keinen Einschränkungssatz.
 //
-// Der Einzelabruf liefert 13 Felder, die Liste nur sechs (Befund L2). `account` kommt hier als
-// JSON-Zahl (Befund L3) und geht als String hinaus (Streitfrage S10).
+// Der Einzelabruf liefert 13 Felder, die Liste nur sechs. Beide Feldzahlen stehen mitsamt den
+// Feldnamen in docs/api/grundlagen.md, Abschnitt 4.5 („Antwortfelder der Belege und
+// Zahlungen"), gemessen am 2026-09-12. Befund L2 in docs/api/live-befunde.md belegt, DASS
+// Einzelabruf und Liste getrennte Antwortverträge haben; die beiden Feldzahlen selbst führt L2
+// nicht. `account` kommt hier als JSON-Zahl (Befund L3 ebenda) und geht als String hinaus, wie
+// jede Kennung dieses Servers (Umwandlungsregel 2 im Kopf von src/mapping/coerce.ts).
 
 import { idByCustomer, responseFormat } from "../../schema/vocab.js";
 import type { ToolEntry } from "../types.js";
@@ -47,7 +51,7 @@ export const bb_transactions_get: ToolEntry = {
     {
       name: "transaction_id_by_customer",
       // Leeres apiNames und source "path": Der Wert wird in den Pfad eingesetzt und nie in den
-      // Body geschrieben (Plan 4.6 Regel 5). Der Deckungstest P3 nimmt das Feld deshalb aus.
+      // Body geschrieben. Der Deckungstest P3 nimmt das Feld deshalb aus.
       apiNames: [],
       source: "path",
       required: true,
@@ -67,12 +71,13 @@ export const bb_transactions_get: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
-  // Gemessen am 2026-09-12: 13 Felder, `data` als Objekt ohne `rows`, `account` als JSON-Zahl
-  // (Plan 0.3 Befund L1, L2 und L3). Der Vertrag gehört zu DIESEM Endpunkt und nicht zu dem
-  // der Liste (7.2); wer den Vertrag der Liste kopiert, verliert hier sieben Felder.
+  // Gemessen am 2026-09-12, am 2026-09-13 lesend erneut bestätigt: 13 Felder, `data` als Objekt
+  // ohne `rows`, `account` als JSON-Zahl.
+  // Der Vertrag gehört zu DIESEM Endpunkt und nicht zu dem
+  // der Liste; wer den Vertrag der Liste kopiert, verliert hier sieben Felder.
   responseContract: {
     container: "data",
     fields: {

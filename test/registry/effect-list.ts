@@ -1,4 +1,4 @@
-// Die Wirkungstabelle für P6 (Plan 9.2, AP11).
+// Die Wirkungstabelle für P6.
 //
 // Von Hand aus docs/api/grundlagen.md Abschnitt 7.3 abgeschrieben, Spalte „Wirkung", und
 // bewusst GETRENNT vom Register geführt: Eine Prüfung, die die Wirkung aus demselben Eintrag
@@ -8,11 +8,11 @@
 // Geschlüsselt ist nach dem SPEZIFIKATIONSPFAD und nicht nach dem Werkzeugnamen, weil
 // grundlagen.md 7.3 Endpunkte einstuft und keine Werkzeuge. Bei den vier Endpunkten mit
 // Pfadvorlage steht hier deshalb der unveränderte Schlüssel der Spezifikation, also
-// /receipts/get/id_by_customer und nicht die Vorlage (Plan 4.6).
+// /receipts/get/id_by_customer und nicht die Vorlage.
 //
 // HINWEIS zu den beiden Einzelabruf-Endpunkten: grundlagen.md 7.3 vermerkt bei
 // /receipts/get/id_by_customer und /transactions/get/id_by_customer „live nicht benutzbar".
-// Dieser Vermerk ist durch die Messung L1 widerlegt (Plan 0.3, 4.6, Streitfrage S1); er
+// Dieser Vermerk ist durch die Messung L1 widerlegt; er
 // betrifft ohnehin nur die Benutzbarkeit und nicht die Wirkung. Übernommen wird hier allein
 // die Spalte „Wirkung", und die ist in beiden Fällen „lesend".
 

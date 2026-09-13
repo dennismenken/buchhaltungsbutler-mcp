@@ -6,18 +6,18 @@
 // Fehler zwei verschiedene Antworten: `bb_transactions_get` schrieb
 // „transaction_id_by_customer: erwartet wird number, übergeben wurde die Zeichenkette '930'.",
 // `bb_assignments_get` bei wörtlich derselben Eingabe „Invalid input: expected number, received
-// string". Das ist zweierlei — ein Bruch der Sprachregel (Plan 4.9, E4), und schwerer wiegend
+// string". Das ist zweierlei — ein Bruch der Sprachregel, und schwerer wiegend
 // ein Verlust an Information: Die englische Fassung sagt bei einem fehlenden Pflichtfeld
 // „expected string, received undefined" und damit dasselbe wie bei einem Typfehler, während
 // die deutsche „das Feld fehlt" schreibt. Genau diese Unterscheidung zwischen „nachtragen" und
 // „umformen" ist der Zweck der Meldung; ihr Fehlen hat im Evaluationslauf den Irrweg aus
-// Befund V2/E-3 erzeugt.
+// im Evaluationslauf beobachtet.
 //
 // Deshalb gibt es diese Aufbereitung ab hier genau einmal. Beide Registrierpfade rufen
 // {@link joinIssues} mit ihren Rohargumenten auf; eine zweite Fassung entsteht nicht wieder.
 //
 // Das Modul kennt weder Werkzeug noch Eintrag: Es bekommt Befunde und die Rohargumente und
-// gibt Text zurück. Der Vierblockaufbau der Absage (5.8) bleibt Sache der beiden Aufrufer.
+// gibt Text zurück. Der Vierblockaufbau der Absage bleibt Sache der beiden Aufrufer.
 //
 // **Zur Schwärzung.** Die beiden zusammengeführten Fassungen waren hier verschieden: Der
 // Bündelpfad ließ jeden Befundtext durch `sanitizeText`, der Endpunktpfad keinen. Übernommen
@@ -77,7 +77,7 @@ const VALUE_EXCERPT_LENGTH = 40;
  * Der Unterschied zwischen „das Feld fehlt" und „das Feld hat den falschen Typ" ist der
  * ganze Zweck: Der Agent liest aus dem einen, er müsse etwas nachtragen, aus dem anderen, er
  * müsse etwas umformen. Beides mit demselben Satz zu beantworten hat im Evaluationslauf
- * genau diesen Irrweg erzeugt (Befund V2/E-3).
+ * genau diesen Irrweg erzeugt; beobachtet im Evaluationslauf.
  */
 function describeGivenValue(value: unknown): string {
   if (value === undefined) return "das Feld fehlt";
@@ -106,7 +106,7 @@ const ALLOWED_VALUES_LIMIT = 8;
  * Ein erlaubter Wert in der Schreibweise der Werkzeugbeschreibungen.
  *
  * Zeichenketten stehen in einfachen Anführungszeichen wie überall sonst, wo dieser Server
- * einen API-Wert wörtlich zitiert (`schema/vocab.ts`, Sprachregel aus Plan 4.9). Geschwärzt
+ * einen API-Wert wörtlich zitiert (`schema/vocab.ts`, Sprachregel). Geschwärzt
  * wird hier nichts: Die Werte stammen aus dem Enum des eigenen Schemas und nie vom Aufrufer.
  */
 function renderAllowedValue(value: unknown): string {
@@ -168,10 +168,9 @@ function describeUnionForms(errors: readonly (readonly z.core.$ZodIssue[])[]): s
 /**
  * Ein Zod-Befund als deutscher Satz.
  *
- * Die Bausteine der Schemaschicht tragen ihre Meldungen selbst und auf Deutsch (AP05); für die
+ * Die Bausteine der Schemaschicht tragen ihre Meldungen selbst und auf Deutsch; für die
  * Befunde, die Zod ohne eigenen Text erzeugt, steht der Text hier. Eine englische
- * Bibliotheksmeldung inmitten von 59 deutschen Beschreibungen wäre der größere Bruch
- * (Plan 4.9, E4).
+ * Bibliotheksmeldung inmitten von 59 deutschen Beschreibungen wäre der größere Bruch.
  *
  * Vier Codes werden deshalb selbst formuliert. `invalid_value` ist der Code, den Zod 4 an
  * jedem Enum erzeugt — 54 Enum-Felder in 31 der 54 Endpunktwerkzeuge, darunter
@@ -179,7 +178,7 @@ function describeUnionForms(errors: readonly (readonly z.core.$ZodIssue[])[]): s
  * `resource`, `areas` und `base` in den Bündeln; ohne diesen Zweig fiele die Meldung dort auf
  * „Invalid option: expected one of …" zurück, und zwar **auch** dann, wenn das Pflichtfeld
  * schlicht fehlt. Genau diese Unterscheidung zwischen „nachtragen" und „umformen" ist der
- * Zweck der Meldung (Befund V2/E-3).
+ * Zweck der Meldung; im Evaluationslauf hat genau diese Verwechslung einen Irrweg erzeugt.
  *
  * @param rawArgs Die Rohargumente des Aufrufs, aus denen der übergebene Wert stammt.
  */

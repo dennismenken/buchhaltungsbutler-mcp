@@ -1,16 +1,16 @@
 version: 2
 
-# Wöchentlich für npm und für GitHub Actions (Plan 2, AP21).
+# Wöchentlich für npm und für GitHub Actions.
 #
 # Zwei Pull-Requests sind ausdrücklich NICHT automatisch zu übernehmen, und es gibt dafür
 # bewusst keinen ignore-Eintrag:
 #
 #   typescript auf 7.x — abzulehnen, solange typescript-eslint die Peer-Range
 #     '>=4.8.4 <6.1.0' führt und typescript@7.x keine programmatische Compiler-API mehr
-#     liefert. Ohne diese API fällt das typgestützte Linting stumm aus (Plan 13.4). Der Grund
-#     steht als Kommentar in package.json.
+#     liefert. Ohne diese API fällt das typgestützte Linting stumm aus. Der Grund steht als
+#     Kommentar in package.json.
 #   @modelcontextprotocol/server und -client — beide stehen exakt und ohne Caret; sie werden
-#     nur gemeinsam und nur nach einem Blick in die Änderungsliste angehoben (Plan 13.2).
+#     nur gemeinsam und nur nach einem Blick in die Änderungsliste angehoben.
 #
 # Warum kein ignore: Ein ignorierter Pull-Request ist ein Zustand, den niemand mehr sieht.
 # Der Sinn des wöchentlichen Laufs ist gerade, dass der Konflikt sichtbar bleibt, bis er
@@ -31,9 +31,9 @@ updates:
     labels:
       - "abhängigkeiten"
 
-  # Pflege der SHA-Pinnung in .github/workflows (Plan 13.3). Die Workflows nennen keine
-  # Tags, sondern 40-stellige Commit-SHAs; dahinter steht als Kommentar der Tag des
-  # geprüften Releases, etwa `actions/checkout@3d3c42e5… # v7.0.1`.
+  # Pflege der SHA-Pinnung in .github/workflows. Die Workflows nennen keine Tags, sondern
+  # 40-stellige Commit-SHAs; dahinter steht als Kommentar der Tag des geprüften Releases, etwa
+  # `actions/checkout@3d3c42e5… # v7.0.1`.
   #
   # Dieser Kommentar ist die Bedingung dafür, dass dieser Eintrag überhaupt etwas tut:
   # Dependabot liest aus ihm die eingesetzte Fassung, sucht die nächste und hebt SHA und

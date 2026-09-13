@@ -6,7 +6,7 @@ Referenzdossier zu den `/postings`-Endpunkten der BuchhaltungsButler-API v1.
 
 | Angabe | Wert |
 | --- | --- |
-| Primärquelle | `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json` |
+| Primärquelle | `docs/openapi/buchhaltungsbutler-v1.json` |
 | Herkunft der Primärquelle | `https://app.buchhaltungsbutler.de/docs/api/v1.de.json` |
 | API-Version laut `info.version` | 1.9.1 |
 | Abrufdatum aller Angaben | 2026-09-12 |

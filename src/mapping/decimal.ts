@@ -1,15 +1,15 @@
-// Betragsrechnung ausschließlich in Ganzzahl-Cent (Plan 7.4, Streitfrage S9).
+// Betragsrechnung ausschließlich in Ganzzahl-Cent.
 //
 // Die Regel dieses Moduls in einem Satz: **Es wird nie auf Gleitkomma gerechnet.** Jeder
 // Betrag wird aus seiner Zeichenkette in Ganzzahl-Cent überführt, und jede Summe, jeder
 // Vergleich und jede Grenzprüfung läuft auf diesen Ganzzahlen. Die einzige Stelle, an der
 // überhaupt eine Gleitkommazahl entsteht, ist {@link amountStringToApiNumber}: Die API
-// erwartet beim Schreiben eine JSON-Zahl (Plan 4.5, `amountIn()`), und eine JSON-Zahl ist in
+// erwartet beim Schreiben eine JSON-Zahl (`amountIn()`), und eine JSON-Zahl ist in
 // JavaScript zwangsläufig ein `double`. Dort wird nicht gerechnet, sondern einmal umgewandelt
 // und sofort serialisiert.
 //
 // Warum nicht einfach `parseFloat`: `parseFloat("884.65") * 100` ergibt 88464.99999999999.
-// Eine stille Rundung ist in einer Buchhaltung der schlimmste denkbare Ausgang (Plan 7.4):
+// Eine stille Rundung ist in einer Buchhaltung der schlimmste denkbare Ausgang:
 // Der Betrag sieht danach weiterhin richtig aus, ist es aber nicht mehr, und nichts in der
 // Antwort weist darauf hin.
 
@@ -26,7 +26,7 @@ export const MAX_SAFE_CENTS = Number.MAX_SAFE_INTEGER;
 
 /**
  * Warum eine Betragszeichenkette nicht in Cent überführt werden konnte. Der Grund wandert in
- * die Begründung eines `_contract_warnings`-Eintrags (Plan 7.3) beziehungsweise in die
+ * die Begründung eines `_contract_warnings`-Eintrags beziehungsweise in die
  * Fehlermeldung des Request-Mappers; ein `null` ohne Grund wäre dort nicht erklärbar.
  */
 export type AmountProblem =
@@ -124,7 +124,7 @@ function splitNumberPart(
 /**
  * Überführt eine Betragszeichenkette in Ganzzahl-Cent, ohne jede Gleitkommarechnung.
  *
- * Angenommen werden die gemessene Form der API (`"884.65"`, `"-192.44"`, Plan 0.3 Befund L3),
+ * Angenommen werden die gemessene Form der API (`"884.65"`, `"-192.44"`),
  * die deutsche Schreibweise mit Komma und Formen mit Tausendertrennzeichen. Abgelehnt wird
  * alles, dessen Bedeutung nicht eindeutig ist.
  */
@@ -178,7 +178,7 @@ export function formatCents(cents: number): string {
   if (!Number.isInteger(cents)) {
     throw new TypeError(
       `formatCents erwartet Ganzzahl-Cent, bekam ${String(cents)}. Beträge werden in diesem ` +
-        "Projekt nie als Gleitkommazahl geführt (Plan 7.4).",
+        "Projekt nie als Gleitkommazahl geführt.",
     );
   }
   const negative = cents < 0;
@@ -193,21 +193,21 @@ export function sumCents(values: readonly number[]): number {
   let total = 0;
   for (const value of values) {
     if (!Number.isInteger(value)) {
-      throw new TypeError("sumCents erwartet Ganzzahl-Cent (Plan 7.4).");
+      throw new TypeError("sumCents erwartet Ganzzahl-Cent.");
     }
     total += value;
   }
   if (!Number.isSafeInteger(total)) {
     throw new RangeError(
       "Die Summe verlässt den verlustfreien Ganzzahlbereich. Ein gerundeter Betrag wird hier " +
-        "nicht geliefert (Plan 7.4).",
+        "nicht geliefert.",
     );
   }
   return total;
 }
 
 /**
- * Die JSON-Zahl, die die API beim Schreiben erwartet (Plan 4.5, Baustein `amountIn()`).
+ * Die JSON-Zahl, die die API beim Schreiben erwartet (Baustein `amountIn()`).
  *
  * **Die einzige Gleitkommastelle des Projekts, und sie rechnet nicht.** Der Centwert wird in
  * die kanonische Zeichenkette zurückgeschrieben und diese einmal nach `number` gewandelt.

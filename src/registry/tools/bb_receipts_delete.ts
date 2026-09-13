@@ -1,20 +1,21 @@
-// Werkzeug 7 von 54 (Plan 3.8): `/receipts/delete/id_by_customer`, Beleg als gelöscht markieren.
+// Werkzeug 7 von 54: `/receipts/delete/id_by_customer`, Beleg als gelöscht markieren.
 //
-// **Pfadvorlage statt literalem Pfad (Plan 4.6).** Das Segment `id_by_customer` ist ein
+// **Pfadvorlage statt literalem Pfad.** Das Segment `id_by_customer` ist ein
 // Platzhalter für den Wert; der Eintrag trägt `template`, `params` und `specPath` mit dem
 // unveränderten Schlüssel der Spezifikation. Das Identifikatorfeld hat `source: "path"` und ein
 // leeres `apiNames`, und **ein Body-Feld `id_by_customer` gibt es nicht** — die Spezifikation
 // führt an diesem Pfad ohnehin nur einen einzigen Parameter.
 //
 // **`verified: false`, und das ist keine Förmlichkeit.** Diese Aufrufform ist dieselbe wie bei
-// den beiden Einzelabrufen, die am 2026-09-12 mit HTTP 200 gemessen wurden (Befund L1). Dieser
+// den beiden Einzelabrufen, die am 2026-09-12 mit HTTP 200 gemessen wurden (Befund L1 in
+// docs/api/live-befunde.md). Dieser
 // Endpunkt ist aber schreibend und wurde deshalb **nicht** getestet: „gleiche Form wie L1,
 // schreibend, nicht getestet". Die Beschreibung bezeichnet die Aufrufform folgerichtig nicht
-// als gemessen. Die Klärung gehört in AP19, das Nachziehen in AP19b (Plan 4.6, 12 S1).
+// als gemessen. Die Klärung braucht ein Testmandat außerhalb der Produktivbuchhaltung.
 //
 // **Der Vorgang ist umkehrbar und löscht nichts endgültig.** Er setzt eine Löschmarkierung;
 // `deleted` steht danach auf 1, und bb_receipts_restore nimmt sie zurück. Einen Endpunkt, der
-// einen Beleg endgültig entfernt, kennt die API nicht (Plan 3.5 U1 und U2).
+// einen Beleg endgültig entfernt, kennt die API nicht.
 
 import { idByCustomer } from "../../schema/vocab.js";
 import type { ToolEntry } from "../types.js";
@@ -44,7 +45,7 @@ export const bb_receipts_delete: ToolEntry = {
     {
       name: "receipt_id_by_customer",
       // Leeres apiNames und source "path": Der Wert wird in den Pfad eingesetzt und nie in den
-      // Body geschrieben (Plan 4.6 Regel 5). Die Spezifikation führt ihn an diesem Pfad nicht.
+      // Body geschrieben. Die Spezifikation führt ihn an diesem Pfad nicht.
       apiNames: [],
       source: "path",
       required: true,
@@ -56,7 +57,7 @@ export const bb_receipts_delete: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   responseContract: {
     // Die Quittung trägt id_by_customer auf oberster Ebene des Umschlags, nicht unter data
     // (docs/api/belege.md 8.2).
@@ -76,6 +77,7 @@ export const bb_receipts_delete: ToolEntry = {
   },
   crossChecks: ["Q3"],
   invalidatesCache: [],
-  // Aufrufform aus Befund L1 abgeleitet, schreibend und deshalb nicht getestet (Plan 4.6).
+  // Aufrufform aus Befund L1 in docs/api/live-befunde.md abgeleitet, schreibend und deshalb
+  // nicht getestet.
   verified: false,
 };

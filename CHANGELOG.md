@@ -26,12 +26,12 @@ veröffentlicht**; es gibt daher bisher keinen abgeschlossenen Versionsabschnitt
   `bb_reports_run` erzeugt BWA oder Summen- und Saldenliste, wartet auf die serverseitige
   Berechnung und liefert die fertige Auswertung im selben Aufruf; `bb_balances_get` liefert das
   Kontenblatt eines Kontos mit fortgeschriebenem Saldo.
-  **Sie kommen zusätzlich und ersetzen kein einziges der 54 Endpunktwerkzeuge** (Entscheidung N1
-  vom 2026-09-13); jede Beschreibung nennt ausdrücklich, welches Einzelwerkzeug für Felder,
-  Sortierung oder Dateien weiterhin zuständig bleibt. Als eigene Gruppe sind sie über
-  `BB_MCP_TOOL_GROUPS_EXCLUDE=bundles` **als Ganzes abschaltbar**, ohne eine Endpunktgruppe zu
-  berühren; umgekehrt hängt `bundles` an keiner Endpunktgruppe, weil ein Bündel die HTTP-Schicht
-  ruft und nicht die Endpunktwerkzeuge.
+  **Sie kommen zusätzlich und ersetzen kein einziges der 54 Endpunktwerkzeuge**, weil jedes
+  Bündel nur den häufigen Weg abkürzt und dabei bewusst etwas weglässt; jede Beschreibung nennt
+  ausdrücklich, welches Einzelwerkzeug für Felder, Sortierung oder Dateien weiterhin zuständig
+  bleibt. Als eigene Gruppe sind sie über `BB_MCP_TOOL_GROUPS_EXCLUDE=bundles` **als Ganzes
+  abschaltbar**, ohne eine Endpunktgruppe zu berühren; umgekehrt hängt `bundles` an keiner
+  Endpunktgruppe, weil ein Bündel die HTTP-Schicht ruft und nicht die Endpunktwerkzeuge.
   **`bb_reports_run` ist das einzige schreibende unter ihnen**: `/reports/create/bwa` und
   `/reports/create/sums` ersetzen serverseitig den zuvor erzeugten Bericht desselben Typs im
   ganzen Mandanten. Es trägt deshalb Klasse `AR` mit `readOnlyHint: false` und
@@ -70,10 +70,10 @@ veröffentlicht**; es gibt daher bisher keinen abgeschlossenen Versionsabschnitt
 - **Ein zweites, getrenntes Tokenbudget `BUNDLE_DEFINITION_TOKEN_BUDGET` = 6.950** für die
   Gruppe `bundles`. Das Gesamtbudget von 49.000 Token bleibt unverändert und deckt weiterhin
   genau die 54 Endpunktwerkzeuge; beide Grenzen werden getrennt geprüft, damit sichtbar bleibt,
-  was die Ergänzung kostet. Die Bauvorlage hatte 7.000 angesetzt, ausdrücklich als Schätzung mit
-  großzügiger Luft, weil die Bündel noch nicht geschrieben waren, und verlangte, die Zahl nach dem
-  ersten Lauf von `pnpm measure-tokens` auf den gemessenen Stand zuzüglich einer kleinen Marge zu
-  senken. Gemessen sind **6.852 Token** (`gpt-tokenizer@4.0.0`, Kodierung `o200k_base`, über die
+  was die Ergänzung kostet. Zuerst standen 7.000 im Raum, ausdrücklich als Schätzung mit
+  großzügiger Luft, weil die Bündel noch nicht geschrieben waren; nach dem ersten Lauf von
+  `pnpm measure-tokens` sollte die Zahl auf den gemessenen Stand zuzüglich einer kleinen Marge
+  sinken. Gemessen sind **6.852 Token** (`gpt-tokenizer@4.0.0`, Kodierung `o200k_base`, über die
   Definition, wie `tools/list` sie ausliefert); 6.950 sind dieser Stand zuzüglich 98 Token Marge,
   also rund 1,4 Prozent und damit dasselbe Maß, in dem die 49.000 über ihren gemessenen 48.305
   liegen. Ein Zwischenstand von 6.800 stand auf einer veralteten Messung (6.675 Token, zwei der
@@ -95,7 +95,7 @@ veröffentlicht**; es gibt daher bisher keinen abgeschlossenen Versionsabschnitt
   `mcp__buchhaltungsbutler__bb_postings_create_for_transaction_batch` auf 65 Zeichen und fiel
   in einem solchen Client aus, erfahrungsgemäß ohne sprechende Meldung; mit `bbutler` sind es
   54 Zeichen und damit 10 Abstand. **Gekürzt wurde allein der Eintragsname**, kein einziger der
-  59 Werkzeugnamen; Entscheidung E1 bleibt unberührt. `SERVER_NAME` in
+  59 Werkzeugnamen; am Werkzeugsatz ändert sich nichts. `SERVER_NAME` in
   `src/cli/clients/types.ts`, alle Clientblöcke der README und die Continue-Datei
   (`.continue/mcpServers/bbutler.yaml`) tragen denselben Namen, und
   `test/registry/name-length.test.ts` rechnet die Grenze für jedes Werkzeug gegen die Konstante
@@ -105,18 +105,25 @@ veröffentlicht**; es gibt daher bisher keinen abgeschlossenen Versionsabschnitt
   zweiten daneben zu schreiben.
 - **Das Kontextbudget der 54 Werkzeugdefinitionen steht auf 49.000 Token statt auf 32.000.** Das
   ist eine **ausdrückliche Entscheidung des Projektinhabers vom 2026-09-13** und keine
-  stillschweigende Anhebung. Plan 4.10 hatte 32.000 Token vorgerechnet; die Messung vom
-  2026-09-12 mit `gpt-tokenizer@4.0.0` (Kodierung `o200k_base`), auf der die Entscheidung beruht,
-  kam auf 48.305 Token, ein Überschuss von 16.305. Die Reihenfolge der Gegenmaßnahmen aus Plan
-  4.10 kann diese Lücke nicht schließen, und das ist ausgerechnet statt behauptet: 16.305 Token
+  stillschweigende Anhebung. Die ursprünglichen 32.000 Token waren **vorgerechnet und nicht
+  gemessen**: Sie beruhten auf dem angenommenen Verhältnis von 3,2 Zeichen je Token. Die Messung
+  vom 2026-09-12 mit `gpt-tokenizer@4.0.0` (Kodierung `o200k_base`), auf der die Entscheidung
+  beruht, kam auf 48.305 Token, ein Überschuss von 16.305. Die vorgesehene Reihenfolge der
+  Gegenmaßnahmen — erstens die sechs Sparmaßnahmen S1 bis S6 nachziehen, zweitens die
+  Beschreibungen der Stufe 3 auf die untere Wortgrenze kürzen, drittens weitere Inhalte aus den
+  Beschreibungen in Resources verschieben — kann diese Lücke nicht schließen, und das ist
+  ausgerechnet statt behauptet: 16.305 Token
   sind rund 66.700 Zeichen, während alle 54 Werkzeugbeschreibungen zusammen nur 32.654 Zeichen
   lang sind — selbst wenn jede von ihnen vollständig in die Resources wanderte, wäre das weniger
   als die Hälfte. Übrig bliebe allein der Posten Parameterbeschreibungen mit 67.161 Zeichen, der
-  damit praktisch ganz entfallen müsste; das widerspricht E6, so wie Werkzeuge zu streichen oder
-  zusammenzulegen E1 widerspricht. S6 ist dabei nachweislich umgesetzt, nämlich 0 Zeichen
+  damit praktisch ganz entfallen müsste; das widerspricht der Vorgabe, dass jeder Parameter
+  eines Endpunkts genau einmal im Werkzeug erscheint, so wie Werkzeuge zu streichen oder
+  zusammenzulegen der Vorgabe widerspricht, genau ein Werkzeug je Endpunkt auszuliefern.
+  S6 ist dabei nachweislich umgesetzt, nämlich 0 Zeichen
   Feldbeschreibung in allen 54 Ausgabeschemata.
   **Der gemessene Stand sind heute 48.368 Token**, also 63 Token mehr als am 2026-09-12 und ein
-  Überschuss von 16.368 gegenüber Plan 4.10; die Lücke ist damit eher größer geworden, und die
+  Überschuss von 16.368 gegenüber den vorgerechneten 32.000; die Lücke ist damit eher größer
+  geworden, und die
   Rechnung darüber trägt unverändert. Die Grenze ist der am 2026-09-12 gemessene Stand zuzüglich
   **695 Token Luft** und ausdrücklich keine Erlaubnis zu wachsen; von dieser Luft sind nach der
   aktuellen Messung noch **632 Token** übrig. Sie trägt eine Umformulierung, aber weder ein
@@ -124,7 +131,7 @@ veröffentlicht**; es gibt daher bisher keinen abgeschlossenen Versionsabschnitt
   (`test/registry/token-budget.test.ts`) bricht wieder hart an dieser Grenze ab**, statt den
   Überschuss nur auf stderr zu melden. Was das den Nutzer kostet, steht unverändert offen in
   Abschnitt 13 der README: rund 48.000 Token je Sitzung allein für diesen Server. Einzelheiten
-  und die Postentabelle in `docs/entwicklung/befund-tokenbudget.md`.
+  und die Postentabelle in `docs/entwicklung/tokenbudget.md`.
 - **`TOOL_DEFINITION_TOKEN_REGRESSION_LIMIT` ist entfallen.** Die Konstante war der Ersatz für
   ein Gesamtbudget, das nur noch warnte. Mit der Entscheidung oben ist das Gesamtbudget selbst
   wieder die harte Grenze; zwei harte Zahlen nebeneinander wären dieselbe Grenze zweimal.
@@ -138,7 +145,9 @@ geführt. Sie sind kein offener Fehler, sondern der ehrliche Stand.
   gemessen.** Sie folgt der Form, die an `/receipts/get/<wert>` und `/transactions/get/<wert>`
   am 2026-09-12 lesend gemessen wurde. Beide Endpunkte sind schreibend und wurden deshalb nicht
   getestet; die Einträge tragen `verified: false`. Es liegt **kein Testmandat außerhalb der
-  Produktivbuchhaltung** vor, siehe `docs/entwicklung/befund-schreibend.md`.
+  Produktivbuchhaltung** vor: Die einzigen vorhandenen Zugangsdaten öffnen die echte
+  Buchhaltung, und ein Test- oder Demo-Mandant des Anbieters ist nirgends dokumentiert. Es wurde
+  deshalb kein einziger schreibender Aufruf gegen die API ausgeführt.
 - **Das Wiederholungsverhalten der löschenden und aufhebenden Werkzeuge ist nicht verifiziert.**
   Sie tragen deshalb alle `idempotentHint: false`.
 - **Welche Währungen die Belegendpunkte annehmen, ist nicht verifiziert**; die Spezifikation
@@ -149,5 +158,5 @@ geführt. Sie sind kein offener Fehler, sondern der ehrliche Stand.
 
 - Node ab 22.19.0; genau drei Laufzeitabhängigkeiten
   (`@modelcontextprotocol/server`, `undici`, `zod`).
-- `CHARS_PER_TOKEN` in `src/registry/budget.ts` steht nach der Messung aus AP14 auf `4` statt
-  auf dem geschätzten Wert 3,2.
+- `CHARS_PER_TOKEN` in `src/registry/budget.ts` steht nach der Messung mit `pnpm measure-tokens`
+  auf `4` statt auf dem geschätzten Wert 3,2.

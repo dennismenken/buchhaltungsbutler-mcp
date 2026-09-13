@@ -1,6 +1,6 @@
 /**
  * Die Belegquelle für `/receipts/upload`: **base64 als Vorgabe**, `https://` und `file://`
- * nur mit ausdrücklicher Freischaltung (Plan 11.2 AP13, 6.2).
+ * nur mit ausdrücklicher Freischaltung.
  *
  * Dieses Modul ist die einzige Stelle, an der dieser Server Daten von außerhalb der API
  * entgegennimmt. Es liefert dem Request-Mapper den fertigen Inhalt, den erkannten Typ und den
@@ -57,12 +57,12 @@ export {
  * Obergrenze der Belegdatei in Bytes, **eigene Annahme dieses Servers**.
  *
  * BuchhaltungsButler beziffert die eigene Grenze in der Spezifikation nicht; sie erscheint
- * erst zur Laufzeit im Text von `error_code` 7 (`belege.md` 7.3). 10 MB sind der Wert aus
- * Plan 14.2, und er ist an jeder Stelle, an der er auftaucht, als Annahme gekennzeichnet.
+ * erst zur Laufzeit im Text von `error_code` 7 (`belege.md` 7.3). Die 10 MB sind eine
+ * Annahme dieses Servers und an jeder Stelle, an der sie auftaucht, als solche gekennzeichnet.
  */
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
-/** Die Konfigurationswerte, die dieses Modul liest. Aus dem eingefrorenen Objekt aus 6.4. */
+/** Die Konfigurationswerte, die dieses Modul liest. Aus dem eingefrorenen Objekt. */
 export type UploadConfig = Pick<ResolvedConfig, "uploadDirs" | "uploadFromUrl" | "timeoutMs">;
 
 /** Woher der Inhalt stammt. Sie steht in der Antwort und in der Protokollzeile. */

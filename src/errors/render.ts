@@ -1,6 +1,5 @@
 /**
- * Der Aufbau jeder Fehlermeldung: vier Blöcke, immer in dieser Reihenfolge, immer vorhanden
- * (Plan 5.8).
+ * Der Aufbau jeder Fehlermeldung: vier Blöcke, immer in dieser Reihenfolge, immer vorhanden.
  *
  * ```
  * [Was]     ein Satz, was schiefging
@@ -9,7 +8,8 @@
  * [Zustand] eine von genau drei Formulierungen
  * ```
  *
- * Alle vier Blöcke sind deutsch (E4); Feldnamen, Werkzeugnamen und wörtlich zitierte
+ * Alle vier Blöcke sind deutsch (CONTRIBUTING.md Abschnitt 5); Feldnamen, Werkzeugnamen und
+ * wörtlich zitierte
  * API-Meldungen bleiben im Original.
  *
  * **Der Wortlaut der Antwort gewinnt.** Der Block `[Was]` zitiert ausschließlich das
@@ -17,7 +17,7 @@
  * Katalogtext tritt nur ein, wenn die Antwort keinen verwertbaren Text trägt, und dann mit dem
  * Zusatz „Text laut Spezifikation, nicht der Wortlaut dieser Antwort". Begründung ist eine
  * Messung: Live kam an `/receipts/get` zu Code 15 der Text `invalid field specified`, der in
- * **keiner** der beiden Spezifikationsquellen steht (Plan 0.3 Befund L6).
+ * **keiner** der beiden Spezifikationsquellen steht.
  *
  * **Die drei Zustandssätze stehen hier als Konstanten und werden nie neu formuliert.** Eine
  * vierte Formulierung ist verboten; `errors-render.test.ts` vergleicht zeichengenau.
@@ -54,7 +54,7 @@ import {
 } from "./write-uncertainty.js";
 
 // ---------------------------------------------------------------------------------------
-// Die drei Zustandsformulierungen aus Plan 5.8. Genau drei, an genau einer Stelle.
+// Die drei Zustandsformulierungen. Genau drei, an genau einer Stelle.
 // ---------------------------------------------------------------------------------------
 
 /** Jede Ablehnung vor dem Request, also durch jeden der sechs Guards. */
@@ -65,7 +65,7 @@ export const STATE_NOTHING_SENT =
 export const STATE_REJECTED =
   "BuchhaltungsButler hat die Anfrage abgelehnt. Es wurde nichts geändert.";
 
-/** Zeitlimit, Verbindungsabbruch oder HTTP 5xx an einem schreibenden Werkzeug (Plan 5.7). */
+/** Zeitlimit, Verbindungsabbruch oder HTTP 5xx an einem schreibenden Werkzeug. */
 export const STATE_UNKNOWN =
   "Es ist UNBEKANNT, ob BuchhaltungsButler diese Anfrage verarbeitet hat.";
 
@@ -84,10 +84,10 @@ export interface ErrorMessage {
   readonly text: string;
   readonly blocks: ErrorBlocks;
   readonly state: StateSentence;
-  /** Die Klasse aus 5.6, oder `null`, wenn der Fehler keinen Katalogbezug hat. */
+  /** Die Klasse, oder `null`, wenn der Fehler keinen Katalogbezug hat. */
   readonly cls: ErrorClass | null;
   readonly origin: ClassOrigin | null;
-  /** `true`, wenn der Text den Sonderfall aus 5.7 trägt. */
+  /** `true`, wenn der Text den Sonderfall trägt. */
   readonly uncertainWrite: boolean;
 }
 
@@ -96,7 +96,7 @@ export interface RenderContext {
   readonly args?: Readonly<Record<string, unknown>>;
   /** Der Prüfweg aus dem Registereintrag; Pflicht bei jedem schreibenden Werkzeug (P10). */
   readonly verifyWith?: VerifySpec;
-  /** Erlaubte Werte je Feld, soweit das Register sie führt (Plan 5.8, erste Pflichtangabe). */
+  /** Erlaubte Werte je Feld, soweit das Register sie führt. */
   readonly allowedValues?: Readonly<Record<string, readonly string[]>>;
 }
 
@@ -106,11 +106,11 @@ export interface RenderContext {
  * Die Lage entscheidet, nicht die Klasse: `not-sent` heißt, es ging nichts hinaus;
  * `rejected` heißt, die API hat geprüft und abgelehnt; `unclear` heißt, der Ausgang ist offen.
  *
- * **Ein lesendes Werkzeug mit offenem Ausgang bekommt ebenfalls Satz 3.** Plan 5.8 nennt bei
- * Satz 3 ausdrücklich das schreibende Werkzeug, und Satz 3 ist trotzdem der einzige der drei,
+ * **Ein lesendes Werkzeug mit offenem Ausgang bekommt ebenfalls Satz 3.** Satz 3 nennt
+ * ausdrücklich das schreibende Werkzeug und ist trotzdem der einzige der drei,
  * der hier nicht die Unwahrheit sagt: Nach einem Zeitlimit ist Satz 1 falsch (es ging etwas
  * hinaus) und Satz 2 ebenso (die API hat nichts abgelehnt). Dass ein lesender Aufruf nichts
- * ändert, steht in der Klassenzusage des Werkzeugs; der Sondertext aus 5.7 entsteht dagegen
+ * ändert, steht in der Klassenzusage des Werkzeugs; der Sondertext entsteht dagegen
  * ausschließlich bei den schreibenden Klassen.
  */
 export function selectStateSentence(phase: FailurePhase, uncertainWrite: boolean): StateSentence {
@@ -140,7 +140,7 @@ function finish(
 }
 
 // ---------------------------------------------------------------------------------------
-// Zitat der Antwort und Rückfall auf den Katalogtext (Plan 5.6, 5.8).
+// Zitat der Antwort und Rückfall auf den Katalogtext.
 // ---------------------------------------------------------------------------------------
 
 /** Der Zusatz, der jeden Katalogtext begleitet, der an die Stelle des Wortlauts tritt. */
@@ -193,14 +193,14 @@ const CLASS_HEADLINE: Record<ErrorClass, string> = {
 /**
  * Die Überschrift für die Rückfallregel. Sie behauptet ausdrücklich NICHT, dass ein erneuter
  * Aufruf nichts ändert: Über einen Code, den die Spezifikation für diesen Pfad nicht führt,
- * weiß dieser Server nichts. Die Behandlung als `final` ist die vorsichtige Festlegung aus
- * 5.6 und keine Aussage über die Ursache.
+ * weiß dieser Server nichts. Die Behandlung als `final` ist die vorsichtige Festlegung
+ * und keine Aussage über die Ursache.
  */
 const FALLBACK_HEADLINE =
   "BuchhaltungsButler meldet einen Fehler, den die Spezifikation für diesen Pfad nicht führt";
 
 // ---------------------------------------------------------------------------------------
-// Billigere Aufrufmuster bei überschrittenen Grenzen (Plan 5.8, zweite Pflichtangabe).
+// Billigere Aufrufmuster bei überschrittenen Grenzen.
 //
 // Geschlüsselt ist die Tabelle über das Paar und nicht über den Meldungstext: Die Zuordnung
 // „welcher Code an welchem Pfad meint eine Grenze" steht in der Spezifikation, der gelieferte
@@ -238,7 +238,7 @@ const CHEAPER_CALL_ADVICE: ReadonlyMap<string, string> = new Map([
 const PAGINATION_FIELDS: readonly string[] = ["limit", "offset"];
 
 // ---------------------------------------------------------------------------------------
-// Levenshtein für den wahrscheinlich gemeinten Wert (Plan 5.8, erste Pflichtangabe).
+// Levenshtein für den wahrscheinlich gemeinten Wert.
 // ---------------------------------------------------------------------------------------
 
 /** Abstand zweier Zeichenketten, gedeckelt: Alles über `limit` interessiert nicht. */
@@ -374,7 +374,7 @@ function adviceForTransientRead(toolName: string, attempts: number): string {
 }
 
 // ---------------------------------------------------------------------------------------
-// Der Sonderfall 5.7 aus einem Transportfehler.
+// Der Sonderfall aus einem Transportfehler.
 // ---------------------------------------------------------------------------------------
 
 function causeFromError(error: TransportError, cls: ErrorClass | null): WriteUncertaintyCause {
@@ -432,7 +432,7 @@ export interface RejectionInput {
 }
 
 /**
- * Eine Ablehnung **vor** dem Request: jeder der sechs Guards (Plan 1.4).
+ * Eine Ablehnung **vor** dem Request: jeder der sechs Guards.
  *
  * Der Zustandssatz steht hier fest und wird nicht gewählt: Es ging nichts hinaus, und genau
  * das sagt Satz 1.
@@ -448,7 +448,7 @@ export function renderRejectedBeforeRequest(input: RejectionInput): ErrorMessage
 }
 
 /**
- * Die Meldung zu einem Fehler der HTTP-Schicht, vollständig nach 5.6, 5.7 und 5.8.
+ * Die Meldung zu einem Fehler der HTTP-Schicht, vollständig.
  *
  * Der Katalog wird dabei erst geladen, wenn eine Fehlerantwort der API vorliegt; bei einem
  * Zeitlimit oder einem Netzwerkfehler gibt es kein Paar nachzuschlagen und der Katalog bleibt
@@ -472,8 +472,8 @@ export async function renderTransportFailure(
   }
 
   const cls = classification?.cls ?? null;
-  // 5.6, Zeile `transient`: An einem schreibenden Werkzeug führt ein vorübergehender Zustand
-  // zum Text aus 5.7 — auch bei HTTP 403, weil nicht belegt ist, ob die Einschränkung vor oder
+  // Zeile `transient` des Katalogs: An einem schreibenden Werkzeug führt ein vorübergehender
+  // Zustand zum Sondertext — auch bei HTTP 403, weil nicht belegt ist, ob die Einschränkung vor oder
   // nach dem Schreiben gegriffen hat. Die Fehlerschicht weitet den Zustand hier auf; enger
   // machen darf sie ihn nie (siehe http/transport-error.ts).
   const uncertainWrite = writing && (error.phase === "unclear" || cls === "transient");
@@ -526,7 +526,7 @@ export async function renderTransportFailure(
   }
 
   // Alle übrigen Fehler der HTTP-Schicht. Ihr `message` ist bereits ein deutscher Satz, der
-  // den Fall benennt und übernommenen Fremdtext markiert (AP07); er ist der Block [Was].
+  // den Fall benennt und übernommenen Fremdtext markiert; er ist der Block [Was].
   return finish(
     {
       was: error.message,
@@ -576,7 +576,7 @@ function reasonForApi(
     return `Die Spezifikation führt dieses Paar als vorübergehenden Zustand (HTTP ${error.status}). Ein Wert des Aufrufs ist nicht die Ursache.`;
   }
   if (classification.fallback) {
-    // Die Rückfallregel aus 5.6. Sie wird benannt und nicht verschleiert: Der Agent soll
+    // Die Rückfallregel. Sie wird benannt und nicht verschleiert: Der Agent soll
     // wissen, dass dieser Server hier nichts zuordnet, was er nicht belegen kann.
     return classification.entry === null
       ? `Die Spezifikation führt zu ${error.specPath} keinen error_code ${errorCode ?? "ohne Angabe"}. Dieser Server ordnet ihn keinem gleichnamigen Code eines anderen Pfades zu; maßgeblich ist allein der oben zitierte Wortlaut.`
@@ -607,7 +607,7 @@ function adviceForApi(
       parts.push(adviceForInput(error.toolName, error.specPath, error.errorCode, field, context));
       break;
     case "transient":
-      // Schreibend ist dieser Zweig nicht erreichbar: Dort greift der Sondertext aus 5.7.
+      // Schreibend ist dieser Zweig nicht erreichbar: Dort greift der Sondertext.
       parts.push(adviceForTransientRead(error.toolName, error.attempts));
       break;
     case "final":
@@ -674,7 +674,7 @@ function adviceForTransport(error: TransportError, writing: boolean): string {
   }
   // Zeitlimit und Netzwerkfehler an einem lesenden Werkzeug: Der Retry-Zweig hat bereits
   // gearbeitet, ein weiterer Versuch ist dem Agenten überlassen. Schreibend ist dieser Zweig
-  // nicht erreichbar — dort greift 5.7.
+  // nicht erreichbar — dort greift der Sondertext.
   return writing
     ? "Vor jedem weiteren Aufruf in BuchhaltungsButler nachsehen, ob der Vorgang angekommen ist."
     : "Der Aufruf ist folgenlos wiederholbar; die Argumente bleiben gültig.";

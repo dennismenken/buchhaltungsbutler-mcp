@@ -7,7 +7,7 @@ Zielgruppe: Implementierungs-Agenten des MCP-Servers.
 
 | Quelle | Art | Abrufdatum |
 | --- | --- | --- |
-| `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json` (Swagger 2.0, API-Version 1.9.1, Original: `https://app.buchhaltungsbutler.de/docs/api/v1.de.json`) | Primärquelle für alle Parameter, Antworten und Fehlercodes | 2026-09-12 |
+| `docs/openapi/buchhaltungsbutler-v1.json` (Swagger 2.0, API-Version 1.9.1, Original: `https://app.buchhaltungsbutler.de/docs/api/v1.de.json`) | Primärquelle für alle Parameter, Antworten und Fehlercodes | 2026-09-12 |
 | `https://wissen.buchhaltungsbutler.de/hc/de/articles/11454209365661-Rechnungen-Angebote-und-Gutschriften-erstellen` | Hilfecenter, fachliches Verhalten der Rechnungsstellung und der E-Rechnung | 2026-09-12 |
 | `https://wissen.buchhaltungsbutler.de/hc/de/articles/20227969805853-E-Rechnungen-XRechnung-und-Zugferd` | Hilfecenter, unterstützte E-Rechnungsformate | 2026-09-12 |
 | `https://www.frankfurt-main.ihk.de/recht/uebersicht-alle-rechtsthemen/steuerrecht/umsatzsteuer-national/e-rechnungspflicht-ab-2025-6055774` | Rechtslage E-Rechnungspflicht Deutschland | 2026-09-12 |
@@ -88,7 +88,13 @@ Datum im Entwurf gespeichert, ignoriert oder erst beim Finalisieren überschrieb
 | Mandantenauswahl | Pflichtfeld `api_key` im JSON-Body, zusätzlich zu Basic Auth |
 | Rate Limit | laut Dokumentation maximal 100 Requests pro Mandant und Minute |
 
-Diese Angaben wurden vom Orchestrator gegen die Live-API verifiziert (2026-09-12).
+Herkunft dieser Angaben: Basis-URL, HTTP-Methode, Content-Type `application/json`,
+Authentifizierung, Mandantenauswahl und Antwortumschlag sind eigene lesende Messungen —
+am 2026-09-12 und erneut am **2026-09-13**; das Protokoll der Nachmessung mit Aufrufform,
+HTTP-Status und wörtlichem Antwortkörper steht in `docs/api/grundlagen.md`, Abschnitt 2.5. Das Rate Limit ist **nicht selbst gemessen**,
+sondern eine wörtlich zitierte Angabe der Anbieterdokumentation (`docs/api/grundlagen.md`,
+Abschnitt 3.1). Gemessen wurde ausnahmslos gegen **lesende** Endpunkte; für die drei
+schreibenden Endpunkte dieses Dokuments gilt weiterhin die Einschränkung oben.
 
 **Hinweis zur Spezifikationsdatei:** `basePath` enthält in der JSON-Datei eine vollständige
 URL (`https://webapp.buchhaltungsbutler.de/api/v1`) statt eines Pfades. Das ist nach
@@ -1181,7 +1187,7 @@ Bereich Rechnungsstellung.
 ## 8. Gesammelte Mängel der Spezifikation
 
 Alle Punkte betreffen die Datei
-`/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json`,
+`docs/openapi/buchhaltungsbutler-v1.json`,
 Stand 2026-09-12. Sie sind für die Implementierung relevant, weil eine Codegenerierung aus dieser
 Datei fehlerhaften Code erzeugt.
 

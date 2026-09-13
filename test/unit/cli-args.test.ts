@@ -74,7 +74,7 @@ describe("parseArgs", () => {
 describe("buildHelp", () => {
   const help = buildHelp();
 
-  it("nennt alle Unterbefehle aus 8.1", () => {
+  it("nennt alle Unterbefehle", () => {
     for (const command of [
       "setup",
       "doctor",

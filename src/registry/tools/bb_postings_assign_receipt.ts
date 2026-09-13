@@ -1,12 +1,12 @@
 // Werkzeug 30, `/postings/assign/receipt-to-free-posting`: bindet einen vorhandenen Beleg an
-// eine vorhandene freie Buchung (Plan 3.8, AP12c).
+// eine vorhandene freie Buchung.
 //
-// **Der Sonderfall innerhalb der Klasse B** (Plan 3.3): Es ist das einzige Werkzeug mit der
+// **Der Sonderfall innerhalb der Klasse B**: Es ist das einzige Werkzeug mit der
 // Wirkung „ändernd", für das die API keinen Weg zurück anbietet — unterhalb von `/postings/`
 // gibt es keinen `unassign`-Pfad, und genau das sagt der Pflichtsatz U4. Es bleibt trotzdem bei
 // `destructiveHint: false`, weil es eine Bindung **herstellt** und keinen Wert überschreibt.
-// Sobald AP19 belegt, dass der Aufruf einen bestehenden Belegbezug ersetzt statt ihn nur zu
-// ergänzen, ist die Annotation umzustellen; das Nachziehen tut AP19b und nicht dieses Paket.
+// Sobald eine Messung belegt, dass der Aufruf einen bestehenden Belegbezug ersetzt statt
+// ihn nur zu ergänzen, ist die Annotation umzustellen.
 //
 // **Die Verwechslungsgefahr steckt in `posting_id_by_customer`:** `/postings/get` liefert alle
 // Buchungsarten in derselben Liste mit demselben Feldnamen `id_by_customer`. Zeigt der Wert
@@ -23,7 +23,7 @@ import { ID_STRING_SENTENCE, idByCustomer } from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -90,7 +90,7 @@ export const bb_postings_assign_receipt: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Erfolgsantwort `{ "success": true, "message": "" }`, ohne `data` (buchungen.md 19.3).

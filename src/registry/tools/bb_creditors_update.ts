@@ -1,7 +1,7 @@
-// Werkzeug 39 von 54: `/settings/update/creditor` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 39 von 54: `/settings/update/creditor`.
 //
-// Klasse M, also `destructiveHint: true` und `idempotentHint: true` (Plan 3.3, Streitfrage
-// S5). Für dieses Werkzeug wiegt der Hinweis am schwersten: Hier steht die **Bankverbindung**
+// Klasse M, also `destructiveHint: true` und `idempotentHint: true` (die Begründung steht
+// bei `TOOL_CLASSES` in src/registry/classes.ts). Für dieses Werkzeug wiegt der Hinweis am schwersten: Hier steht die **Bankverbindung**
 // eines Lieferanten, und ein überschriebener IBAN ohne abrufbaren Vorzustand ist der teuerste
 // Stammdatenverlust, den diese API erlaubt.
 //
@@ -129,9 +129,9 @@ export const bb_creditors_update: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // `data` ist ein Objekt mit den **Lesenamen**: `additional_addressline` ohne zweiten
-  // Unterstrich, `sales_tax_id_eu` mit Zusatz (Plan 7.2). `due_in_days` fehlt auch hier.
+  // Unterstrich, `sales_tax_id_eu` mit Zusatz. `due_in_days` fehlt auch hier.
   responseContract: {
     container: "data",
     fields: {

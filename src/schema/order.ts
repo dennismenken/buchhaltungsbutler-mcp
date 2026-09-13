@@ -1,15 +1,15 @@
-// Die drei `order`-Formen als drei getrennte Schemata, ohne gemeinsame Abstraktion
-// (Plan 2 Dateibaum, 4.8).
+// Die drei `order`-Formen als drei getrennte Schemata, ohne gemeinsame Abstraktion.
 //
 // Drei Endpunkte führen `order`, und alle drei mit einer anderen Syntax: ein Objekt aus
 // Feld und Richtung, eine Zeichenkette aus Feld und Richtung, und dieselbe Zeichenkette mit
 // einem anderen Wertevorrat und zusätzlich dem Wert 'default'. Eine Vereinheitlichung wäre
-// verborgene Logik im Sinne von E1: Der Aufrufer schickte eine Form, der Server baute eine
-// andere. Deshalb steht hier dreimal dasselbe Muster ausgeschrieben und keine Fabrik.
+// genau die verborgene Logik, die dieser Server ausschließt: Der Aufrufer schickte eine Form,
+// der Server baute eine andere. Deshalb steht hier dreimal dasselbe Muster ausgeschrieben und
+// keine Fabrik.
 //
 // `/transactions/get` führt ausdrücklich **keinen** `order`-Parameter. Die Sortierung
 // wechselt dort auf `id_by_customer ASC`, sobald `id_by_customer_from` oder `_to` gesetzt
-// ist; das ist eine Nebenwirkung und kein Parameter (Plan 4.7, gestrichene Prüfung).
+// ist; das ist eine Nebenwirkung und kein Parameter (gestrichene Prüfung).
 
 import { z } from "zod";
 
@@ -38,11 +38,9 @@ export const RECEIPTS_ORDER_FIELDS = ["date", "amount", "invoicenumber", "invoic
  * Das Schema der Spezifikation ist ein Platzhalter: Es führt eine einzige Eigenschaft
  * namens `field` mit dem Enum `['ASC','DESC']` und `required: ['field']`. Ein Generator
  * erzeugte daraus ein Objekt `{ "field": "ASC" }`, das die API ablehnt. Der Platzhalter
- * wird deshalb verworfen und durch die vier Felder aus dem Beschreibungstext ersetzt
- * (Plan 4.1, 4.8, Anhang B Punkt 47).
+ * wird deshalb verworfen und durch die vier Felder aus dem Beschreibungstext ersetzt.
  *
- * Ein **leeres** Objekt ist syntaktisch gültig, fachlich aber sinnlos; Q7 fängt es ab
- * (Plan 4.7).
+ * Ein **leeres** Objekt ist syntaktisch gültig, fachlich aber sinnlos; Q7 fängt es ab.
  */
 export function receiptsOrder() {
   return strictObject({
@@ -119,7 +117,7 @@ export function postingAccountsOrder() {
 
 // --- Zuordnung für die Querprüfung Q7 ------------------------------------------------
 
-/** Welche Form `order` an welchem Endpunkt hat. Grundlage von Q7 (Plan 4.7). */
+/** Welche Form `order` an welchem Endpunkt hat. Grundlage von Q7. */
 export type OrderForm = "receipts-object" | "postings-string" | "postingaccounts-string";
 
 /**

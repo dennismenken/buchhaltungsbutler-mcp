@@ -1053,7 +1053,8 @@ prüft, dass diese Sperre aktiv ist.
 **Vor jeder Veröffentlichung ist der Vertragslauf `pnpm contract:read` Pflicht.** Er ruft die 15
 lesenden Endpunkte gegen echte Zugangsdaten auf und vergleicht die gelieferten Felder mit den
 hinterlegten Antwortverträgen. Er läuft nicht in der öffentlichen CI und ist ein blockierender
-Punkt der Veröffentlichungs-Checkliste.
+Punkt der
+[Veröffentlichungs-Checkliste](docs/entwicklung/veroeffentlichungs-checkliste.md).
 
 ---
 

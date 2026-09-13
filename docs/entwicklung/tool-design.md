@@ -38,7 +38,7 @@ Adressat ist ein Implementierungs-Agent, der ohne Rückfragen arbeiten soll.
 | `SRV-GIT` | https://github.com/modelcontextprotocol/servers, `src/git/src/mcp_server_git/server.py` und `src/git/README.md` | 2026-09-12 |
 | `SRV-FETCH` | https://github.com/modelcontextprotocol/servers, `src/fetch/src/mcp_server_fetch/server.py` | 2026-09-12 |
 | `AWS-TOOLDESIGN` | https://aws.amazon.com/blogs/machine-learning/mcp-tool-design-practical-approaches-and-tradeoffs/ | 2026-09-12 |
-| `SPEC-BB` | `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json` (BuchhaltungsButler API, `info.version` 1.9.1) | 2026-09-12 |
+| `SPEC-BB` | `docs/openapi/buchhaltungsbutler-v1.json` (BuchhaltungsButler API, `info.version` 1.9.1) | 2026-09-12 |
 
 Zielrevision ist 2025-11-25 nach `docs/entwicklung/mcp-spezifikation.md`, Abschnitt 11.1a (c). Die aktuelle Revision 2026-07-28 ist Zielzustand, nicht Umsetzungspflicht. Deshalb sind `MCP-SPEC-TOOLS` und `MCP-SCHEMA` auf 2025-11-25 gepinnt. Wo 2026-07-28 etwas anders oder zusätzlich regelt, steht das an der betreffenden Stelle ausdrücklich dabei; die dort neuen Felder sind in [Abschnitt 12](#12-offene-punkte-und-annahmen) als bewusst nicht behandelt geführt.
 
@@ -120,18 +120,23 @@ Die Regel, nach der zusammengefasst wird, lautet in dieser Reihenfolge:
 
 ### 3.5 Vorgeschlagene Abbildung, 54 Endpunkte auf 34 Tools
 
-Der folgende Schnitt ist ein **Vorschlag** und von der Planungsphase zu bestätigen. Verbindlich sind die Regeln in 3.4, nicht die Tabelle.
+Der folgende Schnitt war ein **Vorschlag** aus der Entwurfsarbeit. Er ist **nicht** der
+ausgelieferte Stand und ist auch nicht mehr zu bestätigen: Ausgeliefert wird genau ein Werkzeug
+je Endpunkt, also 54 Endpunktwerkzeuge, dazu fünf Bündelwerkzeuge für wiederkehrende Abläufe,
+zusammen 59 — siehe den Kasten in [11.1](#111-toolsatz). Am 2026-09-13 gegen den gebauten Server
+nachgemessen: `tools/list` meldet 59 Werkzeuge, davon 19 lesende. Die Tabelle bleibt stehen, weil
+die Regeln aus 3.4 an ihr erklärt sind; verbindlich sind diese Regeln, nicht die Tabelle.
 
 | Tool | abgedeckte Endpunkte aus `SPEC-BB` | Art |
 | --- | --- | --- |
 | `bb_receipts_search` | `/receipts/get` | lesend |
-| `bb_receipts_get` | `/receipts/get/id_by_customer` | lesend, lieferfähig; der Wert gehört ins Pfadsegment, gemessen HTTP 200 (nachgezogen 2026-09-13, Umsetzungsplan 15, Sachgrund 0.3 Befund L1; siehe den Kasten unter dieser Tabelle) |
+| `bb_receipts_get` | `/receipts/get/id_by_customer` | lesend, lieferfähig; der Wert gehört ins Pfadsegment, gemessen HTTP 200 (nachgezogen 2026-09-13; siehe den Kasten unter dieser Tabelle) |
 | `bb_receipts_create` | `/receipts/add`, `/receipts/addBatch` | schreibend |
 | `bb_receipts_upload` | `/receipts/upload` | schreibend |
 | `bb_receipts_delete` | `/receipts/delete/id_by_customer` | zerstörend |
 | `bb_receipts_restore` | `/receipts/restore/id_by_customer` | schreibend |
 | `bb_transactions_search` | `/transactions/get` | lesend |
-| `bb_transactions_get` | `/transactions/get/id_by_customer` | lesend, lieferfähig; der Wert gehört ins Pfadsegment, gemessen HTTP 200 (nachgezogen 2026-09-13, Umsetzungsplan 15, Sachgrund 0.3 Befund L1; siehe den Kasten unter dieser Tabelle) |
+| `bb_transactions_get` | `/transactions/get/id_by_customer` | lesend, lieferfähig; der Wert gehört ins Pfadsegment, gemessen HTTP 200 (nachgezogen 2026-09-13; siehe den Kasten unter dieser Tabelle) |
 | `bb_transactions_create` | `/transactions/add`, `/transactions/addBatch` | schreibend |
 | `bb_links_list` | `/receipts/assigned-transactions/get`, `/transactions/assigned-receipts/get` | lesend |
 | `bb_links_create` | `/transactions/assign/receipt`, `/transactions/assign-batch/receipt` | schreibend |
@@ -161,8 +166,7 @@ Der folgende Schnitt ist ein **Vorschlag** und von der Planungsphase zu bestäti
 
 Summe: 34 Tools, 54 Endpunkte, keine Lücke.
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 0.3 Befund L1 und in Abschnitt 12, Streitfrage S1.** **Die folgende
+> **Nachgezogen am 2026-09-13 nach eigener Messung gegen die Produktivumgebung.** **Die folgende
 > Warnung ist überholt. Beide Werkzeuge sind lieferfähig.** Die Messungen, auf die sie sich
 > stützt, betrafen die falsche Aufrufform: Das Segment `id_by_customer` im Pfad ist ein
 > Platzhalter für den Wert. `POST /receipts/get/<wert>` und `POST /transactions/get/<wert>`
@@ -827,11 +831,9 @@ Da bei uns die HTTP-Methode nichts aussagt (siehe [Abschnitt 2](#2-ausgangslage-
 
 Die Klassen und ihre Annotationen:
 
-> **Zwei Stellen dieser Tabelle sind am 2026-09-13 nachgezogen nach
-> `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20).**
+> **Zwei Stellen dieser Tabelle sind am 2026-09-13 nachgezogen.**
 >
-> 1. **Klasse M trägt `destructiveHint: true`**, nicht `false` (Sachgrund: Abschnitt 12,
->    Streitfrage S5). Das MCP-Schema definiert den Hint mit „If false, the tool performs only
+> 1. **Klasse M trägt `destructiveHint: true`**, nicht `false`. Das MCP-Schema definiert den Hint mit „If false, the tool performs only
 >    additive updates"; ein Überschreiben ist nicht additiv. Kein Endpunkt liefert den Vorzustand
 >    zurück, und `bb_creditors_update` überschreibt Stammdaten einschließlich Bankverbindung. Da
 >    der Server keine Bestätigung erzwingt, ist die Annotation die einzige maschinenlesbare
@@ -846,9 +848,9 @@ Die Klassen und ihre Annotationen:
 >    nicht dasselbe wie ein gesetzter; der Standardwert des Schemas ist bei `destructiveHint`
 >    sogar `true`.
 >
-> Die Zahlen der Spalte „Anzahl" beschreiben den Toolschnitt mit 34 Werkzeugen und sind durch
-> E1 überholt; maßgeblich ist die Auszählung in Umsetzungsplan 3.3 und 3.9 (R 15, A 16, AR 2,
-> M 4, D 7, B 10).
+> Die Zahlen der Spalte „Anzahl" beschreiben den Toolschnitt mit 34 Werkzeugen und sind
+> überholt: Ausgeliefert wird ein Werkzeug je Endpunkt, also 54. Ihre Verteilung auf die
+> Klassen lautet R 15, A 16, AR 2, M 4, D 7, B 10; nachgerechnet ergibt das 54.
 
 | Klasse | Charakterisierung | Anzahl | `readOnlyHint` | `destructiveHint` | `idempotentHint` | Freigabe durch den Host |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1023,9 +1025,8 @@ Vier Festlegungen dazu:
 
 Muster der Absage, verbindlich für jedes gesperrte Werkzeug, hier am Beispiel `bb_receipts_delete`:
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 6.6.** **Inhalt und Aufbau dieses Absagetextes bleiben verbindlich, die
-> Ausgabe erfolgt jedoch auf Deutsch** (Entscheidung E4 des Projektinhabers). Der deutsche Text
+> **Nachgezogen am 2026-09-13.** **Inhalt und Aufbau dieses Absagetextes bleiben verbindlich, die
+> Ausgabe erfolgt jedoch auf Deutsch**, wie jeder vom Agenten gelesene Text dieses Servers. Der deutsche Text
 > nennt denselben Werkzeugnamen, dieselbe Variable `BB_MCP_READ_ONLY` mit ihrem Zielwert, den
 > Zustandssatz „Es ging nichts an BuchhaltungsButler hinaus, und es wurde nichts geändert." und
 > schließt mit „Keine anderen Werkzeuge dieses Servers ausprobieren, um das zu umgehen." Das ist
@@ -1132,20 +1133,56 @@ Aufgaben 9 und 10 prüfen nicht die Funktion, sondern die Wirkung von Beschreibu
 | Tool-Aufrufe pro Aufgabe | gezählt | Median unter 6 |
 | Fehlversuche pro Aufgabe | Aufrufe mit `isError: true` | Median 0, Maximum 1 |
 | Tokenverbrauch pro Aufgabe | Summe Ein- und Ausgabe | wird beim ersten Lauf festgelegt |
-| Kosten der Tool-Definitionen | Tokenzahl aller Definitionen zusammen | **32.000 für die Definitionen plus 2.100 für die `instructions`**, siehe den Kasten unter dieser Tabelle |
+| Kosten der Tool-Definitionen | Tokenzahl aller Definitionen zusammen | **49.000 für die Definitionen plus 2.100 für die `instructions`**, siehe den Kasten unter dieser Tabelle |
 | Falsche Toolwahl | Aufrufe, die ein anderes Tool hätten sein müssen | 0 bei den Klassen D und B |
 | Blindes Schreiben | Aufrufe der Klassen D und B, vor denen der Agent die betroffenen Datensätze weder aufgelöst noch dem Nutzer vorgelegt hat | **0, ohne Toleranz.** Gemessen wird die Wirkung von Beschreibung und Annotationen, nicht eine Serversperre, siehe [9.4](#94-bestätigung-liegt-beim-host-nicht-im-server) |
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 4.10 und in Abschnitt 12, Streitfrage S4.** Die frühere Grenze von
-> **10.000** Token galt für **34** Werkzeuge mit **englischen** Beschreibungen. Beide Annahmen
-> sind überholt: Es sind **54** Werkzeuge (E1), und die Beschreibungen sind **deutsch** (E4).
-> Verbindlich sind deshalb **32.000** Token für die Werkzeugdefinitionen und **2.100** für die
-> `instructions`, erzwungen durch eine Registerprüfung, die mit einem echten Tokenizer zählt und
-> nicht über einen Schätzfaktor. Die Grenze wird **nicht stillschweigend angehoben**: Reißt sie,
-> gilt die Reihenfolge aus Umsetzungsplan 4.10 (Sparmaßnahmen, Kürzen auf die untere
-> Wortgrenze, Inhalte in die Resources verschieben), und danach ist es ein Befund für den
-> Projektinhaber.
+> **Nachgezogen am 2026-09-13.** Die frühere Grenze von **10.000** Token galt für **34**
+> Werkzeuge mit **englischen** Beschreibungen. Beide Annahmen sind überholt: Ausgeliefert wird
+> ein Werkzeug je Endpunkt, also **54**, und die Beschreibungen sind **deutsch**. Ein
+> Zwischenstand setzte daraufhin **32.000** Token an; auch diese Zahl war vorgerechnet und nicht
+> gemessen, und die erste echte Messung riss sie um rund 16.300 Token. Diese Lücke ließ sich mit
+> den vorgesehenen Sparmaßnahmen nachweislich nicht schließen — sie entspricht rund 66.700
+> Zeichen, während alle 54 Werkzeugbeschreibungen zusammen nur rund 32.700 Zeichen lang sind.
+> **Verbindlich sind deshalb seit dem 2026-09-13 `49.000` Token für die Werkzeugdefinitionen und
+> `2.100` für die `instructions`**, beides erzwungen durch eine Registerprüfung, die mit einem
+> echten Tokenizer zählt und nicht über einen Schätzfaktor. Die Anhebung war eine ausdrückliche
+> Entscheidung des Projektinhabers mit Eintrag in `CHANGELOG.md`. Die Grenze wird **nicht
+> stillschweigend angehoben**: Reißt sie, gilt erstens die Sparmaßnahmenliste, zweitens das
+> Kürzen der Beschreibungen auf die untere Wortgrenze, drittens das Verschieben von Inhalten in
+> die Resources; danach ist es ein Befund für den Projektinhaber. Die laufend erzeugten Zahlen
+> stehen in `docs/entwicklung/tokenbudget.md`.
+
+**Der erste Lauf, gemessen am 2026-09-13.** Elf Aufgaben gegen aufgezeichnete Antworten, ohne
+einen einzigen Netzwerkaufruf gegen BuchhaltungsButler. Damit sind die Zielwerte oben keine
+Annahmen mehr, sondern haben eine Grundlinie:
+
+| Kennzahl | Zielwert | Messwert | Ergebnis |
+| --- | --- | --- | --- |
+| Falsche Toolwahl bei den zwölf Buchungswerkzeugen | 0, ohne Toleranz | **0** von 4 Aufrufen | gehalten |
+| Blindes Schreiben (Klassen D und B) | 0, ohne Toleranz | **0** von 4 Aufrufen | gehalten |
+| Erfolgsquote | über 90 Prozent | **10 von 11 = 90,9 Prozent** | gehalten, um 0,9 Punkte |
+| Tool-Aufrufe pro Aufgabe | Median unter 6 | **Median 4** | gehalten, siehe Einschränkung 4 |
+| Fehlversuche pro Aufgabe | Median 0, Maximum 1 | **Median 0, Maximum 1** | gehalten, beide Fehlversuche systembedingt |
+| Tokenverbrauch pro Aufgabe | beim ersten Lauf festzulegen | **nicht gemessen** | bleibt offen |
+
+**Vier Gründe, dieses Ergebnis nicht für mehr zu halten, als es ist.** Sie gehören zum Ergebnis
+und nicht in eine Fußnote:
+
+1. **Der Prüfer war der Geprüfte.** Dasselbe Modell hat die Aufgaben gelöst, den Testlauf
+   geschrieben und die Kennzahlen gekannt. Ein solcher Lauf kann zeigen, **dass** ein Fehler
+   auftritt; er kann nicht zeigen, dass keiner auftritt. Das ist genau die Überanpassung, vor der
+   [10.4](#104-auswerten) warnt. Bevor die beiden Nullen als belegt gelten, braucht es einen Lauf
+   mit einem Modell, das die Kennzahlen nicht kennt.
+2. **Ein Lauf ist ein Lauf.** Über Streuung sagt er nichts.
+3. **Nur zwei der zwölf Buchungswerkzeuge kommen überhaupt vor.** Die Nulltoleranz-Kennzahl misst
+   vier Aufrufe; zehn Buchungswerkzeuge, darunter alle drei `unconfirm`-Werkzeuge, sind
+   ungeprüft. Das ist eine Eigenschaft des Aufgabensatzes und der schwächste Punkt der Messung.
+4. **Der Datenbestand der Aufzeichnungen ist winzig**, ein bis vier Zeilen je Antwort. Das hält
+   die Aufrufzahl künstlich niedrig: Zwei Aufgaben fragen nach Datensätzen **ohne** Zuordnung,
+   und weil die API dafür keinen Filter kennt, kostet die Antwort einen Aufruf je Datensatz. Bei
+   40 Belegen wären es 42 Aufrufe statt der gemessenen sechs. **Der Median 4 ist deshalb keine
+   Aussage über die Sparsamkeit des Entwurfs, sondern eine über die Größe des Testbestands.**
 
 ### 10.4 Auswerten
 
@@ -1163,6 +1200,61 @@ Projektentscheidungen, weil es um Buchhaltungsdaten geht:
 - **Geheimnistest.** Ein Test durchsucht alle Tool-Definitionen, alle Beispiel-Antworten und alle Fehlertexte nach dem konfigurierten `api_key`. Ein Treffer ist ein Fehlschlag.
 - **Nur-Lesen-Test.** Mit `BB_MCP_READ_ONLY=true` gestartet, lehnt jedes Tool der Klassen A, AR, M, D, B jeden Aufruf ab, ohne einen Request an BuchhaltungsButler abzusetzen, und nennt die Umgebungsvariable samt Zielwert in der Meldung. `bb_reports_create` ist ausdrücklich eingeschlossen. Gegenprobe ohne gesetzte Variable: dieselben Tools führen aus. Die Werkzeugliste ist in beiden Läufen identisch.
 
+### 10.6 Was der erste Evaluationslauf über den Werkzeugentwurf gezeigt hat
+
+Der Lauf vom 2026-09-13 hat mehr geliefert als sechs Zahlen. Aus den aufgezeichneten Begründungen
+des Agenten zu jedem einzelnen Schritt lassen sich Entwurfsentscheidungen bestätigen und
+Verwirrungsmuster benennen. Beides steht hier, weil es sich auf andere Werkzeugsätze übertragen
+lässt.
+
+**Sechs Entscheidungen, die sich unmittelbar ausgezahlt haben:**
+
+1. **Ein Wegweiser in den `instructions`, ergänzt um einen Abgrenzungssatz im ersten Absatz jeder
+   Beschreibung.** Die Wahl zwischen drei ähnlich benannten `create`-Werkzeugen war an keiner
+   Stelle zweifelhaft — der Wegweiser stand schon da, bevor die Frage entstand.
+2. **Namen, die zwei leicht verwechselbare Begriffe auseinanderziehen**, hier Zahlungskonto gegen
+   Sachkonto, zusammen mit einem eigenen Abschnitt der `instructions`, der beide nebeneinander
+   stellt. Die Aufgabe, die genau darauf zielt, lief ohne Umweg.
+3. **Eine Antwort, die den nächsten Schritt nennt, bevor der Agent die Lücke bemerkt.** Der Satz
+   „Diese Liste führt sechs Felder und darunter kein `account`: Auf welchem Zahlungskonto eine
+   Zahlung liegt, zeigt erst `bb_transactions_get`." hat einen ganzen Umweg eingespart.
+4. **Eine Bestandszeile, die die Paginierungsfrage beantwortet, statt sie offenzulassen.**
+   „Weniger Zeilen als das `limit`, also ist das das vollständige Ergebnis für diese Filter."
+   verhindert genau den überflüssigen zweiten Aufruf mit `offset`, den ein Agent sonst aus
+   Vorsicht absetzt.
+5. **Der Weg zurück mit konkretem Wert statt als Merksatz.** Nach drei Löschvorgängen stand
+   dreimal die passende Umkehrung samt Kennung da.
+6. **Die Schemaprüfung greift vor dem Request.** Ein vom Eingabeschema abgewiesener Schreibaufruf
+   hat den Prozess nicht verlassen; im Test nachgezählt wurden null Requests an den betroffenen
+   Endpunkt.
+
+**Sechs Verwirrungsmuster, jedes über dieses Projekt hinaus gültig.** Die Reihenfolge ist nach
+Schaden, nicht nach Aufwand; „Schaden" heißt: Wie wahrscheinlich bekommt der Nutzer eine falsche
+Auskunft, ohne dass es jemandem auffällt?
+
+| Muster | Wie es sich zeigt | Was daraus folgt |
+| --- | --- | --- |
+| **Neutralisierung frisst Bedeutung** | Ein regulärer Ausdruck, der führende Aufzählungs- und Markdown-Zeichen aus Fremdtext entfernt, entfernt auch das Minus eines Betrags. Im Textblock wird aus einer Auszahlung eine Einzahlung; nur der strukturierte Teil behält das Vorzeichen | Neutralisierung nie pauschal auf **jeden** Zeichenkettenwert anwenden. In einer Buchhaltung ist das die gefährlichste Fehlerklasse, weil sie still ist |
+| **Die Fehlermeldung nennt den übergebenen Wert falsch** | Eine Schemameldung las den Eingabewert aus einem Feld, das die Prüfbibliothek im fertigen Issue nicht mehr führt, und meldete deshalb bei **jedem** Typfehler „übergeben wurde undefined". Damit ist ein Typfehler von einem fehlenden Feld nicht mehr zu unterscheiden, und ein Agent sendet denselben falschen Wert erneut | Wer die Meldung der Prüfbibliothek durch eine eigene ersetzt, muss nachweisen, dass die eigene mindestens so viel sagt. Sonst die fremde durchreichen |
+| **Beispiele widersprechen dem Typ** | 44 Felder mit Zeichenketten-Schema trugen ein Beispiel, das wie eine Zahl aussah („zum Beispiel 4980"); kein einziges Zahlenfeld trug ein Beispiel in Anführungszeichen. Ein Agent übergibt dann eine Zahl, und der Aufruf wird abgewiesen | Das Beispiel ist Teil des Typvertrags. An Zeichenkettenfeldern gehört es in Anführungszeichen, und wo der Typ überrascht, gehört der Satz „eine Zeichenkette, keine Zahl" dazu |
+| **Die sparsame Projektion lässt die Anschlussfelder weg** | Die `concise`-Sicht eines Suchwerkzeugs führte einen Filter, den sie selbst nicht ausgab, und eine von zwei gleichartigen Anschlusskennungen. Beides kostete mehr Kontext, als die Felder gekostet hätten: entweder ein Aufruf je Wert oder ein Umschalten auf die volle Sicht mit 38 Feldern je Zeile | In eine `concise`-Projektion gehören alle Felder, auf die das Werkzeug selbst filtert, und alle Kennungen, mit denen der nächste Aufruf anschließt |
+| **Ein geschachteltes Objekt wird in der Tabellenzelle gekürzt** | Bei Berichtswerkzeugen **ist** das gekürzte Feld die gesamte Auskunft. Eine Kürzung nach 400 Zeichen ließ im Textblock den Anfang stehen und sonst nichts; der strukturierte Teil war vollständig | Für Listen gibt es eine Kürzung, die Zeilen zählt und den Verlust beziffert. Für ein Objekt in einer Zelle braucht es dasselbe, sonst hängt die Antwort daran, ob der Client den strukturierten Teil weiterreicht |
+| **Ein Pflichtfeld, das die Fachlichkeit nicht hergibt** | Ein Buchungswerkzeug führte Kreditor **und** Debitor als Pflicht, weil die Spezifikation beide als `required` deklariert. Für eine Eingangsrechnung gibt es keinen Debitor. Dem Agenten bleiben drei Wege, und keiner ist gut: eine Nummer erfinden, den Aufruf abgesetzt bekommen und scheitern, oder abbrechen und fragen | `required` gegenüber der Spezifikation zu verschärfen ist richtig, es ungeprüft zu übernehmen nicht. Wo die Spezifikation sich selbst widerspricht, ist die Frage durch **Messung** zu klären und bis dahin in der Feldbeschreibung offen zu benennen |
+
+**Drei Kosten, die der Werkzeugtext nennen sollte und oft nicht nennt.** Sie sind Lücken der
+API, keine Entwurfsfehler des Servers — aber der Agent merkt sie erst, wenn er die Liste in der
+Hand hält, und der Nutzer merkt sie gar nicht:
+
+- **Ein Pflichtfeld ohne Sammelwert** — etwa eine Belegrichtung, für die es kein „beide" gibt —
+  macht jede Frage nach „allen" zu zwei Aufrufen. Wer das übersieht, antwortet still
+  unvollständig, und bei einem löschenden Werkzeug bleibt die Hälfte stehen.
+- **„Ohne Zuordnung" ist ein N+1-Muster**, wenn die API keinen solchen Filter kennt und die
+  Zuordnung nur je Datensatz abfragbar ist. Ein Satz, der diese Kosten beziffert, erlaubt dem
+  Agenten eine Rückfrage vor dem zweiundvierzigsten Aufruf.
+- **Ein erzwungener Zeitraum ohne Vorgabe des Nutzers** führt zu einem erfundenen Fenster. Findet
+  der Agent darin nichts, ist „nicht gebucht" eine falsche Auskunft. Der Werkzeugtext sollte
+  verlangen, das selbst gewählte Fenster in der Antwort zu nennen.
+
 ---
 
 ## 11. Verbindliche Vorgaben für unseren Server
@@ -1171,15 +1263,24 @@ Diese Liste ist die Abnahmeliste. Ein Implementierungs-Agent arbeitet sie ab; je
 
 ### 11.1 Toolsatz
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund: Entscheidung E1 des Projektinhabers.** Die Spanne „zwischen 28 und 34 Tools" ist
-> **aufgehoben**. Verbindlich ist: **genau ein Werkzeug je Endpunkt, also 54 Werkzeuge, jedes mit
+> **Nachgezogen am 2026-09-13; Sachgrund ist eine Entscheidung des Projektinhabers.** Die Spanne
+> „zwischen 28 und 34 Tools" ist **aufgehoben**. Verbindlich ist: **genau ein Werkzeug je Endpunkt, also 54 Werkzeuge, jedes mit
 > allen Parametern seines Endpunkts.** Damit entfallen auch die beiden folgenden Haken in ihrer
 > bisherigen Form: Einzel- und Stapelendpunkt sind **zwei** Werkzeuge und nicht eines mit
 > `items`-Array, und eine Zusammenfassung mehrerer Endpunkte gibt es nicht mehr, die zugehörige
 > Ausweispflicht läuft daher leer. Unverändert gültig bleiben: vollständige Abdeckung aller 54
 > Endpunkte mit maschinellem Nachweis, kein Werkzeug, das Lesen und Schreiben vereint, und die
 > Zuordnung Werkzeug zu Endpunkt als Datenstruktur im Code.
+>
+> **Ergänzt am 2026-09-13:** Neben den 54 Endpunktwerkzeugen liefert der Server **fünf
+> Bündelwerkzeuge** aus, die mehrere Endpunkte zu einem Ablauf zusammenfassen
+> (`bb_masterdata_search`, `bb_records_collect`, `bb_assignments_get`, `bb_balances_get`,
+> `bb_reports_run`). Sie **ersetzen kein** Endpunktwerkzeug; alle 54 bleiben daneben nutzbar,
+> und der Satz „ein Werkzeug je Endpunkt" gilt unverändert. Damit meldet der Server **59**
+> Werkzeuge, davon 19 lesende — am 2026-09-13 über ein `tools/list` gegen den gebauten Server
+> selbst nachgemessen. Die Bündel sind die einzige Ausnahme von der Regel „keine Zusammenfassung
+> mehrerer Endpunkte"; sie nennen die zusammengefassten Aufrufe in ihrer Beschreibung und weisen
+> sie in der Antwort aus.
 
 - [ ] Der Toolsatz deckt alle 54 Endpunkte aus `SPEC-BB` ab. Ein automatisierter Test belegt das.
 - [ ] ~~Die Anzahl der Tools liegt zwischen 28 und 34.~~ **Aufgehoben, siehe Kasten.**
@@ -1199,15 +1300,17 @@ Diese Liste ist die Abnahmeliste. Ein Implementierungs-Agent arbeitet sie ab; je
 
 ### 11.3 Aufbau jeder Tool-Beschreibung
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund: Entscheidung E4 und Umsetzungsplan 4.9.** **Der fünfteilige Aufbau bleibt
-> verbindlich, die Sprache ist Deutsch.** Damit entfallen die beiden Haken zur Sprache: Es gilt
+> **Nachgezogen am 2026-09-13; Sachgrund ist eine Entscheidung des Projektinhabers.** **Der
+> fünfteilige Aufbau bleibt verbindlich, die Sprache ist Deutsch.** Damit entfallen die beiden Haken zur Sprache: Es gilt
 > nicht „Sprache Englisch, deutsche Fachbegriffe in Anführungszeichen eingestreut", sondern
 > deutscher Text. Die Regel, deutsche Fachbegriffe in Anführungszeichen zu setzen, **entfällt
 > ersatzlos** — sie war nur nötig, um sie aus englischem Text herauszuheben. Stattdessen gilt:
 > **API-Feldnamen, Werkzeugnamen und Enum-Werte stehen unverändert im Original.** Die Längengrenze
-> „60 bis 220 Wörter" wird durch das Stufenbudget aus Umsetzungsplan 4.9 ersetzt (900, 700
-> beziehungsweise 480 Zeichen je nach Stufe), das maschinell geprüft wird.
+> „60 bis 220 Wörter" wird durch ein Stufenbudget ersetzt, das maschinell geprüft wird: **900
+> Zeichen** für die 22 Werkzeuge der Verwechslungs- und Gefahrenzone, **700** für die 18
+> Werkzeuge mit fachlicher Tiefe ohne Verwechslungsrisiko, **480** für die 14 trivialen Stapel-
+> und Nachschlagevarianten. Jedes Werkzeug trägt genau eine Stufe; die Stufe steht im
+> Registereintrag.
 
 Feste Reihenfolge, mindestens fünf Sätze:
 
@@ -1291,7 +1394,7 @@ Feste Reihenfolge, mindestens fünf Sätze:
 
 ### 11.9 Prüfungen vor der Abnahme
 
-- [ ] Vollständigkeitstest: 34 Tools decken 54 Endpunkte.
+- [ ] Vollständigkeitstest: der Toolsatz deckt alle 54 Endpunkte. ~~34 Tools decken 54 Endpunkte.~~ **Aufgehoben, siehe [11.1](#111-toolsatz).**
 - [ ] Namenstest: Regex, Präfix, Eindeutigkeit, Verbliste. Das Verb ist das Segment hinter der Ressource, nicht die Namensendung; `bb_reports_get_ledger` und `bb_postings_assign_receipt` tragen einen Qualifizierer dahinter.
 - [ ] Klassifikationstest: jedes registrierte Tool steht in der Klassentabelle aus [9.3](#93-klassifikation-unserer-tools) genau einmal, und die Tabelle enthält kein Tool, das nicht existiert. Die Klasse wird aus der Tabelle gelesen, nie aus dem Namen abgeleitet.
 - [ ] Geheimnistest: `api_key` taucht in keiner Definition, keiner Antwort, keiner Fehlermeldung auf.
@@ -1300,8 +1403,8 @@ Feste Reihenfolge, mindestens fünf Sätze:
 - [ ] Annotationstest: Jedes Tool trägt alle vier Annotationen, und ihre Werte stimmen mit der Klasse aus der Tabelle in [9.3](#93-klassifikation-unserer-tools) überein. Automatisiert gegen die Klassentabelle geprüft.
 - [ ] Beschreibungstest für schreibende Tools: Jede Beschreibung der Klassen A, AR, M, D und B enthält den Folgensatz aus [5.5](#55-fehlbedienung-vorbeugen), also die Wirkung auf den echten Datenbestand und die Aussage zur Umkehrbarkeit. Kein Tool enthält einen `confirm`-Parameter.
 - [ ] Schemakonformitätstest: jede Antwort validiert gegen ihr `outputSchema`.
-- [ ] Definitionsgrößentest: alle Tool-Definitionen zusammen unter 10.000 Token.
-- [ ] Evaluationslauf über die zehn Aufgaben aus [10.2](#102-aufgaben-bauen) mit den Kennzahlen aus [10.3](#103-kennzahlen).
+- [ ] Definitionsgrößentest: alle Tool-Definitionen zusammen unter der Grenze aus [10.3](#103-kennzahlen). ~~Unter 10.000 Token.~~ **Aufgehoben**; die Zahl galt für 34 englische Definitionen.
+- [ ] Evaluationslauf über die Aufgaben aus [10.2](#102-aufgaben-bauen) mit den Kennzahlen aus [10.3](#103-kennzahlen).
 - [ ] Schutzverletzungen im Evaluationslauf: 0.
 
 ---
@@ -1310,9 +1413,8 @@ Feste Reihenfolge, mindestens fünf Sätze:
 
 Was in diesem Dokument nicht belegt ist und vor oder während der Implementierung geklärt werden muss:
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 0.3 Befund L1 und in Abschnitt 12, Streitfrage S1.** Die ersten **drei**
-> Zeilen der folgenden Tabelle sind **erledigt**. `/receipts/get/id_by_customer` und
+> **Nachgezogen am 2026-09-13 nach eigener Messung gegen die Produktivumgebung.** Die ersten
+> **drei** Zeilen der folgenden Tabelle sind **erledigt**. `/receipts/get/id_by_customer` und
 > `/transactions/get/id_by_customer` sind benutzbar, sobald der Wert in das Pfadsegment
 > eingesetzt wird; beide antworteten am 2026-09-12 mit HTTP 200. `bb_receipts_get` und
 > `bb_transactions_get` werden gebaut und ausgeliefert, und andere Werkzeugbeschreibungen dürfen
@@ -1325,8 +1427,9 @@ Was in diesem Dokument nicht belegt ist und vor oder während der Implementierun
 | Wie `/receipts/get/id_by_customer` korrekt aufgerufen wird und damit, ob `bb_receipts_get` überhaupt gebaut werden kann | **live nicht funktionsfähig belegt**: vier Aufrufvarianten am 2026-09-12 endeten alle mit HTTP 400 und `error_code` 5, Beleg `docs/api/belege.md` Abschnitt 4.5 | Einen einzelnen Testaufruf mit der dort genannten, ungetesteten Array-Hypothese `{"api_key": "...", "id_by_customer": [<id>]}` fahren. Bis das gelingt, wird das Tool nicht ausgeliefert und in keiner Beschreibung erwähnt, siehe die Warnung in [3.5](#35-vorgeschlagene-abbildung-54-endpunkte-auf-34-tools). Blockiert zugleich Fremdwährungsfelder und Dateiinhalt |
 | Ob `/transactions/get/id_by_customer` in der Produktivumgebung überhaupt geroutet ist und damit, ob `bb_transactions_get` gebaut werden kann | **live nicht funktionsfähig belegt**: zwei Aufrufe am 2026-09-12 lieferten HTTP 404 mit HTML-Körper, Beleg `docs/api/transaktionen.md` Abschnitt 4.5 | Beim Anbieter klären, ob der Pfad existiert. Bis dahin Umgehung über `/transactions/get` mit `id_by_customer_from = id - 1` und `id_by_customer_to = id + 1`, siehe [3.5](#35-vorgeschlagene-abbildung-54-endpunkte-auf-34-tools) |
 | Ob die Umgehung für den Einzelabruf einer Transaktion tatsächlich genau einen Datensatz liefert | **nicht verifiziert**, Herleitung aus der exklusiven Grenzsemantik in `docs/api/transaktionen.md` Abschnitt 3.1 | Ein Leseaufruf gegen `/transactions/get` mit einer bekannten Kennung. Liefert nur die sechs Listenfelder, die Detailfelder des Einzelabrufs fehlen |
-| Tokenkosten der 34 Tool-Definitionen | **nicht gemessen** | Nach dem ersten Entwurf mit dem Token-Counter der Anthropic-API zählen |
+| Tokenkosten der Tool-Definitionen | **gemessen** am 2026-09-13 mit `gpt-tokenizer@4.0.0`, Kodierung `o200k_base` | Erledigt und laufend nachgeführt in `docs/entwicklung/tokenbudget.md`. Offen bleibt allein, dass `o200k_base` für die Claude-Linie nur eine Größenordnung liefert: deren Tokenizer ist nicht öffentlich dokumentiert |
 | Ob die BuchhaltungsButler-API Schreibvorgänge dedupliziert | **nicht verifiziert** | Test gegen eine Testumgebung, falls vorhanden; sonst beim Anbieter erfragen |
+| Ob `/postings/add/receipt` wirklich **beide** Gegenkonten verlangt, `creditor` und `debtor` | **nicht verifiziert**, und die Spezifikation widerspricht sich: Sie führt beide als `required: true`, ihre eigenen Feldbeschreibungen sagen „only required, if …". `required` wurde deshalb nicht gelockert, beide bleiben Pflicht | **Durch Messung klären, mit einem Testmandat** (siehe die Zeile zur Deduplizierung). Die Folge ist nicht theoretisch: Für eine Eingangsrechnung gibt es keinen Debitor, und der Evaluationslauf vom 2026-09-13 hat genau daran eine Aufgabe verloren — der Agent brach richtig ab, statt eine Debitorennummer zu erfinden. Nimmt die API den Aufruf ohne `debtor` an, ist das ein Schemafehler dieses Servers und keine Lücke der API. Betrifft `bb_postings_create_for_receipt` und seine Stapelform |
 | Betragsformat (Dezimaltrenner, Tausendertrenner, Währungsangabe) | **nicht verifiziert** | `SPEC-BB` liefert dazu keine eindeutige Aussage; an der laufenden API prüfen |
 | Ob `/receipts/get` die Gesamttrefferzahl oder nur die Seitenlänge meldet | **nicht verifiziert** | An der laufenden API prüfen. Sicherheitsrelevant, siehe [7.4](#74-paginierung) |
 | Ob `/reports/create/*` synchron oder asynchron arbeitet | **geklärt**: asynchron, belegt in `docs/api/berichte.md` Abschnitt 2.1 aus `SPEC-BB`; der get-Endpunkt meldet währenddessen `error_code` 8 | Offen bleibt allein die Laufzeit und damit das Polling-Intervall, **Annahme** nach `docs/api/berichte.md` Abschnitt 2.4 |
@@ -1336,10 +1439,10 @@ Was in diesem Dokument nicht belegt ist und vor oder während der Implementierun
 | Ob die Feldmengen von `/invoices/create`, `/invoices/create/e-invoice` und `/invoices/create/draft` nah genug beieinander liegen für ein gemeinsames Tool | **nicht verifiziert** | Feldvergleich aus `SPEC-BB`; falls zu divergent, auf zwei Tools aufteilen |
 | Maximale Dateigröße bei `/receipts/upload` und erwartete Kodierung | **nicht verifiziert** | `SPEC-BB` prüfen, sonst an der API testen |
 | Authentifizierungsverfahren | **nicht aus `SPEC-BB` belegbar** | Das Dokument enthält weder `servers` noch `securitySchemes`; `api_key` steht nur als Body-Feld. Das reale Verfahren gehört in die API-Dokumentation des Projekts, nicht hierher |
-| Zielwerte der Evaluationskennzahlen | **Annahme** | Nach dem ersten Lauf durch gemessene Werte ersetzen |
+| Zielwerte der Evaluationskennzahlen | **erster Lauf gemessen**, siehe [10.3](#103-kennzahlen); alle Zielwerte gehalten | Ein zweiter Lauf mit einem Modell, das die Kennzahlen nicht kennt, und ein Aufgabensatz, der mehr als zwei der zwölf Buchungswerkzeuge berührt. Erst danach sind die beiden Nullen belegt |
 | Token-Grenzen 5.000 und 20.000 pro Antwort | **Annahme** | Nach dem ersten Lauf justieren |
 | Ob `input_examples` über MCP transportierbar wird | **nicht verifiziert** | MCP-Spezifikationsänderungen beobachten; bis dahin Beispiele im Beschreibungstext |
-| Ob und wie das optionale Feld `title` der Tool-Definition gesetzt wird, etwa als deutscher Anzeigename neben dem englischen Werkzeugnamen | **nicht entschieden** | In der Planungsphase zusammen mit der Sprachfrage aus [5.6](#56-sprache) entscheiden. `title` dient laut `MCP-SPEC-TOOLS` der Anzeige; welche Clients es tatsächlich auswerten, ist **nicht verifiziert** |
+| Ob und wie das optionale Feld `title` der Tool-Definition gesetzt wird, etwa als deutscher Anzeigename neben dem englischen Werkzeugnamen | **entschieden und ausgeliefert**: jedes Werkzeug trägt einen deutschen Anzeigenamen, passend zur Sprachfrage aus [5.6](#56-sprache) | Am 2026-09-13 über ein `tools/list` gegen den gebauten Server nachgemessen: **59 von 59** Definitionen führen ein `title`, zum Beispiel „Kommentar anhängen". `title` dient laut `MCP-SPEC-TOOLS` der Anzeige; welche Clients es tatsächlich auswerten, bleibt **nicht verifiziert** |
 | Die Felder und Mechanismen, die erst die Revision 2026-07-28 einführt: `x-mcp-header` im `inputSchema`, `resultType` auf jedem Result, `ttlMs` und `cacheScope` auf `tools/list`, sowie `InputRequiredResult` mit `inputRequests` und `requestState` | **bewusst nicht behandelt** | Zielrevision ist 2025-11-25, siehe [Abschnitt 1](#1-quellenlage) und `docs/entwicklung/mcp-spezifikation.md` Abschnitt 11.1a (c). Unter 2025-11-25 existieren diese Felder nicht. Sie werden erst verbindlich, wenn ein Laufzeittest zeigt, dass das eingesetzte SDK 2026-07-28 aushandelt. Ebenfalls bewusst nicht gesetzt, aber bereits unter 2025-11-25 vorhanden: `icons` und `execution.taskSupport`, entschieden in [6.7](#67-weitere-felder-der-tool-definition-unter-2025-11-25) |
 
 ### Widersprüche zwischen den Quellen

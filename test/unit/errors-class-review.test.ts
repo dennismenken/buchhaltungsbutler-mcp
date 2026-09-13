@@ -11,7 +11,7 @@ import {
 import { THROTTLE_ERROR_CODE, THROTTLE_PATHS } from "../../src/errors/classify.js";
 
 // =========================================================================================
-// DIE HANDPRÜFUNG DER SPALTE `cls` (Plan 5.6, R12, AP08)
+// DIE HANDPRÜFUNG DER SPALTE `cls`
 //
 // Die Klassenspalte des Katalogs wird beim Erzeugen aus dem Meldungstext VORGESCHLAGEN
 // (scripts/gen-errors.ts) und ist anschließend von Hand zu prüfen, weil die Ableitung bei den
@@ -47,9 +47,9 @@ import { THROTTLE_ERROR_CODE, THROTTLE_PATHS } from "../../src/errors/classify.j
 //    `final`, Texte der Form „no X found" in `input`, obwohl beide dasselbe meinen können. Die
 //    Folge ist ein anderer Ratschlag, nicht ein anderes Verhalten. Belassen, weil bei „no X
 //    found" die beanstandete Kennung aus den Argumenten stammt und der Rat „diesen Wert
-//    korrigieren" dort zutrifft. Gemeldet an AP03, weil die Tabelle dort erzeugt wird.
+//    korrigieren" dort zutrifft. Die Tabelle entsteht in `scripts/gen-errors.ts`.
 //
-// Die vier Sonderfälle aus 5.6 und die elf Paare mit error_code 15 sind weiter unten einzeln
+// Die vier Sonderfälle und die elf Paare mit error_code 15 sind weiter unten einzeln
 // abgehakt.
 // =========================================================================================
 
@@ -149,9 +149,9 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["the specified postingaccount is not available", "final"], // 2
   ["the specified postingaccount is not valid", "final"], // 2
   ["the tax key is invalid for specified account combination", "final"], // 1
-  ["the total amount of all postings does not match the receipt amount", "final"], // 1 — Betragsprüfung, nach 5.6 final.
-  ["the total amount of all postings does not match the transaction amount", "final"], // 1 — Betragsprüfung, nach 5.6 final.
-  ["the total amount of all postings is invalid", "final"], // 2 — Betragsprüfung, nach 5.6 final.
+  ["the total amount of all postings does not match the receipt amount", "final"], // 1 — Betragsprüfung, final.
+  ["the total amount of all postings does not match the transaction amount", "final"], // 1 — Betragsprüfung, final.
+  ["the total amount of all postings is invalid", "final"], // 2 — Betragsprüfung, final.
   ["the type of the receipt does not allow postings", "final"], // 1
   [
     'The vat option for account "%postinaccount_number%; %postingaccount_name%" is invalid',
@@ -385,12 +385,12 @@ const EXPECTED_DISTRIBUTION: Record<ErrorClass, number> = {
 };
 
 /**
- * Die elf Paare mit `error_code` 15, namentlich (Plan 5.6 Fußnote, AP08).
+ * Die elf Paare mit `error_code` 15, namentlich.
  *
  * Unterschieden werden sie über den HTTP-STATUS und nicht über den Wortlaut: Der Katalog führt
  * `adding temporarily restricted`, `upload temporarily restricted` und
- * `invalid sort field specified`, live kam an `/receipts/get` jedoch `invalid field specified`
- * (Plan 0.3 Befund L6). Eine automatische Ableitung aus dem Muster `invalid …` stufte
+ * `invalid sort field specified`, live kam an `/receipts/get` jedoch `invalid field specified`.
+ * Eine automatische Ableitung aus dem Muster `invalid …` stufte
  * `/transactions/add` falsch ein — es ist weder Stapel- noch Upload-Endpunkt — und sagte dem
  * Agenten bei einer vorübergehenden Drosselung, ein späterer Versuch helfe nicht.
  */
@@ -410,7 +410,7 @@ const CODE_15_PAIRS: readonly { path: string; status: number; cls: ErrorClass }[
   { path: "/receipts/get", status: 400, cls: "input" },
 ];
 
-/** Die acht Paare der Klasse `special` (Plan 5.6). */
+/** Die acht Paare der Klasse `special`. */
 const SPECIAL_PAIRS: readonly { path: string; code: number }[] = [
   { path: "/transactions/add", code: 23 },
   { path: "/transactions/add", code: 24 },
@@ -423,7 +423,7 @@ const SPECIAL_PAIRS: readonly { path: string; code: number }[] = [
 ];
 
 /**
- * Die vier Sonderfälle aus Plan 5.6, als Paare.
+ * Die vier Sonderfälle, als Paare.
  *
  * Sonderfall 4 ist der, bei dem der Plantext ungenau ist und die Spezifikation entscheidet:
  * Das Kontingent trägt an `/receipts/upload` den Code **12** (HTTP 403); Code 33 heißt dort
@@ -528,7 +528,7 @@ describe("Die elf Paare mit error_code 15", () => {
   });
 });
 
-describe("Die Sonderfälle aus 5.6", () => {
+describe("Die vier Sonderfälle", () => {
   it("führt genau die acht Paare der Klasse special", () => {
     const found = pairs
       .filter(({ entry }) => entry.cls === "special")

@@ -1,4 +1,4 @@
-// Erzeugt src/generated/errors.ts aus docs/openapi/buchhaltungsbutler-v1.json (Plan 4.2, 5.6).
+// Erzeugt src/generated/errors.ts aus docs/openapi/buchhaltungsbutler-v1.json.
 //
 // Der Schlüssel des Katalogs ist IMMER das Paar (Pfad, error_code) und nie der Code allein.
 // Über die 786 referenzierten Paare trägt Code 7 achtundzwanzig verschiedene Bedeutungen,
@@ -8,18 +8,18 @@
 //
 // Grundmenge sind die 786 in `responses` REFERENZIERTEN Paare, nicht die 718
 // Definitionsnamen: 42 Definitionen kommen in keinem responses-Block vor und sind damit
-// kein belegtes Serververhalten (Plan 0.4, 5.6).
+// kein belegtes Serververhalten.
 //
 // Je Paar entstehen ZWEI Texte, und keiner wird aus dem anderen abgeleitet:
 //   message: properties.message.enum[0] der über $ref aufgelösten Definition — die einzige
 //            Angabe der Datei über den WERT des Antwortfeldes `message`. Verbindliche Quelle.
-//   summary: responses[…].description — die kürzere Fassung für den Block [Was] (Plan 5.8).
+//   summary: responses[…].description — die kürzere Fassung für den Block [Was].
 // Der Generator gibt die Zahl der Paare aus, bei denen beide abweichen; ein Test hält sie
-// fest, weil eine veränderte Zahl eine veränderte Spezifikationsdatei anzeigt (AP03).
+// fest, weil eine veränderte Zahl eine veränderte Spezifikationsdatei anzeigt.
 //
 // KEINER der beiden Texte darf als Wortlaut der API ausgegeben werden: Live gemessen kam an
 // /receipts/get zu Code 15 der Text „invalid field specified" und damit keine der beiden
-// Quellen (Plan 0.3, Befund L6).
+// Quellen.
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
@@ -64,7 +64,7 @@ function fail(message: string): never {
 }
 
 // ---------------------------------------------------------------------------------------
-// Handgeprüfte Festlegungen (Plan 5.6, AP08)
+// Handgeprüfte Festlegungen
 //
 // Die Klassenspalte wird hier aus Pfad, Code, HTTP-Status und Meldungstext BESTIMMT und
 // nicht zur Laufzeit geraten. Alles, was nicht aus einem Muster folgt, steht als benannte
@@ -89,7 +89,7 @@ const THROTTLE_PATHS: readonly string[] = [
   "/settings/add-batch/creditors",
 ];
 
-// Paare, deren Bedeutung ohne den Meldungstext nicht eindeutig ist (Plan 5.6, Klasse
+// Paare, deren Bedeutung ohne den Meldungstext nicht eindeutig ist (Klasse
 // `special`). Die Fallunterscheidung in errors/classify.ts läuft über Teilzeichenketten
 // ohne Rücksicht auf Groß- und Kleinschreibung, niemals über Gleichheit.
 //
@@ -147,7 +147,7 @@ const FINAL_PATTERNS: readonly string[] = [
   "does not match",
   "not valid",
   "does not allow postings",
-  // Betragsprüfungen (Plan 5.6, Zeile `final`).
+  // Betragsprüfungen (Zeile `final`).
   "total amount",
   // Zustand einer Stammdatenzeile, nicht ein falsch getippter Wert.
   "vat option for account",
@@ -166,7 +166,7 @@ const FINAL_PATTERNS: readonly string[] = [
 const CONFIG_PATTERN = "not activated";
 
 // Ein Feldname, den kein Muster aus dem Meldungstext holen kann: „invalid sort field
-// specified" meint den Parameter `order` (Plan 5.6, Beispieltabelle).
+// specified" meint den Parameter `order` (Beispieltabelle).
 const FIELD_OVERRIDES: ReadonlyMap<string, string> = new Map([["/receipts/get|15", "order"]]);
 
 // ---------------------------------------------------------------------------------------
@@ -179,7 +179,7 @@ function messageOf(ref: string): string {
   const prefix = "#/definitions/";
   if (!ref.startsWith(prefix)) fail(`Unbekannte Referenzform: ${ref}`);
   // Aufgelöst wird über die $ref und ausdrücklich NICHT über den Definitionsnamen: Die
-  // Namensregel der Datei scheitert bei fünf Endpunkten (Plan 5.6).
+  // Namensregel der Datei scheitert bei fünf Endpunkten.
   const definition = definitions[ref.slice(prefix.length)];
   if (definition === undefined) fail(`Referenz zeigt ins Leere: ${ref}`);
   const enumValues = definition.properties?.["message"]?.enum;
@@ -311,7 +311,7 @@ for (const [path, item] of Object.entries(paths)) {
   }
   // Erste Ebene ist der UNVERÄNDERTE Spezifikationspfad — auch bei den vier Pfaden mit dem
   // Platzhaltersegment id_by_customer. Nachgeschlagen wird zur Laufzeit mit path.specPath
-  // und nie mit dem gebauten Pfad (Plan 4.6).
+  // und nie mit dem gebauten Pfad.
   catalog[path] = sorted;
 }
 
@@ -319,17 +319,17 @@ const specVersion = spec.info?.version ?? "unbekannt";
 
 const output = `// ERZEUGT von scripts/gen-errors.ts aus docs/openapi/buchhaltungsbutler-v1.json.
 // NICHT VON HAND ÄNDERN. Änderungen entstehen ausschließlich über \`pnpm generate\`; der
-// CI-Schritt verlangt danach eine leere git-Differenz (Plan 4.2).
+// CI-Schritt verlangt danach eine leere git-Differenz.
 //
 // Quelle: BuchhaltungsButler API, info.version ${specVersion}.
 //
 // ${pairCount} Paare (Pfad, error_code) über ${Object.keys(catalog).length} Pfade. Bei ${divergingCount} Paaren weichen
 // \`message\` und \`summary\` voneinander ab; die Zahl ist ein Driftanzeiger und wird von
-// test/unit/generated.test.ts festgehalten (Plan 5.6).
+// test/unit/generated.test.ts festgehalten.
 //
 // Verteilung der Klassen: config ${byClass.config}, input ${byClass.input}, transient ${byClass.transient}, final ${byClass.final}, special ${byClass.special}.
 //
-// ZWEI REGELN FÜR JEDEN, DER DIESEN KATALOG LIEST (Plan 5.6, Befund L6):
+// ZWEI REGELN FÜR JEDEN, DER DIESEN KATALOG LIEST:
 //   1. Kein Text aus dieser Datei wird als Wortlaut der API ausgegeben. Zitiert wird das
 //      \`message\`-Feld der TATSÄCHLICHEN Antwort. Der Katalogtext tritt nur ein, wenn die
 //      Antwort keinen verwertbaren Text trägt, und dann mit dem Zusatz „Text laut
@@ -339,7 +339,7 @@ const output = `// ERZEUGT von scripts/gen-errors.ts aus docs/openapi/buchhaltun
 //
 // Der Katalog wird dynamisch geladen und gelangt nie vollständig in den Modellkontext.
 
-/** Die fünf Fehlerklassen aus Plan 5.6. */
+/** Die fünf Fehlerklassen. */
 export type ErrorClass = "config" | "input" | "transient" | "final" | "special";
 
 /** Ein Paar (Pfad, error_code) mit beiden Texten der Spezifikation. */
@@ -358,7 +358,7 @@ export interface ErrorEntry {
 
 /**
  * Schlüssel der ersten Ebene ist IMMER der Spezifikationspfad, bei den vier Werkzeugen mit
- * Pfadvorlage also \`path.specPath\` und nicht der gebaute Pfad (Plan 4.6). Schlüssel der
+ * Pfadvorlage also \`path.specPath\` und nicht der gebaute Pfad. Schlüssel der
  * zweiten Ebene ist der \`error_code\`.
  */
 export const ERRORS: Record<string, Record<number, ErrorEntry>> = ${JSON.stringify(catalog, null, 2)};

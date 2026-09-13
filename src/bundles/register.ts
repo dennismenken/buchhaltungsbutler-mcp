@@ -1,14 +1,14 @@
-// Die Registrierung der Bündelwerkzeuge und der ZWEITE generische Handler (Bauvorlage 9).
+// Die Registrierung der Bündelwerkzeuge und der ZWEITE generische Handler.
 //
 // Die Guards laufen unverändert und in derselben Reihenfolge wie in
 // `src/server/register-tools.ts`: Konfiguration, Nur-Lesen-Schalter, Schema, Querprüfungen.
 // Guard 5 und Guard 6 entfallen, weil kein Bündel einen Betrag, einen Stapel oder einen
 // anlegenden Schritt führt. Danach kommt ein fünfter Schritt, den nur ein Bündel braucht: die
-// Vorabprüfung am Token-Eimer (6.4).
+// Vorabprüfung am Token-Eimer.
 //
-// **Der Gruppenschalter entscheidet über die Registrierung, der Nur-Lesen-Schalter über die
-// Ausführung** (N5, N6). Die Bündel hängen an keiner Endpunktgruppe: Ein Bündel ruft die
-// HTTP-Schicht auf und nicht die Endpunktwerkzeuge.
+// **Der Gruppenschalter `BB_MCP_TOOL_GROUPS` entscheidet über die Registrierung, der
+// Nur-Lesen-Schalter `BB_MCP_READ_ONLY` über die Ausführung.** Die Bündel hängen an keiner
+// Endpunktgruppe: Ein Bündel ruft die HTTP-Schicht auf und nicht die Endpunktwerkzeuge.
 import type { McpServer } from "@modelcontextprotocol/server";
 import type { CallToolResult, StandardSchemaWithJSON } from "@modelcontextprotocol/server";
 import type { z } from "zod";
@@ -114,14 +114,15 @@ function refuse(
 }
 
 /**
- * Die Absage eines Schema- oder Querprüfungsverstoßes, im Vierblockaufbau aus 5.8.
+ * Die Absage eines Schema- oder Querprüfungsverstoßes, im Vierblockaufbau.
  *
  * Die Befunde bereitet `errors/zod-issue.ts` auf, dieselbe Stelle, die auch die 54
  * Endpunktwerkzeuge benutzen. Eine eigene, knappere Fassung stand hier bis zur Zusammenlegung
  * und reichte `issue.message` unverändert durch; damit kam derselbe Fehler bei einem Bündel auf
  * Englisch heraus („Invalid input: expected number, received string") und bei einem
  * Endpunktwerkzeug auf Deutsch — und ein fehlendes Pflichtfeld war von einem Typfehler nicht
- * mehr zu unterscheiden (Befund V2/E-3). `rawArgs` steht dafür unverändert zur Verfügung: Die
+ * mehr zu unterscheiden; im Evaluationslauf hat genau das einen Irrweg erzeugt. `rawArgs`
+ * steht dafür unverändert zur Verfügung: Die
  * Guards 3 und 4 laufen hier wie dort vor jeder Umformung.
  */
 function schemaRefusal(
@@ -142,7 +143,7 @@ function schemaRefusal(
 
 /**
  * Guard 2 für ein Bündel. Die Klasse kommt aus dem Register und niemals aus dem Namen; der
- * Absagetext ist wörtlich derselbe wie bei den Endpunktwerkzeugen (Plan 6.6).
+ * Absagetext ist wörtlich derselbe wie bei den Endpunktwerkzeugen.
  */
 function checkBundleReadOnly(entry: BundleEntry, config: ResolvedConfig): string | undefined {
   if (!config.readOnly || entry.toolClass === READ_ONLY_TOOL_CLASS) {
@@ -248,7 +249,7 @@ async function runGuardedBundle(
     now: runtime.now,
   });
 
-  // --- Vorabprüfung am Token-Eimer (6.4) -----------------------------------------------
+  // --- Vorabprüfung am Token-Eimer ----------------------------------------------------
   // Ein Bündel, das nach dem dritten von fünf Aufrufen im Limit hängenbleibt, ist teurer als
   // eines, das gar nicht erst anfängt.
   const seen = runner.peek();
@@ -276,8 +277,9 @@ async function runGuardedBundle(
 
   const outcome = await entry.run(runner, args);
 
-  // 5, Regel 1: Scheitert der erste Aufruf, ist die Antwort ein Fehler. Geprüft wird die
-  // Tatsache dahinter — kein einziger erfolgreicher Schritt. Dann gibt es nichts zu berichten.
+  // Scheitert jeder Schritt, ist die Antwort ein Fehler und keine leere Erfolgsmeldung.
+  // Geprüft wird die Tatsache dahinter — kein einziger erfolgreicher Schritt. Dann gibt es
+  // nichts zu berichten.
   const failure = runner.firstFailureOrNull();
   if (runner.successCount() === 0 && failure !== null) {
     audit(runtime, rawArgs, startedAt, `fehler:${failure.kind}`, runner.callsUsed());
@@ -372,7 +374,10 @@ export function registerBundles(
         // Die Wörter, die eine Buchhalterin sagt. Der Hinweis hilft Clients, die Werkzeuge
         // erst bei Bedarf laden, beim Finden. Die genaue erwartete Form dieses Feldes ist in
         // diesem Projekt NICHT verifiziert; ein Client, der den Schlüssel nicht kennt,
-        // übergeht ihn. `anthropic/alwaysLoad` bekommt bewusst kein Bündel (S12).
+        // übergeht ihn. `anthropic/alwaysLoad` setzt hier bewusst kein Bündel: Der Schlüssel
+        // hebt das verzögerte Laden auf und legt die vollständige Werkzeugdefinition dauerhaft
+        // in den Clientkontext zurück. Ob ein Werkzeug diesen Platz wert ist, entscheidet der
+        // Nutzer in seiner Clientkonfiguration, nicht der Server über seine eigene Liste.
         _meta: { "anthropic/searchHint": entry.searchHint.join(", ") },
       },
       (args, ctx) => runBundle(runtime, args, ctx.mcpReq.signal),

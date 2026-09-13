@@ -1,16 +1,16 @@
-// Die Querprüfungen Q1 bis Q9 aus Plan 4.7 als superRefine-Bausteine.
+// Die Querprüfungen Q1 bis Q9 als superRefine-Bausteine.
 //
-// Sie laufen am Schema und damit **vor** jedem Request (Guard 4, Plan 1.4). Jede fängt
+// Sie laufen am Schema und damit **vor** jedem Request (Guard 4). Jede fängt
 // einen Fehler ab, der sonst als falscher Datensatz in der Buchhaltung landet. Welche
 // Prüfung an welchem Werkzeug hängt, steht im Registereintrag im Feld `crossChecks`.
 //
 // Zwei Prüfungen des Entwurfsstandes sind ersatzlos gestrichen und werden hier
-// ausdrücklich **nicht** implementiert (Plan 4.7):
+// ausdrücklich **nicht** implementiert:
 //
 //   - „Summe der Positionsbeträge entspricht dem Beleg- oder Zahlungsbetrag": Der
 //     Vergleichswert ist an keinem der betroffenen Endpunkte ein Argument des Aufrufs. Die
 //     Prüfung wäre nur mit einem zusätzlichen lesenden Aufruf möglich, und der widerspräche
-//     Regel 2 aus 7.5. Die API prüft die Summe selbst, und ihre Meldung steht im
+//     Regel „ein Werkzeugaufruf ist ein API-Aufruf". Die API prüft die Summe selbst, und
 //     Fehlerkatalog.
 //   - „Gegenseitiger Ausschluss von id_by_customer_from/_to und der Sortierung":
 //     `/transactions/get` hat überhaupt keinen `order`-Parameter, und die Spezifikation
@@ -38,7 +38,7 @@ import {
 export interface CrossCheckTool {
   readonly toolName: string;
   /**
-   * Der **unveränderte** Spezifikationspfad (Plan 4.6). Nachgeschlagen wird immer damit,
+   * Der **unveränderte** Spezifikationspfad. Nachgeschlagen wird immer damit,
    * niemals mit dem gebauten Pfad: Der trägt bei vier Werkzeugen eine Geschäftskennung.
    */
   readonly specPath: string;
@@ -52,7 +52,7 @@ type Ctx = z.core.$RefinementCtx<unknown>;
 /** Eine Querprüfung: Kennung, Kurzbeschreibung und die Prüfung selbst. */
 export interface CrossCheck {
   readonly id: CrossCheckId;
-  /** Was die Prüfung tut, in einem Satz. Sie steht so in der Übersicht von Plan 4.7. */
+  /** Was die Prüfung tut, in einem Satz. Sie steht so in der Übersicht. */
   readonly summary: string;
   run(args: Args, ctx: Ctx, tool: CrossCheckTool): void;
   /**
@@ -82,7 +82,7 @@ function isRecord(value: unknown): value is Args {
 /**
  * Die Objektlisten eines Aufrufs, also Stapelbehälter und Positionslisten auf oberster
  * Ebene. Beides sind Arrays aus Objekten; ein Array aus Skalaren gibt es im Werkzeugschema
- * nicht, weil die 32 parallelen Arrays der Spezifikation zu Positionslisten werden (4.8).
+ * nicht, weil die 32 parallelen Arrays der Spezifikation zu Positionslisten werden.
  */
 function objectLists(args: Args): { field: string; items: Args[] }[] {
   const lists: { field: string; items: Args[] }[] = [];
@@ -171,7 +171,7 @@ const Q2: CrossCheck = {
       throw new Error(
         `Q2 ist an ${tool.toolName} (${tool.specPath}) nicht anwendbar: Für diesen Endpunkt ` +
           "ist keine Obergrenze für limit dokumentiert. Eine erfundene Schranke lehnte " +
-          "gültige Aufrufe unsichtbar vor dem Request ab (Plan 4.7, 7.5); dort gilt " +
+          "gültige Aufrufe unsichtbar vor dem Request ab; dort gilt " +
           "stattdessen der Warnsatz aus pagination.ts.",
       );
     }
@@ -481,7 +481,7 @@ const Q9: CrossCheck = {
 
 // --- Registrierung -------------------------------------------------------------------
 
-/** Die neun Querprüfungen, geschlüsselt nach ihrer Kennung aus Plan 4.7. */
+/** Die neun Querprüfungen, geschlüsselt nach ihrer Kennung. */
 export const CROSS_CHECKS: Readonly<Record<CrossCheckId, CrossCheck>> = Object.freeze({
   Q1,
   Q2,

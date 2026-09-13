@@ -1,34 +1,34 @@
 // Werkzeug 25, `/postings/add/free`: die freie Buchung, ein vollständiger Buchungssatz ohne
-// Beleg- und Zahlungsbezug (Plan 3.8, 4.8, AP12c).
+// Beleg- und Zahlungsbezug.
 //
 // **Dieses Werkzeug trägt ausdrücklich KEINE Positionsliste.** Der Endpunkt führt acht rein
 // skalare Felder, alle im Singular: `date`, `postingtext`, `amount`, `postingaccount_debit`,
 // `postingaccount_credit`, `vat`, `cost_location`, `cost_location_two`. Sie stehen eins zu
 // eins im Schema. Der Aufruf legt genau **eine** Buchungszeile an; eine Splitbuchung über
 // mehrere Zeilen nehmen bb_postings_create_for_receipt und bb_postings_create_for_transaction
-// über ihre Positionsliste entgegen (Plan 4.8, Tabelle am Ende).
+// über ihre Positionsliste entgegen (Tabelle am Ende).
 //
 // **Es ist das einzige Buchungswerkzeug, an dem Soll und Haben ausdrücklich angegeben werden.**
 // Bei Beleg- und Zahlungsbuchung kommt die Richtung aus dem Beleg beziehungsweise der Zahlung
 // (`buchungen.md` 3.1 und 3.2). In der Leseantwort von `/postings/get` heißen dieselben Konten
 // `debit_postingaccount_number` und `credit_postingaccount_number`; die Namen dieses
-// Eingabeschemas stehen in keiner Antwort (Plan 7.4).
+// Eingabeschemas stehen in keiner Antwort.
 //
-// **Q5 (Betrag ungleich 0.00) hängt hier ausdrücklich nicht.** Die Querprüfung gilt nach
-// Plan 4.7 genau an den Werkzeugen 4, 5, 6, 12 und 13, weil die Spezifikation den Betrag 0 nur
+// **Q5 (Betrag ungleich 0.00) hängt hier ausdrücklich nicht.** Die Querprüfung gilt genau
+// an den Werkzeugen 4, 5, 6, 12 und 13, weil die Spezifikation den Betrag 0 nur
 // dort ausdrücklich für ungültig erklärt. Eine erfundene Schranke lehnte gültige Aufrufe
 // unsichtbar vor dem Request ab (R4); dass negative Beträge abgelehnt werden, steht deshalb im
 // Beschreibungstext von `amount` und nicht in einer Prüfung.
 //
 // Klasse B mit `destructiveHint: false`: Es entsteht eine neue Buchungszeile, nichts wird
-// überschrieben. Die Warnung läuft über U3 und den `title` (Plan 3.3, 3.5).
+// überschrieben. Die Warnung läuft über U3 und den `title`.
 
 import { amountValue, boundedText, unwrapSchema } from "../../schema/primitives.js";
 import { costLocation, date, postingAccountNumber, vatKey } from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -101,7 +101,7 @@ export const bb_postings_create_free: ToolEntry = {
       schema: boundedText("Buchungstext der Zeile, höchstens 128 Zeichen.", 128),
     }),
     // Als Betrag markiert: Nur darüber findet der Request-Mapper die Umwandlung in die
-    // JSON-Zahl und Guard 5 die Betragsgrenze BB_MCP_MAX_AMOUNT (Plan 4.5).
+    // JSON-Zahl und Guard 5 die Betragsgrenze BB_MCP_MAX_AMOUNT.
     field({
       name: "amount",
       required: true,
@@ -134,7 +134,7 @@ export const bb_postings_create_free: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Erfolgsantwort `{ "success": true, "message": "" }`, ohne `data` und ohne die erzeugte
@@ -156,7 +156,7 @@ export const bb_postings_create_free: ToolEntry = {
   // Kein duplicateCheck: Ein fachlicher Schlüssel aus date, postingtext und amount ließe sich
   // zwar bilden, aber bb_postings_search nimmt keines dieser Felder als Filter an, und die
   // Nachschlage-Abfrage übergibt nur Felder, die das lesende Werkzeug führt. Ein Schlüssel,
-  // der sich nicht abfragen lässt, wäre keiner (Plan 2.1, Guard 6).
+  // der sich nicht abfragen lässt, wäre keiner (Guard 6).
   crossChecks: ["Q3"],
   invalidatesCache: [],
 };

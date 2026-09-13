@@ -1,4 +1,4 @@
-// Der Vertragslauf gegen die echte API (Plan 9.7, AP17). Aufruf: `pnpm run contract:read`.
+// Der Vertragslauf gegen die echte API. Aufruf: `pnpm run contract:read`.
 //
 // Er führt jeden der 15 LESENDEN Registereinträge genau einmal mit minimalen Parametern aus
 // und hält die Feldmenge und die JSON-Typen der Antwort gegen das `responseContract` des
@@ -8,11 +8,11 @@
 // stillschweigend zu fehlen.
 // Ausgegeben wird eine Liste neuer, fehlender und typveränderter Felder. Das ist die Antwort
 // auf die Frage, wie dieses Projekt merkt, dass die API sich geändert hat: Die
-// Spezifikationsdatei wird nicht gepflegt und ist nachweislich unvollständig (Plan 0.3 Befund
-// L4), die Wirklichkeit ist das, was zurückkommt.
+// Spezifikationsdatei wird nicht gepflegt und ist nachweislich unvollständig; die
+// Wirklichkeit ist das, was zurückkommt.
 //
 // **Die Grenze dieses Laufs ist seine eigentliche Substanz.** Er ist die einzige Ausnahme von
-// der absoluten Regel aus Plan 9.1 und läuft gegen eine echte, produktive Buchhaltung. Vier
+// der absoluten Regel und läuft gegen eine echte, produktive Buchhaltung. Vier
 // Festlegungen halten ihn lesend:
 //
 //  1. Die Erlaubnisliste wird AUS DEM REGISTER erzeugt (`toolClass === "R"`) und nirgends
@@ -36,7 +36,7 @@
 //
 // **Aufrufschalter:**
 //   --only bb_x,bb_y   nur diese Werkzeuge aufrufen. Für einen gezielten Nachlauf und für
-//                      Läufe unter einem knappen Minutenkontingent (Plan 5.4: 100 Anfragen
+//                      Läufe unter einem knappen Minutenkontingent (100 Anfragen
 //                      je Minute und Mandant, geteilt mit allem anderen).
 //   --list             den Ablaufplan ausgeben und nichts aufrufen. Setzt keinen Request ab.
 //   --help             diese Übersicht.
@@ -54,7 +54,7 @@ import type { ContractFieldType, ToolEntry } from "../src/registry/types.js";
 // ---------------------------------------------------------------------------------------
 
 /**
- * Node führt diese Datei direkt aus und entfernt die Typannotationen selbst (Plan 13.1,
+ * Node führt diese Datei direkt aus und entfernt die Typannotationen selbst (siehe
  * `scripts/generate.ts`). Was es NICHT tut: einen Import auf `./x.js` auf die daneben
  * liegende `x.ts` abbilden. Genau diese Schreibweise verlangt aber `verbatimModuleSyntax`
  * im gesamten `src/`-Baum, und ohne sie übersetzte das Projekt nicht.
@@ -130,7 +130,7 @@ export class ContractRunGuardError extends Error {
   constructor(toolName: string, specPath: string, requestPath: string, detail: string) {
     super(
       `Der Vertragslauf hat ${toolName} mit dem Pfad ${specPath} abgelehnt: ${detail} ` +
-        "Dieser Lauf ruft ausschließlich die lesenden Endpunkte des Registers auf (Plan 9.7).",
+        "Dieser Lauf ruft ausschließlich die lesenden Endpunkte des Registers auf.",
     );
     this.name = "ContractRunGuardError";
     this.toolName = toolName;
@@ -147,7 +147,7 @@ export interface AllowedEndpoint {
    * Der Vorrat gültiger Anfragepfade dieses Endpunkts. Bei den 13 literalen Pfaden ist das
    * genau einer, bei den beiden Pfadvorlagen jeder Pfad mit einem Ziffernsegment an der
    * Einsetzstelle — dieselbe Grenze, die `PATH_SEGMENT_PATTERN` in `src/mapping/path.ts`
-   * zieht (Plan 4.6 Regel 1).
+   * zieht.
    */
   readonly requestPattern: RegExp;
 }
@@ -162,7 +162,7 @@ function escapeForRegExp(value: string): string {
  *
  * Geschlüsselt wird nach dem unveränderten Spezifikationspfad, nicht nach dem gebauten Pfad.
  * Der gebaute Pfad trägt bei zwei der 15 Endpunkte eine Geschäftskennung und ist damit nicht
- * konstant (Plan 4.6 Regel 6).
+ * konstant.
  */
 export function buildAllowList(
   entries: readonly ToolEntry[],
@@ -386,7 +386,7 @@ export const PROBE_PLAN: readonly ProbeSpec[] = [
     blocked:
       "Der Endpunkt holt eine zuvor erzeugte Auswertung ab. Die Erzeugung läuft über " +
       "bb_reports_create_bwa und ist schreibend; dieser Lauf führt keinen schreibenden " +
-      "Aufruf aus (Plan 9.7, berichte.md 2.3).",
+      "Aufruf aus (berichte.md 2.3).",
   },
   {
     tool: "bb_reports_get_sums",
@@ -394,7 +394,7 @@ export const PROBE_PLAN: readonly ProbeSpec[] = [
     blocked:
       "Der Endpunkt holt eine zuvor erzeugte Auswertung ab. Die Erzeugung läuft über " +
       "bb_reports_create_sums und ist schreibend; dieser Lauf führt keinen schreibenden " +
-      "Aufruf aus (Plan 9.7, berichte.md 2.3).",
+      "Aufruf aus (berichte.md 2.3).",
   },
 ];
 
@@ -423,8 +423,9 @@ export function jsonKindOf(value: unknown): JsonKind {
  * Welche JSON-Typen ein Vertragstyp zulässt.
  *
  * `id-string` lässt String UND Zahl zu, und das ist kein Zugeständnis, sondern der gemessene
- * Befund L3: Dieselbe Kennung kommt bei `/receipts/*` als String und bei `/transactions/*`
- * als Zahl. Ausgehend ist sie immer ein String (Plan 7.4, S10); eingehend darf sie beides
+ * Befund L3 in docs/api/live-befunde.md: Dieselbe Kennung kommt bei `/receipts/*` als String
+ * und bei `/transactions/*`
+ * als Zahl. Ausgehend ist sie immer ein String; eingehend darf sie beides
  * sein, und ein Lauf, der die Zahl als Typänderung meldete, meldete jeden Lauf dasselbe.
  */
 const ALLOWED_TYPES: Readonly<Record<ContractFieldType, readonly JsonKind[]>> = {
@@ -488,10 +489,11 @@ export interface Deviation {
  *
  *  - Ein Feld, das in JEDER ausgewerteten Zeile `null` war, ist KEINE Typänderung. Sein Typ
  *    ist schlicht nicht beobachtbar; nicht gesetzte Felder kommen durchgehend als `null`
- *    (Befund L3). Der Lauf sagt das als Hinweis und behauptet nichts.
+ *    (Befund L3 in docs/api/live-befunde.md). Der Lauf sagt das als Hinweis und behauptet
+ *    nichts.
  *  - Ein `null`, wo der Vertragstyp keins nennt, ist ein Hinweis und KEIN Fehler.
  *    `coerceField` in `src/mapping/coerce.ts` lässt `null` bei jedem Vertragstyp durch und
- *    meldet es nicht (Plan 7.4: „nicht gesetzt" und „leer" sind fachlich verschieden). Der
+ *    meldet es nicht („nicht gesetzt" und „leer" sind fachlich verschieden). Der
  *    Hinweis sagt also nur, dass der Vertrag die Wirklichkeit genauer beschreiben könnte; zur
  *    Laufzeit entsteht aus dem `null` keine einzige `_contract_warning`. Deshalb zählt ein
  *    Hinweis auch nicht in den Rückgabewert des Laufs.
@@ -564,7 +566,7 @@ export function compareContract(
  * Die auszuwertenden Zeilen einer Antwort.
  *
  * Bei `container: "none"` liegen die Nutzdaten auf der obersten Ebene des Umschlags (die
- * drei Berichtsendpunkte, Plan 5.5). `success`, `message` und `rows` gehören zum Umschlag
+ * drei Berichtsendpunkte). `success`, `message` und `rows` gehören zum Umschlag
  * und nicht zum Antwortvertrag; sie bleiben draußen, sonst erzeugte jeder Lauf drei
  * „neu"-Einträge, die niemand nachträgt.
  */
@@ -639,7 +641,7 @@ export function parseArgs(argv: readonly string[]): CliOptions {
 }
 
 const HELP_TEXT = [
-  "Vertragslauf gegen die echte BuchhaltungsButler-API (Plan 9.7).",
+  "Vertragslauf gegen die echte BuchhaltungsButler-API.",
   "",
   "  pnpm run contract:read                      alle 15 lesenden Endpunkte",
   "  pnpm run contract:read -- --only bb_x,bb_y  nur diese Werkzeuge",
@@ -700,7 +702,7 @@ async function main(): Promise<number> {
   if (missingTools.length > 0) {
     console.error(
       `Der Ablaufplan kennt keinen Probeaufruf für ${missingTools.join(", ")}. ` +
-        "Jeder lesende Registereintrag braucht genau einen (Plan 9.7).",
+        "Jeder lesende Registereintrag braucht genau einen.",
     );
     return 2;
   }
@@ -737,7 +739,7 @@ async function main(): Promise<number> {
     console.error(
       "Der Vertragslauf braucht echte Zugangsdaten in BB_API_CLIENT, BB_API_SECRET und " +
         "BB_API_KEY. Ohne sie wird er nicht ausgeführt, und es wird kein Antwortvertrag " +
-        "geändert (Plan 9.7).",
+        "geändert.",
     );
     return 2;
   }
@@ -941,14 +943,14 @@ function harvestId(
 /** Schreibt den Bericht auf stdout und liefert den Rückgabewert des Laufs. */
 function report(results: readonly ProbeResult[]): number {
   const allDeviations = results.flatMap((result) => result.deviations);
-  // Der Rückgabewert hängt ausschließlich an neuen, fehlenden und typveränderten Feldern
-  // (Plan 9.7). Ein Hinweis ist Dokumentation und kein Befund: Er entsteht dort, wo ein Feld
-  // durchgehend null war, und `null` ist bei jedem Vertragstyp zulässig (Plan 7.4).
+  // Der Rückgabewert hängt ausschließlich an neuen, fehlenden und typveränderten Feldern.
+  // Ein Hinweis ist Dokumentation und kein Befund: Er entsteht dort, wo ein Feld
+  // durchgehend null war, und `null` ist bei jedem Vertragstyp zulässig.
   const reportableCount = allDeviations.filter((deviation) => deviation.kind !== "hinweis").length;
   const noteCount = allDeviations.length - reportableCount;
   const failedResults = results.filter((result) => result.status === "gescheitert");
 
-  console.log("Vertragslauf gegen die echte API, ausschließlich lesend (Plan 9.7).");
+  console.log("Vertragslauf gegen die echte API, ausschließlich lesend.");
   console.log(`Ausgewertet: ${results.length} Einträge.\n`);
 
   for (const result of results) {

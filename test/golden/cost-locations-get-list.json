@@ -1,6 +1,6 @@
 {
   "_herkunft": "Endpunkt /cost-locations/get | dokumentiert | Quelle: Spezifikation CostLocationsGet_Success und docs/api/stammdaten.md | Struktur gemessen, Geschäftsdaten erfunden",
-  "_zweck": "dass die Kostenstelle genau zwei Felder trägt und code zugleich der Identifikator ist (Umsetzungsplan 7.4, dritte Feinheit)",
+  "_zweck": "dass die Kostenstelle genau zwei Felder trägt und code zugleich der Identifikator ist (dritte Feinheit)",
   "http": {
     "status": 200,
     "contentType": "application/json; charset=utf-8"

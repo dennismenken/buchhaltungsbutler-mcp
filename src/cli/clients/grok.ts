@@ -1,5 +1,5 @@
 /**
- * Grok Build (xAI): `grok mcp add` als Unterprozess (Plan 8.3).
+ * Grok Build (xAI): `grok mcp add` als Unterprozess.
  *
  * Geprüft am 2026-09-12 an `grok mcp add --help`: `grok mcp add [OPTIONS] <NAME>
  * [COMMAND_OR_URL] [ARGS]...`, mit `-s, --scope <user|project>` und `-e, --env KEY=value`.

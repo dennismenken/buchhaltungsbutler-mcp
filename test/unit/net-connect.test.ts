@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { getMockAgent } from "../setup.js";
 
-// Selbsttest der Netzsperre aus Plan 9.1, Punkt 2. Ohne ihn wäre die Absicherung das Erste,
+// Selbsttest der Netzsperre. Ohne ihn wäre die Absicherung das Erste,
 // was bei einem Umbau stumm ausfällt: Ein Testlauf ohne aktive Sperre sähe genauso grün aus.
 
 describe("disableNetConnect() ist aktiv", () => {

@@ -1,15 +1,15 @@
 name: Abdrift
 
 # Wöchentlicher Lauf für die beiden Verschlechterungen, die sonst erst bei der nächsten
-# Veröffentlichung auffielen (Plan 9.10, AP21):
+# Veröffentlichung auffielen:
 #
 #   1. **Generatordifferenz.** src/generated/endpoints.ts und src/generated/errors.ts sind
 #      eingecheckt. Läuft der Generator und ändert etwas, passt der eingecheckte Stand nicht
 #      mehr zur Spezifikationsdatei oder zu package.json. Die CI prüft das je Änderung; dieser
 #      Lauf prüft es auch dann, wenn wochenlang niemand etwas ändert.
 #   2. **Größenbudget.** Das gepackte und das entpackte Tarball gegen die beiden Grenzen aus
-#      Plan 9.10. Der teuerste Fall ist eine Abhängigkeit, die der Bündler nach dist/
-#      einrechnet, statt sie als dependency zu belassen: Die Dateiliste bleibt dabei
+#      scripts/check-size.ts. Der teuerste Fall ist eine Abhängigkeit, die der Bündler nach
+#      dist/ einrechnet, statt sie als dependency zu belassen: Die Dateiliste bleibt dabei
 #      unverändert, und nur die Bytezahl verrät es.
 #
 # Dieser Workflow veröffentlicht nichts. Er baut, misst und meldet.
@@ -28,12 +28,12 @@ jobs:
   abdrift:
     runs-on: ubuntu-latest
     steps:
-      # SHA-Pinnung samt Tag-Kommentar wie in ci.yml, siehe die Begründung dort (Plan 13.3).
+      # SHA-Pinnung samt Tag-Kommentar wie in ci.yml, siehe die Begründung dort.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          # Die Untergrenze aus engines.node (Plan 13.1).
+          # Die Untergrenze aus engines.node in package.json.
           node-version: "22.19.0"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile

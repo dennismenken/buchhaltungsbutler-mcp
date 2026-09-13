@@ -11,7 +11,7 @@ import {
   type ApiMock,
 } from "../helpers/mock-api.js";
 
-// Der Verbindungstest und seine Deutung (Plan 8.2 Schritt 3, 8.1 `test`).
+// Der Verbindungstest und seine Deutung.
 //
 // Es geht kein Aufruf hinaus: `test/setup.ts` sperrt das Netz, und die Basis-URL des
 // Testlaufs ist nicht auflösbar. Die Antworten sind aus den Live-Befunden abgeleitet

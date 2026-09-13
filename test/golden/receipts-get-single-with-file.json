@@ -1,6 +1,6 @@
 {
-  "_herkunft": "Endpunkt /receipts/get/{wert} (Einzelabruf, interpolierter Pfad) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L1, L2 und L3, docs/api/live-befunde-orchestrator.md Befund 1 und 2 | Struktur gemessen, Geschäftsdaten erfunden | ACHTUNG: Der Zweig mit get_file ist NICHT VERIFIZIERT (Umsetzungsplan 0.3, \"Was aus diesen Aufrufen ausdrücklich nicht folgt\"). file_content und file_type sind aus der Spezifikation übernommen, der Inhalt ist erfunden",
-  "_zweck": "dass Base64 niemals im Textblock erscheint und im strukturierten Teil durch einen Platzhalter mit Größenangabe ersetzt wird, solange die Datei nicht angefordert war (Umsetzungsplan 7.6)",
+  "_herkunft": "Endpunkt /receipts/get/{wert} (Einzelabruf, interpolierter Pfad) | gemessen 2026-09-12 | Quelle: Live-Messung vom 2026-09-12, docs/api/live-befunde.md Befund 1 und 2 | Struktur gemessen, Geschäftsdaten erfunden | ACHTUNG: Der Zweig mit get_file ist NICHT VERIFIZIERT; es wurde kein Aufruf mit get_file ausgeführt. file_content und file_type sind aus der Spezifikation übernommen, der Inhalt ist erfunden",
+  "_zweck": "dass Base64 niemals im Textblock erscheint und im strukturierten Teil durch einen Platzhalter mit Größenangabe ersetzt wird, solange die Datei nicht angefordert war",
   "http": {
     "status": 200,
     "contentType": "application/json; charset=utf-8"

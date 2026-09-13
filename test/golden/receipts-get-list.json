@@ -1,5 +1,5 @@
 {
-  "_herkunft": "Endpunkt /receipts/get (Liste) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L2, L3 und L5 sowie docs/api/belege.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden | Feldmenge und Typen am 2026-09-12 in AP09 erneut live gegen die Produktivumgebung geprüft (lesend, 5 Aufrufe): Umschlag, Feldzahl und Typen stimmen (16 Felder, id_by_customer str, amount str, deleted str, delivery_date/due_date null, rows vorhanden)",
+  "_herkunft": "Endpunkt /receipts/get (Liste) | gemessen 2026-09-12 | Quelle: Live-Messung vom 2026-09-12 sowie docs/api/belege.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden | Feldmenge und Typen am 2026-09-12 erneut live gegen die Produktivumgebung geprüft (lesend, 5 Aufrufe): Umschlag, Feldzahl und Typen stimmen (16 Felder, id_by_customer str, amount str, deleted str, delivery_date/due_date null, rows vorhanden)",
   "_zweck": "die Listenform: 16 Felder, id_by_customer als String, amount als String mit Punkt, deleted als \"0\", delivery_date und due_date als null, rows gleich der Zeilenzahl",
   "http": {
     "status": 200,

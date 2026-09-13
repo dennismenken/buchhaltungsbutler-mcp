@@ -1,5 +1,5 @@
-// Der Paketprobelauf aus Plan 9.6 (AP16), vollständig: die sechs Schritte in der Reihenfolge
-// des Plans, dazu das Größenbudget aus 9.10, das der Plan ausdrücklich hier verankert.
+// Der Paketprobelauf, vollständig: die sechs Schritte in der vorgesehenen Reihenfolge,
+// dazu das Größenbudget des gepackten Pakets.
 //
 // **Aus dem Blickwinkel Verbreitung ist das der wichtigste Test des Projekts.** Er installiert
 // das Paket so, wie ein Nutzer es täte, und startet es so, wie ein Client es täte: über den
@@ -41,7 +41,7 @@ const PACKAGE_JSON = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")
   readonly bin: Readonly<Record<string, string>>;
 };
 
-/** Plan 9.6 Schritt 5: die Hälfte des Startzeitlimits der Codex CLI. */
+/** Die Hälfte des Startzeitlimits der Codex CLI. */
 const START_BUDGET_MS = 5_000;
 
 /** Zeit, die ein Unterprozessschritt insgesamt haben darf, bevor der Test ihn abbricht. */
@@ -75,7 +75,7 @@ function cleanEnv(extra: Record<string, string> = {}): Record<string, string> {
 beforeAll(() => {
   if (!existsSync(join(ROOT, "dist", "cli.js"))) {
     throw new Error(
-      "dist/cli.js fehlt. Der Paketprobelauf prüft das GEBAUTE Paket (Plan 9.6): zuerst " +
+      "dist/cli.js fehlt. Der Paketprobelauf prüft das GEBAUTE Paket: zuerst " +
         "pnpm build ausführen (oder, ohne die Generatoren, node_modules/.bin/tsdown).",
     );
   }
@@ -251,7 +251,7 @@ async function handshake(session: Session): Promise<Record<string, unknown>> {
   const answer = await session.request("initialize", {
     protocolVersion: "2025-11-25",
     capabilities: {},
-    clientInfo: { name: "ap16-probelauf", version: "0.0.0" },
+    clientInfo: { name: "probelauf", version: "0.0.0" },
   });
   session.notify("notifications/initialized");
   return (answer.result ?? {}) as Record<string, unknown>;
@@ -266,22 +266,22 @@ function textOf(result: Record<string, unknown>): string {
 
 /**
  * Die Zahl der Werkzeuge, die dieser Server anmeldet: die 54 Endpunktwerkzeuge und zusätzlich
- * die Bündelwerkzeuge der Gruppe `bundles` (N1, `docs/entwicklung/buendelwerkzeuge.md` 7).
+ * die Bündelwerkzeuge der Gruppe `bundles`.
  *
  * Gerechnet und nicht geschrieben: Eine feste Zahl an dieser Stelle wäre beim nächsten Eintrag
  * stumm falsch, und dieser Probelauf misst das GEBAUTE Paket.
  */
 const EXPECTED_TOOL_COUNT = TOOL_ENTRIES.length + BUNDLE_ENTRIES.length;
 
-describe("Paketprobelauf nach Plan 9.6", () => {
+describe("Paketprobelauf", () => {
   it("Schritt 1: das Archiv enthält nur dist, package.json, LICENSE und README", () => {
     expect(packedFiles.length).toBeGreaterThan(0);
 
-    // Plan 9.6 Schritt 1 verlangt den Abgleich gegen eine erwartete Liste. Sie steht hier als
+    // Schritt 1 verlangt den Abgleich gegen eine erwartete Liste. Sie steht hier als
     // **Regel** und nicht als Aufzählung von Dateinamen: Der Bündler vergibt seinen
     // Ausgabedateien Namen mit Inhaltsprüfsumme, und eine abgeschriebene Namensliste wäre nach
     // der nächsten Codeänderung falsch, ohne dass am Paket etwas verkehrt wäre. Geprüft wird
-    // deshalb genau das, was der Plan meint: welche Pfade überhaupt vorkommen dürfen.
+    // deshalb genau das, was gemeint ist: welche Pfade überhaupt vorkommen dürfen.
 
     const allowed = /^(dist\/|package\.json$|LICENSE|README)/;
     const unexpected = packedFiles.filter((path) => !allowed.test(path));
@@ -325,7 +325,7 @@ describe("Paketprobelauf nach Plan 9.6", () => {
     expect(output).toContain("NICHT KONFIGURIERT");
     expect(output).toContain("BB_API_CLIENT");
     expect(output).toContain("setup");
-    // Es wird gesagt, welcher Wert fehlt, und kein Wert angezeigt (Plan 6.5).
+    // Es wird gesagt, welcher Wert fehlt, und kein Wert angezeigt.
     expect(output).not.toContain("probelauf-secret");
   });
 
@@ -336,12 +336,12 @@ describe("Paketprobelauf nach Plan 9.6", () => {
     try {
       const initialized = await handshake(session);
 
-      // Die Ansage aus 6.5 Punkt 3 steht im ersten Block der instructions.
+      // Die Ansage „NICHT KONFIGURIERT" steht im ersten Block der instructions.
       //
-      // **Abweichung, benannt statt stillschweigend übergangen:** Plan 6.5 Punkt 3 sagt
+      // **Abweichung, benannt statt stillschweigend übergangen:** Die Vorgabe lautet
       // „Die instructions **beginnen** mit: NICHT KONFIGURIERT …", und der Kommentar an
       // NOT_CONFIGURED_INSTRUCTIONS_PREFIX in `config/resolve.ts` sagt dasselbe. Der Text
-      // aus AP14 beginnt stattdessen mit der Überschrift „ZUSTAND DIESES SERVERS" und
+      // beginnt stattdessen mit der Überschrift „ZUSTAND DIESES SERVERS" und
       // trägt die Ansage als erste Zeile darunter. Geprüft wird deshalb, dass sie im ersten
       // Block steht; die Abweichung ist an den Projektinhaber gemeldet und nicht hier
       // durch eine weichere Zusage verdeckt.
@@ -358,7 +358,7 @@ describe("Paketprobelauf nach Plan 9.6", () => {
       };
       expect(listed.tools).toHaveLength(EXPECTED_TOOL_COUNT);
 
-      // **Jeder** Aufruf, nicht ein Beispiel: Der letzte Satz aus 6.5 verspricht, dass alle
+      // **Jeder** Aufruf, nicht ein Beispiel: Der letzte Satz verspricht, dass alle
       // auf dieselbe Weise scheitern, und genau das wird hier nachgezählt. Die
       // Bündelwerkzeuge gehören dazu: Sie laufen durch denselben Guard 1.
       for (const tool of listed.tools) {
@@ -406,7 +406,7 @@ describe("Paketprobelauf nach Plan 9.6", () => {
       ).not.toContain("NICHT KONFIGURIERT");
       expect(listed.tools).toHaveLength(EXPECTED_TOOL_COUNT);
 
-      // Plan 9.6 Schritt 6: Die Startzeit wird gemessen und als **Zahl** ins Protokoll
+      // Schritt 6: Die Startzeit wird gemessen und als **Zahl** ins Protokoll
       // geschrieben, damit sie über die Versionen hinweg verfolgbar ist. console.log
       // unterschlägt vitest im grünen Lauf; der Strom nicht.
       // Die Zeile geht nach stderr und nicht nach stdout: stdout ist in diesem Projekt dem
@@ -414,7 +414,7 @@ describe("Paketprobelauf nach Plan 9.6", () => {
       // Protokoll eines Laufs stehen beide Ströme nebeneinander.
       process.stderr.write(
         `\nPaketprobelauf: Startzeit bis zur Antwort auf tools/list: ${String(startTimeMs)} ms ` +
-          `(Budget ${String(START_BUDGET_MS)} ms, Plan 9.6 Schritt 5 und 6)\n`,
+          `(Budget ${String(START_BUDGET_MS)} ms)\n`,
       );
 
       expect(
@@ -427,8 +427,8 @@ describe("Paketprobelauf nach Plan 9.6", () => {
     }
   });
 
-  it("Das Größenbudget aus 9.10 ist eingehalten", { timeout: STEP_TIMEOUT_MS }, () => {
-    // Plan 9.10, letzter Absatz: Der Lauf gehört in den Paketprobelauf. Er misst dasselbe
+  it("Das Größenbudget ist eingehalten", { timeout: STEP_TIMEOUT_MS }, () => {
+    // Der Lauf gehört in den Paketprobelauf. Er misst dasselbe
     // Paket, das oben gepackt wurde, und endet bei Überschreitung mit Rückgabewert 1.
     const result = spawnSync(process.execPath, [join(ROOT, "scripts", "check-size.ts")], {
       cwd: ROOT,

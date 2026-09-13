@@ -7,9 +7,11 @@ Zielgruppe sind Implementierungs-Agenten, die daraus MCP-Tools bauen.
 
 | Quelle | Art | Abrufdatum |
 | --- | --- | --- |
-| `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json` | Offizielle Swagger-2.0-Beschreibung, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json` | 2026-09-12 |
+| `docs/openapi/buchhaltungsbutler-v1.json` | Offizielle Swagger-2.0-Beschreibung, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json` | 2026-09-12 |
 | Eigene Live-Aufrufe gegen `https://webapp.buchhaltungsbutler.de/api/v1` | Echte Produktivinstanz des Nutzers, ausschließlich lesende Endpunkte | 2026-09-12 |
-| Vom Orchestrator vorab verifizierte Rahmenangaben (Basis-URL, Auth, Envelope, Rate Limit) | Live-Antwort | 2026-09-12 |
+| `docs/api/grundlagen.md`, Abschnitte 1.2, 2 und 4 — Rahmenangaben (Basis-URL, Auth, Envelope) mit ihrer jeweils eigenen Quellenkennzeichnung | Querschnittsdossier dieses Repositoriums | 2026-09-12 |
+| Eigene lesende Nachmessung eben dieser Rahmenangaben, Protokoll in `docs/api/grundlagen.md`, Abschnitt 2.5 | Eigener Test | 2026-09-13 |
+| `docs/api/grundlagen.md`, Abschnitt 3.1 — Rate Limit, wörtlich zitiert aus der Anbieterdokumentation und **nicht selbst gemessen** | Fremdangabe | 2026-09-12 |
 
 **Warnung zur Spezifikation.** Die vorliegende Swagger-Datei ist kein valides Swagger 2.0. Body-Felder stehen als
 einzelne Parametereinträge mit `"in": "body"` und eigenem `"type"`, statt gebündelt in einem gemeinsamen
@@ -47,7 +49,12 @@ sperrt eine bereits bestätigte Buchung das Lösen der Beleg-Zuordnung (siehe Fe
 
 ## 2. Gemeinsame Grundlagen
 
-Quelle: vom Orchestrator live verifiziert am 2026-09-12, zusätzlich durch eigene Aufrufe bestätigt.
+Quelle: Basis-URL, HTTP-Methode, Content-Type `application/json`, Authentifizierung, Mandantenauswahl und
+Antwortumschlag sind eigene lesende
+Messungen — am 2026-09-12 und erneut am **2026-09-13**; das Protokoll der Nachmessung mit Aufrufform, HTTP-Status
+und wörtlichem Antwortkörper steht in `docs/api/grundlagen.md`, Abschnitt 2.5. Das Rate Limit ist **nicht selbst
+gemessen**, sondern eine wörtlich zitierte Angabe der Anbieterdokumentation (`docs/api/grundlagen.md`,
+Abschnitt 3.1); das Zusatzlimit von `addBatch` steht als `description` in der Spezifikationsdatei.
 
 | Aspekt | Wert |
 | --- | --- |
@@ -358,18 +365,18 @@ beschriebenen Annahme.
 
 ### 4.5 Live-Verifikation: der literale Pfad existiert nicht, der Wert gehört ins Pfadsegment
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 0.3, Befund L1 und in Abschnitt 4.6.** Die beiden Messungen unten
-> bleiben unverändert richtig: Der **literale** Pfad `/transactions/get/id_by_customer` ist
-> nicht geroutet und antwortet mit einer HTML-Seite. Falsch war die daraus gezogene Folgerung,
-> der Einzelabruf sei unbenutzbar. Das Segment `id_by_customer` ist ein **Platzhalter für den
-> Wert**: `POST /transactions/get/<wert>` mit dem Body `{"api_key": "…"}` antwortet gemessen am
-> 2026-09-12 mit **HTTP 200** und einem vollständigen Transaktionsdatensatz einschließlich
-> `account`, `currency`, `account_number`, `bank_code`, `bank_name`, `type` und `booking_text`.
-> Der Wert ist vor dem Einsetzen zu kodieren; ein Body-Feld `id_by_customer` wird nicht
-> gesendet. **Die unten beschriebene Umgehung über die exklusiven Kennungsgrenzen
-> `id_by_customer_from` und `id_by_customer_to` wird damit nicht gebraucht** und ist nicht
-> umzusetzen. Vollständige Messung: `docs/api/live-befunde-orchestrator.md`, Befund 1.
+> **Nachgezogen am 2026-09-13 nach eigener lesender Messung vom 2026-09-12.** Die beiden
+> Messungen unten bleiben unverändert richtig: Der **literale** Pfad
+> `/transactions/get/id_by_customer` ist nicht geroutet und antwortet mit einer HTML-Seite.
+> Falsch war die daraus gezogene Folgerung, der Einzelabruf sei unbenutzbar. Das Segment
+> `id_by_customer` ist ein **Platzhalter für den Wert**: `POST /transactions/get/<wert>` mit dem
+> Body `{"api_key": "…"}` antwortet gemessen am 2026-09-12 mit **HTTP 200** und einem
+> vollständigen Transaktionsdatensatz einschließlich `account`, `currency`, `account_number`,
+> `bank_code`, `bank_name`, `type` und `booking_text`. Der Wert ist vor dem Einsetzen zu
+> kodieren; ein Body-Feld `id_by_customer` wird nicht gesendet. **Die unten beschriebene
+> Umgehung über die exklusiven Kennungsgrenzen `id_by_customer_from` und `id_by_customer_to`
+> wird damit nicht gebraucht** und ist nicht umzusetzen. Vollständige Messung:
+> `docs/api/live-befunde.md`, Befund 1.
 
 **Das ist das wichtigste Ergebnis dieses Dossiers.**
 
@@ -456,17 +463,20 @@ vorsichtig testen und Fehlercode 26 erwarten.
 Ohne `currency`-Angabe ist in der Spezifikation nicht beschrieben, welche Währung angenommen wird. Plausibel ist die
 Kontowährung, da die Betragsbeschreibung von „in the account's currency" spricht. **Annahme, nicht verifiziert.**
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in den Abschnitten 4.3 und 4.5.** Umgesetzt wird an `/transactions/add` **und** an
-> `/transactions/addBatch` dasselbe `enum` aus **48** Codes, nämlich der Vereinigung der 47
-> Codes dieses Endpunkts mit dem zusätzlichen `RSD` der Definition `Transaction`. An **beiden**
-> Werkzeugen ist das Feld **optional**. Begründung der Vereinigung: Die Spezifikation erklärt
-> Stapelelement und Einzelendpunkt wörtlich für gleich; ein Werkzeugpaar, das einen Wert einzeln
-> erlaubt und im Stapel verbietet, wäre eine erfundene Unterscheidung. Ob die API `RSD` an
-> `/transactions/add` tatsächlich annimmt, bleibt **nicht verifiziert**; ein abgelehnter Request
-> mit sprechender Meldung ist der billigere Irrtum als eine unsichtbare Ablehnung vor dem
-> Request. Die Werkzeugbeschreibung nennt zusätzlich, dass ohne Angabe die Währung des
-> Zahlungskontos gilt und dass **die API diese Währung an keinem Endpunkt preisgibt**.
+> **Nachgezogen am 2026-09-13 nach maschineller Auszählung der Spezifikation vom 2026-09-12.**
+> Umgesetzt wird an `/transactions/add` **und** an `/transactions/addBatch` dasselbe `enum` aus
+> **48** Codes, nämlich der Vereinigung der 47 Codes dieses Endpunkts mit dem zusätzlichen `RSD`
+> der Definition `Transaction`. An **beiden** Werkzeugen ist das Feld **optional**. Begründung
+> der Vereinigung: Die Spezifikation erklärt Stapelelement und Einzelendpunkt wörtlich für
+> gleich; ein Werkzeugpaar, das einen Wert einzeln erlaubt und im Stapel verbietet, wäre eine
+> erfundene Unterscheidung. Ob die API `RSD` an `/transactions/add` tatsächlich annimmt, bleibt
+> **nicht verifiziert**; ein abgelehnter Request mit sprechender Meldung ist der billigere
+> Irrtum als eine unsichtbare Ablehnung vor dem Request. **Optional bleibt das Feld mit
+> Absicht:** Die Spezifikation beschreibt `amount` an diesem Endpunkt wörtlich als Betrag „in
+> the account's currency", und **kein Endpunkt der API gibt die Währung eines Zahlungskontos
+> preis** — `/accounts/get` liefert je Konto nur `name` und `postingaccount_number`. Ein
+> Pflichtfeld zwänge den Aufrufer damit zum Raten, und eine geratene Fremdwährungszahlung lässt
+> sich über die API nicht mehr löschen. Genau diesen Sachverhalt nennt die Werkzeugbeschreibung.
 
 ### 5.2 Erfolgsantwort
 
@@ -599,12 +609,11 @@ Pflichtfelder laut `required` der Definition: `account`, `to_from`, `amount`, `b
 | `payment_reference` | string | nein | Zahlungsreferenz, löst automatische Belegzuordnung aus | string |
 | `currency` | string | nein | Währung; die Liste dieser Definition enthält zusätzlich **RSD** gegenüber der Liste bei `/transactions/add` | ISO-4217-Code |
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in den Abschnitten 4.3 und 4.5.** Für `currency` gilt hier dasselbe wie am
-> Einzelendpunkt: **ein** `enum` aus **48** Codes an beiden Werkzeugen, beide Male **optional**,
-> mit wortgleicher Beschreibung. Der zusätzlich in dieser Definition stehende Ein-Wert-`enum`
-> `["EUR"]` widerspricht dem Beschreibungstext derselben Eigenschaft und wird **verworfen**.
-> Einzelheiten in Abschnitt 5.1.
+> **Nachgezogen am 2026-09-13 nach maschineller Auszählung der Spezifikation vom 2026-09-12.**
+> Für `currency` gilt hier dasselbe wie am Einzelendpunkt: **ein** `enum` aus **48** Codes an
+> beiden Werkzeugen, beide Male **optional**, mit wortgleicher Beschreibung. Der zusätzlich in
+> dieser Definition stehende Ein-Wert-`enum` `["EUR"]` widerspricht dem Beschreibungstext
+> derselben Eigenschaft und wird **verworfen**. Einzelheiten in Abschnitt 5.1.
 
 Beispielobjekt aus der Spezifikation (Feld `example` der Definition `Transaction`):
 

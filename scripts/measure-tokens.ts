@@ -1,14 +1,14 @@
-// Die Tokenmessung aus Plan 4.10 (AP14): `pnpm measure-tokens`.
+// Die Tokenmessung des Kontextbudgets: `pnpm measure-tokens`.
 //
-// Gemessen wird mit dem echten Tokenizer aus Plan 13.9 (`gpt-tokenizer`, exakt auf 4.0.0
+// Gemessen wird mit dem festgelegten Tokenizer (`gpt-tokenizer`, exakt auf 4.0.0
 // gepinnt, Kodierung `o200k_base`) und niemals über die Konstante CHARS_PER_TOKEN. Ein
 // Schätzfaktor, der sich selbst bestätigt, misst nichts.
 //
 // **Dieses Skript misst und urteilt nicht.** Erzwungen wird in P11
 // (`test/registry/token-budget.test.ts`); es hier ein zweites Mal zu erzwingen hieße, zwei
 // Stellen zu haben, an denen der Bau abbrechen kann. Reißt das Budget, schreibt das Skript das
-// in den Befund und nennt die Reihenfolge der Gegenmaßnahmen aus 4.10; die Budgetgrenzen
-// selbst ändert es nicht (Plan 12, Streitfrage S4).
+// in den Bericht und nennt die Reihenfolge der Gegenmaßnahmen; die Budgetgrenzen selbst ändert
+// es nicht — sie anzuheben ist eine Entscheidung des Projektinhabers.
 //
 // TOTAL_TOOL_DEFINITION_TOKEN_BUDGET steht seit der Entscheidung des Projektinhabers vom
 // 2026-09-13 auf 49.000 Token, und P11 bricht wieder hart daran ab. Dieses Skript nennt die
@@ -52,14 +52,14 @@ function filePath(relativePath: string): string {
 }
 
 /**
- * Der erzeugte Registerindex wird nicht eingecheckt (Plan 4.2). Ohne ihn bricht der erste
+ * Der erzeugte Registerindex wird nicht eingecheckt. Ohne ihn bricht der erste
  * dynamische Import mit einer Meldung über einen fehlenden Modulpfad ab, und die sagt nicht,
  * was zu tun ist. Deshalb diese Prüfung zuerst.
  */
 const REGISTRY_INDEX = "src/registry/index.generated.ts";
 if (!existsSync(filePath(REGISTRY_INDEX))) {
   console.error(
-    `${REGISTRY_INDEX} fehlt. Die Datei wird erzeugt und nicht eingecheckt (Plan 4.2): ` +
+    `${REGISTRY_INDEX} fehlt. Die Datei wird erzeugt und nicht eingecheckt: ` +
       "zuerst pnpm generate ausführen, dann pnpm measure-tokens.",
   );
   process.exit(1);
@@ -152,8 +152,8 @@ function renderedDefinition(entry: ToolEntry): {
 /**
  * Die Summe aller `description`-Texte in einem JSON Schema, auf jeder Schachtelungstiefe.
  *
- * Damit wird der Posten „Parametereinträge mit Beschreibungen" aus Plan 4.10 so gemessen, wie
- * er dort gemeint ist: als Text und nicht einschließlich der Schemastruktur, die dort zum
+ * Damit wird der Posten „Parametereinträge mit Beschreibungen" der Vorkalkulation so gemessen,
+ * wie er dort gemeint ist: als Text und nicht einschließlich der Schemastruktur, die dort zum
  * Posten „Schemarümpfe" gehört. Ohne diese Trennung vergleicht die Tabelle unten zwei
  * verschiedene Dinge.
  */
@@ -228,7 +228,7 @@ const bundleTools: readonly (Measurement & { readonly name: string })[] =
   }));
 
 // ---------------------------------------------------------------------------------------
-// Die Messung je Werkzeuggruppe (N5)
+// Die Messung je Werkzeuggruppe
 // ---------------------------------------------------------------------------------------
 
 /**
@@ -313,7 +313,7 @@ const p11 = await p11Definitions();
 // ---------------------------------------------------------------------------------------
 
 /**
- * Zwei Zustände, weil der Servertext vom Schalterzustand abhängt (Plan 6.7 Punkt 1): der
+ * Zwei Zustände, weil der Servertext den Zustand der Schalter im Kopf mitführt: der
  * Auslieferungszustand und der größtmögliche, in dem jede zusätzliche Zeile erscheint. Das
  * Budget muss in beiden halten, und nur der zweite beweist das.
  *
@@ -392,16 +392,16 @@ const totalOutputChars = tools.reduce((sum, tool) => sum + tool.outputChars, 0);
 const totalOutputTextChars = tools.reduce((sum, tool) => sum + tool.outputTextChars, 0);
 /**
  * Der Rest: Name, Titel, Annotationen, die Schlüssel und Anführungszeichen des JSON und die
- * Struktur des Eingabeschemas ohne seine Beschreibungstexte. In Plan 4.10 ist das der Posten
- * „Name, Titel, Annotationen, Schemarümpfe".
+ * Struktur des Eingabeschemas ohne seine Beschreibungstexte. In der Vorkalkulation ist das der
+ * Posten „Name, Titel, Annotationen, Schemarümpfe".
  */
 const remainderChars =
   definitions.chars - totalDescriptionChars - totalInputTextChars - totalOutputChars;
 
-/** Die Endabrechnung aus Plan 4.10 gegen die Messung, Posten für Posten. */
+/** Die Endabrechnung der Vorkalkulation gegen die Messung, Posten für Posten. */
 function lineItemTable(): string {
   const lines = [
-    "| Posten | angesetzt in 4.10 (Zeichen) | gemessen (Zeichen) | Abweichung |",
+    "| Posten | vorgerechnet (Zeichen) | gemessen (Zeichen) | Abweichung |",
     "| --- | --- | --- | --- |",
   ];
   const lineItems: [string, number, number][] = [
@@ -478,7 +478,7 @@ function prose(...parts: readonly string[]): string {
   return wrap(parts.join(" "));
 }
 
-/** Abschnitt 2: die Messtabelle. */
+/** Abschnitt 2 des erzeugten Berichts (REPORT_FILE): die Messtabelle. */
 function measurementTable(): string {
   const rows = [
     "| Größe | Zeichen | Token | Zeichen je Token |",
@@ -494,7 +494,7 @@ function measurementTable(): string {
   return rows.join("\n");
 }
 
-/** Abschnitt 4: das Urteil über die beiden Budgets, als Folge von Absätzen. */
+/** Abschnitt 4 des erzeugten Berichts (REPORT_FILE): das Urteil über die beiden Budgets. */
 function budgetVerdict(): string[] {
   const paragraphs: string[] = [];
 
@@ -540,15 +540,17 @@ function budgetVerdict(): string[] {
   paragraphs.push(
     prose(
       "**Woher die Grenze von",
-      `${de(budget.TOTAL_TOOL_DEFINITION_TOKEN_BUDGET)} Token kommt.** Plan 4.10 hatte 32.000`,
-      "vorgerechnet, und dieser Wert war gerissen: Die Messung vom 2026-09-12 kam auf 48.305",
-      "Token, ein Überschuss von 16.305. Die Reihenfolge der Gegenmaßnahmen aus 4.10 kann diese",
+      `${de(budget.TOTAL_TOOL_DEFINITION_TOKEN_BUDGET)} Token kommt.** Vorgerechnet waren`,
+      "32.000, und dieser Wert war gerissen: Die Messung vom 2026-09-12 kam auf 48.305",
+      "Token, ein Überschuss von 16.305. Die Reihenfolge der Gegenmaßnahmen kann diese",
       "Lücke nicht schließen, und das ist ausgerechnet und nicht behauptet: 16.305 Token sind",
       "rund 66.700 Zeichen, während alle 54 Werkzeugbeschreibungen zusammen nur 32.654 Zeichen",
       "lang sind. Selbst wenn jede von ihnen vollständig in die Resources wanderte, wäre das",
       "weniger als die Hälfte. Übrig bliebe allein der Posten Parameterbeschreibungen mit 67.161",
-      "Zeichen, der damit praktisch ganz entfallen müsste; das widerspricht E6, so wie Werkzeuge",
-      "zu streichen oder zusammenzulegen E1 widerspricht. Der Projektinhaber hat das",
+      "Zeichen, der damit praktisch ganz entfallen müsste — das verstößt gegen die Vorgabe, dass",
+      "jedes Feld eines Endpunkts genau einmal im Schema erscheint, so wie Werkzeuge zu streichen",
+      "oder zusammenzulegen gegen die Vorgabe verstößt, genau ein Werkzeug je Endpunkt",
+      "auszuliefern. Der Projektinhaber hat das",
       "Budget deshalb am 2026-09-13 ausdrücklich auf den gemessenen Stand zuzüglich 695 Token",
       "Luft angehoben. Die Entscheidung steht in `CHANGELOG.md`, die Begründung in",
       "`src/registry/budget.ts`, und P11 bricht seither wieder hart an der Grenze ab statt nur",
@@ -568,11 +570,12 @@ function budgetVerdict(): string[] {
   if (overBudget || p11OverBudget) {
     paragraphs.push(
       prose(
-        "**Was daraus folgt, verbindlich in dieser Reihenfolge (Plan 4.10):** erstens die",
+        "**Was daraus folgt, verbindlich in dieser Reihenfolge:** erstens die",
         "Sparmaßnahmen S1 bis S6 nachziehen, wo sie noch nicht vollständig umgesetzt sind;",
         "zweitens die Beschreibungen der Stufe 3 auf die untere Wortgrenze kürzen; drittens",
-        "weitere Inhalte aus den Beschreibungen in die Resources aus 7.7 verschieben. Werkzeuge",
-        "zu streichen oder zusammenzulegen ist kein Hebel, E1 steht dem entgegen; das Budget",
+        "weitere Inhalte aus den Beschreibungen in die MCP-Resources verschieben. Werkzeuge zu",
+        "streichen oder zusammenzulegen ist kein Hebel — ausgeliefert wird genau ein Werkzeug je",
+        "Endpunkt; das Budget",
         "stillschweigend anzuheben ebenfalls nicht. Reißt es nach allen drei Schritten immer",
         "noch, ist das ein Befund für den Projektinhaber und keine Zahl, die ein",
         "Implementierungs-Agent ändert.",
@@ -584,16 +587,16 @@ function budgetVerdict(): string[] {
 }
 
 const blocks: string[] = [
-  "# Befund: das Tokenbudget, gemessen",
+  "# Das Tokenbudget, gemessen",
 
   prose(
     `**Stand: ${new Date().toISOString().slice(0, 10)} (UTC).** Diese Datei wird vollständig von`,
-    "`scripts/measure-tokens.ts` erzeugt (`pnpm measure-tokens`, Arbeitspaket AP14). Von Hand",
-    "geänderte Zahlen sind beim nächsten Lauf wieder weg.",
+    "`scripts/measure-tokens.ts` erzeugt (`pnpm measure-tokens`). Von Hand geänderte Zahlen",
+    "sind beim nächsten Lauf wieder weg.",
   ),
 
   prose(
-    `Gemessen mit \`gpt-tokenizer@${tokenizerVersion()}\`, Kodierung \`o200k_base\` (Plan 13.9),`,
+    `Gemessen mit \`gpt-tokenizer@${tokenizerVersion()}\`, Kodierung \`o200k_base\`,`,
     `unter Node ${process.versions.node}. Es wurde nichts nachgeladen und kein Netz benutzt.`,
   ),
 
@@ -640,8 +643,8 @@ const blocks: string[] = [
   "## 3. Das Zeichen-je-Token-Verhältnis",
 
   prose(
-    `**Gemessen: ${deRatio(measuredRatio)} Zeichen je Token.** Plan 4.10 hatte **3,2**`,
-    "angesetzt und ausdrücklich als Annahme gekennzeichnet. Die Annahme lag zu niedrig: Eine",
+    `**Gemessen: ${deRatio(measuredRatio)} Zeichen je Token.** Vorgerechnet und ausdrücklich`,
+    "als Annahme gekennzeichnet waren **3,2**. Die Annahme lag zu niedrig: Eine",
     "Werkzeugdefinition ist zum größeren Teil JSON-Struktur mit englischen Feldnamen, und die",
     "zerfällt in wenige, lange Token; der deutsche Fließtext drumherum kommt in `o200k_base`",
     `ebenfalls auf rund vier Zeichen je Token, nämlich auf ${deRatio(ratio(instructionsDefault))}`,
@@ -652,15 +655,16 @@ const blocks: string[] = [
     "In `src/registry/budget.ts` steht `CHARS_PER_TOKEN` deshalb jetzt auf",
     `**${deExact(budget.CHARS_PER_TOKEN)}** statt auf 3,2. Der Wert ist gegenüber der Messung`,
     "**abgerundet**, und zwar mit Absicht: Die Konstante wird zur Laufzeit nur in",
-    "`response/truncate.ts` (7.6) und in `doctor` (8.4) benutzt, und dort schätzt ein zu",
-    "kleiner Faktor die Tokenzahl zu hoch, kürzt also eher zu früh. Plan 7.6 nennt genau diese",
-    "Richtung die harmlose.",
+    "der Antwortkürzung und in `doctor` benutzt, und dort schätzt ein zu kleiner Faktor die",
+    "Tokenzahl zu hoch, kürzt also eher zu früh. Das ist die harmlose Richtung: Eine Schätzung,",
+    "die zu früh kürzt, kostet Zeilen; eine, die zu spät kürzt, sprengt das Kontextfenster des",
+    "Clients.",
   ),
 
   prose(
     "**Was die Zahl nicht sagt:** Sie ist an Werkzeugdefinitionen und am Servertext gemessen,",
     "nicht an API-Antworten. Antwortzeilen bestehen aus Kennungen, Datumswerten und Beträgen,",
-    "die schlechter tokenisieren als Fließtext. Die Kürzung in 7.6 rechnet also mit einem",
+    "die schlechter tokenisieren als Fließtext. Die Antwortkürzung rechnet also mit einem",
     "Faktor, der für ihren eigenen Gegenstand eher zu groß ist — auch deshalb die Abrundung.",
   ),
 
@@ -671,7 +675,7 @@ const blocks: string[] = [
   "## 4a. Die Werkzeugdefinitionen je Gruppe",
 
   prose(
-    "Der Gruppenschalter `BB_MCP_TOOL_GROUPS` (N5) schaltet Werkzeuge gruppenweise ab. Diese",
+    "Der Gruppenschalter `BB_MCP_TOOL_GROUPS` schaltet Werkzeuge gruppenweise ab. Diese",
     "Tabelle sagt, was eine Gruppe kostet und was ihr Abschalten spart. Jede Definition ist",
     "einzeln gemessen und danach addiert; die Summe einer Teilmenge ist damit exakt und keine",
     'Hochrechnung. Die Spalte „eingecheckt" ist die Zahl in `src/registry/groups.ts`, aus der',
@@ -726,12 +730,28 @@ const blocks: string[] = [
               " wird sie nicht.",
       ),
 
-  "## 5. Die Rechnung aus Plan 4.10, nachgeprüft",
+  "## 5. Die Vorkalkulation, nachgeprüft",
+
+  prose(
+    "Die Vorkalkulation rechnete eine Rohschätzung ohne Sparmaßnahmen gegen **sechs**",
+    "Sparmaßnahmen, auf die sich die Tabelle unten mit S1 bis S6 bezieht. Sie lauten:",
+  ),
+
+  [
+    "| # | Sparmaßnahme |",
+    "| --- | --- |",
+    "| S1 | Querschnittsregeln stehen einmal in den `instructions` und nicht in jedem Parametertext |",
+    "| S2 | Beschreibungsbudget nach Stufen: 900, 700 beziehungsweise 480 Zeichen |",
+    "| S3 | Enum statt Prosa, vor allem bei Umsatzsteuerschlüsseln, Währungen, `order` und `type` |",
+    "| S4 | Kurzmuster für die Adress- und Kontaktfelder, höchstens 80 Zeichen je Feld |",
+    "| S5 | Eine Positionsliste statt paralleler Arrays an den Werkzeugen mit Positionen |",
+    "| S6 | `outputSchema` ohne Feldbeschreibungen; Feldnamen und Typen genügen |",
+  ].join("\n"),
 
   lineItemTable(),
 
   prose(
-    'Die Spalte „angesetzt" ist die Endabrechnung aus Plan 4.10 nach den sechs',
+    'Die Spalte „vorgerechnet" ist die Endabrechnung der Vorkalkulation nach den sechs',
     "Sparmaßnahmen. Gemessen wird in derselben Abgrenzung wie dort:",
     '„Parameterbeschreibungen" sind die Summe aller `description`-Texte im Eingabeschema, auf',
     "jeder Schachtelungstiefe, **ohne** die Schemastruktur drumherum; diese Struktur steckt in",
@@ -745,12 +765,12 @@ const blocks: string[] = [
     `${de(totalOutputTextChars)} Zeichen Feldbeschreibung in allen 54 Ausgabeschemata zusammen.`,
     "Größer als angesetzt ist das Schema, weil es den Umschlag dieses Servers mitbeschreibt:",
     "`endpoint`, die Paginierungstatsachen, `_contract_warnings`, die Ganzzahl-Cent-Felder und",
-    "bei schreibenden Werkzeugen den aufgelösten Datensatz samt Rückweg. Das sind Zusagen aus",
-    "7.1 und 7.6, keine Prosa.",
+    "bei schreibenden Werkzeugen den aufgelösten Datensatz samt Rückweg. Das sind Zusagen des",
+    "Antwortvertrags, keine Prosa.",
   ),
 
   prose(
-    '**Zweitens:** Die Zeile „Schemarümpfe" war in 4.10 mit 97 Zeichen je Werkzeug angesetzt.',
+    '**Zweitens:** Die Zeile „Schemarümpfe" war mit 97 Zeichen je Werkzeug angesetzt.',
     "Ein JSON Schema Draft 2020-12 über im Schnitt sechs Parameter, mit Typen, Grenzen, Enums",
     "und den Elementschemata der Positionslisten, ist um ein Vielfaches größer. Beide",
     "Abweichungen sind Rechenfehler der Schätzung und keine Abweichung von einer Vorgabe. Der",
@@ -770,13 +790,13 @@ const blocks: string[] = [
   ].join("\n"),
 
   prose(
-    "Die Stufe ist das Beschreibungsbudget aus Plan 4.9 (900, 700 beziehungsweise 480",
-    "Zeichen). Sie begrenzt allein die Werkzeugbeschreibung; der größere Teil einer teuren",
+    "Die Stufe ist das Beschreibungsbudget: 900, 700 beziehungsweise 480",
+    "Zeichen. Sie begrenzt allein die Werkzeugbeschreibung; der größere Teil einer teuren",
     "Definition ist das Eingabeschema mit seinen Parametertexten.",
   ),
 ];
 
-const REPORT_FILE = "docs/entwicklung/befund-tokenbudget.md";
+const REPORT_FILE = "docs/entwicklung/tokenbudget.md";
 writeFileSync(filePath(REPORT_FILE), `${blocks.join("\n\n")}\n`, "utf8");
 
 console.log(
@@ -821,8 +841,8 @@ if (staleGroups.length > 0) {
 
 if (overBudget || p11OverBudget || instructionsOverBudget || bundleOverBudget) {
   console.error(
-    "\nEin Budget ist gerissen. Die Reihenfolge der Gegenmaßnahmen steht im Bericht und in " +
-      "Plan 4.10. Erzwungen wird in den Tests und nicht in diesem Skript: die Definitionen " +
+    "\nEin Budget ist gerissen. Die Reihenfolge der Gegenmaßnahmen steht im Bericht. " +
+      "Erzwungen wird in den Tests und nicht in diesem Skript: die Definitionen " +
       "und die instructions in P11 (test/registry/token-budget.test.ts), die Bündelgruppe in " +
       "test/bundles/read-bundles-contract.test.ts. P11 bricht seit dem " +
       "2026-09-13 wieder hart an der Grenze ab. Die Grenze anzuheben ist keine Nebenwirkung " +

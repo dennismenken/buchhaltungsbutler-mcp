@@ -1,6 +1,6 @@
 {
-  "_herkunft": "Endpunkt /receipts/get (Liste) | gemessen 2026-09-12 | Quelle: Umsetzungsplan 0.3 Befund L2, L3 und L5 sowie docs/api/belege.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden",
-  "_zweck": "die volle Seite: drei Zeilen bei limit=3, also rows gleich limit. Grundlage der ersten Bestandszeile aus Umsetzungsplan 7.5",
+  "_herkunft": "Endpunkt /receipts/get (Liste) | gemessen 2026-09-12 | Quelle: Live-Messung vom 2026-09-12 sowie docs/api/belege.md 3.5 | Struktur gemessen, Geschäftsdaten erfunden",
+  "_zweck": "die volle Seite: drei Zeilen bei limit=3, also rows gleich limit. Grundlage der ersten Bestandszeile",
   "http": {
     "status": 200,
     "contentType": "application/json; charset=utf-8"

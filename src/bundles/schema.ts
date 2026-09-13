@@ -41,7 +41,7 @@ export function assertBundleConsistency(entry: BundleEntry): void {
     }
     names.add(field.name);
     if (field.description.trim() === "") {
-      fail(`Feld ${field.name}: Die Beschreibung ist leer (Plan 4.9).`);
+      fail(`Feld ${field.name}: Die Beschreibung ist leer.`);
     }
     if (field.source === "path") {
       fail(
@@ -121,9 +121,10 @@ export function buildBundleJsonSchema(entry: BundleEntry): Record<string, unknow
 /**
  * Das Ausgabeschema eines Bündels: der Pflichtblock `bundle` und die eigenen Blöcke.
  *
- * Offen wie jedes Ausgabeschema dieses Servers (S18), aber mit `bundle` und `success` in
+ * Offen wie jedes Ausgabeschema dieses Servers (begründet im Kopf von
+ * src/response/output-schema.ts), aber mit `bundle` und `success` in
  * `required`: Dass `complete`, `stopped_because` und `gaps` in JEDER Antwort stehen, ist der
- * Kern des Vertrags. Ein Modell soll auf Werte prüfen müssen, nicht auf Schlüssel (5, Regel 4).
+ * Kern des Vertrags. Ein Modell soll auf Werte prüfen müssen, nicht auf Schlüssel.
  */
 export function buildBundleOutputSchema(entry: BundleEntry): Record<string, unknown> {
   return {

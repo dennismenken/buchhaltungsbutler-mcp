@@ -1,6 +1,6 @@
 # Ergänzung zu "files": ["dist"] in der package.json. Die Positivliste entscheidet;
 # diese Datei ist die zweite Sicherung gegen Verzeichnisse, die nie in ein Tarball
-# gehören, falls "files" einmal erweitert wird (Plan 2, 13.7).
+# gehören, falls "files" einmal erweitert wird.
 
 docs/
 test/

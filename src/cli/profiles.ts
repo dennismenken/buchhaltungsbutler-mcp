@@ -1,5 +1,5 @@
 /**
- * `profiles list|add|remove`: die Mandantenprofile in der Zugangsdatendatei (Plan 8.1).
+ * `profiles list|add|remove`: die Mandantenprofile in der Zugangsdatendatei.
  *
  * Der Fall, für den es diese Datei gibt: Ein Steuerberater oder eine Agentur betreut mehrere
  * Mandanten mit demselben Client-Secret-Paar und wechselndem `api_key`. Ein Profil je Mandant
@@ -173,7 +173,7 @@ export async function runProfiles(options: RunProfilesOptions): Promise<number> 
 
 /**
  * Fragt einen Wert maskiert ab. Eine gesetzte Umgebungsvariable wird als Vorbelegung
- * angeboten — **ohne den Wert anzuzeigen** (Plan 8.2 Schritt 2).
+ * angeboten — **ohne den Wert anzuzeigen**.
  */
 async function askCredential(
   terminal: Terminal,

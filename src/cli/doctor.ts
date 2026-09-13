@@ -1,16 +1,16 @@
 /**
- * `doctor`: die Diagnose, die in einen Fehlerbericht gehört (Plan 8.4).
+ * `doctor`: die Diagnose, die in einen Fehlerbericht gehört.
  *
  * Die Ausgabe enthält **garantiert kein Geheimnis**. Genannt wird, welcher der drei Werte
  * gesetzt ist und woher er kommt — nie ein Wert, auch nicht gekürzt und nicht maskiert.
  *
  * **`doctor` lädt keinen Tokenizer.** Ein Tokenizer im ausgelieferten Paket wäre eine vierte
- * Laufzeitabhängigkeit (13.2). Gezählt werden zur Laufzeit die **Zeichen** der 54
+ * Laufzeitabhängigkeit. Gezählt werden zur Laufzeit die **Zeichen** der 54
  * Definitionen — vollständig, einschließlich Annotationen, Eingabe- und Ausgabeschema, also
  * genau das, was `tools/list` ausliefert (`registry/definition.ts`). Die **Tokenzahl** daneben
- * ist die eingecheckte Messung aus AP14; nur wenn die Zeichenzahl nicht mehr zu ihr passt,
- * tritt die Schätzung über `CHARS_PER_TOKEN` an ihre Stelle. Die Ausgabezeile sagt jedes Mal,
- * welcher der beiden Fälle vorliegt, und behauptet nichts anderes.
+ * ist die eingecheckte Messung von `pnpm measure-tokens`; nur wenn die Zeichenzahl nicht
+ * mehr zu ihr passt, tritt die Schätzung über `CHARS_PER_TOKEN` an ihre Stelle. Die
+ * Ausgabezeile sagt jedes Mal, welcher der beiden Fälle vorliegt, und behauptet nichts anderes.
  */
 
 import { BUNDLE_TOOL_COUNT, registeredBundleCount } from "../bundles/register.js";
@@ -35,7 +35,7 @@ import type { Terminal } from "./prompt.js";
 import { ALL_ADAPTERS, loadCliConfig, parseArgs } from "./run.js";
 import { printConnectionTest, runConnectionTest } from "./test.js";
 
-/** Die Wirkungen in der Reihenfolge, in der 8.4 sie nennt. */
+/** Die Wirkungen in der Reihenfolge, in der die Diagnose sie nennt. */
 const EFFECT_LABELS: Readonly<Record<ToolEffect, string>> = {
   read: "lesend",
   create: "anlegend",
@@ -61,7 +61,7 @@ function countedTools(count: number, singular: string, plural: string): string {
 }
 
 /**
- * Die beiden Zeilen über die Größe der Werkzeugdefinitionen (Plan 8.4).
+ * Die beiden Zeilen über die Größe der Werkzeugdefinitionen.
  *
  * Die Zeichenzahl ist **gezählt**, und zwar an der vollständigen Definition: Name, Titel,
  * Beschreibung, Annotationen, Eingabe- und Ausgabeschema. Die frühere Zählung ließ die
@@ -116,7 +116,7 @@ function credentialSourceLine(config: ResolvedConfig): string {
     if (config.credentialsSplitAcrossSources) {
       return (
         "Zugangsdaten: unvollständig. Die drei Werte liegen verteilt auf Umgebungsvariablen und " +
-        "Zugangsdatendatei; sie werden nicht gemischt (6.3)."
+        "Zugangsdatendatei; sie werden nicht gemischt."
       );
     }
     return "Zugangsdaten: nicht aufgelöst.";

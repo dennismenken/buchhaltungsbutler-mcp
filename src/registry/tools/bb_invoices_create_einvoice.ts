@@ -1,11 +1,11 @@
-// Werkzeug 19 aus Plan 3.8: `/invoices/create/e-invoice`, die E-Rechnung.
+// Werkzeug 19: `/invoices/create/e-invoice`, die E-Rechnung.
 //
-// Strengste Feldprüfung der API (Plan 3.8, rechnungen.md 1.1 und 4.1): Gegenüber
+// Strengste Feldprüfung der API (rechnungen.md 1.1 und 4.1): Gegenüber
 // `/invoices/create` sind `street`, `zip`, `city`, `country` und `email` des Empfängers
 // Pflicht, dazu die Käuferreferenz `e_invoice_id`, und je Position treten `item_tax_type`
 // und `item_tax_amount` an die Stelle von `item_vat`.
 //
-// **Q8** hängt genau hier (Plan 4.7): Die Spezifikation führt `item_tax_amount` als
+// **Q8** hängt genau hier: Die Spezifikation führt `item_tax_amount` als
 // `required: true` und schreibt zugleich „Only required if corresponding item_tax_type = 'S'
 // (VAT)". Die beiden Angaben widersprechen sich. Ein hartes Pflichtfeld lehnte die fünf
 // übrigen Steuerarten ab, bei denen es gar keinen Satz gibt; deshalb ist das Feld im
@@ -14,7 +14,7 @@
 // verschwände aus dem Schema und schlüge erst als Ablehnung der API auf.
 //
 // `verifyWith` trägt `{ kind: "none" }`: Die API führt unterhalb von `/invoices/` keinen
-// lesenden Pfad (Plan 2.1, 3.5 U4, P10).
+// lesenden Pfad.
 
 import { z } from "zod";
 
@@ -33,7 +33,7 @@ import type { FieldSpec, ToolEntry } from "../types.js";
 
 /**
  * Die Mengengrenze der Positionsliste: `min(50, BB_MCP_MAX_BATCH)`, sobald die
- * Konfiguration aufgelöst ist (Plan 4.7 Q4, 4.8). Ohne aufgelöste Konfiguration — so laden
+ * Konfiguration aufgelöst ist. Ohne aufgelöste Konfiguration — so laden
  * die Registerprüfungen das Register — gilt das API-Maximum; die wirksame Grenze erzwingt
  * Q4 zur Laufzeit, zusätzlich Guard 5.
  */
@@ -281,7 +281,7 @@ export const bb_invoices_create_einvoice: ToolEntry = {
     field({ name: "recurring_date_next", schema: dateValue(RECURRING_DATE_DESCRIPTION) }),
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)." }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt." }],
   // Drei Felder **auf oberster Ebene** des Umschlags, nicht unter `data` (Spezifikation
   // `InvoicesCreateEInvoice_Success`); deshalb `container: "none"`.
   responseContract: {

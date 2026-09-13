@@ -7,9 +7,11 @@ Zielgruppe sind Implementierungs-Agenten, die daraus MCP-Tools bauen.
 
 | Quelle | Art | Abrufdatum |
 | --- | --- | --- |
-| `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json` (Swagger 2.0, `info.version` = 1.9.1, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json`) | Spezifikation | 2026-09-12 |
+| `docs/openapi/buchhaltungsbutler-v1.json` (Swagger 2.0, `info.version` = 1.9.1, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json`) | Spezifikation | 2026-09-12 |
 | Live-Aufrufe gegen `https://webapp.buchhaltungsbutler.de/api/v1` mit echten Zugangsdaten des Nutzers (nur lesende Endpunkte) | Eigener Test | 2026-09-12 |
-| Vorab vom Orchestrator verifizierte Rahmenbedingungen (Basis-URL, Auth, Antwortumschlag, Rate Limit) | Fremdverifikation | 2026-09-12 |
+| `docs/api/grundlagen.md`, Abschnitte 1.2, 2 und 4 — dort stehen die Rahmenangaben Basis-URL, Authentifizierung und Antwortumschlag mit ihrer jeweils eigenen Quellenkennzeichnung | Querschnittsdossier dieses Repositoriums | 2026-09-12 |
+| Eigene lesende Nachmessung eben dieser Rahmenangaben, Protokoll in `docs/api/grundlagen.md`, Abschnitt 2.5 | Eigener Test | 2026-09-13 |
+| `docs/api/grundlagen.md`, Abschnitt 3.1 — das globale Rate Limit, wörtlich zitiert aus der Anbieterdokumentation und **nicht selbst gemessen** | Fremdangabe | 2026-09-12 |
 
 **Wichtige Lesehilfe zur Spezifikation**
 
@@ -27,7 +29,14 @@ echte Wertemengen gekennzeichnete Felder (`e_invoice_type`, `file_type`).
 
 ## 1. Grundlagen für alle Beleg-Endpunkte
 
-Verifiziert am 2026-09-12 durch Orchestrator und eigene Live-Aufrufe.
+Woher die Angaben dieser Tabelle stammen: Basis-URL, HTTP-Methode, Content-Type
+`application/json`, Authentifizierung, Mandantenauswahl und Antwortumschlag sind eigene
+lesende Messungen — am 2026-09-12 und
+erneut am **2026-09-13**; das Protokoll der Nachmessung mit Aufrufform, HTTP-Status und
+wörtlichem Antwortkörper steht in `docs/api/grundlagen.md`, Abschnitt 2.5. Die drei Rate
+Limits sind **nicht selbst gemessen**: Das globale Limit ist eine wörtlich zitierte Angabe
+der Anbieterdokumentation (`docs/api/grundlagen.md`, Abschnitt 3.1), die beiden
+endpunktbezogenen stehen als `description` in der Spezifikationsdatei.
 
 | Aspekt | Wert |
 | --- | --- |
@@ -392,17 +401,16 @@ Live-Test aber **nicht bestätigt**. Siehe 4.5.
 
 ### 4.5 Live-Verifikation: gelöst, der Wert gehört in den Pfad
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 0.3, Befund L1 und in Abschnitt 4.6.** Die vier Messungen unten bleiben
-> unverändert richtig, ihre Deutung war es nicht: Geprüft wurden ausschließlich **Body-Varianten**,
-> und das ist die falsche Aufrufform. Gemessen am 2026-09-12 antwortet
+> **Nachgezogen am 2026-09-13 nach eigener lesender Messung vom 2026-09-12.** Die vier Messungen
+> unten bleiben unverändert richtig, ihre Deutung war es nicht: Geprüft wurden ausschließlich
+> **Body-Varianten**, und das ist die falsche Aufrufform. Gemessen am 2026-09-12 antwortet
 > `POST /receipts/get/<wert>` mit HTTP 200 und einem vollständigen Belegdatensatz. Das Segment
-> `id_by_customer` im Pfad der Spezifikation ist ein **Platzhalter für den Wert**, kein literales
-> Pfadsegment, und ein Body-Feld `id_by_customer` wird nicht gesendet — die Spezifikation führt an
-> diesem Pfad ohnehin nur `api_key` und `get_file`. Der Wert ist vor dem Einsetzen zu kodieren.
-> Der Endpunkt gilt damit als **benutzbar**; die frühere Einstufung „nicht funktionsfähig belegt"
-> und die dort genannte Array-Hypothese sind hinfällig. Vollständige Messung:
-> `docs/api/live-befunde-orchestrator.md`, Befund 1.
+> `id_by_customer` im Pfad der Spezifikation ist ein **Platzhalter für den Wert**, kein
+> literales Pfadsegment, und ein Body-Feld `id_by_customer` wird nicht gesendet — die
+> Spezifikation führt an diesem Pfad ohnehin nur `api_key` und `get_file`. Der Wert ist vor dem
+> Einsetzen zu kodieren. Der Endpunkt gilt damit als **benutzbar**; die frühere Einstufung
+> „nicht funktionsfähig belegt" und die dort genannte Array-Hypothese sind hinfällig.
+> Vollständige Messung: `docs/api/live-befunde.md`, Befund 1.
 
 Vier Aufrufe am 2026-09-12 gegen einen existierenden Beleg (dessen `id_by_customer` zuvor
 über `/receipts/get` ermittelt wurde) schlugen alle mit demselben Fehler fehl:
@@ -425,9 +433,13 @@ gemessen am 2026-09-12 mit HTTP 200. Der Wert steht im Pfad, nicht im Body. Die 
 ungetestete Array-Hypothese (`{"api_key": "...", "id_by_customer": [2]}`) wird damit nicht
 mehr gebraucht und ist nicht weiterzuverfolgen.
 
-Ebenfalls gemessen: Der Einzelabruf liefert `amount_original` und `currency_original`, also
-die Fremdwährungsfelder, die die Spezifikation an dieser Stelle nicht führt, und sein
-Umschlag trägt `data` als **Objekt** ohne `rows`.
+Ebenfalls gemessen: Der Einzelabruf liefert `amount_original`, `currency_original` und
+`exchangerate`, also die Fremdwährungsfelder, die der Listenabruf `/receipts/get` nicht führt —
+weder in seiner Antwort noch in seiner Spezifikationsdefinition. Für den Einzelabruf führt die
+Spezifikation sie sehr wohl (Abschnitt 4.2). Sein Umschlag trägt `data` als **Objekt** ohne
+`rows`. Was der Einzelabruf gegenüber seiner Spezifikation zusätzlich liefert, sind
+`amount_paid` und `amount_paid_fixed`; was sie führt und er ohne `get_file` nicht liefert, sind
+`file_content` und `file_type` (`docs/api/live-befunde.md`, Befund L4).
 
 ---
 
@@ -533,10 +545,12 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/receipts/add" \
    erlaubt, die Aufzählung bei `/receipts/add` meint zusätzlich unterstützte
    Fremdwährungen. Vor produktiver Nutzung mit einem Testmandanten klären.
 
-   > **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15
-   > (AP20); Sachgrund in Abschnitt 4.5 und in Abschnitt 0.5, Korrektur 2.** Der Widerspruch
-   > bleibt und wird nicht geraten. Für die Umsetzung gilt an `/receipts/add` **und** an
-   > `/receipts/addBatch` **derselbe** Umgang: `currency` ist ein **freier String**,
+   > **Nachgezogen am 2026-09-13 nach maschineller Auszählung der Spezifikation vom
+   > 2026-09-12.** Der Widerspruch bleibt und wird nicht geraten. Ausgezählt führt die
+   > Spezifikation **fünf** Währungsfelder mit drei verschiedenen Textvorräten: 3 Codes an
+   > `/receipts/add`, 1 Code an `/receipts/upload`, 47 Codes an `/transactions/add` und 48 Codes
+   > in den Definitionen `Receipt` und `Transaction`. Für die Umsetzung gilt an `/receipts/add`
+   > **und** an `/receipts/addBatch` **derselbe** Umgang: `currency` ist ein **freier String**,
    > **Pflichtfeld**, und der Widerspruch wird in der Parameterbeschreibung ausdrücklich
    > benannt. Der Ein-Wert-`enum` `["EUR"]` der Definition `Receipt` wird dabei **verworfen**;
    > er widerspricht dem Beschreibungstext derselben Eigenschaft, der 48 Codes nennt, und wird
@@ -600,15 +614,14 @@ Live-Test-Whitelist, deshalb **nicht live verifiziert**.
 Die Pflichtfelder stehen in `Receipt.required`: `type`, `counterparty`, `invoice_number`,
 `date`, `amount`, `currency`. Das deckt sich mit `/receipts/add`.
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 4.5 und in Abschnitt 0.5, Korrektur 2.** Die Zeile `currency` dieser
-> Tabelle trägt zusätzlich zu der oben genannten 48er-Liste den Ein-Wert-`enum` `["EUR"]` in
-> derselben Eigenschaft und widerspricht damit sich selbst. Dieser `enum` wird **verworfen**.
-> Umgesetzt wird `currency` hier wie an `/receipts/add`: freier String, Pflichtfeld,
-> Widerspruch in der Parameterbeschreibung benannt (siehe Abschnitt 5.5, Punkt 1). Der
-> Beschreibungstext dieser Eigenschaft ist zudem wörtlich aus `Transaction` übernommen — er
-> beginnt mit „The transaction currency." und endet mit „An empty string is not considered a
-> valid type." — und ist deshalb keine eigenständige Aussage über Belege.
+> **Nachgezogen am 2026-09-13 nach maschineller Auszählung der Spezifikation vom 2026-09-12.**
+> Die Zeile `currency` dieser Tabelle trägt zusätzlich zu der oben genannten 48er-Liste den
+> Ein-Wert-`enum` `["EUR"]` in derselben Eigenschaft und widerspricht damit sich selbst. Dieser
+> `enum` wird **verworfen**. Umgesetzt wird `currency` hier wie an `/receipts/add`: freier
+> String, Pflichtfeld, Widerspruch in der Parameterbeschreibung benannt (siehe Abschnitt 5.5,
+> Punkt 1). Der Beschreibungstext dieser Eigenschaft ist zudem wörtlich aus `Transaction`
+> übernommen — er beginnt mit „The transaction currency." und endet mit „An empty string is not
+> considered a valid type." — und ist deshalb keine eigenständige Aussage über Belege.
 
 Beispiel aus der Spezifikation (`Receipt.example`):
 

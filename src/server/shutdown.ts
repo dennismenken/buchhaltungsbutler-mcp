@@ -1,4 +1,4 @@
-// Idempotentes Herunterfahren bei SIGINT, SIGTERM und stdin-Ende (Plan 2, Dateibaum; AP10).
+// Idempotentes Herunterfahren bei SIGINT, SIGTERM und stdin-Ende (Dateibaum).
 //
 // Warum Idempotenz hier keine Feinheit ist: Ein MCP-Client beendet den Serverprozess regelmäßig
 // auf zwei Wegen gleichzeitig — er schließt die Pipe **und** schickt ein Signal. Läuft der Abbau

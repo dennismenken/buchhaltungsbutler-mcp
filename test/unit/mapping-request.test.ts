@@ -23,7 +23,7 @@ import {
   TRANSACTIONS_SEARCH,
 } from "../golden/entries.js";
 
-// Plan 1.4 Schritt 8 und Anhang A. Geprüft wird jede Art von Umbenennung: die einfache
+// Die Umbenennungen aus Anhang A. Geprüft wird jede Art von Umbenennung: die einfache
 // (payment_account_number → account), die mehrfach belegte (type), der Filtername, der
 // Behälter, die Positionsliste, die geschachtelte Positionsliste und das Pfadsegment.
 
@@ -149,7 +149,7 @@ describe("Die Umbenennungen im Body", () => {
   });
 });
 
-describe("Der api_key kommt nie aus den Argumenten (Plan 1.4 Schritt 8)", () => {
+describe("Der api_key kommt nie aus den Argumenten", () => {
   it("weist einen Aufruf mit api_key ab, ohne einen Body zu bauen", () => {
     expect(() =>
       mapRequest(RECEIPTS_SEARCH, {

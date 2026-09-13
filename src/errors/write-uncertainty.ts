@@ -1,10 +1,10 @@
 /**
  * Der gefährlichste Zustand der ganzen Anwendung: ein **schreibender** Aufruf ohne verwertbare
- * Antwort (Plan 5.7).
+ * Antwort.
  *
  * Auslöser sind Zeitlimit, Verbindungsabbruch, HTTP 5xx und jede Antwort, die dieser Server
  * nicht als Antwort der API lesen konnte, an einem Werkzeug der Klassen A, AR, M, D oder B.
- * Dazu kommt die Klasse `transient` an einem schreibenden Werkzeug (Plan 5.6): Ob eine
+ * Dazu kommt die Klasse `transient` an einem schreibenden Werkzeug: Ob eine
  * Drosselung vor oder nach dem Schreiben gegriffen hat, ist nicht belegt.
  *
  * Vier Eigenschaften des Textes sind Absicht und werden von `errors-write-uncertainty.test.ts`
@@ -24,7 +24,7 @@ import type { VerifySpec } from "../registry/types.js";
 export const UNCERTAINTY_HEADLINE = "UNGEWISSER AUSGANG.";
 
 /**
- * Argumentnamen, deren **Wert** unter keinen Umständen in einen Text gelangt (Plan 5.8, P9).
+ * Argumentnamen, deren **Wert** unter keinen Umständen in einen Text gelangt.
  *
  * Der `api_key` kommt planmäßig nie in den Argumenten vor — der Client setzt ihn, und Guard 3
  * weist ihn in den Argumenten ab. Die Liste ist trotzdem da: Sie kostet nichts, und die Zusage
@@ -41,8 +41,7 @@ const VALUE_LIMIT = 120;
  *
  * Zeichenketten stehen in Anführungszeichen, Zahlen und Booleans nackt. Listen und Objekte
  * werden **zusammengefasst und nicht ausgeschrieben**: In einen Fehlertext gehört der
- * konkrete Wert, der das Problem verursacht hat, und niemals der vollständige Request-Körper
- * (Plan 5.8).
+ * konkrete Wert, der das Problem verursacht hat, und niemals der vollständige Request-Körper.
  */
 export function formatArgumentValue(name: string, value: unknown): string {
   if (SECRET_ARGUMENT_NAMES.test(name)) {
@@ -107,7 +106,7 @@ export type WriteUncertaintyCause =
 
 export interface WriteUncertaintyInput {
   readonly toolName: string;
-  /** Der unveränderte Spezifikationspfad (Plan 4.6 Regel 6). */
+  /** Der unveränderte Spezifikationspfad. */
   readonly specPath: string;
   readonly cause: WriteUncertaintyCause;
   /** Der Prüfweg aus dem Registereintrag. Pflichtfeld bei jedem schreibenden Werkzeug (P10). */
@@ -117,13 +116,13 @@ export interface WriteUncertaintyInput {
 }
 
 export interface WriteUncertainty {
-  /** Überschrift plus der Satz, was geschehen ist. Geht in den Block `[Was]` (Plan 5.8). */
+  /** Überschrift plus der Satz, was geschehen ist. Geht in den Block `[Was]`. */
   readonly headline: string;
   /** Warum dieser Server nicht erneut gesendet hat. Geht in den Block `[Warum]`. */
   readonly reason: string;
   /** Der Prüfweg mit konkreten Werten und beiden Ausgängen. Geht in den Block `[Wie]`. */
   readonly verification: string;
-  /** Der zusammenhängende Text aus Plan 5.7, für Protokoll und Tests. */
+  /** Der zusammenhängende Text, für Protokoll und Tests. */
   readonly text: string;
   /** `true`, wenn der Prüfweg ein Werkzeug nennt; `false` bei der Weboberfläche. */
   readonly hasReadPath: boolean;
@@ -156,7 +155,7 @@ function describeReason(input: WriteUncertaintyInput): string {
   if (input.cause.kind === "throttle") {
     // Die Drosselung ist der einzige Auslöser, bei dem die API sauber geantwortet hat. Ob sie
     // vor oder nach dem Schreiben gegriffen hat, ist nicht belegt — und genau deshalb steht der
-    // Ausgang auch hier als offen da (Plan 5.6, Zeile `transient`).
+    // Ausgang auch hier als offen da (Zeile `transient`).
     return `${base} Die Einschränkung ist vorübergehend; ob sie vor oder nach dem Schreiben gegriffen hat, ist nicht belegt.`;
   }
   return base;
@@ -209,7 +208,7 @@ function describeVerification(input: WriteUncertaintyInput): {
 }
 
 /**
- * Erzeugt den Text aus Plan 5.7 aus `verifyWith` und den Argumenten des fehlgeschlagenen
+ * Erzeugt den Text aus `verifyWith` und den Argumenten des fehlgeschlagenen
  * Aufrufs.
  */
 export function buildWriteUncertainty(input: WriteUncertaintyInput): WriteUncertainty {

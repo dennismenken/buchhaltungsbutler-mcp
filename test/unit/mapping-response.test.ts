@@ -22,7 +22,7 @@ import {
 } from "../golden/entries.js";
 import { goldenBody, loadGolden } from "../golden/index.js";
 
-// Plan 7.2, 7.3 und 7.4. Der Weg ist derselbe wie im Betrieb: Golden-Körper durch
+// Der Weg ist derselbe wie im Betrieb: Golden-Körper durch
 // `parseEnvelope`, dann durch `mapResponse`. Ein Test, der sich eine Erfolgsantwort selbst
 // zusammensetzt, prüfte die Umschlagzerlegung mit.
 
@@ -45,7 +45,7 @@ function envelope(entry: ToolEntry, goldenName: string): SuccessEnvelope {
   });
 }
 
-describe("Der Antwortvertrag gilt je Endpunkt (Plan 7.2)", () => {
+describe("Der Antwortvertrag gilt je Endpunkt", () => {
   it("liest die Liste mit den Listennamen", () => {
     const mapped = mapResponse(RECEIPTS_SEARCH, envelope(RECEIPTS_SEARCH, "receipts-get-list"), {
       projection: "detailed",
@@ -84,7 +84,7 @@ describe("Der Antwortvertrag gilt je Endpunkt (Plan 7.2)", () => {
   });
 
   it("erzeugt Warnungen, sobald der falsche Vertrag angewandt wird", () => {
-    // Genau der Fall aus Plan 7.2: Wer den Vertrag des Listenabrufs auf den Einzelabruf legt,
+    // Genau der Fall: Wer den Vertrag des Listenabrufs auf den Einzelabruf legt,
     // sieht ein leeres due_date und hält es für „keine Fälligkeit".
     const wrongEntry: ToolEntry = {
       ...RECEIPTS_GET,
@@ -102,7 +102,7 @@ describe("Der Antwortvertrag gilt je Endpunkt (Plan 7.2)", () => {
     expect(mapped.unknownFields).toContain("currency_original");
   });
 
-  it("löst die Typ-Asymmetrie beider Ressourcen zum String hin auf (S10)", () => {
+  it("löst die Typ-Asymmetrie beider Ressourcen zum String hin auf", () => {
     const list = mapResponse(
       TRANSACTIONS_SEARCH,
       envelope(TRANSACTIONS_SEARCH, "transactions-get-list"),
@@ -143,7 +143,7 @@ describe("Der Antwortvertrag gilt je Endpunkt (Plan 7.2)", () => {
   });
 });
 
-describe("_contract_warnings und unbekannte Felder (Plan 7.3)", () => {
+describe("_contract_warnings und unbekannte Felder", () => {
   it("liefert die Antwort trotz Vertragsverletzung und meldet sie", () => {
     const mapped = mapResponse(
       RECEIPTS_SEARCH,
@@ -222,7 +222,7 @@ describe("_contract_warnings und unbekannte Felder (Plan 7.3)", () => {
       parseEnvelope({
         status: 200,
         contentType: "application/json",
-        // rows fehlt: Das ist ein Hinweis, kein Abbruch (Plan 5.5).
+        // rows fehlt: Das ist ein Hinweis, kein Abbruch.
         bodyText: JSON.stringify({ success: true, message: "", data: [] }),
         shape: "list",
         context: { toolName: RECEIPTS_SEARCH.name, specPath: "/receipts/get", toolClass: "R" },
@@ -233,7 +233,7 @@ describe("_contract_warnings und unbekannte Felder (Plan 7.3)", () => {
   });
 });
 
-describe("Die Projektionen concise und detailed (Plan 7.4)", () => {
+describe("Die Projektionen concise und detailed", () => {
   it("zeigt in concise genau die Felder des Eintrags plus ihre Centwerte", () => {
     const mapped = mapResponse(RECEIPTS_SEARCH, envelope(RECEIPTS_SEARCH, "receipts-get-list"), {
       projection: "concise",
@@ -283,7 +283,7 @@ describe("Die Projektionen concise und detailed (Plan 7.4)", () => {
   });
 });
 
-describe("Sprechende Kontobezeichnungen aus dem Stammdatenspeicher (Plan 7.4, 7.8)", () => {
+describe("Sprechende Kontobezeichnungen aus dem Stammdatenspeicher", () => {
   const chartOfAccounts = goldenBody("postingaccounts-get-list").data;
 
   it("baut die Zuordnung Nummer zu Bezeichnung", () => {

@@ -1,16 +1,16 @@
 /**
- * Auflösungsreihenfolge (6.3), Startprüfung (6.4) und das eingefrorene Konfigurationsobjekt.
+ * Auflösungsreihenfolge, Startprüfung und das eingefrorene Konfigurationsobjekt.
  *
  * Dieses Modul ist die einzige Quelle der Konfiguration. HTTP-Schicht, Guards, Server,
  * Upload, Stammdatenspeicher und CLI lesen ausschließlich {@link ResolvedConfig}; nach dem
- * Start ändert das Objekt niemand mehr, weil es eingefroren ist (6.4 Punkt 7).
+ * Start ändert das Objekt niemand mehr, weil es eingefroren ist.
  *
  * Zwei Fälle werden bewusst verschieden behandelt:
  *
  * - **Fehlende Zugangsdaten** sind ein Zustand, den der Nutzer erwartet und beheben kann.
- *   Der Server startet trotzdem und erklärt sich bei jedem Werkzeugaufruf (6.5).
+ *   Der Server startet trotzdem und erklärt sich bei jedem Werkzeugaufruf.
  * - **Ein unbrauchbarer Wert** ist ein Irrtum, der unbemerkt eine Schutzschicht abschaltet.
- *   Er führt zum Abbruch (6.4 Punkt 3).
+ *   Er führt zum Abbruch.
  */
 
 import os from "node:os";
@@ -47,13 +47,13 @@ export type { CredentialVarName } from "./env.js";
 export type { ToolGroupSelection } from "./tool-groups.js";
 
 /**
- * Kleinste unterstützte Node-Fassung. Sie spiegelt `engines.node` der `package.json`
- * (Plan 13.1). Beide Stellen müssen zusammen geändert werden; eine maschinelle Ableitung
+ * Kleinste unterstützte Node-Fassung. Sie spiegelt `engines.node` der `package.json`.
+ * Beide Stellen müssen zusammen geändert werden; eine maschinelle Ableitung
  * gäbe es erst, wenn `scripts/gen-version.ts` die Range mit erzeugt.
  */
 export const MINIMUM_NODE_VERSION = "22.19.0";
 
-/** Der Aufruf, der den Einrichtungsassistenten startet. Er steht wörtlich in 6.5. */
+/** Der Aufruf, der den Einrichtungsassistenten startet. Er steht wörtlich in den Texten unten. */
 export const SETUP_COMMAND = "npx -y @dennismenken/buchhaltungsbutler-mcp setup";
 
 export interface ConfigWarning {
@@ -65,7 +65,7 @@ export interface ResolvedCredentials {
   readonly apiClient: string;
   readonly apiSecret: string;
   readonly apiKey: string;
-  /** Woher die drei Werte stammen. Gemischt wird nie (6.3 Punkt 3). */
+  /** Woher die drei Werte stammen. Gemischt wird nie. */
   readonly source: "env" | "file";
   /** Profilname, wenn die Werte aus der Zugangsdatendatei stammen. */
   readonly profile: string | null;
@@ -83,7 +83,7 @@ export interface ResolvedConfig {
   readonly presentCredentials: readonly CredentialVarName[];
   /**
    * `true`, wenn die drei Werte zusammen vorhanden sind, aber auf beide Quellen verteilt.
-   * Sie werden trotzdem nicht gemischt (6.3 Punkt 3); der Zustand heißt „nicht konfiguriert".
+   * Sie werden trotzdem nicht gemischt; der Zustand heißt „nicht konfiguriert".
    */
   readonly credentialsSplitAcrossSources: boolean;
 
@@ -94,8 +94,9 @@ export interface ResolvedConfig {
 
   readonly readOnly: boolean;
   /**
-   * Die aktiven Werkzeuggruppen (N5). Sie entscheiden über die **Registrierung**; der
-   * Nur-Lesen-Schalter daneben über die **Ausführung**. Beide sind vollständig orthogonal.
+   * Die aktiven Werkzeuggruppen aus `BB_MCP_TOOL_GROUPS`. Sie entscheiden über die
+   * **Registrierung**; der Nur-Lesen-Schalter daneben über die **Ausführung**. Beide sind
+   * vollständig orthogonal.
    */
   readonly toolGroups: ToolGroupSelection;
   readonly maxBatch: number;
@@ -161,7 +162,7 @@ function checkNodeVersion(found: string): void {
   );
 }
 
-// --- Texte aus 6.5 -------------------------------------------------------------------
+// --- Texte -----------------------------------------------------------------------
 
 /** Aufzählung „A", „A und B", „A, B und C" ohne Oxford-Komma. */
 function enumerate(names: readonly string[]): string {
@@ -184,8 +185,8 @@ function credentialStateSentence(config: ResolvedConfig): string {
 }
 
 /**
- * Der Vorspann der `instructions` im Zustand „nicht konfiguriert", wörtlich nach 6.5 Punkt 3.
- * `server/instructions.ts` (AP14) stellt ihn seinem Text voran.
+ * Der Vorspann der `instructions` im Zustand „nicht konfiguriert", wörtlich vorgegeben.
+ * `server/instructions.ts` stellt ihn seinem Text voran.
  */
 export const NOT_CONFIGURED_INSTRUCTIONS_PREFIX =
   "NICHT KONFIGURIERT. Es wurden keine Zugangsdaten für BuchhaltungsButler gefunden. " +
@@ -193,8 +194,8 @@ export const NOT_CONFIGURED_INSTRUCTIONS_PREFIX =
   `Den Nutzer bitten, auszuführen: ${SETUP_COMMAND}`;
 
 /**
- * Die Absage eines Werkzeugaufrufs im Zustand „nicht konfiguriert", wörtlich nach 6.5
- * Punkt 4. `guards/configured.ts` (AP10) gibt genau diesen Text zurück, damit er an einer
+ * Die Absage eines Werkzeugaufrufs im Zustand „nicht konfiguriert", wörtlich
+ * Punkt 4. `guards/configured.ts` gibt genau diesen Text zurück, damit er an einer
  * Stelle steht und nicht in 54 Werkzeugen neu formuliert wird.
  *
  * Der letzte Satz ist kein Beiwerk: Er hält einen hartnäckigen Agenten davon ab, alle 54
@@ -215,7 +216,7 @@ export function formatNotConfiguredToolError(toolName: string, config: ResolvedC
   ].join("\n");
 }
 
-/** Die mehrzeilige Startwarnung aus 6.5 Punkt 2. Kein stiller Start. */
+/** Die mehrzeilige Startwarnung. Kein stiller Start. */
 export function formatMissingCredentialsStartupWarning(config: ResolvedConfig): string {
   return [
     "",
@@ -249,7 +250,7 @@ function amountToCents(amount: string): number {
 }
 
 /**
- * Führt die Startprüfung aus 6.4 in genau dieser Reihenfolge aus und liefert das fertige,
+ * Führt die Startprüfung in genau dieser Reihenfolge aus und liefert das fertige,
  * eingefrorene Konfigurationsobjekt samt der Warnungen, die dabei angefallen sind.
  *
  * Die Funktion protokolliert nichts und beendet nichts; sie ist damit ohne Aufbau prüfbar.
@@ -263,10 +264,10 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
   const homeDir = options.homeDir ?? os.homedir();
   const nodeVersion = options.nodeVersion ?? process.versions.node;
 
-  // 6.4 Punkt 1
+  // Punkt 1
   checkNodeVersion(nodeVersion);
 
-  // 6.4 Punkt 2: unbekannte BB_*-Variablen, jeweils mit dem nächstähnlichen bekannten Namen.
+  // Punkt 2: unbekannte BB_*-Variablen, jeweils mit dem nächstähnlichen bekannten Namen.
   const warnings: ConfigWarning[] = [];
   for (const name of findUnknownBbVars(env)) {
     warnings.push({
@@ -275,7 +276,7 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
     });
   }
 
-  // 6.4 Punkt 3
+  // Punkt 3
   const { values, emptyVars } = parseEnv(env);
   for (const name of emptyVars) {
     warnings.push({
@@ -284,7 +285,7 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
     });
   }
 
-  // 6.4 Punkt 4: Widerspruch zwischen kanonischem und veraltetem Namen (6.1).
+  // Punkt 4: Widerspruch zwischen kanonischem und veraltetem Namen.
   const canonicalReadOnly = values.BB_MCP_READ_ONLY;
   const deprecatedReadOnly = values.BB_READ_ONLY;
   if (
@@ -311,7 +312,7 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
   }
   const readOnly = canonicalReadOnly ?? deprecatedReadOnly ?? ENV_DEFAULTS.BB_MCP_READ_ONLY;
 
-  // 6.4 Punkt 4b: der Gruppenschalter. Er steht hier, also vor dem Auflösen der Zugangsdaten:
+  // Punkt 4b: der Gruppenschalter. Er steht hier, also vor dem Auflösen der Zugangsdaten:
   // Ein unbrauchbarer Gruppenname ist ein Abbruch, und ein Abbruch soll keine Zugangsdatendatei
   // gelesen haben. Die vier Startfehler stehen in `config/tool-groups.ts`.
   const toolGroups = resolveToolGroups({
@@ -319,7 +320,7 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
     exclude: values.BB_MCP_TOOL_GROUPS_EXCLUDE,
   });
 
-  // 6.4 Punkt 5: Zugangsdaten auflösen, ohne zu mischen (6.3).
+  // Punkt 5: Zugangsdaten auflösen, ohne zu mischen.
   const configDir = values.BB_CONFIG_DIR ?? defaultConfigDir(env, platform, homeDir);
   const credentialsFile = credentialsFilePath(configDir);
 
@@ -346,7 +347,7 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
       profile: null,
       label: null,
     };
-    // 6.3 Punkt 1: Sind alle drei gesetzt, wird die Zugangsdatendatei nicht gelesen. Auch
+    // Sind alle drei gesetzt, wird die Zugangsdatendatei nicht gelesen. Auch
     // ihre Rechte werden dann nicht geprüft, weil sie nichts zur Sache tut.
   } else {
     const result = readProfile(credentialsFile, values.BB_PROFILE, platform);
@@ -380,8 +381,8 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
 
   const maxAmount = values.BB_MCP_MAX_AMOUNT ?? null;
 
-  // 6.4 Punkt 6: kein Verbindungsaufbau beim Start.
-  // 6.4 Punkt 7: einfrieren, auch die Teilobjekte.
+  // Punkt 6: kein Verbindungsaufbau beim Start.
+  // Punkt 7: einfrieren, auch die Teilobjekte.
   const config: ResolvedConfig = Object.freeze({
     configured,
     credentials: credentials === null ? null : Object.freeze(credentials),
@@ -429,7 +430,7 @@ let current: ResolvedConfig | null = null;
  * Löst die Konfiguration auf, meldet die drei Geheimnisse zur Schwärzung an, stellt die
  * Protokollstufe ein, gibt die Warnungen auf stderr aus und merkt sich das Ergebnis.
  *
- * @throws ConfigError in den Abbruchfällen aus 6.4.
+ * @throws ConfigError in den Abbruchfällen der Startprüfung.
  */
 export function initConfig(options: ResolveOptions = {}): ResolvedConfig {
   const env = options.env ?? process.env;
@@ -449,7 +450,7 @@ export function initConfig(options: ResolveOptions = {}): ResolvedConfig {
 
   for (const warning of warnings) {
     if (warning.code === "not-configured") {
-      // Der Block aus 6.5 trägt seine eigene Form und bekommt kein Stufenpräfix.
+      // Der Block trägt seine eigene Form und bekommt kein Stufenpräfix.
       writeStderrBlock(warning.text);
     } else {
       logWarn(warning.text);
@@ -495,7 +496,7 @@ export function isConfigLoaded(): boolean {
 /**
  * Vergisst die aufgelöste Konfiguration. Ausschließlich für Tests; außerhalb eines
  * Testlaufs verweigert die Funktion den Dienst, damit zur Laufzeit niemand die
- * eingefrorene Konfiguration gegen eine andere tauschen kann (6.4 Punkt 7).
+ * eingefrorene Konfiguration gegen eine andere tauschen kann.
  */
 export function resetConfigForTests(): void {
   if (process.env.VITEST === undefined && process.env.NODE_ENV !== "test") {
@@ -504,7 +505,7 @@ export function resetConfigForTests(): void {
   current = null;
 }
 
-/** Rechteprüfung der Zugangsdatendatei für `doctor` (8.4), ohne sie zu lesen. */
+/** Rechteprüfung der Zugangsdatendatei für `doctor`, ohne sie zu lesen. */
 export function inspectCredentialsPermissions(config: ResolvedConfig): readonly ConfigWarning[] {
   return toConfigWarnings(checkCredentialsPermissions(config.credentialsFile));
 }

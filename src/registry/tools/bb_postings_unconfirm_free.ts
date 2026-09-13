@@ -1,5 +1,5 @@
 // Werkzeug 29, `/postings/unconfirm/free`: entfernt eine einzelne, nicht festgeschriebene freie
-// Buchung (Plan 3.8, AP12c).
+// Buchung.
 //
 // **Dieses Werkzeug adressiert als einziges der drei `unconfirm`-Werkzeuge die Buchung selbst**
 // und nicht ihr übergeordnetes Objekt. Der Parameter heißt deshalb `posting_id_by_customer` und
@@ -11,14 +11,14 @@
 // Beschreibung, woran sich eine freie Buchung erkennen lässt.
 //
 // Klasse D: `destructiveHint: true`, `idempotentHint: false` — eine wirkungslose Wiederholung
-// ist plausibel, aber **nicht verifiziert** (Plan 3.3, Streitfrage S6).
+// ist plausibel, aber **nicht verifiziert**.
 
 import { unwrapSchema } from "../../schema/primitives.js";
 import { ID_STRING_SENTENCE, idByCustomer } from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -78,7 +78,7 @@ export const bb_postings_unconfirm_free: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Erfolgsantwort `{ "success": true, "message": "" }`, ohne `data` (buchungen.md 18.3).

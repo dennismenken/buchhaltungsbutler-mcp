@@ -1,12 +1,12 @@
 /**
- * Cursor: `~/.cursor/mcp.json` oder `.cursor/mcp.json` im Projekt (Plan 8.3).
+ * Cursor: `~/.cursor/mcp.json` oder `.cursor/mcp.json` im Projekt.
  *
  * Abweichende Schreibweise der Ersetzung: Cursor schreibt `${env:NAME}`, nicht `${NAME}`
  * (`distribution.md` 8). Ersetzt wird in `command`, `args`, `env`, `url` und `headers`.
  *
  * Die Projektdatei darf angelegt werden: Ihr Ort ist durch `.cursor/mcp.json` im aktuellen
  * Verzeichnis festgelegt und nicht geraten. Die Datei im Benutzerprofil wird dagegen nur
- * ergänzt, wenn sie schon existiert (Regel aus 8.3).
+ * ergänzt, wenn sie schon existiert.
  */
 
 import path from "node:path";

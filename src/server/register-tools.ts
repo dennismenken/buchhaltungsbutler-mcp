@@ -1,20 +1,20 @@
-// Die Registrierung aller Werkzeuge und der EINE generische Handler (Plan 1.2 Punkt 1, 1.4).
+// Die Registrierung aller Werkzeuge und der EINE generische Handler.
 //
 // Was 54-fach existiert, sind Daten und keine Ablaufpfade. Dieser Ausführungsweg wird genau
 // einmal geschrieben und von jedem Werkzeug benutzt; ein Fehler in der Ablauflogik ist damit
 // ein Fehler und nicht potenziell 54. Die Reihenfolge der sechs Guards steht in `runTool` und
-// ist die aus Plan 1.4 — sie ist nicht durch Disziplin eingehalten, sondern als einzige
+// ist die — sie ist nicht durch Disziplin eingehalten, sondern als einzige
 // Codefolge vorhanden, die es gibt.
 //
 // **Die Schemaprüfung findet in diesem Handler statt und nicht im SDK.** Das ist eine bewusste
 // Entscheidung mit einem zwingenden Grund: `McpServer` validiert ein übergebenes `inputSchema`
 // selbst, und zwar **vor** dem Handler. Damit liefe Guard 3 vor Guard 1 und Guard 2, und ein
 // gesperrtes schreibendes Werkzeug mit einem Tippfehler im Argument meldete den Tippfehler
-// statt der Absage des Nur-Lesen-Schalters — genau die Reihenfolge, die Plan 1.4 ausschließt.
-// Außerdem wäre der Text eine englische SDK-Meldung ohne den Zustandssatz aus 5.8. Der Server
-// gibt dem SDK deshalb einen Schematräger, der das erzeugte JSON Schema **ankündigt** und die
-// Prüfung selbst nicht vornimmt (siehe {@link advertise}); geprüft wird in Guard 3 mit
-// demselben Zod-Schema, aus dem dieses JSON Schema entstanden ist.
+// statt der Absage des Nur-Lesen-Schalters — genau die Reihenfolge, die die Guardkette
+// ausschließt. Außerdem wäre der Text eine englische SDK-Meldung ohne Zustandssatz. Der
+// Server gibt dem SDK deshalb einen Schematräger, der das erzeugte JSON Schema
+// **ankündigt** und die Prüfung selbst nicht vornimmt (siehe {@link advertise}); geprüft
+// wird in Guard 3 mit demselben Zod-Schema, aus dem dieses JSON Schema entstanden ist.
 
 import type { McpServer } from "@modelcontextprotocol/server";
 import type { CallToolResult, StandardSchemaWithJSON } from "@modelcontextprotocol/server";
@@ -78,10 +78,10 @@ function advertise(
 
 export interface RegisteredToolInfo {
   readonly name: string;
-  /** Der unveränderte Spezifikationspfad, auch bei den vier Werkzeugen mit Pfadvorlage (4.6). */
+  /** Der unveränderte Spezifikationspfad, auch bei den vier Werkzeugen mit Pfadvorlage. */
   readonly specPath: string;
   readonly toolClass: ToolClass;
-  /** Die Werkzeuggruppe, über die dieser Eintrag an- und abschaltbar ist (N5). */
+  /** Die Werkzeuggruppe, über die `BB_MCP_TOOL_GROUPS` diesen Eintrag an- und abschaltet. */
   readonly group: ToolGroup;
   /** `true`, wenn dieses Werkzeug bei der aktuellen Konfiguration an Guard 2 scheitert. */
   readonly blockedByReadOnly: boolean;
@@ -124,17 +124,17 @@ function textResult(text: string, isError: boolean): CallToolResult {
 }
 
 /**
- * Die Audit-Zeile aus Plan 1.4 Schritt 14.
+ * Die Audit-Zeile.
  *
  * Sie nennt Zeitstempel, Werkzeug, Klasse, Endpunkt, Dauer, Ergebnisstatus und die
  * Argument**namen** ohne Werte. Als Endpunkt steht dort `specPath` und niemals der gebaute
  * Pfad: Bei den vier Werkzeugen mit Pfadvorlage stünde sonst die eingesetzte Geschäftskennung
- * im Protokoll, und das wäre ein Wert und kein Name (Plan 4.6).
+ * im Protokoll, und das wäre ein Wert und kein Name.
  *
  * Die Zeile hängt **nicht** an `BB_MCP_LOG_LEVEL`. Sie ist der Prüfpfad des Servers
  * (`tool-design.md` 9.6 Punkt 3: „Jeder Aufruf"), und ein Prüfpfad, den die Protokollstufe
  * abschaltet, ist keiner. Sie geht wie jede Ausgabe dieses Servers nach stderr und läuft dabei
- * durch die Schwärzung; stdout gehört dem Protokoll (Plan 1.5).
+ * durch die Schwärzung; stdout gehört dem Protokoll.
  */
 function audit(
   runtime: ToolRuntime,
@@ -222,7 +222,7 @@ async function sendRequest(
 }
 
 // ---------------------------------------------------------------------------------------
-// Der Stammdatenspeicher (Plan 7.8, 1.4 Zwischenschritt).
+// Der Stammdatenspeicher.
 // ---------------------------------------------------------------------------------------
 
 interface CacheAnswer {
@@ -238,7 +238,7 @@ interface CacheAnswer {
  * etwas läse.
  *
  * Ein abgelegter Stand wird nur dann zur Antwort, wenn er zur erwarteten Umschlagform des
- * Eintrags passt. Alle vier speicherfähigen Werkzeuge sind Listenabfragen (Plan 7.8); ein
+ * Eintrags passt. Alle vier speicherfähigen Werkzeuge sind Listenabfragen; ein
  * Stand anderer Form wäre ein Fehler im Befüllen, und daraus eine Antwort zu bauen hieße,
  * einen falschen Datenbestand als echten auszugeben.
  */
@@ -273,7 +273,7 @@ function readCache(runtime: ToolRuntime): CacheAnswer | undefined {
 }
 
 /**
- * Füllt und verwirft den Speicher nach einer erfolgreichen Antwort (Plan 7.8 Punkt 3).
+ * Füllt und verwirft den Speicher nach einer erfolgreichen Antwort.
  *
  * Die Invalidierungstabelle steht im Register (`invalidatesCache`) und nicht hier, damit sie
  * beim Nachrüsten eines Endpunkts an derselben Stelle liegt wie alles andere. Die nicht
@@ -295,7 +295,7 @@ function updateCache(runtime: ToolRuntime, envelope: SuccessEnvelope): void {
 }
 
 /**
- * Die rein serverseitigen Felder eines Aufrufs, also die aus `serverOnlyFields` (Plan 4.3).
+ * Die rein serverseitigen Felder eines Aufrufs, also die aus `serverOnlyFields`.
  *
  * Auf dem gewöhnlichen Weg liefert sie der Request-Mapper; bei einem Treffer im
  * Stammdatenspeicher gibt es keinen Request und damit keinen Mapper, und dann werden sie hier
@@ -317,11 +317,11 @@ function serverOnlyFrom(entry: ToolEntry, args: Readonly<ToolArguments>): ToolAr
 // ---------------------------------------------------------------------------------------
 
 /**
- * Der Weg eines Aufrufs nach Plan 1.4, Schritt 2 bis 14.
+ * Der Weg eines Aufrufs.
  *
  * Schritt 1 — das Nachschlagen des Eintrags — erledigt das SDK: Ein unbekannter Werkzeugname
  * ist der einzige Fall, in dem ein JSON-RPC-Protokollfehler entsteht. Alles, was von hier an
- * schiefgeht, ist `isError: true` im Ergebnis (Plan 5.8).
+ * schiefgeht, ist `isError: true` im Ergebnis.
  */
 async function runTool(
   runtime: ToolRuntime,
@@ -347,19 +347,19 @@ async function runGuardedCall(
 ): Promise<CallToolResult> {
   const { entry, config } = runtime;
 
-  // --- Guard 1: Konfiguration (Plan 6.5) ---------------------------------------------
+  // --- Guard 1: Konfiguration ---------------------------------------------
   const notConfigured = checkConfigured(entry.name, config);
   if (notConfigured !== undefined) {
     return refuse(runtime, rawArgs, startedAt, "konfiguration", notConfigured);
   }
 
-  // --- Guard 2: Nur-Lesen-Schalter (Plan 6.6) ----------------------------------------
+  // --- Guard 2: Nur-Lesen-Schalter ----------------------------------------
   const readOnlyRefusal = checkReadOnly(entry, config);
   if (readOnlyRefusal !== undefined) {
     return refuse(runtime, rawArgs, startedAt, "nur-lesen", readOnlyRefusal);
   }
 
-  // --- Guard 3: Schema, streng (Plan 1.4 Schritt 4) ----------------------------------
+  // --- Guard 3: Schema, streng ----------------------------------
   const parsed = runtime.baseSchema.safeParse(rawArgs);
   if (!parsed.success) {
     return refuse(
@@ -377,7 +377,7 @@ async function runGuardedCall(
   }
   let args = parsed.data as ToolArguments;
 
-  // --- Guard 4: Querprüfungen Q1 bis Q8 (Plan 4.7) -----------------------------------
+  // --- Guard 4: Querprüfungen Q1 bis Q8 -----------------------------------
   // Geprüft wird mit demselben Schema plus den Querprüfungen des Eintrags. Dass die
   // Feldprüfungen dabei ein zweites Mal laufen, ist der Preis dafür, dass Guard 3 und Guard 4
   // getrennt melden; er besteht aus einem Parse über ein kleines Objekt. Trägt der Eintrag
@@ -401,13 +401,13 @@ async function runGuardedCall(
     args = crossChecked.data as ToolArguments;
   }
 
-  // --- Guard 5: Betrags- und Stapelgrenze (Plan 6.2) ---------------------------------
+  // --- Guard 5: Betrags- und Stapelgrenze ---------------------------------
   const limitRefusal = checkLimits(entry, args, config);
   if (limitRefusal !== undefined) {
     return refuse(runtime, rawArgs, startedAt, "grenze", limitRefusal);
   }
 
-  // --- Guard 6: Duplikatshinweis (Plan 1.4 Schritt 7) --------------------------------
+  // --- Guard 6: Duplikatshinweis --------------------------------
   // Er blockiert nie. Bei `BB_MCP_DUPLICATE_CHECK=off`, also im Auslieferungszustand, geht
   // hier kein Zusatzaufruf hinaus.
   const duplicateHint = await checkDuplicates({
@@ -421,14 +421,14 @@ async function runGuardedCall(
     },
   });
 
-  // --- Stammdatenspeicher: befragen (Plan 7.8 Punkt 1) -------------------------------
+  // --- Stammdatenspeicher: befragen -------------------------------
   const cached = readCache(runtime);
   if (cached !== undefined) {
     const mapped = mapResponse(entry, cached.envelope, {
       // Die rein serverseitigen Felder — im Auslieferungszustand genau `response_format` —
       // werden auch auf diesem Weg gelesen. Sonst käme eine aus dem Speicher beantwortete
       // Abfrage immer in der Kurzform zurück, und `response_format: "detailed"` wäre
-      // stillschweigend wirkungslos (Plan 7.4).
+      // stillschweigend wirkungslos.
       serverOnly: serverOnlyFrom(entry, args),
       store: runtime.store,
     });
@@ -444,7 +444,7 @@ async function runGuardedCall(
     return { content: [...payload.content], structuredContent: payload.structuredContent };
   }
 
-  // --- Belegquelle auflösen (Plan 11.2 AP13) -----------------------------------------
+  // --- Belegquelle auflösen -----------------------------------------
   // Nur `/receipts/upload` tut hier etwas; jedes andere Werkzeug bekommt seine Argumente
   // unverändert zurück. Der Schritt liegt bewusst vor dem Request: Schlägt er fehl, ging
   // nichts hinaus, und die Meldung sagt genau das.
@@ -483,7 +483,7 @@ async function runGuardedCall(
       serverOnly: sent.request.serverOnly,
       store: runtime.store,
     });
-    // Gefüllt und verworfen wird erst nach einer erfolgreichen Antwort (Plan 7.8 Punkt 3).
+    // Gefüllt und verworfen wird erst nach einer erfolgreichen Antwort.
     updateCache(runtime, sent.result.envelope);
     const payload = buildToolResponse({
       entry,
@@ -518,15 +518,15 @@ async function handleCallFailure(
     });
     if (message.uncertainWrite && runtime.store.isEnabled() && entry.invalidatesCache.length > 0) {
       // Bei ungewissem Ausgang wird ebenfalls verworfen: Lieber einmal zu viel frisch geholt
-      // als ein Stand, der eine womöglich erfolgte Änderung nicht kennt (Plan 7.8 Punkt 3).
+      // als ein Stand, der eine womöglich erfolgte Änderung nicht kennt.
       runtime.store.invalidate(entry.invalidatesCache);
     }
     audit(runtime, rawArgs, startedAt, `fehler:${error.code}`);
     return textResult(message.text, true);
   }
 
-  // Der Request-Mapper (Plan 1.4 Schritt 8). Seine Fehler entstehen **vor** dem ersten Byte,
-  // tragen also wie jede Ablehnung eines Guards den Zustandssatz 1 aus 5.8.
+  // Der Request-Mapper. Seine Fehler entstehen **vor** dem ersten Byte,
+  // tragen also wie jede Ablehnung eines Guards den Zustandssatz 1.
   if (error instanceof Error) {
     return refuse(
       runtime,
@@ -549,8 +549,7 @@ async function handleCallFailure(
  * Der Rückfall für alles, was hier nicht vorgesehen ist.
  *
  * Zwei Dinge sind dabei Pflicht: Das Ergebnis ist `isError: true` und niemals ein
- * Protokollfehler, und die Diagnose geht nach stderr — stdout trägt ausschließlich JSON-RPC
- * (Plan 1.5, 5.8).
+ * Protokollfehler, und die Diagnose geht nach stderr — stdout trägt ausschließlich JSON-RPC.
  *
  * @param afterRequest `true`, wenn der Request schon hinausgegangen war. Dann darf der Text
  *        nicht behaupten, es sei nichts geschehen.
@@ -582,7 +581,7 @@ function unexpectedFailure(
     return textResult(text, true);
   }
   // Der Zustandssatz 1 wäre hier eine Unwahrheit: Der Aufruf ist hinausgegangen. Ersetzt wird
-  // ausschließlich diese Zeile, der übrige Aufbau bleibt der aus 5.8.
+  // ausschließlich diese Zeile, der übrige Aufbau bleibt der Vierblock.
   return textResult(
     text.replace(
       /^\[Zustand\].*$/m,
@@ -602,14 +601,14 @@ function unexpectedFailure(
  *
  * Ein durch `BB_MCP_READ_ONLY` gesperrtes und ein bei fehlender Konfiguration nicht
  * ausführbares Werkzeug steht trotzdem in `tools/list`: Die Absage kommt beim Aufruf und nicht
- * durch Weglassen (Plan 1.5, 6.5 Punkt 1, 6.6).
+ * durch Weglassen.
  *
- * **Die einzige Ausnahme ist der Gruppenschalter (N5)**, und sie ist der bewusste Gegensatz
- * dazu: Ein Werkzeug einer abgeschalteten Gruppe wird **gar nicht erst registriert** statt mit
- * `enabled: false` geführt. Der Nur-Lesen-Schalter existiert, um einen Agenten aufzuklären, der
- * Gruppenschalter, um Kontext zu sparen; ein verstecktes, aber weiterhin gesendetes
- * Eingabeschema spart nichts. Die Entscheidung fällt einmal beim Start aus der eingefrorenen
- * Konfiguration, die Liste bleibt über die gesamte Verbindung stabil.
+ * **Die einzige Ausnahme ist der Gruppenschalter `BB_MCP_TOOL_GROUPS`**, und sie ist der
+ * bewusste Gegensatz dazu: Ein Werkzeug einer abgeschalteten Gruppe wird **gar nicht erst
+ * registriert** statt mit `enabled: false` geführt. Der Nur-Lesen-Schalter existiert, um einen
+ * Agenten aufzuklären, der Gruppenschalter, um Kontext zu sparen; ein verstecktes, aber
+ * weiterhin gesendetes Eingabeschema spart nichts. Die Entscheidung fällt einmal beim Start
+ * aus der eingefrorenen Konfiguration, die Liste bleibt über die gesamte Verbindung stabil.
  *
  * Das Nachschlagen für den Duplikatshinweis (Guard 6) geht über **alle** übergebenen Einträge
  * und nicht nur über die registrierten: Der Gruppenschalter spart Kontext, er begrenzt keinen
@@ -634,8 +633,8 @@ export function registerTools(
   const registered: RegisteredToolInfo[] = [];
 
   for (const entry of entries) {
-    // N5: nicht registrieren statt verstecken. Ein Eintrag ohne aktive Gruppe erzeugt hier
-    // weder ein Schema noch einen Handler; es entsteht kein toter Code.
+    // Gruppenschalter: nicht registrieren statt verstecken. Ein Eintrag ohne aktive Gruppe
+    // erzeugt hier weder ein Schema noch einen Handler; es entsteht kein toter Code.
     if (!activeGroups.has(entry.group)) {
       continue;
     }

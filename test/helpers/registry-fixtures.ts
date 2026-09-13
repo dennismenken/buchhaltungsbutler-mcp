@@ -1,4 +1,4 @@
-// Registerhilfen für die dreizehn Registerprüfungen P1 bis P13 (Plan 9.2).
+// Registerhilfen für die dreizehn Registerprüfungen P1 bis P13.
 //
 // Diese Datei enthält keine Erwartungswerte. Sie stellt ausschließlich Zugriffe bereit:
 // auf das Register, auf die Spezifikationsdatei, auf das Verzeichnis der Registerdateien
@@ -8,10 +8,10 @@
 // test/registry/effect-list.ts.
 //
 // Warum hier überhaupt ein JSON-Schema gebaut wird, obwohl src/schema/build.ts das zur
-// Laufzeit tut: AP11 läuft vor AP05 und AP08. P10 braucht trotzdem die Information, ob ein
+// Laufzeit tut: P10 braucht die Information, ob ein
 // Behälterfeld eine Mengengrenze trägt, und P11 braucht die Zeichen- und Tokenmenge der
 // Definition, die der Client beim Verbinden sieht. Beides wird deshalb hier aus dem
-// Registereintrag aufgebaut, nach den Postenlisten aus Plan 4.10 und der Sparmaßnahme S6
+// Registereintrag aufgebaut, nach den Postenlisten und der Sparmaßnahme S6
 // (outputSchema ohne Feldbeschreibungen). Das ist eine Messung der Definition, keine
 // zweite Implementierung des Auslieferungsschemas: Gesendet wird ausschließlich, was
 // src/schema/build.ts erzeugt.
@@ -46,12 +46,12 @@ export const INSTRUCTIONS_MODULE = `${ROOT}src/server/instructions.ts`;
 
 export { ENDPOINTS, ENDPOINTS_BY_PATH, TOOL_BY_NAME, TOOL_BY_SPEC_PATH };
 
-/** Das Register, so wie der erzeugte Index es liefert. Zu Beginn von AP11 ist es leer. */
+/** Das Register, so wie der erzeugte Index es liefert. Ohne Eintrag ist es leer. */
 export const REGISTRY: readonly ToolEntry[] = TOOL_ENTRIES;
 
 /**
  * Der Spezifikationspfad eines Eintrags. Bei den vier Endpunkten mit Pfadvorlage ist das
- * `specPath` und niemals die Vorlage (Plan 4.6): Fehlerkatalog, Deckungstest und Audit-Zeile
+ * `specPath` und niemals die Vorlage: Fehlerkatalog, Deckungstest und Audit-Zeile
  * schlüsseln nach dem unveränderten Schlüssel der Spezifikation.
  */
 export function specPathOf(tool: ToolEntry): string {
@@ -69,12 +69,11 @@ export function entryBySpecPath(path: string): ToolEntry | undefined {
 }
 
 /**
- * Die Fehlermeldung für einen Eintrag, den es noch nicht gibt. Sie nennt Dateinamen und
- * zuständiges Arbeitspaket, damit die rote Prüfung beim Befüllen als Arbeitsliste taugt
- * (AP11, Definition of Done).
+ * Die Fehlermeldung für einen Eintrag, den es noch nicht gibt. Sie nennt den Werkzeugnamen und
+ * den erwarteten Dateipfad, damit die rote Prüfung beim Befüllen als Arbeitsliste taugt.
  */
 export function missingEntry(name: string): string {
-  return `${name}: kein Registereintrag. Erwartet wird src/registry/tools/${name}.ts (AP12a bis AP12e).`;
+  return `${name}: kein Registereintrag. Erwartet wird src/registry/tools/${name}.ts.`;
 }
 
 /** Ein Feld mit seinem Pfad im Werkzeugschema. */
@@ -143,7 +142,7 @@ export function jsonSchemaFor(fragment: SchemaFragment, context: string): Record
 /**
  * Die Mengengrenze eines Behälterfeldes, also `maxItems` auf der obersten Ebene des
  * Schemas. Absichtlich nicht rekursiv: Die Grenze eines geschachtelten Arrays gehört zu
- * dessen eigenem Feld und wird dort getrennt geprüft (Plan 4.7 Q4, „beide Grenzen gelten
+ * dessen eigenem Feld und wird dort getrennt geprüft („beide Grenzen gelten
  * unabhängig voneinander").
  */
 export function topLevelMaxItems(schema: Record<string, unknown>): number | undefined {
@@ -169,7 +168,7 @@ export function topLevelMaxItems(schema: Record<string, unknown>): number | unde
 
 export type { RenderedToolDefinition };
 
-/** Die vier Annotationen eines Eintrags, aus der Klassentabelle (Plan 3.3). */
+/** Die vier Annotationen eines Eintrags, aus der Klassentabelle. */
 export function annotationsOf(tool: ToolEntry): ToolClassAnnotations {
   return TOOL_CLASSES[tool.toolClass].annotations;
 }
@@ -179,8 +178,8 @@ export function annotationsOf(tool: ToolEntry): ToolClassAnnotations {
  * bekommt**: Name, Titel, Annotationen, Beschreibung, Eingabeschema, Ausgabeschema.
  *
  * Gebaut wird sie nicht mehr hier, sondern in `src/registry/definition.ts` — derselben Datei,
- * aus der auch `scripts/measure-tokens.ts` und `doctor` (8.4) ihre Zahlen ziehen. Zu Beginn
- * von AP11 war das nicht möglich: Die Module gab es noch nicht, und die Definition wurde hier
+ * aus der auch `scripts/measure-tokens.ts` und `doctor` ihre Zahlen ziehen. Früher war das
+ * nicht möglich: Die Module gab es noch nicht, und die Definition wurde hier
  * nachgebaut. Der Nachbau maß danach einen anderen Gegenstand als den ausgelieferten, und
  * solange es drei Nachbildungen gab, konnten sie auseinanderlaufen — was in `doctor`
  * nachweislich geschehen ist. Diese Funktion bleibt als Zugriff der Registerprüfungen stehen
@@ -196,14 +195,14 @@ export function definitionJson(tool: ToolEntry): string {
 }
 
 /**
- * Die Tokenzahl eines Textes, gezählt mit dem Tokenizer aus Plan 13.9
+ * Die Tokenzahl eines Textes, gezählt mit dem Tokenizer
  * (`gpt-tokenizer@4.0.0`, Kodierung `o200k_base`), niemals über `CHARS_PER_TOKEN`: Ein
  * Budget, das über einen Schätzfaktor erzwungen wird, erzwingt die Schätzung und nicht das
- * Budget (Plan 4.10).
+ * Budget.
  *
  * `o200k_base` ist die tatsächliche Kodierung der GPT-4o-Linie. Für andere Modellfamilien,
  * die Claude-Linie eingeschlossen, ist der Tokenizer nicht öffentlich dokumentiert; die Zahl
- * ist dort eine belastbare Größenordnung und keine exakte Zahl (Plan 13.9).
+ * ist dort eine belastbare Größenordnung und keine exakte Zahl.
  */
 export function tokenCount(text: string): number {
   return encode(text).length;
@@ -244,8 +243,8 @@ export function definitionOf(name: string): SpecSchema | undefined {
 }
 
 /**
- * Das Ergebnis der Auflösung einer Behälterdefinition auf ihre Elementeigenschaften
- * (Plan 4.4 Punkt 3). Der Zweig ist Teil des Ergebnisses, weil der Test beide Zweige
+ * Das Ergebnis der Auflösung einer Behälterdefinition auf ihre Elementeigenschaften.
+ * Der Zweig ist Teil des Ergebnisses, weil der Test beide Zweige
  * abdecken muss: sieben der acht Behälter tragen unter `.items` ausschließlich ein `$ref`,
  * nur `PostingsFree` führt seine Eigenschaften inline.
  */
@@ -264,7 +263,7 @@ export type ElementResolution =
   | { readonly branch: "none"; readonly reason: string };
 
 /**
- * Die Auflösungsregel aus Plan 4.4 Punkt 3, vollständig und in der dort festgelegten
+ * Die Auflösungsregel, vollständig und in der dort festgelegten
  * Reihenfolge. Sie ist Pflicht und nicht abkürzbar: Ein Test, der stumpf
  * `.items.properties` liest, findet an sieben von acht Stellen ein leeres Objekt und meldet
  * entweder alles oder nichts als Fehler.
@@ -337,8 +336,8 @@ export function endpointOf(path: string): GeneratedEndpoint | undefined {
 
 /**
  * Die Dateinamen in `src/registry/tools/`, ohne `.ts`, in Codepunktfolge. Ein fehlendes
- * Verzeichnis ist eine leere Liste und kein Absturz: Zu Beginn von AP11 gibt es noch keinen
- * einzigen Registereintrag, und genau dagegen laufen die dreizehn Prüfungen rot.
+ * Verzeichnis ist eine leere Liste und kein Absturz: Ohne einen einzigen Registereintrag
+ * laufen die dreizehn Prüfungen rot, und genau das ist beabsichtigt.
  */
 export function registryFileNames(): string[] {
   if (!existsSync(TOOLS_DIR)) return [];

@@ -1,21 +1,21 @@
-// Werkzeug 53 aus Plan 3.8: `/reports/create/bwa`, Erzeugung der BWA anstoßen.
+// Werkzeug 53: `/reports/create/bwa`, Erzeugung der BWA anstoßen.
 //
-// Klasse AR (Plan 3.3): `destructiveHint: true`, weil ein neu erzeugter Bericht den
+// Klasse AR: `destructiveHint: true`, weil ein neu erzeugter Bericht den
 // vorherigen desselben Typs **ersetzt** — dass er jederzeit neu berechenbar ist, ändert
 // nichts daran, dass der Vorgänger weg ist. Pflichtsatz U7.
 //
-// Eimer `reports` (Plan 5.4): ein Aufruf je zehn Sekunden. Das ist **kein** API-Limit,
+// Eimer `reports`: ein Aufruf je zehn Sekunden. Das ist **kein** API-Limit,
 // sondern eine Bremse gegen das Muster „create, sofort get, error_code 8, sofort wieder
 // create", das einen laufenden Bericht mehrfach ersetzt.
 //
-// **Q1** hängt hier (Plan 4.7): `date_from` und `date_to` sind beide `required: true`, und
+// **Q1** hängt hier: `date_from` und `date_to` sind beide `required: true`, und
 // ein vertauschter Zeitraum erzeugt einen falschen Bericht, der den vorherigen ersetzt.
 // Genau hier wiegt die vertauschte Grenze am schwersten. Die beiden Abholwerkzeuge
 // `bb_reports_get_bwa` und `bb_reports_get_sums` tragen Q1 ausdrücklich nicht: Sie führen
 // überhaupt kein Datumsfeld.
 //
 // Der Anschlusshinweis nach einem erfolgreichen Aufruf steht wörtlich in
-// `src/response/next-step.ts` (`reportRequestedNote`, Plan 7.6, erste Zeile der
+// `src/response/next-step.ts` (`reportRequestedNote`, erste Zeile der
 // Hinweistabelle) und wird über die Paartabelle in `src/response/build.ts` an diesen
 // Werkzeugnamen gehängt; `ToolEntry` führt für ihn kein eigenes Feld.
 
@@ -70,7 +70,7 @@ export const bb_reports_create_bwa: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)." }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt." }],
   // `id_by_customer` steht **auf oberster Ebene** des Umschlags und nicht unter `data`
   // (Spezifikation `ReportsCreateBwa_Success`); deshalb `container: "none"`. Die Antwort
   // liefert die Kennung als String, der Abholaufruf erwartet sie als Ganzzahl

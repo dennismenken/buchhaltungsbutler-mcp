@@ -8,7 +8,7 @@ import {
   paginationNote,
 } from "../../src/response/pagination-note.js";
 
-// Die drei Bestandszeilen aus Plan 7.5, zeichengenau gegen den Wortlaut des Plans. Plan 9.5:
+// Die drei Bestandszeilen, zeichengenau gegen den festgelegten Wortlaut:
 // „der stille Fehler 'Seite für Gesamtergebnis gehalten' entsteht genau hier".
 
 const FULL_NOTE = [
@@ -44,7 +44,7 @@ describe("Die drei Zustände", () => {
   });
 });
 
-describe("Die Bestandszeilen, wörtlich nach Plan 7.5", () => {
+describe("Die Bestandszeilen, wörtlich", () => {
   it("schreibt die volle Seite wörtlich", () => {
     expect(
       paginationNote({
@@ -133,7 +133,7 @@ describe("Der Filterhinweis entsteht aus den Feldern des Werkzeugs", () => {
   });
 });
 
-describe("Der Endpunkt ohne Paginierung (Plan 7.5 Regel 4)", () => {
+describe("Der Endpunkt ohne Paginierung", () => {
   it("sagt ausdrücklich, dass es weder limit noch offset gibt", () => {
     const line = noPaginationNote(5);
     expect(line).toContain("5 Zeilen geliefert");

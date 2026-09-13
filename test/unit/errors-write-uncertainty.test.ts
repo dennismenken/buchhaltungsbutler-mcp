@@ -26,7 +26,7 @@ afterEach(() => {
   clearSecrets();
 });
 
-describe("Der Text aus Plan 5.7", () => {
+describe("Der Text", () => {
   const uncertainty = buildWriteUncertainty({
     toolName: "bb_postings_create_free",
     specPath: "/postings/add/free",

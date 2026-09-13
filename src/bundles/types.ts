@@ -1,13 +1,13 @@
-// Der Geschwistertyp zu `ToolEntry`: ein Bündelwerkzeug (Bauvorlage 9 Punkt 1).
+// Der Geschwistertyp zu `ToolEntry`: ein Bündelwerkzeug.
 //
 // **Warum ein eigener Typ.** `ToolEntry` bindet genau einen Endpunkt: `path`,
 // `responseContract`, `concise`, `bucket` und `timeoutTier` sind allesamt Singular. Ein Bündel
 // in diesen Typ zu zwingen machte jedes dieser Felder mehrdeutig und brächte eine Verzweigung
-// in den EINEN generischen Handler (Plan 1.2). Die 54 Endpunktwerkzeuge bleiben nach N1
-// unverändert; dieser Typ liegt daneben und nicht darüber.
+// in den EINEN generischen Handler. Die 54 Endpunktwerkzeuge bleiben unverändert bestehen;
+// dieser Typ liegt daneben und nicht darüber.
 //
-// Bezeichner und Aufzählungswerte sind englisch (E4); deutsch sind nur die Texte, die ein
-// Agent liest.
+// Bezeichner und Aufzählungswerte sind englisch (CONTRIBUTING.md Abschnitt 5); deutsch sind
+// nur die Texte, die ein Agent liest.
 import type { EnvelopeShape, SuccessEnvelope } from "../http/envelope.js";
 import type { BucketName } from "../http/rate-limiter.js";
 import type { TimeoutTier } from "../http/client.js";
@@ -28,19 +28,20 @@ import type { BundleCheckId } from "./cross-checks.js";
 export type BundleArguments = Record<string, unknown>;
 
 /**
- * Die drei Fehlermodi aus Abschnitt 5 der Bauvorlage. Der Modus steht als Feld im Register
+ * Die drei Fehlermodi der Bündel. Der Modus steht als Feld im Register
  * und nicht im Code eines Handlers: Ein Bündel improvisiert im Fehlerfall nichts.
  */
 export type BundleFailureMode = "abort" | "independent" | "prefix";
 
 /**
- * Die Gründe, aus denen ein Bündel vorzeitig aufhört. Abschließend, aus Abschnitt 3.
+ * Die Gründe, aus denen ein Bündel vorzeitig aufhört. Abschließend.
  *
- * **`time_limit` ist ein Wert mehr, als Abschnitt 3 aufzählt**, und er ist begründet:
+ * **`time_limit` ist ein Wert mehr als die fünf, mit denen der Entwurf angetreten ist**, und
+ * er ist begründet:
  * `bb_reports_run` wartet auf eine serverseitige Berechnung und hört auf, wenn sein Zeitbudget
  * (`max_wait_seconds`) erschöpft ist. Das ist weder `rate_limit` noch `error` — den Lauf als
  * `error` zu bezeichnen behauptete einen Fehler, wo keiner vorliegt, und der Bericht wird in
- * aller Regel gerade fertig. Die fünf Werte der Bauvorlage stehen unverändert; kein anderes
+ * aller Regel gerade fertig. Die fünf ursprünglichen Werte stehen unverändert; kein anderes
  * Bündel muss den Zusatz benutzen.
  */
 export type BundleStopReason =
@@ -55,7 +56,7 @@ export type BundleStopReason =
  * Ein Schritt eines Bündels. Er trägt seinen eigenen Endpunkt und seinen eigenen Vertrag.
  *
  * `fallbackTool` ist Regel R7: Jede Lücke trägt den Einzelaufruf, der sie schließt. Die 54
- * Endpunktwerkzeuge bleiben nach N1 bestehen; ein Bündel ist nie die einzige Tür.
+ * Endpunktwerkzeuge bleiben neben den Bündeln bestehen; ein Bündel ist nie die einzige Tür.
  */
 export interface BundleStep {
   /** Interner Schlüssel, über den der Ablauf seinen Schritt nachschlägt. */
@@ -91,7 +92,7 @@ export type BundleOutcome =
       readonly incompleteDetail?: string;
     }
   | {
-      /** Es gibt nichts zu berichten: kein einziger Schritt war erfolgreich (Abschnitt 5). */
+      /** Es gibt nichts zu berichten: kein einziger Schritt war erfolgreich. */
       readonly kind: "error";
       readonly text: string;
     };
@@ -105,10 +106,11 @@ export type StepResult =
       readonly kind: "budget" | "rate_limit" | "error";
       /**
        * `true`, wenn der ganze Lauf sofort endet: `error_code` 3, 4 und 11 sowie zwei
-       * aufeinanderfolgende 5xx desselben Endpunkts (Abschnitt 5, Regel 3).
+       * aufeinanderfolgende 5xx desselben Endpunkts (`FATAL_ERROR_CODES` und
+       * `CONSECUTIVE_SERVER_ERRORS_UNTIL_STOP` in src/bundles/runtime.ts).
        */
       readonly fatal: boolean;
-      /** Der vollständige Fehlertext des bestehenden Renderers, Vierblockaufbau aus 5.8. */
+      /** Der vollständige Fehlertext des bestehenden Renderers, Vierblockaufbau. */
       readonly text: string;
       /** Eine Zeile für die Lückenliste, ohne Blöcke. */
       readonly summary: string;
@@ -121,9 +123,9 @@ export interface StepCall {
   readonly step: string;
   /** Der Body ohne `api_key`; der setzt ausschließlich die HTTP-Schicht. */
   readonly body?: Readonly<Record<string, unknown>>;
-  /** Der Wert des Pfadsegments bei einem Schritt mit Pfadvorlage (Plan 4.6). */
+  /** Der Wert des Pfadsegments bei einem Schritt mit Pfadvorlage. */
   readonly pathValue?: string | number;
-  /** `true` für jeden Aufruf nach dem ersten: nur dort wird auf den Eimer geschaut (6.5). */
+  /** `true` für jeden Aufruf nach dem ersten: nur dort wird auf den Eimer geschaut. */
   readonly additional?: boolean;
   /**
    * `error_code`-Werte, die für diesen Schritt ein **Zustand** und kein Fehler sind.
@@ -151,7 +153,7 @@ export interface BundleGap {
  */
 export interface BundleContext {
   readonly entry: BundleEntry;
-  /** Die wirksame Obergrenze `min(maxCalls, floor(BB_MCP_RATE_LIMIT / 3))` (6.3). */
+  /** Die wirksame Obergrenze `min(maxCalls, floor(BB_MCP_RATE_LIMIT / 3))`. */
   readonly maxCalls: number;
   /** Die Projektion aus `response_format`. */
   readonly projection: "concise" | "detailed";
@@ -189,7 +191,7 @@ export interface BundleContext {
    * nachweislich „nichts geschrieben". `bb_reports_run` ruft es unmittelbar nach dem
    * erfolgreichen `create` auf, und zwar auch im Erfolgsfall: Ab diesem Augenblick ist der
    * zuvor erzeugte Bericht desselben Typs ersetzt, und jede weitere Antwort dieses Laufs sagt
-   * das (Abschnitt 4.4 Risiko 1).
+   * das.
    */
   wrote(text: string): void;
   /**
@@ -203,7 +205,7 @@ export interface BundleContext {
   /**
    * Ersetzt den Block `[Wie]` der Fehlermeldung, falls dieser Lauf als Fehler endet.
    *
-   * Der Vierblockaufbau aus 5.8 bleibt dabei erhalten, ebenso der Zustandssatz: Ersetzt wird
+   * Der Vierblockaufbau bleibt dabei erhalten, ebenso der Zustandssatz: Ersetzt wird
    * ausschließlich die Handlungsanweisung. Gebraucht wird das, wo der allgemeine Katalogtext
    * einen Agenten in die falsche Richtung schickt — bei `error_code` 12 etwa lautet die
    * Anweisung der Spezifikation sinngemäß „warten und erneut anlegen", und genau das
@@ -234,9 +236,13 @@ export interface BundleEntry {
   readonly fields: readonly FieldSpec[];
   readonly serverOnlyFields: readonly string[];
   readonly steps: readonly BundleStep[];
-  /** Die deklarierte Aufrufobergrenze aus Abschnitt 6 Punkt 2. */
+  /**
+   * Die deklarierte Aufrufobergrenze dieses Bündels. Die wirksame ist zusätzlich durch das
+   * Minutenbudget des Betreibers gedeckelt; sie rechnet `effectiveMaxCalls` in
+   * src/bundles/runtime.ts aus.
+   */
   readonly maxCalls: number;
-  /** Token, die ohne Warten bereitliegen müssen, sonst Absage vor dem ersten Request (6.4). */
+  /** Token, die ohne Warten bereitliegen müssen, sonst Absage vor dem ersten Request. */
   readonly minTokens: number;
   readonly failureMode: BundleFailureMode;
   readonly crossChecks: readonly CrossCheckId[];

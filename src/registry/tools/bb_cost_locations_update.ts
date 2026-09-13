@@ -1,7 +1,8 @@
-// Werkzeug 48 von 54: `/cost-locations/update` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 48 von 54: `/cost-locations/update`.
 //
-// Klasse M, also `destructiveHint: true` und `idempotentHint: true` (Plan 3.3, Streitfrage
-// S5): Der Aufruf ersetzt die Bezeichnung, und kein Endpunkt liefert den Vorzustand zurück.
+// Klasse M, also `destructiveHint: true` und `idempotentHint: true` (die Begründung steht
+// bei `TOOL_CLASSES` in src/registry/classes.ts): Der Aufruf ersetzt die Bezeichnung, und
+// kein Endpunkt liefert den Vorzustand zurück.
 //
 // **Der Endpunkt ändert ausschließlich die Bezeichnung.** Der `code` ist der Identifikator
 // und lässt sich nicht ändern; einen Parameter dafür gibt es nicht.
@@ -57,7 +58,7 @@ export const bb_cost_locations_update: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Weder `data` noch `code` noch `rows`: Der Aufrufer erhält keine Bestätigung des neuen
   // Namens (`docs/api/stammdaten.md`).
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },

@@ -1,14 +1,14 @@
-// `_contract_warnings`: Feldname, erwarteter Typ, gesehener Typ (Plan 7.3).
+// `_contract_warnings`: Feldname, erwarteter Typ, gesehener Typ.
 //
 // Die Entscheidung dahinter ist die folgenreichste dieses Abschnitts: Ein **fehlendes oder
 // typwidriges bekanntes Feld bricht den Aufruf nicht ab**, wird aber gemeldet — und zwar in
 // **derselben Antwort, die der Agent liest**, nicht nur auf stderr, das kein Modell sieht.
 //
-// Kein Abbruch, weil die Spezifikation nachweislich falsch ist (Plan 0.3 Befund L2 und L4) und
+// Kein Abbruch, weil die Spezifikation nachweislich falsch ist und
 // ein harter Abbruch den Server bei jeder kleinen Anbieteränderung bei allen Nutzern
 // gleichzeitig unbrauchbar machen würde. Nicht stumm, weil genau hier die falschen Zahlen
 // entstehen: Ein `due_date`, das unter einem anderen Namen geliefert wird, sieht aus wie
-// „keine Fälligkeit" und ist in Wahrheit „falscher Feldname" (Plan 7.2).
+// „keine Fälligkeit" und ist in Wahrheit „falscher Feldname".
 
 /** Der Schlüssel, unter dem die Abweichungen in `structuredContent` stehen. */
 export const CONTRACT_WARNINGS_KEY = "_contract_warnings";
@@ -17,8 +17,8 @@ export const CONTRACT_WARNINGS_KEY = "_contract_warnings";
 export const SEEN_MISSING = "fehlt";
 
 /**
- * Eine Abweichung vom Antwortvertrag. Die drei Schlüssel sind genau die aus Plan 7.3; es
- * kommt keiner hinzu, damit die Struktur in der Antwort die bleibt, die der Plan zusagt.
+ * Eine Abweichung vom Antwortvertrag. Es sind genau diese drei Schlüssel; es
+ * kommt keiner hinzu, damit die Struktur in der Antwort für jeden Aufruf dieselbe ist.
  */
 export interface ContractWarning {
   /** Feldname im Original, so wie die API ihn führt beziehungsweise führen sollte. */
@@ -34,7 +34,7 @@ export interface ContractWarning {
  *
  * Sie ist die innere Form: Eine Liste mit 100 Zeilen, in denen dasselbe Feld fehlt, ergäbe
  * sonst 100 gleichlautende Einträge und verdrängte die Nutzdaten aus dem Kontext. Nach außen
- * geht je Abweichung **ein** Eintrag mit den drei Schlüsseln aus Plan 7.3; die Zahl der
+ * geht je Abweichung **ein** Eintrag mit den drei Schlüsseln; die Zahl der
  * betroffenen Zeilen steht in der Warnzeile des Textblocks.
  */
 export interface AggregatedWarning {
@@ -115,7 +115,7 @@ export function aggregateWarnings(
   return aggregated;
 }
 
-/** Die Form, die in `structuredContent` landet: genau die drei Schlüssel aus Plan 7.3. */
+/** Die Form, die in `structuredContent` landet: genau die drei Schlüssel. */
 export function warningsForStructuredContent(
   aggregated: readonly AggregatedWarning[],
 ): readonly ContractWarning[] {
@@ -123,7 +123,7 @@ export function warningsForStructuredContent(
 }
 
 /**
- * Die Warnzeile, mit der der Textblock beginnt (Plan 7.3, vierter Fall).
+ * Die Warnzeile, mit der der Textblock beginnt.
  *
  * Sie nennt jede Abweichung einzeln und sagt ausdrücklich, dass die Antwort trotzdem
  * geliefert wurde. Ein Agent, der nur den Text liest, muss daran erkennen können, welchem
@@ -155,7 +155,7 @@ export function contractWarningLine(
   );
 }
 
-/** Die Zeile für stderr, Stufe `warn` (Plan 7.3, letzte Spalte). Ohne Werte, nur Namen. */
+/** Die Zeile für stderr, Stufe `warn`. Ohne Werte, nur Namen. */
 export function contractWarningLogLine(
   toolName: string,
   specPath: string,

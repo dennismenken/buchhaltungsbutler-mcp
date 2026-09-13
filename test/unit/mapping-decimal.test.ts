@@ -10,13 +10,13 @@ import {
   sumCents,
 } from "../../src/mapping/decimal.js";
 
-// Plan 9.5 verlangt hier 100 Prozent Zweigabdeckung: „hier entstehen stille Datenfehler.
+// Hier gilt 100 Prozent Zweigabdeckung: „hier entstehen stille Datenfehler.
 // Beträge mit Punkt und mit Komma". Der naheliegende Fehler ist eine Gleitkommarechnung auf
 // Geld; diese Datei prüft, dass es sie hier nicht gibt.
 
 describe("parseAmountToCents, die gemessenen Formen der API", () => {
   it("liest die gemessenen Betragszeichenketten verlustfrei", () => {
-    // Gemessen am 2026-09-12 (Plan 0.3 Befund L3, live-befunde-orchestrator.md Befund 3).
+    // Gemessen am 2026-09-12 (Befund L3 in docs/api/live-befunde.md, dort auch „Befund 3“).
     expect(amountToCents("884.65")).toBe(88465);
     expect(amountToCents("-192.44")).toBe(-19244);
     expect(amountToCents("0.00")).toBe(0);
@@ -194,7 +194,7 @@ describe("sumCents und compareCents", () => {
   });
 });
 
-describe("amountStringToApiNumber, die Umwandlung am Rand (Plan 4.5)", () => {
+describe("amountStringToApiNumber, die Umwandlung am Rand", () => {
   it("erzeugt die JSON-Zahl, die die API erwartet", () => {
     expect(amountStringToApiNumber("884.65")).toBe(884.65);
     expect(amountStringToApiNumber("-192.44")).toBe(-192.44);

@@ -1,5 +1,4 @@
-// Bündel 2: über alle Seiten laufen und Kennzahlen statt Zeilen liefern (Bauvorlage 4.2, N3b
-// und drei Vorschläge aus N4).
+// Bündel 2: über alle Seiten laufen und Kennzahlen statt Zeilen liefern.
 //
 // **Der wichtigste Tokenentscheid steht im Schema: `max_rows` hat die Vorgabe 0.** „Alle
 // Zeilen" ist bei realen Beständen keine erfüllbare Zusage — eine volle Belegseite wiegt
@@ -501,7 +500,7 @@ async function run(ctx: BundleContext, args: Record<string, unknown>): Promise<B
   };
 
   const lines: string[] = [];
-  // Die Vertragsverletzung zuerst: Sie betrifft die Zahlen, die danach kommen (Plan 7.3).
+  // Die Vertragsverletzung zuerst: Sie betrifft die Zahlen, die danach kommen.
   if (violations !== null) {
     lines.push(violations.line);
   }

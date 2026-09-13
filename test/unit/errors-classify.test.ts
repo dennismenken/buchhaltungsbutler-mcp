@@ -40,7 +40,7 @@ function withoutComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
 }
 
-describe("Keine Gleichheitsvergleiche auf Meldungstexte (Plan 5.6, AP08 Punkt 2)", () => {
+describe("Keine Gleichheitsvergleiche auf Meldungstexte", () => {
   const sourceText = withoutComments(SOURCE);
 
   it("vergleicht nirgends mit === oder !== gegen eine Zeichenkette, die kein Klassenname ist", () => {
@@ -138,13 +138,13 @@ describe("Die elf Paare mit error_code 15", () => {
       "adding temporarily restricted",
     );
     expect(throttled.cls).toBe("transient");
-    // HTTP 400 wird nie wiederholt (5.3); eine Drosselung mit 400 wäre ein Widerspruch, und
+    // HTTP 400 wird nie wiederholt; eine Drosselung mit 400 wäre ein Widerspruch, und
     // die sichere Lesart ist die, die keinen weiteren Versuch nahelegt.
     expect(rejectedResult.cls).toBe("input");
   });
 
   it("liefert dieselbe Einstufung, wenn der Live-Text von der Spezifikation abweicht", () => {
-    // Der live gemessene Text (Plan 0.3 Befund L6) steht in keiner der beiden Quellen.
+    // Der live gemessene Text steht in keiner der beiden Quellen.
     const result = classifyPair("/receipts/get", 15, 400, "invalid field specified");
     expect(result.cls).toBe("input");
     expect(result.entry?.message).toBe("invalid sort field specified");

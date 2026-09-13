@@ -18,7 +18,7 @@ import {
 } from "../../src/response/truncate.js";
 import { goldenBody } from "../golden/index.js";
 
-// Plan 7.6 und 9.5: „eine Antwort mit 1000 Zeilen wird gekürzt, die Kürzung ausgewiesen, die
+// Die Zusage: „eine Antwort mit 1000 Zeilen wird gekürzt, die Kürzung ausgewiesen, die
 // Bestandszeile lügt nicht"; Base64 erscheint nie im Textblock.
 
 describe("Die Schätzung", () => {
@@ -28,13 +28,13 @@ describe("Die Schätzung", () => {
     expect(estimateTokensOfValue({ a: "b" })).toBe(estimateTokens('{"a":"b"}'));
   });
 
-  it("lädt keinen Tokenizer (Plan 4.10, 13.2)", () => {
+  it("lädt keinen Tokenizer", () => {
     // Belegt über die Zahl selbst: Sie ist genau die Zeichenrechnung und nicht die echte
     // Tokenzahl. Ein Tokenizer zur Laufzeit wäre eine vierte Abhängigkeit.
     expect(estimateTokens("Buchhaltung")).toBe(Math.ceil("Buchhaltung".length / CHARS_PER_TOKEN));
   });
 
-  it("kennt die harte Grenze aus 7.6", () => {
+  it("kennt die harte Grenze der Antwort", () => {
     expect(HARD_RESPONSE_TOKEN_LIMIT).toBe(20_000);
   });
 });
@@ -99,7 +99,7 @@ describe("fitRows", () => {
   });
 });
 
-describe("Die Kürzungsmeldung (Plan 7.6)", () => {
+describe("Die Kürzungsmeldung", () => {
   it("nennt bei detailed beide Zahlen, das Budget und beide Wege zum Rest", () => {
     const note = truncationNote(120, 281, 5000, "detailed");
     expect(note).toBe(
@@ -131,7 +131,7 @@ describe("Die Kürzungsmeldung (Plan 7.6)", () => {
   });
 });
 
-describe("Base64 erscheint nie im Textblock (Plan 7.6)", () => {
+describe("Base64 erscheint nie im Textblock", () => {
   it("erkennt eine eingebettete Datei an Länge und Zeichenvorrat", () => {
     const base64 = "QUJDRA==".repeat(100);
     expect(looksLikeBase64(base64)).toBe(true);

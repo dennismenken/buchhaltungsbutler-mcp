@@ -1,9 +1,9 @@
-// Ein Server mit ausschließlich den Bündelwerkzeugen, für die Tests aus Plan 9.
+// Ein Server mit ausschließlich den Bündelwerkzeugen, für die Tests.
 //
 // Er wird über `registerBundles` gebaut und nicht über `createServer`: Die 54
 // Endpunktwerkzeuge spielen in diesen Tests keine Rolle, und ein eigener Limiter lässt sich
 // nur auf diesem Weg einspeisen. Dass `createServer` die Bündel ebenfalls registriert, prüft
-// `test/bundles/contract.test.ts` getrennt.
+// `test/bundles/read-bundles-contract.test.ts` getrennt.
 
 import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport, McpServer } from "@modelcontextprotocol/server";

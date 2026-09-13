@@ -1,6 +1,6 @@
-// Werkzeug 17 aus Plan 3.8: `/invoices/create`, die endgültige Ausgangsrechnung.
+// Werkzeug 17: `/invoices/create`, die endgültige Ausgangsrechnung.
 //
-// Klasse B (Plan 3.3): Das Werkzeug legt ein neues, nummeriertes Dokument an und
+// Klasse B: Das Werkzeug legt ein neues, nummeriertes Dokument an und
 // überschreibt nichts, trägt deshalb `destructiveHint: false` — die Warnung läuft über den
 // Pflichtsatz U4 und den `title` im Freigabedialog. Unumkehrbarkeit und Destruktivität
 // fallen hier auseinander.
@@ -14,7 +14,7 @@
 //      **stillschweigend verworfen** (Spezifikation, DATEV-Kompatibilität).
 //
 // `verifyWith` trägt `{ kind: "none" }`: Die API führt unterhalb von `/invoices/` keinen
-// lesenden Pfad (Plan 2.1, 3.5 U4, P10). Nach einem Zeitlimit bleibt die Weboberfläche.
+// lesenden Pfad. Nach einem Zeitlimit bleibt die Weboberfläche.
 
 import { z } from "zod";
 
@@ -33,11 +33,11 @@ import type { FieldSpec, ToolEntry } from "../types.js";
 
 /**
  * Die Mengengrenze der Positionsliste: `min(50, BB_MCP_MAX_BATCH)`, sobald die
- * Konfiguration aufgelöst ist (Plan 4.7 Q4, 4.8).
+ * Konfiguration aufgelöst ist.
  *
  * Die Abfrage auf `isConfigLoaded()` ist kein Zierrat: Das Register wird auch ohne
  * aufgelöste Konfiguration geladen, nämlich von den dreizehn Registerprüfungen, und
- * `batchLimit()` wirft dann (Plan 6.4 Punkt 7). Ohne Konfiguration gilt deshalb das
+ * `batchLimit()` wirft dann. Ohne Konfiguration gilt deshalb das
  * API-Maximum. Die **wirksame** Grenze erzwingt ohnehin Q4 zur Laufzeit aus der
  * eingefrorenen Konfiguration, zusätzlich Guard 5; ein zu großzügiges `maxItems` im
  * angekündigten Schema kostet höchstens eine Ablehnung vor dem Request, nie einen falschen
@@ -51,7 +51,7 @@ const ITEM_LIMIT = isConfigLoaded() ? batchLimit() : API_MAX_BATCH;
  * Die Beschreibung kommt aus dem Baustein selbst, solange der Eintrag keine eigene nennt.
  * Das hält Schema und Registereintrag an einer Quelle; `src/schema/build.ts` setzt die
  * Beschreibung des Eintrags sonst über die des Bausteins, und eine abweichende zweite
- * Fassung wäre genau die stille Doppelung, die Plan 4.5 vermeidet.
+ * Fassung wäre genau die stille Doppelung, die dieser Aufbau vermeidet.
  */
 function field(spec: {
   name: string;
@@ -274,7 +274,7 @@ export const bb_invoices_create: ToolEntry = {
     field({ name: "recurring_date_next", schema: dateValue(RECURRING_DATE_DESCRIPTION) }),
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)." }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt." }],
   // Die drei Felder stehen **auf oberster Ebene** des Umschlags und nicht unter `data`
   // (Spezifikation `InvoicesCreate_Success`); deshalb `container: "none"`.
   responseContract: {

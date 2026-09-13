@@ -1,5 +1,5 @@
 /**
- * Was ein Clientadapter können muss (Plan 8.3, 2 Dateibaum).
+ * Was ein Clientadapter können muss (2 Dateibaum).
  *
  * Hier steht der Vertrag, die Wirtsumgebung und der gemeinsame Bauplan der JSON-Adapter.
  * Die **Liste** der Adapter steht dagegen in `src/cli/run.ts`: Diese Datei darf keinen
@@ -11,8 +11,8 @@
  *    {@link ClientPreview} und {@link WriteOutcome} zurück; ausgegeben wird im Unterbefehl.
  *    Damit ist jeder Adapter ohne Terminal prüfbar.
  * 2. **Jeder Dateizugriff läuft über {@link ClientHost}.** `writeText` legt vor jeder
- *    Änderung an einer bestehenden Datei eine Sicherung an und nennt deren Pfad. Die Zusage
- *    aus 8.2 Schritt 7 hängt damit an einer Stelle und nicht an zehn Adaptern.
+ *    Änderung an einer bestehenden Datei eine Sicherung an und nennt deren Pfad. Die
+ *    Zusage hängt damit an einer Stelle und nicht an zehn Adaptern.
  */
 
 import { spawnSync } from "node:child_process";
@@ -32,7 +32,7 @@ import type { CredentialVarName } from "../../config/env.js";
  * lang — `mcp__buchhaltungsbutler__bb_postings_create_for_transaction_batch` kam damit auf
  * 65 Zeichen und fiel in einem solchen Wirt aus, erfahrungsgemäß ohne sprechende Meldung.
  * `bbutler` ist derselbe Name, den das `.mcpb`-Bundle mit `bbutler-mcp` und der Binärname
- * ohnehin führen; das Präfix schrumpft damit auf 14 Zeichen. Entscheidung E1 bleibt unberührt:
+ * ohnehin führen; das Präfix schrumpft damit auf 14 Zeichen. Am Werkzeugsatz ändert das nichts:
  * Gekürzt wurde der **Eintragsname**, kein einziger der 59 ausgelieferten Werkzeugnamen.
  *
  * Die Grenze hängt seither nicht mehr an dieser Erklärung, sondern an
@@ -54,7 +54,7 @@ export const LEGACY_SERVER_NAMES: readonly string[] = Object.freeze(["buchhaltun
 /** Das Paket, das `npx` lädt. Genau der Name aus der `package.json`. */
 export const PACKAGE_SPEC = PACKAGE_NAME;
 
-/** Der Binärname des Pakets (Plan 13.7). */
+/** Der Binärname des Pakets. */
 export const BINARY_NAME = "bbutler-mcp";
 
 /**
@@ -68,7 +68,7 @@ export const LEGACY_ENTRY_NOTE =
   "Er wird von diesem Weg nicht selbst entfernt; sonst stünde der Server doppelt in der " +
   `Konfiguration. "${BINARY_NAME} uninstall" entfernt beide Namen.`;
 
-/** Die zwölf Clientkürzel aus Plan 8.1, in der Reihenfolge des Plans. */
+/** Die zwölf Clientkürzel, in der Reihenfolge der Anzeige. */
 export const CLIENT_KEYS = [
   "claude-code",
   "claude-desktop",
@@ -93,7 +93,7 @@ export function isClientKey(value: string): value is ClientKey {
 
 export type ConfigScope = "user" | "project";
 
-/** Die beiden Startvarianten aus Plan 8.2 Schritt 5. */
+/** Die beiden Startvarianten. */
 export type StartVariant = "npx" | "global";
 
 /** Befehl und Argumente, mit denen der Client diesen Server startet. */
@@ -103,7 +103,7 @@ export interface ServerLaunch {
 }
 
 /**
- * Wie die Zugangsdaten in den Eintrag kommen (Plan 8.2 Schritt 6).
+ * Wie die Zugangsdaten in den Eintrag kommen.
  *
  * - `none`: Der Eintrag enthält keine Zugangsdaten. Der Server liest sie aus der
  *   Zugangsdatendatei. Das ist die Vorgabe und die Empfehlung.
@@ -139,7 +139,7 @@ export interface ClientPlan {
   readonly credentials: CredentialPlacement;
   /** Weitere Variablen des Eintrags, niemals geheim: `BB_MCP_READ_ONLY`, `BB_PROFILE`. */
   readonly extraEnv: Readonly<Record<string, string>>;
-  /** `true` erlaubt, einen bestehenden Eintrag zu ersetzen (Plan 8.2 Schritt 7). */
+  /** `true` erlaubt, einen bestehenden Eintrag zu ersetzen. */
   readonly allowOverwrite: boolean;
 }
 
@@ -167,7 +167,7 @@ export function buildPlan(options: ClientPlanOptions): ClientPlan {
 export function serverLaunch(variant: StartVariant, binaryPath: string | null): ServerLaunch {
   if (variant === "global") {
     // Der absolute Pfad, nicht der bloße Name: Desktop-Anwendungen starten nicht aus einer
-    // Login-Shell und haben deshalb oft ein anderes PATH (Plan 8.2 Schritt 5).
+    // Login-Shell und haben deshalb oft ein anderes PATH.
     return { command: binaryPath ?? BINARY_NAME, args: [] };
   }
   return { command: "npx", args: ["-y", PACKAGE_SPEC] };
@@ -202,7 +202,7 @@ export interface ClientHost {
   readText(target: string): string | null;
   /**
    * Schreibt die Datei. Existiert sie, entsteht vorher `<datei>.bak-<zeitstempel>`, und der
-   * Pfad der Sicherung steht im Ergebnis (Plan 8.2 Schritt 7).
+   * Pfad der Sicherung steht im Ergebnis.
    */
   writeText(target: string, content: string): WriteTextResult;
   /** Der absolute Pfad eines Programms im Suchpfad, oder `null`. */
@@ -335,7 +335,7 @@ export interface ClientDetection {
 export interface ClientAdapter {
   readonly key: ClientKey;
   readonly label: string;
-  /** Der Weg in einem Halbsatz, wie in der Tabelle aus 8.3. */
+  /** Der Weg in einem Halbsatz, wie in der Übersicht der Clients. */
   readonly way: string;
   /** `false` bei den Einträgen, die nur ausgegeben werden (Zed, Continue, Jan). */
   readonly automatic: boolean;
@@ -348,7 +348,7 @@ export interface ClientAdapter {
   preview(plan: ClientPlan, host: ClientHost): ClientPreview;
   apply(plan: ClientPlan, host: ClientHost): WriteOutcome;
   remove(plan: ClientPlan, host: ClientHost): WriteOutcome;
-  /** Was nach dem Schreiben zu tun ist, damit die Änderung wirkt (Plan 8.2 Schritt 8). */
+  /** Was nach dem Schreiben zu tun ist, damit die Änderung wirkt. */
   readonly finishNote: string;
   /** Die Prüfzeile des Clients, falls es eine gibt. */
   readonly verifyCommand: string | null;
@@ -436,7 +436,7 @@ export interface JsonFileAdapterSpec {
    * Die Ebenen, in denen die Datei angelegt werden darf. Vorgesehen ist ausschließlich
    * `project`: Der Ort einer Projektdatei ist durch die Konvention im aktuellen Verzeichnis
    * festgelegt und nicht geraten. Für Dateien im Benutzerprofil bleibt es bei der Regel aus
-   * 8.3, dass nur ausgegeben wird, solange die Datei fehlt.
+   * dass nur ausgegeben wird, solange die Datei fehlt.
    */
   readonly createInScopes?: readonly ConfigScope[];
   readonly finishNote: string;
@@ -512,7 +512,7 @@ export function existingEntryReason(
  * Der gemeinsame Bauplan der sechs Adapter, die reines JSON schreiben.
  *
  * Reines JSON ist verlustfrei änderbar, deshalb wird hier geschrieben und nicht nur
- * ausgegeben (Plan 8.3). Die Datei wird vollständig neu formatiert; das ist der Preis und
+ * ausgegeben. Die Datei wird vollständig neu formatiert; das ist der Preis und
  * der Grund, warum Zed mit seinem JSONC ausdrücklich **nicht** so behandelt wird.
  */
 function mayCreate(spec: JsonFileAdapterSpec, scope: ConfigScope): boolean {
@@ -632,9 +632,9 @@ export function createJsonFileAdapter(spec: JsonFileAdapterSpec): ClientAdapter 
         };
       }
       if (!host.exists(target) && !mayCreate(spec, plan.scope)) {
-        // 8.3: Jeder Adapter prüft vor dem Schreiben, ob die Datei existiert, und gibt sonst
+        // Jeder Adapter prüft vor dem Schreiben, ob die Datei existiert, und gibt sonst
         // nur aus. Eine Datei im Benutzerprofil anzulegen, deren Ort nicht gemessen ist,
-        // wäre genau das Raten, das der Plan ausschließt.
+        // wäre genau das Raten, das dieser Assistent ausschließt.
         return {
           kind: "manual",
           reason:

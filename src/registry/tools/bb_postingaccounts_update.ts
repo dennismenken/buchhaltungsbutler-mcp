@@ -1,8 +1,8 @@
-// Werkzeug 42 von 54: `/settings/update/postingaccount` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 42 von 54: `/settings/update/postingaccount`.
 //
-// Klasse M, also `destructiveHint: true` und `idempotentHint: true` (Plan 3.3, Streitfrage
-// S5): Der Aufruf ersetzt einen bestehenden Wert, und kein Endpunkt der API liefert den
-// Vorzustand zurück.
+// Klasse M, also `destructiveHint: true` und `idempotentHint: true` (die Begründung steht
+// bei `TOOL_CLASSES` in src/registry/classes.ts): Der Aufruf ersetzt einen bestehenden Wert,
+// und kein Endpunkt der API liefert den Vorzustand zurück.
 //
 // **Der Endpunkt kann nur den Namen ändern.** Er führt genau zwei fachliche Parameter, beide
 // `required: true`: die Nummer des Kontos und dessen neuen Namen. Nummer, Vorlagekonto und
@@ -10,7 +10,7 @@
 //
 // Die Antwort ist ein `data`-Objekt mit genau zwei Feldern. `type`, `subtype` und die
 // Vorlagefelder fehlen darin, anders als bei `/settings/get/postingaccounts` — ein weiterer
-// Beleg dafür, warum der Antwortvertrag je Endpunkt gilt und nicht je Fachobjekt (Plan 7.2).
+// Beleg dafür, warum der Antwortvertrag je Endpunkt gilt und nicht je Fachobjekt.
 
 import { boundedText, identifierValue } from "../../schema/primitives.js";
 import type { ToolEntry } from "../types.js";
@@ -58,7 +58,7 @@ export const bb_postingaccounts_update: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   responseContract: {
     container: "data",
     fields: { name: "string", postingaccount_number: "id-string" },

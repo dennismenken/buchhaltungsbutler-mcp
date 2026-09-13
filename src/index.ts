@@ -1,9 +1,9 @@
-// Der programmatische Export des Pakets (Plan 2, Dateibaum).
+// Der programmatische Export des Pakets (Dateibaum).
 //
 // **Seiteneffektfrei.** Dieses Modul führt beim Laden nichts aus: Es löst keine Konfiguration
 // auf, setzt keinen Dispatcher, hängt keinen Signallauscher ein und schreibt keine Zeile. Wer
 // es importiert, bekommt Bausteine und keine laufende Anwendung. Der Prozesseinstieg ist
-// `src/cli.ts` (AP15), und er ruft {@link runStdioServer}.
+// `src/cli.ts`, und er ruft {@link runStdioServer}.
 //
 // Exportiert wird, was ein Einbettender braucht: der Aufbau des Servers, das Register samt
 // seinen Typen und die Stellen, an denen die Konfiguration aufgelöst wird. Bewusst **nicht**
@@ -82,7 +82,7 @@ export type {
 
 // --- Die Bündelwerkzeuge --------------------------------------------------------------
 
-// Das Verzeichnis der Bündel liegt neben dem Register und nicht darin (N1: die 54
+// Das Verzeichnis der Bündel liegt neben dem Register und nicht darin (die 54
 // Endpunktwerkzeuge bleiben unverändert). Ausgeliefert werden beide Listen gemeinsam, und wer
 // die ausgelieferte Werkzeugmenge braucht, braucht deshalb beide: Die Werkzeugliste des
 // Bundle-Manifests entsteht in `scripts/build-mcpb.ts` aus genau diesen beiden Ausfuhren des

@@ -6,7 +6,7 @@ auf npm, die erste eingeschlossen.
 Diese Liste wird von oben nach unten abgearbeitet. Jeder Punkt nennt den Befehl und das
 erwartete Ergebnis; ein Punkt, dessen Ergebnis abweicht, wird geklärt und nicht übersprungen.
 
-**Was der Umsetzungs-Workflow ausdrücklich nicht getan hat** (Plan 11.2, AP21): kein
+**Was bei der Vorbereitung ausdrücklich nicht getan wurde:** kein
 `npm publish`, auch nicht als Probelauf gegen eine andere Registry; kein `git tag`, kein
 `git push`; kein Anlegen des öffentlichen GitHub-Repositorys; kein Auslösen von `publish.yml`,
 weder über einen Tag noch über `workflow_dispatch`. Die beiden unumkehrbaren Schritte —
@@ -19,10 +19,10 @@ also zum Beispiel `0.1.0`; `<tag>` ist dieselbe Version mit `v` davor, also `v0.
 
 ---
 
-## 0. Befunde aus AP21, vor allem Weiteren zu klären (Stand 2026-09-13: abgehakt)
+## 0. Befunde aus der Vorbereitung, vor allem Weiteren zu klären (Stand 2026-09-13: abgehakt)
 
-Diese Punkte wurden beim Vorbereiten der Veröffentlichung gefunden. Sie stammen nicht aus
-diesem Arbeitspaket und wurden hier deshalb gemeldet und nicht in ihm behoben; behoben wurden
+Diese Punkte wurden beim Vorbereiten der Veröffentlichung gefunden. Sie gehören nicht zu dieser
+Liste und wurden hier deshalb gemeldet statt nebenbei behoben; behoben wurden
 sie inzwischen an anderer Stelle, jeder Punkt nennt Datum und Messung. **Solange einer davon
 offen ist, scheitert `publish.yml` an den eigenen Prüfschritten, und zwar vor `npm publish`.**
 Das ist die Absicht: Ein roter Lauf ist billiger als eine veröffentlichte Fassung, die nicht
@@ -31,28 +31,34 @@ Das ist die Absicht: Ein roter Lauf ist billiger als eine veröffentlichte Fassu
 **Stand 2026-09-13: Alle drei Punkte dieses Abschnitts sind abgehakt.** `pnpm typecheck` und
 `pnpm test` wurden am 2026-09-13 selbst nachgemessen und waren grün; kein Prüfschritt von
 `publish.yml` steht der Veröffentlichung damit noch im Weg. Was bleibt, ist keine Prüfung,
-sondern eine **Entscheidung**: der Zielwert des Tokenbudgets (Unterpunkt zu P11, dazu
-`docs/entwicklung/befund-tokenbudget.md`). Der **Nachtrag** in diesem Unterpunkt nennt eine
-Anhebung auf 49.000, die diese Liste nicht bestätigen kann und die der Projektinhaber prüfen
-muss.
+sondern eine **Bestätigung**: der Zielwert des Tokenbudgets (Unterpunkt zur Prüfung P11 in
+`test/registry/token-budget.test.ts`, dazu `docs/entwicklung/tokenbudget.md`). Die Anhebung auf
+49.000 steht inzwischen deckungsgleich an allen drei Stellen — `src/registry/budget.ts`,
+`CHANGELOG.md` und **Nachtrag II** in diesem Unterpunkt; das ist am 2026-09-13 selbst
+nachgemessen. Belegt ist damit, dass die Anhebung dokumentiert ist, nicht, dass der
+Projektinhaber sie getroffen hat. Genau diese Bestätigung gehört vor die Veröffentlichung.
 
 - [x] **`pnpm typecheck` ist grün.** ~~Am 2026-09-13 war er rot:
       `src/upload/ssrf.ts(645,18): error TS2322: Type 'GuardedLookup' is not assignable to
       type 'LookupFunction'` — unter `exactOptionalPropertyTypes` passt `family?: number |
       "IPv4" | "IPv6" | undefined` aus den Node-Typen nicht auf die engere Signatur des
-      Wächters. Die Datei gehört dem Arbeitspaket, das `src/upload/` verantwortet.~~
+      Wächters.~~
       **Erledigt am 2026-09-13.** Selbst nachgemessen am 2026-09-13: `pnpm typecheck` endet
       mit **Rückgabewert 0**, und `tsc --noEmit` gibt keine einzige Diagnose aus; der genannte
       Fehler in `src/upload/ssrf.ts` tritt nicht mehr auf. Die Ausgabe des Laufs stammt
       vollständig aus dem im selben Skript vorgeschalteten `pnpm generate` (fünf Generatoren,
-      54 Werkzeuge) — das ist erwartet und keine `tsc`-Ausgabe.
+      54 Werkzeuge) — das ist erwartet und keine `tsc`-Ausgabe. **Die 54 sind hier richtig:** Der
+      Generator schreibt den Registerindex der 54 Endpunktwerkzeuge; die fünf Bündelwerkzeuge
+      sind handgeschrieben und kommen im Generat nicht vor. Ausgeliefert werden 59.
+      Zuletzt nachgemessen am 2026-09-13 um 19:41 Uhr: Rückgabewert 0, keine `tsc`-Diagnose.
 - [x] **`pnpm test` ist grün.** ~~Am 2026-09-13 waren drei Dateien rot, 1232 von 1237
-      Prüfungen grün.~~ **Erledigt am 2026-09-13.** Selbst nachgemessen am 2026-09-13:
-      **83 Testdateien, alle Prüfungen grün**, Rückgabewert 0, keine rote Datei — um 04:01 Uhr
-      1339 von 1339, um 04:07 Uhr 1340 von 1340. Die drei damals roten Dateien sind darin
+      Prüfungen grün.~~ **Erledigt am 2026-09-13.** Zuletzt selbst nachgemessen am 2026-09-13
+      um 19:33 Uhr: **99 Testdateien, 1577 von 1577 Prüfungen grün**, Rückgabewert 0, keine rote
+      Datei. Frühere Läufe desselben Tages meldeten 83 Dateien mit 1339 beziehungsweise 1340
+      Prüfungen; die Zahl wächst mit jeder neuen Prüfung, und die tragende Aussage ist die
+      Vollständigkeit, nicht die absolute Zahl. Die drei damals roten Dateien sind darin
       enthalten und wurden zusätzlich einzeln nachgefahren (token-budget, secrets, eval: je
-      grün). Die tragende Aussage ist die Vollständigkeit, nicht die absolute Zahl — sie wächst
-      mit jeder neuen Prüfung.
+      grün).
       Was aus den drei Unterpunkten geworden ist:
       - ~~`test/registry/token-budget.test.ts` (P11): 41.569 Token für 54 Definitionen gegen
         eine Grenze von 32.000.~~ **Erledigt am 2026-09-13, ohne die Grenze anzuheben.** Die
@@ -60,9 +66,11 @@ muss.
         Zielwert; P11 meldet den Überschuss (48.305 Token) bei jedem Lauf auf stderr und
         bricht an der getrennten Sperrgrenze `TOOL_DEFINITION_TOKEN_REGRESSION_LIMIT` ab,
         die nur weiteres Wachstum verhindert. Der Befund selbst bleibt offen und steht in
-        `docs/entwicklung/befund-tokenbudget.md` sowie in `CHANGELOG.md`. **Den Zielwert auf
+        `docs/entwicklung/tokenbudget.md` sowie in `CHANGELOG.md`. **Den Zielwert auf
         den gemessenen Stand anzuheben ist weiterhin eine Entscheidung des Projektinhabers
-        mit Eintrag in `CHANGELOG.md`** (Plan 4.10), keine Nebenwirkung dieser Liste.
+        mit Eintrag in `CHANGELOG.md`**, keine Nebenwirkung dieser Liste: Vorher sind die
+        Sparmaßnahmen auszuschöpfen, und eine Grenze, die stillschweigend mitwächst, misst
+        nichts mehr.
 
         **Nachtrag vom 2026-09-13, 04:04 Uhr — nicht bestätigt, bitte prüfen:** Der Absatz
         darüber beschreibt die Lage bis zu diesem Zeitpunkt. Seither steht in
@@ -85,8 +93,13 @@ muss.
         damit zur Deckung gebracht. **Offen bleibt genau eine Sache, und die kann diese Liste
         nicht abnehmen:** Ein Eintrag im Änderungsprotokoll belegt, dass die Anhebung
         dokumentiert ist, nicht, dass der Projektinhaber sie getroffen hat. Diese Bestätigung
-        gehört vor die Veröffentlichung. Gegenprobe am 2026-09-13: `pnpm measure-tokens`
-        meldet `54 Werkzeugdefinitionen: 197.528 Zeichen, 48.305 Token (Grenze 49.000).`
+        gehört vor die Veröffentlichung. Gegenprobe, zuletzt am 2026-09-13 um 19:32 Uhr:
+        `pnpm measure-tokens` meldet `54 Werkzeugdefinitionen: 197.802 Zeichen, 48.368 Token
+        (Grenze 49.000).` **Die 54 in dieser Zeile sind richtig und keine veraltete Zahl:**
+        Gezählt werden die 54 Endpunktdefinitionen, die zusammen unter
+        `TOTAL_TOOL_DEFINITION_TOKEN_BUDGET` fallen. Die fünf Bündel haben mit
+        `BUNDLE_DEFINITION_TOKEN_BUDGET` ein eigenes Budget und stehen in derselben Ausgabe als
+        `Gruppe bundles: 6.852 Token (Grenze 6.950).` Ausgeliefert werden 54 + 5 = 59 Werkzeuge.
       - ~~`test/registry/secrets.test.ts` (P9): zehn Golden-Dateien gelten als verdächtig, unter
         anderem `test/golden/entries.ts` wegen des Wortes `api_key` und mehrere JSON-Dateien
         wegen langer Zeichenketten (Dateiinhalte in Base64, Prüfsummen).~~ **Geklärt am
@@ -112,16 +125,18 @@ muss.
         Gegenprobe am 2026-09-13: ein Suchlauf über `test/golden/` nach einem der vier
         Bezeichner in Schlüsselposition liefert keinen Treffer.
       - ~~`test/eval/tasks.test.ts`: drei der elf Evaluationsaufgaben (6, 8 und 11).~~
-        **Erledigt am 2026-09-13.** Behoben wurde, wie Plan 9.8 es verlangt, **am Code und
-        nicht an der Aufgabenstellung**: E-1 (V4) das verlorene Vorzeichen in
-        `src/response/sanitize.ts`, E-2 (V6) die Kürzung der Berichtsnutzdaten in
-        `src/response/table.ts`, E-3 (V2) die Schemameldung mit „undefined“ in
-        `src/server/register-tools.ts`. Die drei Prüfungen E-1 bis E-3 am Ende der Datei
-        halten seither den **behobenen** Zustand fest statt des Mangels; die Datei läuft mit
-        19 von 19 Prüfungen grün. Die Befundlage dazu steht in
-        `docs/entwicklung/befund-evaluation.md`.
-- [x] **GitHub Actions sind auf einen Commit-SHA gepinnt.** Plan 13.3 verlangt das vor dem
-      ersten CI-Lauf. **Erledigt am 2026-09-13.** `ci.yml`, `drift.yml` und `publish.yml`
+        **Erledigt am 2026-09-13.** Behoben wurde **am Code und nicht an der
+        Aufgabenstellung** — ein Fehlschlag im Evaluationslauf ist ein Befund gegen den Text
+        der Werkzeuge und nicht dadurch aus der Welt zu schaffen, dass man die Aufgabe
+        umformuliert: E-1 das verlorene Vorzeichen in `src/response/sanitize.ts`, E-2 die
+        Kürzung der Berichtsnutzdaten in `src/response/table.ts`, E-3 die Schemameldung mit
+        „undefined“ in `src/server/register-tools.ts`. Die drei Prüfungen E-1 bis E-3 am
+        Ende der Datei halten seither den **behobenen** Zustand fest statt des Mangels; die
+        Datei läuft mit 19 von 19 Prüfungen grün.
+- [x] **GitHub Actions sind auf einen Commit-SHA gepinnt.** Das war vor dem ersten CI-Lauf zu
+      erledigen: Die drei Actions stammen aus einer Empfehlung, die `npm view` nicht abdeckt und
+      die deshalb nicht selbst nachgeprüft war; sie waren gegen die jeweilige Release-Seite zu
+      prüfen und dann zu pinnen. **Erledigt am 2026-09-13.** `ci.yml`, `drift.yml` und `publish.yml`
       nennen keine Tags mehr, sondern je `uses:`-Zeile einen 40-stelligen Commit-SHA mit dem
       Tag als Kommentar dahinter. Ein Tag ist verschiebbar; ein SHA nicht. Für `publish.yml`
       wog das am schwersten, weil dieser Lauf über `id-token: write` ein
@@ -141,7 +156,8 @@ muss.
       `git rev-parse v6.1.0^{commit}` und nicht den ersten Wert, den die API ausgibt.
       Der Wechsel ist dort außerdem nicht folgenlos: Der verschiebbare Tag `v6` zeigte am
       2026-09-13 noch auf `v6.0.10`, nicht auf `v6.1.0`. Die Pinnung hebt die tatsächlich
-      eingesetzte Fassung also von 6.0.10 auf 6.1.0, wie Plan 13.3 es nennt. Zwischen beiden
+      eingesetzte Fassung also von 6.0.10 auf 6.1.0, also auf die beim Prüfen aktuelle
+      Fassung. Zwischen beiden
       liegt genau ein Commit („feat: support pnpm v12“), der an `action.yml` nur einen
       Beschreibungstext ändert und keine Eingabe entfernt. Dieses Projekt steht auf
       `pnpm@10.34.3`; der neue Zweig für pnpm 12 wird hier nicht betreten. Bei
@@ -161,7 +177,8 @@ muss.
       `git rev-parse --abbrev-ref HEAD` → `main`.
 - [ ] **Abhängigkeiten genau nach Lockfile.**
       `pnpm install --frozen-lockfile` → endet mit Rückgabewert 0. Meldet pnpm eine
-      Abweichung zum Lockfile, ist das Lockfile nicht eingecheckt worden (Plan 13.7).
+      Abweichung zum Lockfile, ist das Lockfile nicht in der eingecheckten Fassung; es gehört
+      ins Repository, siehe Abschnitt 2.
 - [ ] **Die eingecheckten Generate passen zur Spezifikation.**
       `pnpm generate && git diff --exit-code` → **keine Ausgabe**, Rückgabewert 0.
       Bei einer Abweichung: erst den Grund klären, dann das Generat committen.
@@ -175,12 +192,13 @@ muss.
       … = <l> Zeichen (…, Grenze 64, Abstand <64-l>).` Die Prüfung geht über **jedes** Werkzeug
       aus `TOOL_ENTRIES` und `BUNDLE_ENTRIES` und nennt im Fehlerfall den längsten Namen samt
       Länge. Der Hebel bei einem Verstoß ist `SERVER_NAME` in `src/cli/clients/types.ts`, denn
-      er wirkt auf alle Namen zugleich; einen ausgelieferten Werkzeugnamen zu ändern verbietet
-      Entscheidung E1.
+      er wirkt auf alle Namen zugleich; einen ausgelieferten Werkzeugnamen zu ändern ist dagegen
+      ausgeschlossen, weil der Werkzeugsatz ein Werkzeug je Endpunkt unter festem Namen führt.
       *Am 2026-09-13 selbst gemessen: 59 Werkzeuge, Präfix `mcp__bbutler__` (14 Zeichen),
       längster Name `mcp__bbutler__bb_postings_create_for_transaction_batch` = 54 Zeichen,
       Abstand 10. Vorher, mit `SERVER_NAME = "buchhaltungsbutler"`, waren es 65 Zeichen und
-      damit eines zu viel (Befund B1 in `docs/entwicklung/buendelwerkzeuge.md` Abschnitt 12).*
+      damit eines zu viel. Gekürzt wurde allein der Name des Konfigurationseintrags; kein
+      ausgelieferter Werkzeugname wurde angefasst.*
 - [ ] **Der gekürzte Eintragsname ist überall derselbe.** Seit der Kürzung auf `bbutler` führen
       ältere Installationen den Eintrag noch unter `buchhaltungsbutler`. Die Prüfung lief früher
       nur über `src/` und hat deshalb übersehen, dass die gesamte Installationsanleitung der
@@ -205,10 +223,10 @@ muss.
 
 ---
 
-## 2. Die Felder der `package.json` gegen Plan 13.7
+## 2. Die Felder der `package.json`
 
-Diese Felder werden **geprüft und nicht geändert**. `package.json` gehört AP01; jede
-Abweichung ist ein Befund und wird dort behoben, nicht hier.
+Diese Felder werden **geprüft und nicht geändert**. Jede Abweichung ist ein Befund und wird an
+der `package.json` behoben, nicht in dieser Liste.
 
 - [ ] **Modulart und Dateiliste.**
       `node -p "const p=require('./package.json'); [p.type, JSON.stringify(p.files)].join(' ')"`
@@ -231,16 +249,17 @@ Abweichung ist ein Befund und wird dort behoben, nicht hier.
       Nach `pnpm build`: `ls -l dist/cli.js dist/index.js`
       → `dist/cli.js` mit Modus `755`, `dist/index.js` **ohne** Ausführungsrecht.
 
-*Stand 2026-09-13: Alle sieben Punkte dieses Abschnitts waren erfüllt; eine Abweichung von
-13.7 wurde nicht gefunden.*
+*Stand 2026-09-13: Alle sieben Punkte dieses Abschnitts waren erfüllt; eine Abweichung wurde
+nicht gefunden.*
 
 ---
 
-## 3. Der Vertragslauf gegen die echte API (Plan 9.7, blockierend)
+## 3. Der Vertragslauf gegen die echte API (blockierend)
 
 Der Lauf ruft die 15 lesenden Endpunkte je einmal auf und vergleicht Feldmenge und JSON-Typen
 mit dem `responseContract` des Registers. **Er kann nicht in der öffentlichen CI laufen**, weil
-er echte Zugangsdaten braucht (Plan 9.1). Deshalb ist er hier ein abzuhakender Punkt, und
+er echte Zugangsdaten braucht; die normalen Testläufe setzen bauartbedingt überhaupt keinen
+Netzwerkaufruf gegen die API ab. Deshalb ist er hier ein abzuhakender Punkt, und
 `publish.yml` verlangt später die Bestätigung.
 
 - [ ] **Zugangsdaten liegen in der Umgebung**, nicht in einer Datei des Repositorys.
@@ -272,47 +291,56 @@ er echte Zugangsdaten braucht (Plan 9.1). Deshalb ist er hier ein abzuhakender P
 
 - [ ] **Bauen.**
       `pnpm build` → `dist/cli.js` mit Shebang und Modus 755, `dist/index.js` daneben.
-- [ ] **Größenbudget gegen beide Grenzen aus Plan 9.10.**
+- [ ] **Größenbudget gegen beide Grenzen.**
       `pnpm check-size`
       Erwartet: Rückgabewert 0 und zwei Zahlen unter ihren Grenzen — gepacktes Tarball unter
       **1 MiB** (1.048.576 Bytes), entpackter Inhalt unter **3 MiB** (3.145.728 Bytes).
       Bei Überschreitung nennt der Lauf die zehn größten Dateien. **Zuerst die Ursache suchen,
       nicht die Grenze verschieben**: eine Abhängigkeit, die der Bündler nach `dist/`
       eingerechnet hat; eine Datei, die zur Laufzeit nichts zu suchen hat. Eine Anhebung der
-      Grenze ist eine Entscheidung des Projektinhabers mit Eintrag in `CHANGELOG.md`
-      (Plan 9.10).
-      *Momentaufnahme, kein Sollwert. Am 2026-09-13 um 04:41 Uhr mit Version 0.1.0 selbst
-      gemessen: gepackt 620.268 Bytes (605,7 KiB, 59,2 Prozent der Grenze), entpackt
-      2.665.803 Bytes (2,54 MiB, 84,7 Prozent), Rückgabewert 0, beide Grenzen eingehalten.
+      Grenze ist eine Entscheidung des Projektinhabers mit Eintrag in `CHANGELOG.md`, keine
+      des Laufs. Die beiden Grenzen liegen bei rund dem Doppelten des Erwarteten; ein Budget,
+      das schon bei normalem Wachstum reißt, wird angehoben statt beachtet.
+      *Momentaufnahme, kein Sollwert. Zuletzt am 2026-09-13 um 19:34 Uhr mit Version 0.1.0
+      selbst gemessen: gepackt 382.615 Bytes (373,6 KiB, 36,5 Prozent der Grenze), entpackt
+      1.583.705 Bytes (1,51 MiB, 50,3 Prozent), 44 Dateien im Tarball, Rückgabewert 0, beide
+      Grenzen eingehalten.
       **Die Zahl ist an den Bau gebunden und verfällt schnell**: derselbe Befehl lieferte am
-      selben Tag um 04:37 Uhr noch 617.371 Bytes gepackt, weil zwischendurch am Quelltext
-      gearbeitet wurde; die gebündelte Serverdatei wuchs dabei um rund zwei Kilobyte. Wer
-      hier eine Abweichung sieht, hat also nicht zwingend einen Fehler gefunden. **Vor jeder
+      selben Tag um 04:37 Uhr 617.371 und um 04:41 Uhr 620.268 Bytes gepackt, also deutlich
+      mehr als am Abend. Woran der Rückgang liegt, hat diese Liste nicht nachverfolgt; er ist
+      hier festgehalten und nicht erklärt. Wer eine Abweichung sieht, hat also nicht zwingend
+      einen Fehler gefunden. **Vor jeder
       Veröffentlichung neu messen und diese Stelle ersetzen**; die notierten Werte sind ein
       Vergleichspunkt gegen den letzten Stand, kein Erwartungswert, gegen den man den Lauf
       abgleicht. Was zählt, ist allein das Wort „eingehalten“ hinter beiden Zeilen und der
-      Rückgabewert 0. Die größten Posten sind die Sourcemaps; sie bleiben im Paket
-      (Plan 9.6 Schritt 1).*
+      Rückgabewert 0. Die größten Posten sind die Sourcemaps; sie bleiben im Paket — der
+      Paketprobelauf prüft die enthaltene Dateiliste gegen eine erwartete Liste, und die
+      Karten stehen darin.*
 - [ ] **Bundle bauen.**
       `pnpm build-mcpb`
       Erwartet: `bbutler-mcp-<version>.mcpb` im Projektverzeichnis, die Zeile
-      `Werkzeuge im Manifest: 54` und eine Größenangabe.
-      *Momentaufnahme, kein Sollwert. Am 2026-09-13 um 04:41 Uhr mit Version 0.1.0 selbst
-      gebaut: 2.997.340 Bytes (2,86 MiB), 54 Werkzeuge, vier Laufzeitpakete im Bundle
-      (`@modelcontextprotocol/core`, `@modelcontextprotocol/server`, `undici`, `zod`).
-      Auch diese Zahl wandert mit dem Bau — um 04:39 Uhr waren es 2.995.922 Bytes — und ist
-      vor jeder Veröffentlichung neu zu messen und hier zu ersetzen. Plan 9.10 nennt für das
-      Bundle ohnehin keine Grenze, seine beiden Grenzen gelten dem Tarball; die Zahl dient
-      dem Vergleich mit dem vorigen Stand. Belastbar ist dagegen die Zeile `Werkzeuge im
-      Manifest: 54`: Sie muss stimmen.* Das Verpackungswerkzeug kommt
-      ausschließlich aus `node_modules`, nie über `npx` (Plan 13.5): Der unscoped Name `mcpb`
-      ist auf npm unbesetzt und damit besetzbar.
+      `Werkzeuge im Manifest: 59` und eine Größenangabe.
+      *Momentaufnahme, kein Sollwert. Die Datei `bbutler-mcp-0.1.0.mcpb` im Projektverzeichnis
+      ist am 2026-09-13 um 14:36 Uhr entstanden; am 2026-09-13 um 19:35 Uhr selbst nachgemessen:
+      3.057.382 Bytes (2,92 MiB), **59 Werkzeuge im Manifest**, fünf Konfigurationsfelder, vier
+      Laufzeitpakete im Bundle (`@modelcontextprotocol/core`, `@modelcontextprotocol/server`,
+      `undici`, `zod`).
+      Auch diese Zahl wandert mit dem Bau — frühere Bauten desselben Tages lagen bei 2.995.922
+      und 2.997.340 Bytes — und ist vor jeder Veröffentlichung neu zu messen und hier zu
+      ersetzen. Für das Bundle gibt es ohnehin keine Grenze; die beiden Grenzen des
+      Größenbudgets gelten dem Tarball, und die Zahl hier dient dem Vergleich mit dem vorigen
+      Stand. Belastbar ist dagegen die Zeile `Werkzeuge im Manifest: 59`: Sie muss stimmen.* Das Verpackungswerkzeug kommt
+      ausschließlich aus `node_modules`, nie über `npx`: Der unscoped Name `mcpb` ist auf npm
+      unbesetzt und damit besetzbar. `npx mcpb` bricht heute mit einem Fehler ab — und würde,
+      sobald jemand den freien Namen registriert, in einem Veröffentlichungsjob fremden Code
+      ausführen, dessen Herkunft dieses Projekt nicht kontrolliert.
 - [ ] **Bundle einmal von Hand gegenprüfen** (optional, aber vor der ersten Veröffentlichung
       empfohlen):
       `node node_modules/@anthropic-ai/mcpb/dist/cli/cli.js unpack bbutler-mcp-<version>.mcpb /tmp/bundle`
       danach `node /tmp/bundle/server/dist/cli.js --version` → `<version>`.
-      *Am 2026-09-13 zusätzlich geprüft: Der entpackte Server beantwortet `initialize` und
-      `tools/list` ohne Zugangsdaten und meldet 54 Werkzeuge.*
+      *Am 2026-09-13 um 19:35 Uhr zusätzlich selbst geprüft: Der entpackte Server beantwortet
+      `initialize` und `tools/list` ohne Zugangsdaten und meldet 59 Werkzeuge, davon 19
+      lesende.*
 
 ---
 
@@ -324,7 +352,8 @@ er echte Zugangsdaten braucht (Plan 9.1). Deshalb ist er hier ein abzuhakender P
 - [ ] **Der Abschnitt ist nicht leer.** `publish.yml` schneidet genau diesen Abschnitt heraus
       und macht daraus den Text des GitHub-Releases; ein leerer Abschnitt bricht den Lauf ab.
 - [ ] **Die benannten Unsicherheiten stehen darin.** Was nicht gemessen ist, steht als
-      „nicht verifiziert" im Änderungsprotokoll und nicht nur im Quelltext (Plan 0.2).
+      „nicht verifiziert" im Änderungsprotokoll und nicht nur im Quelltext. Gemessenes,
+      Abgeleitetes und Angenommenes bleiben auch dort auseinandergehalten.
 - [ ] **Version in `package.json` erhöht** und zum Abschnitt passend.
       `node -p "require('./package.json').version"` → `<version>`.
       Committen, nicht taggen — der Tag kommt erst in Abschnitt 7.
@@ -338,8 +367,8 @@ er echte Zugangsdaten braucht (Plan 9.1). Deshalb ist er hier ein abzuhakender P
       `npm login` ausführen.
 - [ ] **Klären, ob der Namensraum `@dennismenken` zum eigenen Konto gehört.**
       **Ein HTTP 404 auf `npm view @dennismenken/buchhaltungsbutler-mcp` ist dafür kein
-      Beleg** (Plan 13.6): Er sagt nur, dass unter diesem Namen nichts veröffentlicht ist, und
-      nichts darüber, wem der Namensraum gehört.
+      Beleg:** Er sagt nur, dass unter diesem Namen nichts veröffentlicht ist, und nichts
+      darüber, wem der Namensraum gehört.
       Zwei Fälle, und nur diese beiden tragen:
       1. **Der Kontoname ist `dennismenken`.** Dann ist `@dennismenken` der eigene
          Nutzer-Namensraum und gehört automatisch zum Konto.
@@ -351,11 +380,12 @@ er echte Zugangsdaten braucht (Plan 9.1). Deshalb ist er hier ein abzuhakender P
          `dennismenken` unter <https://www.npmjs.com/org/create> als Organisation anzulegen
          (der kostenlose Tarif genügt für öffentliche Pakete) und der Befehl zu wiederholen.
       Erst wenn einer der beiden Fälle zutrifft, ist dieser Punkt abgehakt.
-- [ ] **Der unscoped Name bleibt außen vor.** `buchhaltungsbutler-mcp` ohne Namensraum ist
-      **belegt** (Plan 13.6). Er darf in keiner Anleitung
+- [ ] **Der unscoped Name bleibt außen vor.** `buchhaltungsbutler-mcp` ohne Namensraum ist auf
+      npm **belegt** und gehört nicht diesem Projekt; unter ihm ist zudem ein gleichnamiges
+      `bin` vergeben (am 2026-09-12 mit `npm view` geprüft). Er darf in keiner Anleitung
       als unser Paketname auftauchen. Prüfen: `grep -rn 'npx -y buchhaltungsbutler-mcp' README.md`
       → **keine Ausgabe**.
-- [ ] **Das öffentliche Repository `dennismenken/buchhaltungsbutler-mcp` anlegen** (E3).
+- [ ] **Das öffentliche Repository `dennismenken/buchhaltungsbutler-mcp` anlegen.**
       `gh repo create dennismenken/buchhaltungsbutler-mcp --public --source . --remote origin --push`
       oder von Hand über die Weboberfläche und danach `git remote add origin …; git push -u
       origin main`.
@@ -412,7 +442,7 @@ veröffentlicht ist:
 | Tag gegen `package.json` | die Versionen nicht übereinstimmen |
 | Bestätigung des Vertragslaufs | der Tag leichtgewichtig ist, die Zeile fehlt, das Datum in der Zukunft liegt oder älter als 30 Tage ist |
 | Abschnitt aus `CHANGELOG.md` | es keinen Abschnitt `## [<version>]` gibt oder er leer ist |
-| Generatordifferenz, Typprüfung, Linting, Formatierung, Tests | irgendetwas davon rot ist |
+| Generatordifferenz, Typprüfung, Linting, Formatierung, Tests, Abdeckung | irgendetwas davon rot ist; die Abdeckung ist ein eigener Schritt, weil `vitest` die Schwellen aus `vitest.config.ts` nur mit `--coverage` auswertet |
 | Bau, Größenbudget, `.mcpb`-Bau | das Paket zu groß ist oder das Bundle nicht baut |
 
 Erst danach `npm publish --provenance --access public` über OIDC, dann das GitHub-Release mit
@@ -441,11 +471,18 @@ dem `.mcpb` als Anhang und dem Abschnitt aus `CHANGELOG.md` als Text.
 - [ ] **Der Weg, den ein Nutzer geht, funktioniert wirklich.** In einem leeren Verzeichnis:
       `npx -y @dennismenken/buchhaltungsbutler-mcp --version` → `<version>`.
       `npx -y @dennismenken/buchhaltungsbutler-mcp test` ohne Zugangsdaten → Rückgabewert 1
-      mit der Meldung „NICHT KONFIGURIERT" (Plan 6.5), **kein** Absturz und **kein** Hängen.
+      mit der Meldung „NICHT KONFIGURIERT", **kein** Absturz und **kein** Hängen. Der Server
+      selbst bricht ohne Zugangsdaten ausdrücklich **nicht** ab: Er startet, beantwortet
+      `tools/list` mit 59 Einträgen und lässt jeden `tools/call` mit einer Meldung scheitern,
+      die die fehlende Variable nennt. Nur der Unterbefehl `test` liefert Rückgabewert 1.
 - [ ] **Das Bundle installiert sich in Claude Desktop.** Die `.mcpb`-Datei aus dem Release
       herunterladen und in das Claude-Desktop-Fenster ziehen. Erwartet: die
-      Installationsoberfläche mit den vier Feldern *API Client*, *API Secret*, *API Key* und
-      *Nur lesen*; nach dem Ausfüllen erscheinen 54 Werkzeuge.
+      Installationsoberfläche mit den **fünf** Feldern *API Client*, *API Secret*, *API Key*,
+      *Nur lesen* und *Werkzeuggruppen*; nach dem Ausfüllen der drei Pflichtfelder erscheinen
+      **59** Werkzeuge. Die beiden letzten Felder sind optional: *Nur lesen* ist mit „aus"
+      vorbelegt, *Werkzeuggruppen* bleibt leer und meldet damit alle zwölf Gruppen an. Die
+      Feldliste stammt aus `user_config` in `.mcpb/manifest.template.json`; am 2026-09-13 gegen
+      das gebaute Bundle nachgemessen: fünf Felder, 59 Werkzeuge im Manifest.
 
 ---
 

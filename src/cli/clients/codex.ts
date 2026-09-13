@@ -1,6 +1,6 @@
 /**
  * Codex CLI und ChatGPT-Desktop-App: `codex mcp add` als Unterprozess, danach
- * `startup_timeout_sec = 30` (Plan 8.2 Schritt 5, 8.3).
+ * `startup_timeout_sec = 30`.
  *
  * Die drei Clients Codex CLI, ChatGPT-Desktop-App und die IDE-Erweiterung teilen dieselbe
  * `~/.codex/config.toml`; ein Eintrag genügt für alle drei (`distribution.md` 5.2).
@@ -30,7 +30,7 @@ import {
   type WriteOutcome,
 } from "./types.js";
 
-/** Zeitlimit für den Serverstart in Sekunden (Plan 8.2 Schritt 5). */
+/** Zeitlimit für den Serverstart in Sekunden. */
 export const STARTUP_TIMEOUT_SEC = 30;
 
 /** Der Ort der Konfiguration. `CODEX_HOME` verlegt ihn; die Semantik ist nicht verifiziert. */

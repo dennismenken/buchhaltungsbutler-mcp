@@ -15,7 +15,7 @@ import {
 } from "../../src/http/transport-error.js";
 import { installTestConfig, resetTestConfig } from "../helpers/mock-api.js";
 
-// Geprüft wird über eine gesteuerte Uhr (Plan 9.5). Mit der echten Uhr wäre der Nachweis
+// Geprüft wird über eine gesteuerte Uhr. Mit der echten Uhr wäre der Nachweis
 // „zehn gleichzeitige Aufrufe laufen nicht gemeinsam durch" entweder langsam oder wackelig,
 // und genau dieser Nachweis ist der Grund für die Serialisierung.
 
@@ -105,7 +105,7 @@ function build(options: {
 }
 
 describe("bucketDefinitions", () => {
-  it("entspricht der Tabelle aus 5.4", () => {
+  it("entspricht der Eimertabelle", () => {
     const buckets = bucketDefinitions(60);
     expect(buckets.default).toEqual({ capacity: 60, intervalMs: 1_000 });
     expect(buckets.upload).toEqual({ capacity: 10, intervalMs: 6_000 });
@@ -157,7 +157,7 @@ describe("Zehn gleichzeitige Aufrufe laufen nicht gemeinsam durch", () => {
     const results = await Promise.all(runs);
 
     // Bis zur Grenze von 30 Sekunden kommen sieben durch; die drei übrigen bekommen keine
-    // stumme Hängepartie, sondern die Meldung aus 5.4 und den Rat, zusammenzufassen.
+    // stumme Hängepartie, sondern die Meldung und den Rat, zusammenzufassen.
     expect(completed).toEqual([0, 1, 2, 3, 4, 5, 6]);
     expect(results.filter((result) => result === "aufgegeben")).toHaveLength(3);
   });
@@ -224,7 +224,7 @@ describe("Eimerschlüssel und Sondereimer", () => {
   });
 
   it("entnimmt je Versuch einen eigenen Token", async () => {
-    // 5.3: Der Limiter liegt in der Wiederholschleife, nicht davor. Drei Versuche eines
+    // Der Limiter liegt in der Wiederholschleife, nicht davor. Drei Versuche eines
     // lesenden Werkzeugs verbrauchen drei Token.
     const clock = new TestClock();
     const limiter = build({ clock });
@@ -370,7 +370,7 @@ describe("Vorgegebener Empfänger der Wartemeldung", () => {
   it("schreibt den Hinweis nach stderr und niemals nach stdout", async () => {
     const clock = new TestClock();
     // Ohne eigenen Empfänger greift der vorgegebene: eine Zeile auf stderr. stdout gehört
-    // dem MCP-Protokoll (Plan 1.3).
+    // dem MCP-Protokoll.
     const limiter = new RateLimiter({ ratePerMinute: 60, clock });
     const lines: string[] = [];
     const spy = vi.spyOn(process.stderr, "write").mockImplementation((chunk) => {

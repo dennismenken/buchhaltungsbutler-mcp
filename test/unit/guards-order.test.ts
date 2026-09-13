@@ -1,4 +1,4 @@
-// Die Guardreihenfolge aus Plan 1.4 und der Zustandssatz 1 aus 5.8 (AP10, Prüfpunkte 1 und 2).
+// Die Guardreihenfolge und der Zustandssatz 1 (Prüfpunkte 1 und 2).
 //
 // Geprüft wird nicht der einzelne Guard für sich, sondern die Kette: Ein Aufruf, der gegen
 // mehrere Guards zugleich verstößt, muss beim **ersten** enden, und kein späterer darf laufen.
@@ -33,8 +33,8 @@ import {
 
 // --- Beispieleinträge -----------------------------------------------------------------
 //
-// Drei Einträge, je einer lesend, anlegend und löschend (AP10). Sie stehen hier und nicht in
-// `src/registry/tools/`: Die 54 echten Einträge entstehen in AP12a bis AP12e, und dieser Test
+// Drei Einträge, je einer lesend, anlegend und löschend. Sie stehen hier und nicht in
+// `src/registry/tools/`: Dort stehen die 54 echten Einträge, und dieser Test
 // prüft den Ausführungsweg und nicht ihren Inhalt. Pfade, Klassen und Querprüfungen sind
 // trotzdem die echten, damit der Weg genau die Verzweigungen nimmt, die er im Betrieb nimmt.
 
@@ -221,7 +221,7 @@ async function startServer(config: ResolvedConfig): Promise<RunningTestServer> {
     store: createMasterDataStore({ ttlMs: config.cacheTtlMs }),
   });
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-  const client = new Client({ name: "ap10-guardtest", version: "0.0.0" });
+  const client = new Client({ name: "guardtest", version: "0.0.0" });
   await built.server.connect(serverSide);
   await client.connect(clientSide);
   return {
@@ -234,7 +234,7 @@ async function startServer(config: ResolvedConfig): Promise<RunningTestServer> {
   };
 }
 
-/** Eine Konfiguration ohne jede Zugangsangabe: der Zustand „nicht konfiguriert" aus 6.5. */
+/** Eine Konfiguration ohne jede Zugangsangabe: der Zustand „nicht konfiguriert". */
 function unconfigured(): ResolvedConfig {
   resetTestConfig();
   return initConfig({
@@ -280,7 +280,7 @@ afterEach(() => {
   resetTestConfig();
 });
 
-describe("Guardreihenfolge nach Plan 1.4", () => {
+describe("Guardreihenfolge", () => {
   it("meldet Guard 1, obwohl derselbe Aufruf auch gegen 2 bis 5 verstößt", async () => {
     const server = await startServer(unconfigured());
     try {
@@ -412,7 +412,7 @@ describe("Guardreihenfolge nach Plan 1.4", () => {
   });
 });
 
-describe("Zustandssatz 1 aus Plan 5.8", () => {
+describe("Zustandssatz 1", () => {
   const scenarios: readonly {
     readonly guard: string;
     readonly env: Record<string, string>;
@@ -455,7 +455,8 @@ describe("Zustandssatz 1 aus Plan 5.8", () => {
       guard: "Abbildung vor dem Request",
       env: {},
       tool: "bb_receipts_delete",
-      // Regel 1 aus 4.6: Der Wert des Pfadsegments muss ^[0-9]{1,18}$ erfüllen.
+      // Pfadregel 1 (Kopf von src/mapping/path.ts): Der Wert des Pfadsegments muss
+      // ^[0-9]{1,18}$ erfüllen.
       args: { receipt_id_by_customer: "47/11" },
     },
   ];
@@ -474,7 +475,7 @@ describe("Zustandssatz 1 aus Plan 5.8", () => {
 
         expect(result.isError).toBe(true);
         expect(text).toContain(STATE_NOTHING_SENT);
-        // Die beiden anderen Formulierungen aus 5.8 dürfen hier nicht stehen.
+        // Die beiden anderen Formulierungen dürfen hier nicht stehen.
         expect(text).not.toContain("BuchhaltungsButler hat die Anfrage abgelehnt.");
         expect(text).not.toContain("Es ist UNBEKANNT");
         expect(api.count()).toBe(0);
@@ -486,7 +487,7 @@ describe("Zustandssatz 1 aus Plan 5.8", () => {
 
   it("nennt Guard 6 nicht, weil er nie ablehnt", async () => {
     // Guard 6 ist der einzige der sechs ohne Absagetext: Ein Treffer wandert in die Antwort,
-    // blockiert aber nicht (Plan 1.4 Schritt 7). Der Nachweis dafür steht in
+    // blockiert aber nicht. Der Nachweis dafür steht in
     // guards-duplicate-check.test.ts; hier wird nur festgehalten, dass es keinen sechsten
     // Absagetext gibt.
     const server = await startServer(installTestConfig({ BB_MCP_DUPLICATE_CHECK: "on" }));

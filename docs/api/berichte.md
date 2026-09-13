@@ -18,9 +18,9 @@ Abschnitt nennt die für ihn maßgebliche Quelle noch einmal ausdrücklich.
 
 | Kürzel | Quelle | Abrufdatum |
 | --- | --- | --- |
-| **SPEC** | `/Users/dennismenken/Projects/init4/buchhaltungsbutler-mcp/docs/openapi/buchhaltungsbutler-v1.json`, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json`, Swagger-2.0-Beschreibung, `info.version` = `1.9.1` | 2026-09-12 |
+| **SPEC** | `docs/openapi/buchhaltungsbutler-v1.json`, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json`, Swagger-2.0-Beschreibung, `info.version` = `1.9.1` | 2026-09-12 |
+| **DOC** | `https://app.buchhaltungsbutler.de/docs/api/v1/`, der statische Textteil der offiziellen Doku-Seite des Anbieters; für dieses Dossier maßgeblich die Abschnitte „Authentication", „Customer Selection" und „API limits" | 2026-09-12 |
 | **LIVE** | Eigene Aufrufe gegen `https://webapp.buchhaltungsbutler.de/api/v1` mit echten Zugangsdaten, ausschließlich lesende Endpunkte | 2026-09-12 |
-| **ORCH** | Vom Orchestrator dieses Projekts bereits verifizierte Rahmenbedingungen (Basis-URL, Auth, Umschlag, Rate Limit) | 2026-09-12 |
 | **KB-BWA** | `https://wissen.buchhaltungsbutler.de/hc/de/articles/11473653935005-Eine-Betriebswirtschaftliche-Auswertung-BWA-erstellen-und-exportieren` | 2026-09-12 |
 | **KB-SUSA** | `https://wissen.buchhaltungsbutler.de/hc/de/articles/11474193643293-Summen-und-Saldenliste-SuSa-Liste-erstellen-und-exportieren` | 2026-09-12 |
 | **KB-LEIST** | `https://wissen.buchhaltungsbutler.de/hc/de/articles/11408182136861-Auswirkungen-eines-abweichenden-Leistungsdatums` | 2026-09-12 |
@@ -30,11 +30,26 @@ sind hier als fachliche Einordnung und als Indiz für das Verhalten der darunter
 Berechnung aufgeführt. Wo sie zur Auslegung der API herangezogen werden, ist das
 ausdrücklich gekennzeichnet und als **nicht verifiziert** markiert.
 
+### Die vier Rahmenbedingungen
+
+Für alle fünf Report-Endpunkte gelten dieselben vier Rahmenbedingungen. Sie stehen hier
+ausgeschrieben, damit dieses Dossier für sich allein lesbar bleibt und niemand einer
+Verweiskette folgen muss:
+
+| Rahmenbedingung | Aussage | Beleg |
+| --- | --- | --- |
+| Basis-URL | `https://webapp.buchhaltungsbutler.de/api/v1` | SPEC (`basePath`, dort formwidrig als vollständige URL gesetzt, siehe Abschnitt 11.1); LIVE, denn jeder in diesem Dossier protokollierte Aufruf ging an diese URL und wurde beantwortet |
+| Authentifizierung | HTTP Basic Auth mit dem API Client als Benutzername und dem API Secret als Passwort, **zusätzlich** `api_key` im JSON-Body zur Auswahl des Mandanten | DOC, Abschnitte „Authentication" und „Customer Selection"; durch LIVE bestätigt. SPEC beschreibt die Authentifizierung überhaupt nicht (`securityDefinitions: null`, kein `security`-Objekt) |
+| Antwortumschlag | `success` als Wahrheitswert und `message` als Text, dazu die endpunktspezifischen Nutzdaten; im Fehlerfall zusätzlich `error_code` | SPEC (`definitions`); durch LIVE bestätigt |
+| Rate Limit | maximal 100 Requests pro Mandant und Minute | DOC, Abschnitt „API limits", wörtlich: „It is only allowed to make a maximum of 100 requests per customer per minute to the API." |
+
+Abschnitt 1 führt jede dieser vier Angaben einzeln aus.
+
 ---
 
 ## 1. Gemeinsame Grundlagen
 
-Quelle: ORCH, SPEC, LIVE.
+Quelle: DOC, SPEC, LIVE.
 
 ### 1.1 Transport
 
@@ -58,8 +73,16 @@ Zwei Stufen, beide sind Pflicht:
    bei jedem der fünf Report-Endpunkte Pflicht.
 
 Die Swagger-Datei enthält `securityDefinitions: null` und kein `security`-Objekt. Die
-Authentifizierung ist dort also überhaupt nicht beschrieben; die obigen Angaben stammen
-aus ORCH und sind durch LIVE bestätigt.
+Authentifizierung ist dort also überhaupt nicht beschrieben. Die beiden obigen Stufen
+stehen stattdessen in DOC: Der Abschnitt „Authentication" beschreibt HTTP Basic Auth nach
+RFC 2617 mit dem Wert `<Api Client>:<Api Secret>`, der Abschnitt „Customer Selection" den
+`api_key` als Auswahl des zu verwaltenden Mandanten.
+
+Durch LIVE bestätigt ist der **positive** Fall: Jeder in diesem Dossier protokollierte
+Aufruf trug beide Stufen zugleich und wurde beantwortet. Was die API antwortet, wenn eine
+der beiden Stufen **fehlt**, wurde nicht gemessen und ist damit **nicht verifiziert**; die
+SPEC führt dafür `401 (3)` für ungültige Zugangsdaten und `401 (4)` für einen unbekannten
+oder nicht zugelassenen `api_key` an allen 54 Endpunkten.
 
 ### 1.3 Antwortumschlag
 
@@ -84,7 +107,10 @@ create-Endpunkten, `report` bei `/reports/get/bwa` und `/reports/get/sums`,
 
 ### 1.4 Rate Limit
 
-Laut Dokumentation maximal 100 Requests pro Mandant und Minute (ORCH). Die Swagger-Datei
+Maximal 100 Requests pro Mandant und Minute. DOC sagt es im Abschnitt „API limits"
+wörtlich: „It is only allowed to make a maximum of 100 requests per customer per minute
+to the API." Das Limit gilt damit **pro Mandant**, nicht pro API Client: Mehrere
+Anwendungen, die denselben Mandanten bedienen, teilen sich ein Kontingent. Die Swagger-Datei
 selbst enthält kein globales Rate-Limit-Feld; das einzige Limit, das dort im Text
 auftaucht, ist ein endpunktspezifisches `max 10 requests per minute` bei
 `/receipts/upload`, das für Berichte nicht gilt.

@@ -2,8 +2,8 @@
  * Die Zugangsdatendatei mit den Mandantenprofilen.
  *
  * Ablageort `<BB_CONFIG_DIR>/credentials.json`, Dateirechte `0600`, Verzeichnisrechte `0700`
- * (Plan 6.3, `distribution.md` 13.2). Das Format ist dasselbe, das der Einrichtungsassistent
- * schreibt (Plan 8.2 Schritt 6):
+ * (`distribution.md` 13.2). Das Format ist dasselbe, das der Einrichtungsassistent
+ * schreibt:
  *
  * ```json
  * {
@@ -74,7 +74,7 @@ function stringOrNull(value: unknown): string | null {
  *
  * Sind sie weiter als gefordert, entsteht eine Warnung mit Pfad und Korrekturbefehl, aber
  * **kein Abbruch**: Windows kennt keine Entsprechung, und ein Abbruch würde dort jeden
- * Start verhindern (6.3 Punkt 2).
+ * Start verhindern.
  */
 function checkMode(
   targetPath: string,
@@ -131,7 +131,7 @@ interface RawFile {
  *
  * @returns `null`, wenn die Datei nicht existiert.
  * @throws ConfigError, wenn sie existiert, aber unbrauchbar ist. Das ist derselbe Fall wie
- *   ein unbrauchbarer Umgebungswert (6.4 Punkt 3): Wer eine Zugangsdatendatei anlegt, will
+ *   ein unbrauchbarer Umgebungswert: Wer eine Zugangsdatendatei anlegt, will
  *   sie benutzen, und ein stiller Start ohne Zugangsdaten verbärge genau den Fehler, den der
  *   Betreiber sehen muss.
  */
@@ -204,7 +204,7 @@ export function listProfileNames(filePath: string): readonly string[] {
 
 /**
  * Liest ein Profil. Fehlende Datei, fehlendes Profil und unvollständiges Profil sind kein
- * Abbruchgrund, sondern führen in den Zustand „nicht konfiguriert" (6.5).
+ * Abbruchgrund, sondern führen in den Zustand „nicht konfiguriert".
  */
 export function readProfile(
   filePath: string,

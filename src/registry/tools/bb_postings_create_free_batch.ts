@@ -1,17 +1,15 @@
-// Werkzeug 26, `/postings/add-batch/free`: mehrere freie Buchungen in einem Aufruf (Plan 3.8,
-// 4.8, AP12c).
+// Werkzeug 26, `/postings/add-batch/free`: mehrere freie Buchungen in einem Aufruf.
 //
 // **Hier findet keinerlei Umformung statt.** Der Endpunkt führt genau einen Parameter
 // `free_postings`, und der ist laut Definition `PostingsFree` **bereits** eine Objektliste aus
 // denselben acht skalaren Feldern, die auch `/postings/add/free` führt. Der Behälter behält
 // deshalb seinen API-Namen, und es gibt weder eine Positionsliste noch parallele Arrays
-// (Plan 4.8, Tabelle am Ende; Anhang A: nicht umbenannt).
+// (Tabelle am Ende; Anhang A: nicht umbenannt).
 //
 // **`PostingsFree` ist der einzige der acht Stapelbehälter, der seine Eigenschaften inline
-// unter `.items` führt** statt über ein `$ref` auf eine eigene Elementdefinition (Plan 4.4
-// Punkt 3).
+// unter `.items` führt** statt über ein `$ref` auf eine eigene Elementdefinition.
 //
-// **Der zweite benannte Spezifikationsfehler aus Plan 0.5 sitzt hier:**
+// **Der zweite benannte Spezifikationsfehler sitzt hier:**
 // `PostingsFree.items.required` nennt `amounts` im Plural, eine Eigenschaft dieses Namens gibt
 // es nicht — sie heißt `amount`. Der Fehler betrifft `required` und nicht die
 // Eigenschaftsmenge; im Schema ist `amount` Pflicht, weil der Betrag einer Buchung fachlich
@@ -28,11 +26,11 @@ import { costLocation, date, postingAccountNumber, vatKey } from "../../schema/v
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Mengengrenze des Stapels: `min(50, BB_MCP_MAX_BATCH)`, sobald die Konfiguration aufgelöst
- *  ist; sonst das API-Maximum, weil das Register auch ohne sie geladen wird (Plan 4.7 Q4). */
+ *  ist; sonst das API-Maximum, weil das Register auch ohne sie geladen wird. */
 const ITEM_LIMIT = isConfigLoaded() ? batchLimit() : API_MAX_BATCH;
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -134,8 +132,7 @@ export const bb_postings_create_free_batch: ToolEntry = {
         field({ name: "date", required: true, description: DATE_DESCRIPTION, schema: DATE_SCHEMA }),
         field({ name: "postingtext", required: true, schema: POSTINGTEXT_SCHEMA }),
         // Pflicht, obwohl `required` der Definition den Plural `amounts` nennt: Die
-        // Eigenschaft heißt `amount`, der Plural zeigt ins Leere (Spezifikationsfehler aus
-        // Plan 0.5, zweiter SPEC_BUGS-Eintrag).
+        // Eigenschaft heißt `amount`, der Plural zeigt ins Leere (zweiter SPEC_BUGS-Eintrag).
         field({
           name: "amount",
           required: true,
@@ -168,13 +165,13 @@ export const bb_postings_create_free_batch: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Erfolgsantwort mit den Arrays `free_postings` und `errors` und ohne `message`
   // (buchungen.md 15.3). ContractFieldType kennt keinen Typ für ein Objekt oder ein Array;
   // ein erfundener Typ erzeugte bei jedem erfolgreichen Aufruf Vertragswarnungen, mit leerem
-  // Vertrag laufen beide Felder als unbekannt unverändert durch (Plan 7.3).
+  // Vertrag laufen beide Felder als unbekannt unverändert durch.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",
   concise: [],
@@ -193,7 +190,7 @@ export const bb_postings_create_free_batch: ToolEntry = {
       "ihrem postingtext und ihrem amount zu erkennen",
   },
   // Kein duplicateCheck: bb_postings_search nimmt weder postingtext noch amount als Filter an
-  // und verlangt einen Zeitraum, den dieser Aufruf nicht auf oberster Ebene trägt (Plan 2.1).
+  // und verlangt einen Zeitraum, den dieser Aufruf nicht auf oberster Ebene trägt.
   crossChecks: ["Q3", "Q4"],
   invalidatesCache: [],
 };

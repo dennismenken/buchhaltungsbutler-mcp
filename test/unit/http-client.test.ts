@@ -28,10 +28,10 @@ import {
   type ApiMock,
 } from "../helpers/mock-api.js";
 
-// Die HTTP-Fälle aus Plan 9.4. Die Antwortkörper sind aus den Live-Befunden in 0.3
+// Die HTTP-Fälle. Die Antwortkörper sind aus den Live-Befunden
 // abgeleitet: Feldnamen, Feldmengen und Typen sind gemessen, die Geschäftsdaten erfunden.
 
-/** Die 16 Felder, die /receipts/get live liefert (Befund L2). */
+/** Die 16 Felder, die /receipts/get live liefert (Befund L2 in docs/api/live-befunde.md). */
 const RECEIPT_LIST_ROW = {
   filename: "rechnung-2026-08.pdf",
   id_by_customer: "2",
@@ -51,7 +51,10 @@ const RECEIPT_LIST_ROW = {
   due_date: null,
 };
 
-/** Die 23 Felder, die /receipts/get/<wert> live liefert — andere Datumsnamen (Befund L2). */
+/**
+ * Die 23 Felder, die /receipts/get/<wert> live liefert — andere Datumsnamen
+ * (Befund L2 in docs/api/live-befunde.md).
+ */
 const RECEIPT_SINGLE = {
   filename: "rechnung-2026-08.pdf",
   id_by_customer: "2",
@@ -78,7 +81,10 @@ const RECEIPT_SINGLE = {
   date_payment_due: null,
 };
 
-/** Die 6 Felder der Zahlungsliste; id_by_customer ist hier eine Zahl (Befund L3). */
+/**
+ * Die 6 Felder der Zahlungsliste, aufgezählt in docs/api/grundlagen.md, Abschnitt 4.5;
+ * `id_by_customer` ist hier eine Zahl (Befund L3 in docs/api/live-befunde.md).
+ */
 const TRANSACTION_LIST_ROW = {
   id_by_customer: 1590,
   to_from: "Musterkunde AG",
@@ -88,7 +94,10 @@ const TRANSACTION_LIST_ROW = {
   purpose: "Rechnung R-2026-0815",
 };
 
-/** Die 13 Felder, die /transactions/get/<wert> live liefert; account ist hier eine Zahl (L3). */
+/**
+ * Die 13 Felder von /transactions/get/<wert>, aufgezählt in docs/api/grundlagen.md,
+ * Abschnitt 4.5; `account` ist hier eine Zahl (Befund L3 in docs/api/live-befunde.md).
+ */
 const TRANSACTION_SINGLE = {
   id_by_customer: 1590,
   account: 12,
@@ -184,7 +193,7 @@ describe("Der Request selbst", () => {
   });
 
   it("sendet den Body als JSON und nicht formularkodiert", async () => {
-    // Nur als JSON überleben Booleans, null in Arrays und das order-Objekt (Plan 5.1).
+    // Nur als JSON überleben Booleans, null in Arrays und das order-Objekt.
     api.post("/receipts/get", { json: { success: true, rows: 0, data: [] } });
     await callEndpoint(call({ body: { get_file: true, ids: [1, null, 3] } }));
     const request = await api.lastRequest();
@@ -195,7 +204,7 @@ describe("Der Request selbst", () => {
 
 describe("Die vier Endpunkte mit Pfadvorlage", () => {
   it("ruft den interpolierten Pfad auf, nicht den Spezifikationspfad", async () => {
-    // Die Abfangregel hängt am interpolierten Pfad (9.4): Läge sie am Spezifikationspfad,
+    // Die Abfangregel hängt am interpolierten Pfad: Läge sie am Spezifikationspfad,
     // könnte der Test grün sein, ohne dass der Pfadbau je durchlaufen wurde.
     api.post("/receipts/get/4711", { json: { success: true, message: "", data: RECEIPT_SINGLE } });
     api.post("/receipts/get", { json: { success: true, rows: 0, data: [] } });
@@ -222,8 +231,9 @@ describe("Die vier Endpunkte mit Pfadvorlage", () => {
   });
 
   it("sendet kein Body-Feld id_by_customer", async () => {
-    // Regel 5 aus 4.6: Die Spezifikation führt an diesen vier Pfaden überhaupt kein solches
-    // Feld, und der dokumentierte Aufruf mit Body-Feld scheitert nachweislich.
+    // Pfadregel 5 (Kopf von src/mapping/path.ts): Die Spezifikation führt an diesen vier
+    // Pfaden überhaupt kein solches Feld, und der dokumentierte Aufruf mit Body-Feld
+    // scheitert nachweislich.
     api.post("/receipts/get/4711", { json: { success: true, message: "", data: RECEIPT_SINGLE } });
 
     await callEndpoint(
@@ -242,7 +252,7 @@ describe("Die vier Endpunkte mit Pfadvorlage", () => {
   });
 
   it("gibt einen Fehler mit dem Spezifikationspfad zurück, nicht mit dem gebauten", async () => {
-    // Der Fehlerkatalog schlägt über specPath nach (5.6). Stünde hier der gebaute Pfad,
+    // Der Fehlerkatalog schlägt über specPath nach. Stünde hier der gebaute Pfad,
     // fiele jeder Fehler dieser vier Werkzeuge auf „Paar fehlt" zurück.
     api.post("/receipts/get/4711", {
       status: 400,
@@ -293,7 +303,8 @@ describe("Antwortformen", () => {
 
   it("meldet rows der vollen und der unvollständigen Seite unverändert", async () => {
     // Die HTTP-Schicht behauptet keine Gesamttrefferzahl; sie gibt rows weiter, wie geliefert
-    // (Befund L5). Den Bestandshinweis daraus bildet die Antwortaufbereitung (7.5).
+    // (Befund L5 in docs/api/live-befunde.md). Den Bestandshinweis daraus bildet die
+    // Antwortaufbereitung.
     api.post("/postings/get", [
       { json: { success: true, rows: 2, data: [{ id: 1 }, { id: 2 }] } },
       { json: { success: true, rows: 1, data: [{ id: 3 }] } },
@@ -333,15 +344,20 @@ describe("Antwortformen", () => {
     );
     if (result.envelope.shape === "list") {
       expect(result.envelope.data[0]).toMatchObject({ id_by_customer: 1590 });
-      // Die Liste liefert kein Zahlungskonto; ein Agent findet es dort nicht (Befund L2).
+      // Die Liste liefert kein Zahlungskonto; ein Agent findet es dort nicht. Die sechs
+      // Feldnamen der Zahlungsliste stehen in docs/api/grundlagen.md, Abschnitt 4.5. Dass
+      // Liste und Einzelabruf überhaupt getrennte Antwortverträge haben, ist Befund L2 in
+      // docs/api/live-befunde.md.
       expect(result.envelope.data[0]).not.toHaveProperty("account");
     }
   });
 
   it("liest den Einzelabruf einer Zahlung mit account als Zahl", async () => {
-    // Gemessen (L2, L3): 13 Felder statt 6, und account ist hier eine Zahl, während es an
-    // /receipts/get ein String ist. Die Typ-Asymmetrie ist nicht einmal zwischen den
-    // Ressourcen einheitlich und muss je Feld behandelt werden (Befund 3 der Live-Befunde).
+    // Gemessen: 13 Felder statt 6. Beide Feldzahlen stehen in docs/api/grundlagen.md,
+    // Abschnitt 4.5; Befund L2 belegt die Trennung der beiden Verträge, nicht die Feldzahlen.
+    // `account` ist hier eine Zahl, während es an /receipts/get ein String ist. Die
+    // Typ-Asymmetrie ist nicht einmal zwischen den Ressourcen einheitlich und muss je Feld
+    // behandelt werden (Befund L3 in docs/api/live-befunde.md).
     api.post("/transactions/get/1590", {
       json: { success: true, message: "", data: TRANSACTION_SINGLE },
     });
@@ -442,7 +458,7 @@ describe("Fehlerfälle der Gegenstelle", () => {
 
   it("gibt den Wortlaut der Antwort weiter, auch wenn er in keiner Quelle steht", async () => {
     // L6: Live kam zu 400/15 der Text `invalid field specified`. Der Katalogtext tritt nur
-    // ein, wenn die Antwort keinen verwertbaren Text trägt (5.6, AP08).
+    // ein, wenn die Antwort keinen verwertbaren Text trägt.
     api.post("/receipts/get", {
       status: 400,
       json: { success: false, error_code: 15, message: "invalid field specified" },
@@ -472,7 +488,7 @@ describe("Wiederholung: ausschließlich lesend", () => {
 
     expect(api.count("/receipts/get")).toBe(3);
     expect(runtime.delays).toEqual([1_000, 2_000]);
-    // Drei Versuche, drei Token: Der Limiter liegt in der Schleife, nicht davor (5.3).
+    // Drei Versuche, drei Token: Der Limiter liegt in der Schleife, nicht davor.
     expect(limiter.levels()[`${tenantKey(TEST_CREDENTIALS.BB_API_KEY)}:default`]).toBe(57);
   });
 
@@ -520,7 +536,7 @@ describe("Wiederholung: ausschließlich lesend", () => {
 
     expect(api.count("/postings/add/free")).toBe(1);
     expect(runtime.delays).toEqual([]);
-    // Der Ausgang ist offen: HTTP 5xx an einem schreibenden Werkzeug heißt Ungewissheit (5.7).
+    // Der Ausgang ist offen: HTTP 5xx an einem schreibenden Werkzeug heißt Ungewissheit.
     expect((caughtError as ApiResponseError).changed).toBe("unbekannt");
   });
 
@@ -547,9 +563,9 @@ describe("Wiederholung: ausschließlich lesend", () => {
   });
 
   it("wiederholt 403/15 an einem schreibenden Stapelendpunkt nicht", async () => {
-    // 5.3 ist unbedingt: Kein schreibender Aufruf wird wiederholt. Die Einstufung als
-    // Drosselung (Klasse transient, 5.6) geschieht in der Fehlerschicht und führt dort zum
-    // Text aus 5.7, nicht zu einem zweiten Request.
+    // Die Regel ist unbedingt: Kein schreibender Aufruf wird wiederholt. Die Einstufung als
+    // Drosselung (Klasse transient) geschieht in der Fehlerschicht und führt dort zum
+    // Text, nicht zu einem zweiten Request.
     api.post("/receipts/addBatch", {
       status: 403,
       json: { success: false, error_code: 15, message: "adding temporarily restricted" },
@@ -578,9 +594,9 @@ describe("Wiederholung: ausschließlich lesend", () => {
   });
 
   it("wiederholt 403/15 auch an /transactions/add nicht", async () => {
-    // Dieser Pfad rutscht leicht durch (Fußnote zu 5.6): Er ist weder Stapel noch Upload,
+    // Dieser Pfad rutscht leicht durch: Er ist weder Stapel noch Upload,
     // führt aber dieselbe Drosselung. Ein Retry gäbe es hier nicht, weil er schreibend ist;
-    // die Einstufung als transient und der Text aus 5.7 sind Sache der Fehlerschicht.
+    // die Einstufung als transient und der Text sind Sache der Fehlerschicht.
     api.post("/transactions/add", {
       status: 403,
       json: { success: false, error_code: 15, message: "adding temporarily restricted" },
@@ -643,7 +659,7 @@ describe("Zeitlimit und Abbruch", () => {
   });
 
   it("bricht einen laufenden Aufruf ab und nennt den Ausgang bei schreibenden ungewiss", async () => {
-    // extra.signal wird an jeden fetch durchgereicht (5.1). Bricht der Client ab, während die
+    // extra.signal wird an jeden fetch durchgereicht. Bricht der Client ab, während die
     // Anfrage unterwegs ist, ist der Ausgang bei einem schreibenden Werkzeug offen.
     api.post("/postings/add/receipt", { json: { success: true, message: "ok" } }, { delayMs: 300 });
     const controller = new AbortController();

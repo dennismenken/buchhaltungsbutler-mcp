@@ -1,5 +1,4 @@
-// Der Gruppenschalter, Registerseite (Entscheidung N5,
-// `docs/entwicklung/buendelwerkzeuge.md` Abschnitt 7).
+// Der Gruppenschalter, Registerseite.
 //
 // Geprüft wird hier genau das, was am Register hängt: dass jeder Eintrag eine Gruppe trägt,
 // dass die Zuordnung mit der zweiten, unabhängig gepflegten Liste übereinstimmt, und dass die
@@ -7,8 +6,8 @@
 //
 // Die letzte Prüfung ist die wichtigste: Startmeldung, `doctor` und `print-config` geben diese
 // Zahlen als Tatsache aus, und zur Laufzeit gibt es keinen Tokenizer, der sie nachrechnen
-// könnte (13.2). Läuft die Tabelle der Wirklichkeit davon, behauptet der Server eine Ersparnis,
-// die es nicht gibt — und niemand merkt es. Gemessen wird mit dem echten Tokenizer aus 13.9.
+// könnte. Läuft die Tabelle der Wirklichkeit davon, behauptet der Server eine Ersparnis,
+// die es nicht gibt — und niemand merkt es. Gemessen wird mit dem echten Tokenizer.
 
 import { describe, expect, it } from "vitest";
 
@@ -167,8 +166,9 @@ describe("die Gruppe jedes Registereintrags", () => {
   });
 
   it("hält die Gruppe bundles frei von Endpunktwerkzeugen", () => {
-    // Ein Endpunktwerkzeug in `bundles` hebelte N1 aus: Es verschwände, sobald jemand die
-    // Bündelgruppe abschaltet, obwohl die 54 nach N1 unverändert bestehen bleiben.
+    // Ein Endpunktwerkzeug in `bundles` hebelte die Zusicherung aus, dass die 54
+    // Endpunktwerkzeuge neben den Bündeln unverändert bestehen bleiben: Es verschwände,
+    // sobald jemand die Bündelgruppe abschaltet.
     const inBundles = entriesOf(BUNDLE_TOOL_GROUP).map((entry) => entry.name);
     const endpointTools = inBundles.filter((name) => EXPECTED_TOOL_NAMES.includes(name));
     expect(endpointTools).toEqual([]);
@@ -210,7 +210,7 @@ describe("die eingecheckte Tokenmessung je Gruppe", () => {
   it("addiert sich über die elf Endpunktgruppen zur gemessenen Gesamtzahl", () => {
     const expected: Record<string, number> = EXPECTED_GROUP_TOKENS;
     const sum = Object.values(expected).reduce((total, value) => total + value, 0);
-    // 48.368 ist die Zahl aus docs/entwicklung/befund-tokenbudget.md und aus
+    // 48.368 ist die Zahl aus docs/entwicklung/tokenbudget.md und aus
     // src/registry/definition.ts. Die Gruppensummen sind kein eigener Gegenstand: Sie zerlegen
     // dieselbe Messung.
     expect(sum).toBe(48_368);

@@ -27,7 +27,7 @@ const LEDGER = "/reports/get/sums/ledger";
 const CREATE_BWA = "/reports/create/bwa";
 const GET_BWA = "/reports/get/bwa";
 
-/** Der Großfall dieser Datei. Die Zahl steht im Befund des Skeptikers. */
+/** Der Großfall dieser Datei. */
 const BIG_ROWS = 300;
 
 function list(rows: readonly unknown[]): { json: Record<string, unknown> } {

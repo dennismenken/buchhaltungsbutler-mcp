@@ -7,8 +7,8 @@ import { z } from "zod";
 
 // Belegt, dass zod aus src/ heraus auflöst. pnpm legt keine Phantomabhängigkeiten ins
 // Wurzel-node_modules: Ein Paket, das nur eine Abhängigkeit des SDK wäre, ließe sich aus
-// eigenem Code nicht importieren (Plan 13.2). Der Nachweis gehört nach AP01, damit der
-// Fehler nicht erst in AP05 auffällt, wo src/schema/build.ts darauf aufbaut.
+// eigenem Code nicht importieren. Der Nachweis steht früh, damit der Fehler nicht erst
+// dort auffällt, wo src/schema/build.ts darauf aufbaut.
 
 describe("zod löst aus src/ auf", () => {
   it("findet das Paket vom Verzeichnis src/ aus", () => {

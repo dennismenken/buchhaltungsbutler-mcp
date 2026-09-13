@@ -1,5 +1,5 @@
 /**
- * Dateityp aus den **Magic Bytes** und Bereinigung des Dateinamens (Plan 11.2 AP13).
+ * Dateityp aus den **Magic Bytes** und Bereinigung des Dateinamens.
  *
  * Zwei Regeln, die über allem stehen:
  *
@@ -104,8 +104,8 @@ export type UploadSourceReason =
  * hinaus: Diese Schicht läuft im Request-Mapper, also vor dem ersten Byte an die API.
  *
  * **Der Meldungstext enthält niemals einen Dateisystempfad** und niemals Pfad, Abfrage oder
- * Anmeldeteil einer URL. Er landet beim Agenten und damit potenziell in einem Transkript
- * (Plan 11.2 AP13, Risiko R10). Ein Rechnername ist erlaubt, weil der Agent ihn selbst
+ * Anmeldeteil einer URL. Er landet beim Agenten und damit potenziell in einem Transkript.
+ * Ein Rechnername ist erlaubt, weil der Agent ihn selbst
  * angegeben hat und ihn zum Beheben braucht.
  */
 export class UploadSourceError extends Error {

@@ -1,4 +1,4 @@
-// Werkzeug 36 von 54: `/settings/get/creditors` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 36 von 54: `/settings/get/creditors`.
 //
 // Kreditoren sind die Lieferantenkonten des Mandanten. Der Endpunkt ist strukturell gleich
 // `/settings/get/debtors` und führt ebenfalls nur `limit` und `offset`; einen Namens- oder
@@ -6,7 +6,7 @@
 //
 // Drei Eigenheiten, die hier und nicht in der Beschreibung stehen:
 //
-//  1. **Kein `maximum` für `limit`, und deshalb kein Q2** (Plan 7.5, 4.7, 14.2): Die
+//  1. **Kein `maximum` für `limit`, und deshalb kein Q2**: Die
 //     Obergrenze ist nicht dokumentiert und nicht verifiziert. Statt der Prüfung trägt die
 //     Feldbeschreibung den Warnsatz aus `pagination.ts`.
 //  2. **`due_in_days` ist schreibbar, aber nicht lesbar.** Das Feld lässt sich an
@@ -66,14 +66,14 @@ export const bb_creditors_search: ToolEntry = {
     },
   ],
   serverOnlyFields: ["response_format"],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Die 16 Feldnamen stammen aus `docs/api/stammdaten.md` und decken sich mit einem lesenden
-  // Kontrollaufruf vom 2026-09-12. `source` bleibt "dokumentiert", weil Plan 2.1 und P13 den
-  // Wert "gemessen" ausschließlich den vier in Plan 0.3 gemessenen Endpunkten vorbehalten.
+  // Kontrollaufruf vom 2026-09-12. `source` bleibt "dokumentiert", weil P13 den
+  // Wert "gemessen" ausschließlich den vier live gemessenen Endpunkten vorbehält.
   //
-  // Der Vertragslauf (AP17, Plan 9.7) hat diesen Vertrag am 2026-09-13 gegen die echte API
+  // Der Vertragslauf hat diesen Vertrag am 2026-09-13 gegen die echte API
   // gehalten: kein neues, kein fehlendes und kein typverändertes Feld. `customer_number` war
-  // in allen ausgewerteten Zeilen null und bestätigt damit die Feststellung aus Plan 7.4, dass
+  // in allen ausgewerteten Zeilen null und bestätigt damit die Feststellung, dass
   // das Feld bei Kreditoren live durchgehend leer ist. Es bleibt trotzdem im Vertrag und in
   // der Projektion: Es trägt die fachliche Kundennummer, und ein Mandant, der sie bei
   // Kreditoren pflegt, verlöre sie sonst. `uid_ch` war ebenfalls durchgehend null.

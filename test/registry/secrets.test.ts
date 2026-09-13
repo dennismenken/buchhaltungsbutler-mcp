@@ -1,11 +1,11 @@
-// P9 aus Plan 9.2: Geheimnisfreiheit.
+// P9: Geheimnisfreiheit.
 //
 // `api_key`, `api_client`, `api_secret` und `authorization` kommen in keiner
 // Werkzeugdefinition, keinem Schema, keiner Beschreibung, keiner Golden-Antwort, keiner
 // Fehlermeldung und keinem Resource-Inhalt vor. Ein Treffer lässt den Test fehlschlagen.
 //
 // Die einzige erlaubte Stelle ist das Feld `omitted` des Registereintrags: Dort steht
-// api_key mit der Begründung, dass der Server ihn setzt (Plan 4.3). `omitted` ist
+// api_key mit der Begründung, dass der Server ihn setzt. `omitted` ist
 // Registerbuchhaltung und wird dem Client nie geschickt; geprüft wird deshalb die
 // gerenderte Definition und nicht der rohe Eintrag.
 //
@@ -28,7 +28,7 @@ import {
 } from "../helpers/registry-fixtures.js";
 import { EXPECTED_TOOL_NAMES } from "./class-list.js";
 
-/** Die vier Bezeichner aus Plan 9.2 P9, ohne Rücksicht auf Groß- und Kleinschreibung. */
+/** Die vier Bezeichner, ohne Rücksicht auf Groß- und Kleinschreibung. */
 const CREDENTIAL_NAMES: readonly string[] = [
   "api_key",
   "api_client",
@@ -60,8 +60,8 @@ const CREDENTIAL_IN_KEY_POSITION = new RegExp(
 
 /**
  * Schlüssel, deren Wert bauartbedingt ein Dateiinhalt ist: der Base64-Block eines Belegs
- * (`file`, `file_content`) und die Dateien einer Berichtsantwort (`files.pdf`, `files.csv`,
- * Plan 7.4). Ihr Inhalt ist lang und undurchsichtig, ohne ein Zugangsdatum zu sein.
+ * (`file`, `file_content`) und die Dateien einer Berichtsantwort (`files.pdf`,
+ * `files.csv`). Ihr Inhalt ist lang und undurchsichtig, ohne ein Zugangsdatum zu sein.
  */
 const FILE_CONTENT_KEYS: readonly string[] = ["file", "file_content"];
 
@@ -103,9 +103,21 @@ function isOpaque(candidate: string): boolean {
   return /[0-9]/.test(candidate) && /[a-z]/.test(candidate) && /[A-Z]/.test(candidate);
 }
 
-/** Dateien außerhalb des Registers, die ebenfalls kein Zugangsdatum tragen dürfen. Sie
- *  entstehen in späteren Arbeitspaketen; solange es sie nicht gibt, gibt es nichts zu
- *  prüfen, und das ist kein Fehlschlag dieser Prüfung. */
+/**
+ * Dateien außerhalb des Registers, die ebenfalls kein Zugangsdatum tragen dürfen.
+ *
+ * Alle drei liegen vor: `src/generated/errors.ts` wird aus der Spezifikation erzeugt und
+ * eingecheckt, `src/server/instructions.ts` und `src/server/resources.ts` sind Quelltext.
+ * Die Prüfung liest sie also tatsächlich; ein grüner Lauf ist hier eine Aussage über den
+ * Inhalt dieser Dateien und kein übersprungener Leerlauf.
+ *
+ * Der `existsSync`-Zweig weiter unten bleibt trotzdem stehen. Er ist die Vorsichtsmaßnahme
+ * für den Fall, dass eine der Dateien einmal nicht am erwarteten Ort liegt — ein
+ * abgebrochener Generatorlauf, eine Umbenennung —, damit die Sicherheitsprüfung dann nicht
+ * mit einem Lesefehler abbricht statt die übrigen Dateien zu prüfen. Ehrliche Grenze: Eine
+ * verschobene Datei wird damit stillschweigend übersprungen. Wer eine dieser drei Dateien
+ * verschiebt oder umbenennt, führt diese Liste mit.
+ */
 const ADDITIONAL_FILES: readonly string[] = [
   `${ROOT}src/generated/errors.ts`,
   `${ROOT}src/server/instructions.ts`,
@@ -137,13 +149,13 @@ function matchesIn(text: string): string[] {
 /**
  * Dieselbe Suche für **Attrappen im Verzeichnis der Golden-Dateien**. Sie ist strukturbewusst
  * statt volltextbasiert, weil eine dauerhaft rote Sicherheitsprüfung überlesen wird und dann
- * den echten Fall nicht mehr fängt (AP22, S5).
+ * den echten Fall nicht mehr fängt (S5).
  *
  * Drei Unterschiede zu `matchesIn`, jeder mit Begründung:
  *
  * 1. Ein Zugangsdatum zählt nur in **Schlüsselposition**, also mit zugewiesenem Wert. Der
  *    Bezeichner als Wert in einem `omitted`-Eintrag ist ausdrücklich erlaubt (Kopf dieser
- *    Datei, Plan 4.3).
+ *    Datei).
  * 2. Ein Wert, der auf eine **Dateiendung** endet, ist ein erfundener Dateiname und kein
  *    Schlüssel.
  * 3. Ein reiner **Base64-Block ab 200 Zeichen** in einem Dateiinhaltsfeld ist eine Nutzlast.
@@ -245,7 +257,7 @@ describe("P9 Geheimnisfreiheit", () => {
       const matches = matchesIn(definitionJson(tool));
       if (matches.length > 0) {
         problems.push(
-          `${name}: die ausgelieferte Definition enthält ${matches.join(", ")}. Zugangsdaten setzt der Request-Mapper, sie sind nie Teil eines Schemas (Plan 4.3, 9.2 P9).`,
+          `${name}: die ausgelieferte Definition enthält ${matches.join(", ")}. Zugangsdaten setzt der Request-Mapper, sie sind nie Teil eines Schemas.`,
         );
       }
     }
@@ -287,7 +299,7 @@ describe("P9 Geheimnisfreiheit", () => {
       const entry = tool.omitted.find((item) => item.apiName === "api_key");
       if (entry === undefined) {
         problems.push(
-          `${name}: api_key steht nicht in omitted. Er ist der einzige Parameter, den ein Werkzeug nicht abbildet, und die Auslassung wird begründet (Plan 4.3).`,
+          `${name}: api_key steht nicht in omitted. Er ist der einzige Parameter, den ein Werkzeug nicht abbildet, und die Auslassung wird begründet.`,
         );
         continue;
       }
@@ -306,7 +318,7 @@ describe("P9 Geheimnisfreiheit", () => {
       const matches = matchesInFixture(file, readFileSync(file, "utf8"));
       if (matches.length > 0) {
         problems.push(
-          `${file.replace(ROOT, "")}: enthält ${matches.join(", ")}. Golden-Dateien tragen erfundene Geschäftsdaten und niemals ein Zugangsdatum (Plan 9.4).`,
+          `${file.replace(ROOT, "")}: enthält ${matches.join(", ")}. Golden-Dateien tragen erfundene Geschäftsdaten und niemals ein Zugangsdatum.`,
         );
       }
     }

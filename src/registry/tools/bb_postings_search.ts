@@ -1,24 +1,23 @@
-// Werkzeug 20, `/postings/get`: das einzige LESENDE der zwölf Buchungswerkzeuge (Plan 3.8,
-// AP12c).
+// Werkzeug 20, `/postings/get`: das einzige LESENDE der zwölf Buchungswerkzeuge.
 //
 // Drei Eigenheiten tragen diesen Eintrag:
 //
 //   1. **`order` ist case sensitive.** Die Spezifikation sagt das wörtlich („Please not that
 //      the validation of the specified value is case sensitive!"). Das Enum aus `order.ts`
 //      führt deshalb alle SIEBEN Werte in der Schreibweise der Spezifikation; ein kürzeres
-//      Enum lehnte gültige Sortierungen unsichtbar vor dem Request ab (Plan 4.8, R4).
+//      Enum lehnte gültige Sortierungen unsichtbar vor dem Request ab.
 //   2. **`account` und `postingaccount` sind hier keine Konten, sondern Filterlisten** mit
 //      Schlüsselwörtern. Sie heißen im Werkzeugschema `account_filter` und
 //      `postingaccount_filter` (Anhang A); `postingaccount` bleibt ausdrücklich optional,
 //      denn seine Vorgabe ist 'all' — als Pflichtfeld scheiterte das Werkzeug ohne Not und
-//      unsichtbar vor dem Request (Plan 4.3).
+//      unsichtbar vor dem Request.
 //   3. **Die Antwort trägt 38 Felder, acht davon kennt die Spezifikation nicht**
 //      (`buchungen.md` 9.2). Der Antwortvertrag führt alle 38: unbekannte Felder werden
 //      durchgereicht, bekannte typisiert, und genau deshalb steht hier die vollständige Liste
-//      und nicht die halbe der Spezifikation (Plan 7.2, 7.3, Befund L4).
+//      und nicht die halbe der Spezifikation.
 //
-// Der Buchungswegweiser aus Plan 3.7 steht NICHT hier, sondern genau einmal in den
-// `instructions` und in der Resource `bb://guide/postings` (AP14).
+// Der Buchungswegweiser steht NICHT hier, sondern genau einmal in den
+// `instructions` und in der Resource `bb://guide/postings`.
 
 import { z } from "zod";
 
@@ -29,7 +28,7 @@ import { costLocation, date, responseFormat } from "../../schema/vocab.js";
 import type { ContractFieldType, ToolEntry } from "../types.js";
 
 // `limit` und `offset` kommen aus der Tabelle in pagination.ts und nicht aus diesem Eintrag:
-// Schema, Querprüfung Q2 und Bestandszeile der Antwort brauchen dieselbe Zahl (Plan 7.5).
+// Schema, Querprüfung Q2 und Bestandszeile der Antwort brauchen dieselbe Zahl.
 const { limit, offset } = paginationFor("/postings/get");
 
 const RESPONSE_FORMAT = responseFormat();
@@ -75,24 +74,23 @@ const COST_LOCATION_DESCRIPTION =
  *
  *   - `booking_number` steht als `number`. Die Spezifikation deklariert `string`, live kam in
  *     allen 200 Zeilen eine JSON-Zahl. Der Vertrag beschreibt, was die API liefert, nicht was
- *     sie verspricht (Plan 0.1 Vorrangordnung Punkt 2).
+ *     sie verspricht.
  *   - Die Felder mit dem Namensanfang `receipts_assigned` sind **keine** Beträge, sondern mit
  *     `", "` verkettete Zeichenketten. Ein `amount-string` erzeugte dort ein sinnloses
- *     Centfeld; sie stehen deshalb als `string` (Plan 7.4).
+ *     Centfeld; sie stehen deshalb als `string`.
  *
  * `date_delivery`, `comment`, die beiden Kostenstellen und `circumstances_ll` waren in der
  * Stichprobe durchgehend leer; sie stehen als `null-or-string`, weil `null` an einem bekannten
  * Feld keine Warnung erzeugt, ein falscher Typ dagegen schon.
  *
- * **Der Vertragslauf (AP17, Plan 9.7) hat diese 38 Felder am 2026-09-13 gegen die echte API
+ * **Der Vertragslauf hat diese 38 Felder am 2026-09-13 gegen die echte API
  * gehalten: kein neues, kein fehlendes und kein typverändertes Feld.** Das ist der stärkste
  * Einzelbefund des Laufs, denn dieser Endpunkt trägt den größten Vertrag des Registers und
  * acht Felder, die die Spezifikation nicht führt. Zwei Beobachtungen dazu, beide unkritisch:
  * `date_delivery` war erneut durchgehend null, und `transaction_amount` war in der Mehrheit
  * der Zeilen null — eine freie Buchung hat keine Zahlung. Der Typ bleibt `amount-string`:
  * `null` geht bei jedem Vertragstyp ohne Warnung durch (`src/mapping/coerce.ts`), während
- * `null-or-string` das Centfeld und damit die einzige verlustfreie Summenbildung wegnähme
- * (Plan 7.4).
+ * `null-or-string` das Centfeld und damit die einzige verlustfreie Summenbildung wegnähme.
  */
 const POSTINGS_LIST_FIELDS: Readonly<Record<string, ContractFieldType>> = Object.freeze({
   id_by_customer: "id-string",
@@ -125,7 +123,11 @@ const POSTINGS_LIST_FIELDS: Readonly<Record<string, ContractFieldType>> = Object
   comment: "null-or-string",
   receipt_id_by_customer: "null-or-string",
   transaction_id_by_customer: "null-or-string",
-  // Die acht Felder, die die Spezifikation nicht führt (buchungen.md 9.2, Befund L4).
+  // Die acht Felder, die die Spezifikation nicht führt (docs/api/buchungen.md 9.2). Sie
+  // stehen im Vertrag, damit sie nicht als unbekanntes Feld in den Vertragswarnungen
+  // auftauchen — dieselbe Behandlung wie `amount_paid` an den Belegendpunkten, wo sie
+  // gemessen ist (Befund L4 in docs/api/live-befunde.md). Für `/postings/get` selbst gibt es
+  // keine eigene Live-Messung.
   receipts_assigned_amounts_paid: "null-or-string",
   receipts_assigned_amounts_paid_fixed: "null-or-string",
   receipts_assigned_assigned_amounts: "null-or-string",
@@ -198,7 +200,7 @@ export const bb_postings_search: ToolEntry = {
       schema: boundedText(ACCOUNT_FILTER_DESCRIPTION),
     },
     // Bleibt optional, obwohl der Name nach einem Pflichtkonto klingt: Die Vorgabe der API
-    // ist 'all', und ein Pflichtfeld ließe bb_postings_search ohne Not scheitern (Plan 4.3).
+    // ist 'all', und ein Pflichtfeld ließe bb_postings_search ohne Not scheitern.
     {
       name: "postingaccount_filter",
       apiNames: ["postingaccount"],
@@ -208,7 +210,7 @@ export const bb_postings_search: ToolEntry = {
       schema: boundedText(POSTINGACCOUNT_FILTER_DESCRIPTION),
     },
     // Enum statt freiem String: Der Vorrat ist abzählbar, mandantenunabhängig und belegt
-    // (Plan 4.3, Sparmaßnahme S3). Belegstelle: Die Parameterbeschreibung von
+    // (Sparmaßnahme S3). Belegstelle: Die Parameterbeschreibung von
     // `posting_status` in docs/openapi/buchhaltungsbutler-v1.json schreibt „You have the
     // following options: all, fixed, unfixed" aus, und `error_code` 9 desselben Endpunkts
     // lehnt jeden anderen Wert mit „invalid posting_status specified" ab
@@ -238,8 +240,8 @@ export const bb_postings_search: ToolEntry = {
       schema: ORDER,
     },
     // required: false, obwohl der Server das limit immer mitsendet: Die Vorgabe steckt im
-    // Schema, und Zod setzt sie auch unter .optional() ein (Plan 7.5 Regel 1). Ein
-    // required: true wäre eine Verschärfung gegenüber der Spezifikation (Plan 4.3).
+    // Schema, und Zod setzt sie auch unter .optional() ein. Ein
+    // required: true wäre eine Verschärfung gegenüber der Spezifikation.
     {
       name: "limit",
       apiNames: ["limit"],
@@ -269,7 +271,7 @@ export const bb_postings_search: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   responseContract: {
@@ -278,14 +280,13 @@ export const bb_postings_search: ToolEntry = {
     source: "dokumentiert",
   },
   shape: "list",
-  // Die Projektion aus Plan 7.4, um zwei Felder erweitert. Soll- und Habenkonto heißen in der
+  // Die Projektion, um zwei Felder erweitert. Soll- und Habenkonto heißen in der
   // ANTWORT debit_postingaccount_number und credit_postingaccount_number; postingaccount_debit
   // und postingaccount_credit gehören zum EINGABEschema von bb_postings_create_free. Der
   // Steuerschlüssel ist tax_key; vat ist der Steuersatz in Prozent und bleibt draußen.
   //
-  // cost_location und transaction_id_by_customer stehen ZUSÄTZLICH zur Tabelle in Plan 7.4.
-  // Grund ist der gemessene Befund V5 aus docs/entwicklung/befund-evaluation.md (dort erneut
-  // als S8 in docs/entwicklung/skeptiker-befunde.md): Dieses Werkzeug hat einen Filter
+  // cost_location und transaction_id_by_customer stehen ZUSÄTZLICH zur Tabelle.
+  // Grund ist ein gemessener Befund des Evaluationslaufs: Dieses Werkzeug hat einen Filter
   // cost_location, ließ die gefilterte Kostenstelle aber in der Antwort nicht ablesen —
   // Aufgabe 7 des Evaluationslaufs brauchte deshalb einen Aufruf je Kostenstelle, bei
   // 30 Kostenstellen 30 Aufrufe gegen ein Minutenlimit von 100. Ohne

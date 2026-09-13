@@ -1,11 +1,11 @@
-// Werkzeug 45 von 54: `/comments/add` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 45 von 54: `/comments/add`.
 //
-// **Einer von vier Endpunkten ohne lesendes Gegenstück** (Plan 2.1, 5.7). `verifyWith` trägt
+// **Einer von vier Endpunkten ohne lesendes Gegenstück**. `verifyWith` trägt
 // deshalb `{ kind: "none", … }`: Die API kennt keinen Endpunkt, der Kommentare liest, ändert
 // oder löscht, und die Antwort nennt nicht einmal eine Kennung des angelegten Kommentars.
 // Nach einem Zeitlimit bleibt nur die Weboberfläche.
 //
-// **Die Entweder-oder-Regel setzt die Querprüfung Q9 durch** (Plan 4.7). Die Spezifikation
+// **Die Entweder-oder-Regel setzt die Querprüfung Q9 durch**. Die Spezifikation
 // schreibt wörtlich, es sei entweder `transaction_id_by_customer` oder
 // `receipt_id_by_customer` zu senden; belegt ist das durch zwei eigene Fehlercodes, Code 8
 // ohne eine der beiden Kennungen und Code 7 mit beiden. Beide Felder sind für sich optional,
@@ -75,7 +75,7 @@ export const bb_comments_create: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Die Antwort trägt ausschließlich `success` und `message`: kein `data`, kein `rows`, keine
   // Kennung. Der Aufrufer kann nicht feststellen, welcher Kommentar entstanden ist.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },

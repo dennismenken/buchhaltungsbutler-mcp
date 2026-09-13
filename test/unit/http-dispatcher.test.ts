@@ -23,7 +23,7 @@ afterEach(() => {
 describe("installGlobalDispatcher", () => {
   it("ersetzt einen eingehängten MockAgent nicht", () => {
     // Das ist die wichtigere der beiden Richtungen: Würde der Produktionsdispatcher den
-    // MockAgent überschreiben, wäre die Netzsperre aus 9.1 stillschweigend aufgehoben, und
+    // MockAgent überschreiben, wäre die Netzsperre stillschweigend aufgehoben, und
     // der Testlauf sähe trotzdem grün aus.
     const before = getGlobalDispatcher();
     expect(installGlobalDispatcher()).toBe(false);

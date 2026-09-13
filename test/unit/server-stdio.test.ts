@@ -1,6 +1,6 @@
-// Der Prozesseinstieg `runStdioServer` (AP10).
+// Der Prozesseinstieg `runStdioServer`.
 //
-// Er ist der Weg, den `src/cli.ts` in AP15 nimmt, und damit der einzige, der im Betrieb wirklich
+// Er ist der Weg, den `src/cli.ts` nimmt, und damit der einzige, der im Betrieb wirklich
 // läuft. Geprüft wird hier, was `createServer` allein nicht zeigt: dass der Transport geöffnet
 // wird, dass die Verbindung auf `initialize` antwortet und dass der zurückgegebene Griff
 // idempotent herunterfährt.
@@ -78,7 +78,7 @@ it("öffnet den Transport, antwortet auf initialize und fährt idempotent herunt
         params: {
           protocolVersion: "2025-11-25",
           capabilities: {},
-          clientInfo: { name: "ap10-stdio", version: "0.0.0" },
+          clientInfo: { name: "stdiotest", version: "0.0.0" },
         },
       })}\n`,
     );

@@ -1,11 +1,11 @@
 /**
- * Die Umgebungsvariablen des Servers, vollständig nach Plan 6.2.
+ * Die Umgebungsvariablen des Servers, vollständig.
  *
  * Jede Variable steht genau einmal in diesem Modul, mit Typ, Vorgabe und Prüfregel. Daraus
- * ergibt sich beides: das Zod-Schema für die Werteprüfung (6.4 Punkt 3) und die Liste der
- * bekannten Namen, gegen die jede unbekannte `BB_*`-Variable gehalten wird (6.4 Punkt 2).
+ * ergibt sich beides: das Zod-Schema für die Werteprüfung und die Liste der
+ * bekannten Namen, gegen die jede unbekannte `BB_*`-Variable gehalten wird.
  *
- * Grundregel aus 6.4: Ein **unbrauchbarer Wert führt zum Abbruch**, nicht zum stillen
+ * Grundregel: Ein **unbrauchbarer Wert führt zum Abbruch**, nicht zum stillen
  * Zurückfallen auf die Vorgabe. `BB_MCP_READ_ONLY=ture` darf nicht „aus" bedeuten.
  */
 
@@ -14,20 +14,20 @@ import { z } from "zod";
 
 import { LOG_LEVELS, type LogLevel } from "../logging/stderr.js";
 
-/** Basis-URL der API, wenn `BB_BASE_URL` nicht gesetzt ist (6.2). */
+/** Basis-URL der API, wenn `BB_BASE_URL` nicht gesetzt ist. */
 export const DEFAULT_BASE_URL = "https://webapp.buchhaltungsbutler.de/api/v1";
 
 /** Verzeichnisname der Zugangsdatendatei unter dem Konfigurationsort des Systems. */
 export const CONFIG_DIR_NAME = "buchhaltungsbutler-mcp";
 
-/** Die drei Zugangsdaten. Ihr Wert erscheint in keiner Meldung, auch nicht gekürzt (6.5). */
+/** Die drei Zugangsdaten. Ihr Wert erscheint in keiner Meldung, auch nicht gekürzt. */
 export const CREDENTIAL_VARS = ["BB_API_CLIENT", "BB_API_SECRET", "BB_API_KEY"] as const;
 
 export type CredentialVarName = (typeof CREDENTIAL_VARS)[number];
 
 /**
  * Der veraltete Name des Nur-Lesen-Schalters aus `distribution.md` 13.2. Er wird weiter
- * akzeptiert, erzeugt aber eine Warnung; kanonisch ist `BB_MCP_READ_ONLY` (6.1).
+ * akzeptiert, erzeugt aber eine Warnung; kanonisch ist `BB_MCP_READ_ONLY`.
  */
 export const DEPRECATED_READ_ONLY_VAR = "BB_READ_ONLY";
 
@@ -78,7 +78,7 @@ function integerVar(options: { min: number; max: number; hint: string }) {
 }
 
 /**
- * Prüft die Basis-URL: `https:` ist Pflicht, `http:` nur gegen `localhost` (5.1). Ein
+ * Prüft die Basis-URL: `https:` ist Pflicht, `http:` nur gegen `localhost`. Ein
  * Anmeldeteil in der URL ist verboten, weil er ein zweites, unbeachtetes Geheimnis wäre;
  * Abfrage und Fragment sind verboten, weil der Pfad der 54 Endpunkte hinten angehängt wird.
  */
@@ -115,11 +115,11 @@ function normalizeBaseUrl(raw: string): string {
 // --- Schema --------------------------------------------------------------------------
 
 /**
- * Das Schema aller Umgebungsvariablen aus 6.2.
+ * Das Schema aller Umgebungsvariablen dieses Servers.
  *
  * Zwei Vorgaben stehen bewusst **nicht** hier, sondern in {@link ENV_DEFAULTS}:
  * `BB_MCP_READ_ONLY`, weil `resolve.ts` unterscheiden muss, ob der Schalter gesetzt war
- * (Widerspruchsprüfung mit `BB_READ_ONLY`, 6.1), und `BB_CONFIG_DIR`, weil die Vorgabe vom
+ * (Widerspruchsprüfung mit `BB_READ_ONLY`), und `BB_CONFIG_DIR`, weil die Vorgabe vom
  * Betriebssystem abhängt.
  */
 export const envSchema = z.object({
@@ -163,8 +163,8 @@ export const envSchema = z.object({
     50,
   ),
 
-  // Dezimalzeichenkette, nie Gleitkomma: Beträge werden in Ganzzahl-Cent gerechnet (Plan 5.9,
-  // mapping/decimal.ts). Dreizehn Vorkommastellen halten den Centwert im sicheren
+  // Dezimalzeichenkette, nie Gleitkomma: Beträge werden in Ganzzahl-Cent gerechnet
+  // (`mapping/decimal.ts`). Dreizehn Vorkommastellen halten den Centwert im sicheren
   // Ganzzahlbereich von JavaScript.
   BB_MCP_MAX_AMOUNT: z
     .string()
@@ -199,10 +199,10 @@ export const envSchema = z.object({
 
   BB_MCP_MAX_RESPONSE_TOKENS: integerVar({
     // Unter 100 Token bliebe von keiner Antwort etwas übrig; über 20.000 greift ohnehin die
-    // harte Grenze aus 7.6.
+    // harte Grenze der Antwort.
     min: 100,
     max: 20_000,
-    hint: "muss zwischen 100 und 20000 liegen; ab 20000 greift die harte Grenze aus dem Plan",
+    hint: "muss zwischen 100 und 20000 liegen; ab 20000 greift ohnehin die harte Grenze der Antwort",
   }).default(5_000),
 
   BB_MCP_CACHE_TTL_MS: integerVar({
@@ -239,7 +239,7 @@ export const envSchema = z.object({
 
   BB_MCP_UPLOAD_FROM_URL: booleanVar().default(false),
 
-  // Der Gruppenschalter (N5). Beide Werte bleiben hier ROH: Sie werden erst in
+  // Der Gruppenschalter. Beide Werte bleiben hier ROH: Sie werden erst in
   // `config/tool-groups.ts` zerlegt und geprüft, weil drei der vier Startfehler beide
   // Variablen zugleich betrachten müssen und ein Feldschema das nicht kann. Ein leerer Wert
   // erreicht dieses Schema ohnehin nie — `parseEnv` behandelt ihn als nicht gesetzt.
@@ -261,14 +261,14 @@ export type EnvValues = z.infer<typeof envSchema>;
 
 /**
  * Die Vorgabe des Nur-Lesen-Schalters. Sie steht nicht im Schema, weil `resolve.ts` sonst
- * nicht mehr erkennen könnte, ob der Schalter überhaupt gesetzt war (6.1). Die zweite
+ * nicht mehr erkennen könnte, ob der Schalter überhaupt gesetzt war. Die zweite
  * Ausnahme, die Vorgabe von `BB_CONFIG_DIR`, liefert {@link defaultConfigDir}.
  */
 export const ENV_DEFAULTS = Object.freeze({
   BB_MCP_READ_ONLY: false,
 });
 
-/** Alle Namen, die dieser Server kennt. Grundlage der Warnung aus 6.4 Punkt 2. */
+/** Alle Namen, die dieser Server kennt. Grundlage der Warnung über unbekannte Variablen. */
 export const KNOWN_ENV_VARS: readonly string[] = Object.freeze(Object.keys(envSchema.shape));
 
 // --- Auswertung ----------------------------------------------------------------------
@@ -295,7 +295,7 @@ function formatIssues(error: z.ZodError): string {
  * schreiben jeden Schlüssel mit, auch ohne Wert, und ein Abbruch dafür wäre nicht zu
  * erklären. Der Fall wird stattdessen als Warnung zurückgegeben.
  *
- * @throws ConfigError bei jedem unbrauchbaren Wert (6.4 Punkt 3).
+ * @throws ConfigError bei jedem unbrauchbaren Wert.
  */
 export function parseEnv(env: NodeJS.ProcessEnv): ParsedEnv {
   const input: Record<string, string> = {};
@@ -376,7 +376,7 @@ export function nearestKnownVar(name: string): string {
   return best;
 }
 
-/** Alle gesetzten `BB_*`-Variablen, die dieser Server nicht kennt (6.4 Punkt 2). */
+/** Alle gesetzten `BB_*`-Variablen, die dieser Server nicht kennt. */
 export function findUnknownBbVars(env: NodeJS.ProcessEnv): readonly string[] {
   return Object.keys(env)
     .filter((name) => name.startsWith("BB_") && !KNOWN_ENV_VARS.includes(name))
@@ -386,7 +386,7 @@ export function findUnknownBbVars(env: NodeJS.ProcessEnv): readonly string[] {
 // --- Ablageort der Zugangsdatendatei -------------------------------------------------
 
 /**
- * Vorgabe für `BB_CONFIG_DIR` (6.2): unter Windows `%APPDATA%`, sonst
+ * Vorgabe für `BB_CONFIG_DIR`: unter Windows `%APPDATA%`, sonst
  * `${XDG_CONFIG_HOME:-~/.config}`. Der Verzeichnisname trägt bewusst keinen Namensraum
  * (`distribution.md` 13.2).
  */

@@ -16,7 +16,7 @@ import {
 } from "../../src/errors/catalog.js";
 
 // Die vier Pfade mit dem Platzhaltersegment id_by_customer. Der Katalog ist über den
-// UNVERÄNDERTEN Spezifikationspfad erreichbar und nie über den gebauten Pfad (Plan 4.6):
+// UNVERÄNDERTEN Spezifikationspfad erreichbar und nie über den gebauten Pfad:
 // Der Schlüssel /receipts/get/2 steht in keiner Tabelle, und jeder Fehler dieser vier
 // Werkzeuge fiele sonst auf die Rückfallregel zurück.
 const TEMPLATE_PATHS = [
@@ -34,7 +34,7 @@ beforeEach(() => {
 
 describe("src/errors/catalog.ts", () => {
   it("lädt den Katalog dynamisch und nicht beim Laden des Moduls", () => {
-    // Punkt 1 aus 5.6: Im Normalbetrieb tritt kein Fehler auf, und dann kostet der größte
+    // Punkt 1: Im Normalbetrieb tritt kein Fehler auf, und dann kostet der größte
     // einzelne Datenblock des Pakets null Ladezeit und null Speicher.
     expect(isErrorCatalogLoaded()).toBe(false);
     expect(SOURCE).toContain('import("../generated/errors.js")');
@@ -80,7 +80,7 @@ describe("src/errors/catalog.ts", () => {
   });
 
   it("liefert null für ein Paar, das die Spezifikation nicht führt", async () => {
-    // Kein Raten, keine Zuordnung zu einem gleichnamigen Code eines anderen Pfades (5.6).
+    // Kein Raten, keine Zuordnung zu einem gleichnamigen Code eines anderen Pfades.
     expect(await lookupErrorEntry("/receipts/get", 999)).toBeNull();
     expect(await lookupErrorEntry("/gibt/es/nicht", 5)).toBeNull();
   });

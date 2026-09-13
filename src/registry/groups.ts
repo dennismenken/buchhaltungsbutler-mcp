@@ -1,5 +1,4 @@
-// Die zwölf Werkzeuggruppen als Daten (Entscheidung N5, `docs/entwicklung/buendelwerkzeuge.md`
-// Abschnitt 7).
+// Die zwölf Werkzeuggruppen als Daten.
 //
 // **Die Gruppe wird NIEMALS aus dem Werkzeugnamen abgeleitet.** Das ist dieselbe Regel, die
 // `classes.ts` für die Werkzeugklasse aufstellt, und sie hat hier zwei belegbare Gründe: Ein

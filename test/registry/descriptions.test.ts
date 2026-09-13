@@ -1,10 +1,10 @@
-// P8 aus Plan 9.2: Beschreibungen, Pflichtsätze, Stufen und Verweise.
+// P8: Beschreibungen, Pflichtsätze, Stufen und Verweise.
 //
 // Für die zehn Werkzeuge der Klasse B und die sieben der Klasse D ist Punkt 5 des Aufbaus
-// aus Plan 4.9 die wichtigste Zeile des ganzen Servers: Unter E2 sperrt der Server nichts,
-// und der Pflichtsatz ist bei dreizehn Werkzeugen die einzige Warnung, die vor dem Aufruf
-// überhaupt erscheint. Deshalb wird er hier zeichengenau gegen
-// src/registry/mandatory-sentences.ts geprüft und nicht sinngemäß.
+// die wichtigste Zeile des ganzen Servers: Der Server sperrt nichts
+// (`docs/entwicklung/tool-design.md` 9.4), und der Pflichtsatz ist bei dreizehn Werkzeugen
+// die einzige Warnung, die vor dem Aufruf überhaupt erscheint. Deshalb wird er hier
+// zeichengenau gegen src/registry/mandatory-sentences.ts geprüft und nicht sinngemäß.
 //
 // Der Verweistest ist wichtiger, als er klingt: Ein Abgrenzungssatz, der auf ein nicht
 // existierendes Werkzeug zeigt, lenkt den Agenten in einen garantierten Fehlschlag.
@@ -32,7 +32,7 @@ const MANDATORY_SENTENCE_IDS: readonly MandatorySentenceId[] = [
 ];
 
 /**
- * Die namentliche Zuordnung der Pflichtsätze aus Plan 3.5, von Hand abgeschrieben.
+ * Die namentliche Zuordnung der Pflichtsätze, von Hand abgeschrieben.
  * Prüfsumme 6 + 3 + 6 + 13 + 4 + 5 + 2 = 39, also genau die 39 Werkzeuge mit den Wirkungen
  * anlegend, ändernd und löschend. Die 15 lesenden tragen keinen dieser Sätze; der Test prüft
  * beide Richtungen.
@@ -93,7 +93,7 @@ const MANDATORY_SENTENCE_BY_TOOL: Readonly<Record<string, MandatorySentenceId>> 
 };
 
 /**
- * Zwei Pflichtsätze auf PARAMETER-Ebene, wörtlich aus Plan 4.7 und Plan 4.3. Sie ersetzen
+ * Zwei Pflichtsätze auf PARAMETER-Ebene, wörtlich. Sie ersetzen
  * je eine gestrichene Querprüfung: Eine Prüfung, die die von der API ausdrücklich erlaubte
  * Kombination abwiese, würde einen gültigen Aufruf unsichtbar vor dem Request verwerfen.
  */
@@ -103,26 +103,26 @@ const MANDATORY_SENTENCE_BY_PARAMETER = [
     fields: ["id_by_customer_from", "id_by_customer_to"],
     sentence:
       "Setzt die Sortierung auf id_by_customer ASC, auch in Kombination mit date_from und date_to.",
-    source: "Plan 4.7, Ersatz für die gestrichene Sortierprüfung",
+    source: "Ersatz für die gestrichene Sortierprüfung",
   },
   {
     tool: "bb_transactions_create",
     fields: ["currency"],
     sentence:
       "Ohne Angabe bucht BuchhaltungsButler in der Währung des Zahlungskontos; die Spezifikation beschreibt den Betrag ausdrücklich als Betrag in der Kontowährung. Welche Währung ein Zahlungskonto führt, gibt die API an keiner Stelle preis — diesen Wert also nur setzen, wenn er aus dem Vorgang bekannt ist.",
-    source: "Plan 4.3, Ersatz für die zurückgenommene Verschärfung",
+    source: "Ersatz für die zurückgenommene Verschärfung",
   },
   {
     tool: "bb_transactions_create_batch",
     fields: ["currency"],
     sentence:
       "Ohne Angabe bucht BuchhaltungsButler in der Währung des Zahlungskontos; die Spezifikation beschreibt den Betrag ausdrücklich als Betrag in der Kontowährung. Welche Währung ein Zahlungskonto führt, gibt die API an keiner Stelle preis — diesen Wert also nur setzen, wenn er aus dem Vorgang bekannt ist.",
-    source: "Plan 4.3, Ersatz für die zurückgenommene Verschärfung",
+    source: "Ersatz für die zurückgenommene Verschärfung",
   },
 ] as const;
 
 /**
- * Die Verbotsliste englischer Funktionswörter aus Plan 9.2. Sie enthält ausdrücklich KEIN
+ * Die Verbotsliste englischer Funktionswörter. Sie enthält ausdrücklich KEIN
  * Wort, das auch deutsch ist: `die`, `was`, `man`, `will`, `hat`, `not` und `also` fehlen
  * deshalb. Die Prüfung erkennt keinen einzelnen englischen Fachbegriff und soll das auch
  * nicht — sie fängt den Fall ab, dass eine Beschreibung insgesamt englisch geschrieben wurde.
@@ -159,7 +159,7 @@ function expectNoIssues(problems: readonly string[]): void {
 }
 
 /**
- * Der Sprachtest aus Plan 9.2, in der dort festgelegten Reihenfolge: erst die Spannen in
+ * Der Sprachtest, in der dort festgelegten Reihenfolge: erst die Spannen in
  * einfachen Anführungszeichen entfernen (dort stehen Enum-Werte und wörtlich zitierte
  * API-Werte), dann alle Wörter mit `bb_`-Anfang und alle Wörter mit Unterstrich
  * (API-Feldnamen wie id_by_customer, date_from, to_from), dann die Verbotsliste.
@@ -211,7 +211,7 @@ function allTexts(tool: ToolEntry): { source: string; text: string }[] {
 }
 
 describe("P8 Beschreibungsstufen", () => {
-  it("deckt sich mit der namentlichen Zuordnung aus Plan 4.9", () => {
+  it("deckt sich mit der namentlichen Zuordnung", () => {
     const problems: string[] = [];
 
     for (const tier of TIERS) {
@@ -222,9 +222,7 @@ describe("P8 Beschreibungsstufen", () => {
           continue;
         }
         if (tool.tier !== tier) {
-          problems.push(
-            `${name}: tier ${String(tool.tier)}, nach Plan 4.9 gehört es in Stufe ${String(tier)}.`,
-          );
+          problems.push(`${name}: tier ${String(tool.tier)}; es gehört in Stufe ${String(tier)}.`);
         }
       }
     }
@@ -253,9 +251,7 @@ describe("P8 Beschreibungsstufen", () => {
   it("nennt in jeder Beschreibung das Wort BuchhaltungsButler", () => {
     const problems = REGISTRY.filter(
       (tool) => !tool.description.includes("BuchhaltungsButler"),
-    ).map(
-      (tool) => `${tool.name}: die Beschreibung nennt BuchhaltungsButler nicht (Plan 4.9 Punkt 1).`,
-    );
+    ).map((tool) => `${tool.name}: die Beschreibung nennt BuchhaltungsButler nicht.`);
 
     expectNoIssues(problems);
   });
@@ -270,7 +266,7 @@ describe("P8 Sprache", () => {
         const matches = englishWords(text);
         if (matches.length > 0) {
           problems.push(
-            `${tool.name}, ${source}: englische Funktionswörter (${matches.join(", ")}). Der Fließtext ist deutsch; API-Feldnamen, Werkzeugnamen und Enum-Werte bleiben im Original (Plan 4.9, E4).`,
+            `${tool.name}, ${source}: englische Funktionswörter (${matches.join(", ")}). Der Fließtext ist deutsch; API-Feldnamen, Werkzeugnamen und Enum-Werte bleiben im Original.`,
           );
         }
       }
@@ -285,7 +281,7 @@ describe("P8 Sprache", () => {
     for (const tool of REGISTRY) {
       for (const { path, field } of flatFields(tool)) {
         if (field.description.trim() === "") {
-          problems.push(`${tool.name}, Feld ${path}: keine description (Plan 9.2 P8).`);
+          problems.push(`${tool.name}, Feld ${path}: keine description.`);
         }
       }
     }
@@ -300,7 +296,7 @@ describe("P8 Sprache", () => {
       for (const { path, field } of flatFields(tool)) {
         if (field.name === "confirm") {
           problems.push(
-            `${tool.name}, Feld ${path}: kein confirm-Parameter. Der Server fragt nicht nach; die Freigabe liegt beim Client (E2, Plan 1.5).`,
+            `${tool.name}, Feld ${path}: kein confirm-Parameter. Der Server fragt nicht nach; die Freigabe liegt beim Client.`,
           );
         }
       }
@@ -312,7 +308,7 @@ describe("P8 Sprache", () => {
 
 describe("P8 Pflichtsätze", () => {
   it("ordnet genau den 39 schreibenden Werkzeugen einen Pflichtsatz zu", () => {
-    // Selbstprüfung der Abschrift aus Plan 3.5 gegen die zweite Klassenliste: Beide Listen
+    // Selbstprüfung der Abschrift gegen die zweite Klassenliste: Beide Listen
     // sind von Hand geführt, und genau deshalb werden sie gegeneinander gehalten.
     expect([...Object.keys(MANDATORY_SENTENCE_BY_TOOL)].sort()).toEqual(
       [...EXPECTED_WRITING_TOOL_NAMES].sort(),
@@ -332,14 +328,14 @@ describe("P8 Pflichtsätze", () => {
 
       if (tool.mandatorySentence !== id) {
         problems.push(
-          `${name}: mandatorySentence ist ${String(tool.mandatorySentence)}, nach Plan 3.5 ist es ${id}.`,
+          `${name}: mandatorySentence ist ${String(tool.mandatorySentence)}, erwartet wird ${id}.`,
         );
       }
 
       const matched = mandatorySentenceMatch(tool.description, id);
       if (matched === undefined) {
         problems.push(
-          `${name}: der Pflichtsatz ${id} steht nicht wörtlich in der Beschreibung (Plan 3.5, src/registry/mandatory-sentences.ts).`,
+          `${name}: der Pflichtsatz ${id} steht nicht wörtlich in der Beschreibung (src/registry/mandatory-sentences.ts).`,
         );
         continue;
       }
@@ -403,7 +399,7 @@ describe("P8 Pflichtsätze", () => {
     expectNoIssues(problems);
   });
 
-  it("trägt die beiden Pflichtsätze auf Parameterebene aus Plan 4.7 und 4.3", () => {
+  it("trägt die beiden Pflichtsätze auf Parameterebene", () => {
     const problems: string[] = [];
 
     for (const paramRule of MANDATORY_SENTENCE_BY_PARAMETER) {
@@ -448,7 +444,7 @@ describe("P8 Verweise", () => {
         for (const reference of text.match(/\bbb_[a-z0-9_]+/g) ?? []) {
           if (!knownNames.has(reference)) {
             problems.push(
-              `${tool.name}, ${source}: Verweis auf ${reference}; ein Werkzeug dieses Namens gibt es nicht (Plan 9.2 P8).`,
+              `${tool.name}, ${source}: Verweis auf ${reference}; ein Werkzeug dieses Namens gibt es nicht.`,
             );
           }
         }

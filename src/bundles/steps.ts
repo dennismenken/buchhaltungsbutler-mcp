@@ -4,7 +4,7 @@
 // stehen bereits im Register; sie hier abzuschreiben ergäbe eine zweite Liste, die beim nächsten
 // gemessenen Feld unbemerkt auseinanderliefe. Ein Bündel liest diese DATEN aus dem Eintrag und
 // ruft trotzdem nicht das Werkzeug auf; es spricht unmittelbar mit der HTTP-Schicht, und der
-// Gruppenschalter berührt es deshalb nicht (N5). Nebenwirkung mit Absicht: Ein Agent, der
+// Gruppenschalter berührt es deshalb nicht. Nebenwirkung mit Absicht: Ein Agent, der
 // zwischen Bündel und Einzelwerkzeug wechselt, sieht dieselben Spalten.
 
 import type { ToolEntry } from "../registry/types.js";

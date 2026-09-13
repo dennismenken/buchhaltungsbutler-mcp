@@ -1,4 +1,4 @@
-// Werkzeug 18 aus Plan 3.8: `/invoices/create/draft`, der Rechnungsentwurf.
+// Werkzeug 18: `/invoices/create/draft`, der Rechnungsentwurf.
 //
 // Der Endpunkt ist eine abgespeckte Fassung von `/invoices/create`: dieselben Pflichtfelder,
 // aber **keine** Nummernvergabe, **kein** PDF und drei Parameter weniger (`invoicenumber`,
@@ -6,9 +6,9 @@
 // `message`; weder `id_by_customer` noch `invoicenumber` kommen zurück (rechnungen.md 1.1
 // und 5.3). Der Antwortvertrag ist deshalb leer, und das ist ein Befund und keine Lücke.
 //
-// Klasse B (Plan 3.3): Der Entwurf ist ein neues, sichtbares Objekt und überschreibt nichts.
+// Klasse B: Der Entwurf ist ein neues, sichtbares Objekt und überschreibt nichts.
 // `verifyWith` trägt `{ kind: "none" }`, weil die API unterhalb von `/invoices/` keinen
-// lesenden Pfad führt (Plan 2.1, P10).
+// lesenden Pfad führt.
 //
 // **Nicht verifiziert:** Das Hilfecenter schreibt, Entwürfe würden ohne Rechnungsdatum
 // gespeichert, die API verlangt `date` aber als Pflichtfeld. Ob das Datum gespeichert,
@@ -31,7 +31,7 @@ import type { FieldSpec, ToolEntry } from "../types.js";
 
 /**
  * Die Mengengrenze der Positionsliste: `min(50, BB_MCP_MAX_BATCH)`, sobald die
- * Konfiguration aufgelöst ist (Plan 4.7 Q4, 4.8). Ohne aufgelöste Konfiguration — so laden
+ * Konfiguration aufgelöst ist. Ohne aufgelöste Konfiguration — so laden
  * die Registerprüfungen das Register — gilt das API-Maximum; die wirksame Grenze erzwingt
  * Q4 zur Laufzeit, zusätzlich Guard 5.
  */
@@ -235,7 +235,7 @@ export const bb_invoices_create_draft: ToolEntry = {
     field({ name: "recurring_date_next", schema: dateValue(RECURRING_DATE_DESCRIPTION) }),
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)." }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt." }],
   // Leer, und zwar belegt: `InvoicesCreateDraft_Success` führt ausschließlich `success` und
   // `message`. Ein erfundenes Feld erzeugte bei jedem Aufruf eine `_contract_warnings`-Zeile.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },

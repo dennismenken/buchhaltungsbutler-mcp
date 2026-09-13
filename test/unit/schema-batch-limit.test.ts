@@ -1,5 +1,5 @@
 // Die Mengengrenze `min(50, BB_MCP_MAX_BATCH)` gilt für Stapelarrays UND für
-// Positionslisten, auf oberster Ebene wie je Stapelelement (Plan 4.7 Q4, 4.8, AP05).
+// Positionslisten, auf oberster Ebene wie je Stapelelement.
 //
 // Der Test geht bewusst über die echte Umgebungsvariable und nicht über das Argument
 // `maxItems`: Nur so ist belegt, dass die Grenze beim Bau des Schemas aus der eingefrorenen

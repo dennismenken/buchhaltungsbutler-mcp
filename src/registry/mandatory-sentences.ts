@@ -1,4 +1,4 @@
-// Die sieben Pflichtsätze U1 bis U7 aus Plan 3.5, wörtlich und auf Deutsch (E4).
+// Die sieben Pflichtsätze U1 bis U7, wörtlich und auf Deutsch (CONTRIBUTING.md Abschnitt 5).
 //
 // Jedes Werkzeug mit der Wirkung anlegend, ändernd oder löschend trägt genau einen dieser
 // Sätze, und zwar den zutreffenden; die 15 lesenden Werkzeuge tragen keinen. Welcher Satz
@@ -6,15 +6,16 @@
 // P8 (test/registry/descriptions.test.ts) vergleicht zeichengenau gegen diese Datei und
 // prüft beide Richtungen, also auch die Abwesenheit bei den lesenden Werkzeugen.
 //
-// Warum der Wortlaut hier eingefroren ist: Unter E2 ist der Freigabedialog des Clients die
-// einzige menschliche Kontrolle. Für die 13 Werkzeuge mit U4 ist dieser Satz die einzige
+// Warum der Wortlaut hier eingefroren ist: Der Server sperrt keinen Aufruf, und der
+// Freigabedialog des Clients ist damit die einzige menschliche Kontrolle
+// (`docs/entwicklung/tool-design.md` 9.4). Für die 13 Werkzeuge mit U4 ist dieser Satz die einzige
 // Warnung, die vor dem Aufruf überhaupt erscheint, weil die API für diese acht Objektarten
-// keinen Lösch-, Storno- oder Aufhebungsendpunkt kennt (Plan 3.5).
+// keinen Lösch-, Storno- oder Aufhebungsendpunkt kennt.
 //
-// Werkzeug- und Feldnamen stehen unverändert im Original und werden nicht eingedeutscht
-// (Plan 4.9). Die Zeichenzahl jedes Satzes zählt in das Stufenbudget aus 4.9 hinein; bei
+// Werkzeug- und Feldnamen stehen unverändert im Original und werden nicht eingedeutscht.
+// Die Zeichenzahl jedes Satzes zählt in das Stufenbudget hinein; bei
 // Stufe 3 bleibt neben U2 der engste Spielraum, weshalb die Obergrenze dort 480 und nicht
-// 380 Zeichen beträgt (Plan 4.10, budget.ts).
+// 380 Zeichen beträgt (budget.ts).
 
 import type { MandatorySentenceId } from "./types.js";
 
@@ -37,7 +38,7 @@ export const MANDATORY_SENTENCE_SCOPE_PLACEHOLDER = "<was genau>";
  * - U7: ersetzt eine Auswertung (2 Werkzeuge)
  *
  * Prüfsumme 6 + 3 + 6 + 13 + 4 + 5 + 2 = 39, also genau die 39 schreibenden Werkzeuge.
- * Die namentliche Zuordnung steht in Plan 3.5 und in den Registereinträgen selbst, nicht
+ * Die namentliche Zuordnung steht und in den Registereinträgen selbst, nicht
  * hier: P8 prüft sie gegen den Registereintrag, und eine zweite Namensliste an dieser
  * Stelle wäre eine konkurrierende Quelle.
  */

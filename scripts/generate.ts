@@ -1,21 +1,21 @@
-// Ruft alle Untergeneratoren des Projekts auf (Plan 4.2, AP03).
+// Ruft alle Untergeneratoren des Projekts auf.
 //
 // Die Liste der Untergeneratoren ist NICHT fest verdrahtet, sondern eine Verzeichnisabfrage:
 // Gelesen wird scripts/, genommen wird jede Datei nach dem Muster gen-*.ts, aufgerufen wird
-// in alphabetischer Reihenfolge. Grund ist der Paketschnitt: gen-registry-index.ts entsteht
-// in einem anderen Arbeitspaket als gen-endpoints.ts, gen-tool-table.ts in einem dritten.
-// Eine verdrahtete Liste zwänge jedes dieser Pakete, diese Datei anzufassen, und erzeugte
-// genau den Zusammenführungskonflikt, den der Schnitt vermeiden soll.
+// in alphabetischer Reihenfolge. Grund ist die Arbeitsteilung: Die Untergeneratoren entstehen
+// und ändern sich unabhängig voneinander. Eine verdrahtete Liste zwänge jeden Beitrag an einem
+// Untergenerator, zusätzlich diese Datei anzufassen, und erzeugte genau den
+// Zusammenführungskonflikt, den die Verzeichnisabfrage vermeidet.
 //
 // Fehlt jeder Untergenerator, endet dieses Skript trotzdem mit Rückgabewert 0. Das ist die
-// Platzhalterregel aus AP01 und notwendig, weil build, test und typecheck `pnpm generate`
+// Platzhalterregel und notwendig, weil build, test und typecheck `pnpm generate`
 // als ersten Schritt aufrufen: Ohne Untergenerator gibt es nichts zu erzeugen, und das ist
 // kein Fehler.
 //
 // Scheitert dagegen ein vorhandener Untergenerator, scheitert auch dieses Skript. Ein
 // halb erzeugtes Generat, das unbemerkt durchläuft, wäre der schlimmere Ausgang.
 //
-// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst; ab der in 13.1
+// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst; ab der
 // festgelegten Untergrenze >=22.19.0 braucht es dafür keinen TypeScript-Starter.
 
 import { spawnSync } from "node:child_process";

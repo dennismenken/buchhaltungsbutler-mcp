@@ -1,4 +1,4 @@
-// Erzeugt die drei Werkzeugtabellen der README aus dem Register (Plan 2, AP20).
+// Erzeugt die drei Werkzeugtabellen der README aus dem Register.
 //
 // **Warum erzeugt und nicht von Hand gepflegt.** Die README nennt jedes Werkzeug mit Wirkung
 // und Kurzbeschreibung. Eine von Hand gepflegte Tabelle wäre eine zweite Wahrheit neben
@@ -8,7 +8,7 @@
 // vergessener Lauf ist rot und nicht unsichtbar.
 //
 // **Die Bündelwerkzeuge werden mitgeführt.** Sie stehen nicht in `index.generated.ts`, weil
-// sie einen eigenen Eintragstyp tragen (Entscheidung N1: die 54 Endpunktwerkzeuge bleiben
+// sie einen eigenen Eintragstyp tragen (die 54 Endpunktwerkzeuge bleiben
 // unverändert, die Bündel kommen daneben). Dieses Skript liest sie deshalb aus
 // `src/bundles/index.ts` und erzeugt daraus die Tabelle in Abschnitt 11.1 sowie die beiden
 // Bündelzeilen der Bereichsübersicht in Abschnitt 1. Ein sechstes Bündel macht damit dieselbe
@@ -21,7 +21,7 @@
 // kommen über `typeof import(...)` trotzdem aus den echten Dateien. Dasselbe Muster benutzt
 // scripts/measure-tokens.ts.
 //
-// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst; ab der in 13.1
+// Node führt diese Datei direkt aus und entfernt die Typannotationen selbst; ab der
 // festgelegten Untergrenze >=22.19.0 braucht es dafür keinen TypeScript-Starter.
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -55,12 +55,12 @@ const REGISTRY_INDEX = "src/registry/index.generated.ts";
 const BUNDLE_INDEX = "src/bundles/index.ts";
 const README = "README.md";
 
-// Der Registerindex wird nicht eingecheckt (Plan 4.2) und von gen-registry-index.ts erzeugt.
+// Der Registerindex wird nicht eingecheckt und von gen-registry-index.ts erzeugt.
 // Dieses Skript läuft alphabetisch danach, die Datei ist also da. Fehlt sie trotzdem, sagt
 // die Meldung, was zu tun ist, statt einen Modulpfad zu melden, den niemand deutet.
 if (!existsSync(filePath(REGISTRY_INDEX))) {
   console.error(
-    `${REGISTRY_INDEX} fehlt. Die Datei wird erzeugt und nicht eingecheckt (Plan 4.2): ` +
+    `${REGISTRY_INDEX} fehlt. Die Datei wird erzeugt und nicht eingecheckt: ` +
       "zuerst scripts/gen-registry-index.ts ausführen, dann diesen Generator. " +
       "Über pnpm generate geschieht das von selbst.",
   );
@@ -81,14 +81,14 @@ type Bundle = (typeof bundles.BUNDLE_ENTRIES)[number];
 // --- Bereiche --------------------------------------------------------------------------
 
 /**
- * Die sieben Bereiche der README-Gliederung (Plan 10, Punkte 1 und 11), zugeordnet über den
+ * Die sieben Bereiche der README-Gliederung, zugeordnet über den
  * Ressourcenteil des Werkzeugnamens.
  *
- * Der Ressourcenteil steht nach Plan 3.1 immer zwischen `bb_` und dem Verb, ist also aus dem
+ * Der Ressourcenteil steht immer zwischen `bb_` und dem Verb, ist also aus dem
  * Namen ablesbar. Die Zuordnung zu einer deutschen Überschrift ist es nicht; sie steht
  * deshalb hier. Eine unbekannte Ressource lässt diesen Generator **nicht** scheitern,
  * sondern landet unter „Weitere": Das Nachrüsten eines Endpunkts bleibt damit bei den fünf
- * Schritten aus Plan 10, Abschnitt 18, und niemand muss eine Liste an zweiter Stelle pflegen,
+ * Schritten, und niemand muss eine Liste an zweiter Stelle pflegen,
  * damit `pnpm generate` überhaupt durchläuft. Die Zeile auf stderr sagt trotzdem, dass hier
  * ein Wort fehlt.
  */
@@ -132,7 +132,7 @@ function areaOf(name: string): string {
 
 // --- Wirkung ---------------------------------------------------------------------------
 
-/** Die deutschen Wirkungsbezeichnungen aus grundlagen.md 7.3, wie in Plan 3.8 verwendet. */
+/** Die deutschen Wirkungsbezeichnungen aus grundlagen.md 7.3, wie verwendet. */
 const EFFECT_LABELS: Readonly<Record<Entry["effect"], string>> = {
   read: "lesend",
   create: "anlegend",
@@ -166,8 +166,8 @@ const ABBREVIATIONS = new Set([
 ]);
 
 /**
- * Der erste Satz einer Werkzeugbeschreibung. Er ist nach Plan 4.9 der Zwecksatz und damit
- * genau das „ein Satz" der README-Gliederung (Plan 10, Punkt 11).
+ * Der erste Satz einer Werkzeugbeschreibung. Er ist der Zwecksatz und damit
+ * genau das „ein Satz" der README-Gliederung.
  */
 function firstSentence(description: string): string {
   const text = description.trim();
@@ -210,7 +210,7 @@ function groupByArea(entries: readonly Entry[]): Map<string, Entry[]> {
 }
 
 /**
- * Die Übersicht nach Bereichen (Plan 10, Punkt 1).
+ * Die Übersicht nach Bereichen.
  *
  * Die Tabelle trägt drei Summenzeilen statt einer: die Endpunktwerkzeuge, die Bündelwerkzeuge
  * und beides zusammen. Nur die letzte Zahl ist die, die `tools/list` einem Client wirklich
@@ -272,7 +272,7 @@ function renderBundleTable(bundleEntries: readonly Bundle[]): string {
   return lines.join("\n");
 }
 
-/** Die vollständige Werkzeugtabelle nach Bereichen (Plan 10, Punkt 11). */
+/** Die vollständige Werkzeugtabelle nach Bereichen. */
 function renderToolTable(groups: ReadonlyMap<string, readonly Entry[]>): string {
   const blocks: string[] = [];
   for (const [area, bucket] of groups) {
@@ -303,7 +303,7 @@ function replaceBlock(source: string, marker: string, content: string): string {
   if (beginAt < 0 || endAt < 0 || endAt < beginAt) {
     console.error(
       `${README}: Die Markierungen ${begin} und ${end} fehlen oder stehen in der falschen ` +
-        "Reihenfolge. Die erzeugte Werkzeugtabelle gehört genau zwischen sie (Plan 10).",
+        "Reihenfolge. Die erzeugte Werkzeugtabelle gehört genau zwischen sie.",
     );
     process.exit(1);
   }

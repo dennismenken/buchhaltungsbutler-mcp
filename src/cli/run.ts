@@ -1,5 +1,5 @@
 /**
- * Die Unterbefehlsweiche, die Hilfe und die Liste der zehn Clientadapter (Plan 8.1, 8.3).
+ * Die Unterbefehlsweiche, die Hilfe und die Liste der zehn Clientadapter.
  *
  * `src/cli.ts` lädt dieses Modul **dynamisch**, und zwar nur dann, wenn ein Unterbefehl
  * angegeben ist. Ein Serverstart lädt deshalb keine Zeile CLI-Code.
@@ -47,7 +47,7 @@ import {
 
 /**
  * Die **zehn** Adapter, auf die sich die zwölf Clientkürzel verteilen: neun eigene und die
- * Sammeldatei `print-only.ts`, aus der Zed, Continue und Jan stammen (Plan 8.3).
+ * Sammeldatei `print-only.ts`, aus der Zed, Continue und Jan stammen.
  */
 export const ALL_ADAPTERS: readonly ClientAdapter[] = [
   claudeCodeAdapter,
@@ -91,7 +91,7 @@ export interface ParsedArgs {
 /**
  * Namen, die nach einem Geheimnis aussehen.
  *
- * **Kein Unterbefehl nimmt ein Geheimnis als Argument entgegen** (Plan 6.3, 8.1). Diese Liste
+ * **Kein Unterbefehl nimmt ein Geheimnis als Argument entgegen**. Diese Liste
  * sorgt dafür, dass der Versuch eine deutliche Absage bekommt statt eines unverstandenen
  * Arguments — und dass die Entscheidung im Code sichtbar bleibt.
  */
@@ -214,7 +214,7 @@ export function requireAdapter(args: ParsedArgs): ClientAdapter {
 
 // --- Hilfe -----------------------------------------------------------------------------
 
-/** Die Hilfe aus 8.1: Unterbefehle und die zwölf Clientkürzel. */
+/** Die Hilfe: Unterbefehle und die zwölf Clientkürzel. */
 export function buildHelp(): string {
   const clients = CLIENT_KEYS.join(", ");
   return [

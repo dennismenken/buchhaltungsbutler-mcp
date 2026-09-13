@@ -1,6 +1,6 @@
-// Der Gruppenschalter an der Registrierung (N5).
+// Der Gruppenschalter an der Registrierung.
 //
-// Nachgewiesen wird die Entscheidung aus `docs/entwicklung/buendelwerkzeuge.md` Abschnitt 7:
+// Nachgewiesen wird die Entscheidung hinter diesem Schalter:
 // Ein Werkzeug einer abgeschalteten Gruppe wird **gar nicht erst registriert** und steht damit
 // auch nicht mit `enabled: false` in `tools/list`. Das ist der bewusste Gegensatz zum
 // Nur-Lesen-Schalter, der gesperrte Werkzeuge sichtbar lässt und erst beim Aufruf absagt.
@@ -92,9 +92,9 @@ describe("die Positivliste", () => {
   });
 
   it("meldet unter dem Profil bundles kein einziges Endpunktwerkzeug an", async () => {
-    // Das eigentliche Profil aus der Bauvorlage: Unter `BB_MCP_TOOL_GROUPS=bundles` ist keine
+    // Das eigentliche Profil: Unter `BB_MCP_TOOL_GROUPS=bundles` ist keine
     // Endpunktgruppe aktiv, und trotzdem wird registriert — ein Bündel ruft die HTTP-Schicht
-    // auf und hängt an keiner Endpunktgruppe (Abschnitt 7).
+    // auf und hängt an keiner Endpunktgruppe.
     const names = await listedTools(installTestConfig({ BB_MCP_TOOL_GROUPS: "bundles" }));
     expect(names).toEqual(namesOf("bundles"));
     expect(names.length).toBeGreaterThan(0);

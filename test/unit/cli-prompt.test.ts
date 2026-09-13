@@ -9,7 +9,7 @@ import {
   PromptUnavailableError,
 } from "../../src/cli/prompt.js";
 
-// Die selbst geschriebene maskierte Eingabe (Plan 8.2 Schritt 2, AP15).
+// Die selbst geschriebene maskierte Eingabe.
 //
 // Geprüft wird die reine Tastenverarbeitung: Sie ist der Teil, in dem ein Fehler dazu führen
 // würde, dass ein Zeichen eines Geheimnisses auf dem Bildschirm landet.

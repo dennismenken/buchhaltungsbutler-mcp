@@ -1,7 +1,7 @@
-// Q1 bis Q9 aus Plan 4.7, je mit einem positiven und einem negativen Testfall.
+// Q1 bis Q9, je mit einem positiven und einem negativen Testfall.
 //
 // Geprüft wird jede Prüfung an einem Werkzeug, dem sie in der Spalte „Betroffen" der Tabelle
-// in 4.7 zugeordnet ist. Die Schemata hier sind bewusst schlank: Geprüft wird die
+// zugeordnet ist. Die Schemata hier sind bewusst schlank: Geprüft wird die
 // Querprüfung und nicht noch einmal der Registereintrag.
 
 import { describe, expect, it } from "vitest";

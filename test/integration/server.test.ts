@@ -1,4 +1,4 @@
-// Der Integrationstest aus Plan 9.6 (AP16).
+// Der Integrationstest.
 //
 // Geprüft wird der **gebaute** Server als Unterprozess, nicht der Quelltext im selben
 // Prozess: Ein `tsc --noEmit` fängt die Importpfad- und Verpackungsfallstricke nicht, und
@@ -10,9 +10,9 @@
 // einen lokalen Nachbau auf 127.0.0.1, Platzhalter als Zugangsdaten und über `BB_CONFIG_DIR`
 // ein leeres Wegwerfverzeichnis, damit keine Zugangsdatendatei des Entwicklerrechners gelesen
 // wird. Die Netzsperre aus `test/setup.ts` wirkt nur in diesem Prozess; der Nachbau ist
-// deshalb ein echter HTTP-Server auf der Rückschleife und keine Ausnahme von 9.1.
+// deshalb ein echter HTTP-Server auf der Rückschleife und keine Ausnahme von der Netzsperre.
 //
-// Der zweite Teil prüft die Zusage aus Plan 1.5: **stdout trägt ausschließlich JSON-RPC.**
+// Der zweite Teil prüft die Zusage: **stdout trägt ausschließlich JSON-RPC.**
 // Dafür wird der Unterprozess ohne SDK-Client gefahren und jede Zeile seiner Standardausgabe
 // einzeln zerlegt. Der SDK-Client verwirft eine unlesbare Zeile still; nur der rohe Blick auf
 // den Strom beantwortet die Frage.
@@ -34,7 +34,7 @@ import { TOOL_ENTRIES } from "../../src/registry/index.generated.js";
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const BUILT_CLI = join(ROOT, "dist", "cli.js");
 
-/** Die vier Hints, die jeder Eintrag tragen muss (Plan 3.3, P7). */
+/** Die vier Hints, die jeder Eintrag tragen muss. */
 const REQUIRED_HINTS = [
   "readOnlyHint",
   "destructiveHint",
@@ -134,7 +134,7 @@ function childEnv(baseUrl: string, extra: Record<string, string> = {}): Record<s
 beforeAll(() => {
   if (!existsSync(BUILT_CLI)) {
     throw new Error(
-      "dist/cli.js fehlt. Dieser Test prüft das GEBAUTE Paket (Plan 9.6): zuerst pnpm build " +
+      "dist/cli.js fehlt. Dieser Test prüft das GEBAUTE Paket: zuerst pnpm build " +
         "ausführen (oder, ohne die Generatoren, node_modules/.bin/tsdown), dann den Testlauf.",
     );
   }
@@ -148,7 +148,7 @@ afterAll(() => {
 // --- Teil 1: echter Client über stdio ----------------------------------------------------
 
 describe("der gebaute Server über einen echten MCP-Client", () => {
-  /** Ein Aufruf je Klasse aus Plan 3.3. Die Argumente sind erfunden und gehen an den Nachbau. */
+  /** Ein Aufruf je Klasse. Die Argumente sind erfunden und gehen an den Nachbau. */
   const CALLS_BY_CLASS = [
     { toolClass: "R", name: "bb_receipts_search", args: { list_direction: "inbound", limit: 1 } },
     {
@@ -192,7 +192,7 @@ describe("der gebaute Server über einen echten MCP-Client", () => {
       cwd: ROOT,
       stderr: "pipe",
     });
-    const client = new Client({ name: "ap16-integrationstest", version: "0.0.0" });
+    const client = new Client({ name: "integrationstest", version: "0.0.0" });
 
     try {
       // Die Verbindung führt initialize aus; ohne Antwort darauf käme dieser Aufruf nicht
@@ -203,7 +203,7 @@ describe("der gebaute Server über einen echten MCP-Client", () => {
 
       const listed = await client.listTools();
 
-      // Die 54 Endpunktwerkzeuge und zusätzlich die Bündelwerkzeuge (N1, Bauvorlage 7).
+      // Die 54 Endpunktwerkzeuge und zusätzlich die Bündelwerkzeuge.
       expect(listed.tools).toHaveLength(TOOL_ENTRIES.length + BUNDLE_ENTRIES.length);
       expect(listed.tools.map((tool) => tool.name).sort()).toEqual(
         [...TOOL_ENTRIES, ...BUNDLE_ENTRIES].map((entry) => entry.name).sort(),
@@ -308,7 +308,7 @@ async function runRawSession(baseUrl: string, expectedLines: number): Promise<Ra
       params: {
         protocolVersion: "2025-11-25",
         capabilities: {},
-        clientInfo: { name: "ap16-stdout", version: "0.0.0" },
+        clientInfo: { name: "stdouttest", version: "0.0.0" },
       },
     }),
   );
@@ -355,7 +355,7 @@ describe("die Standardausgabe des Serverprozesses", () => {
         expect(message.jsonrpc, `Zeile ohne jsonrpc 2.0: ${line.slice(0, 200)}`).toBe("2.0");
       }
 
-      // Die Audit-Zeile aus 1.4 Schritt 14 belegt, dass der Server während dieser Sitzung
+      // Die Audit-Zeile belegt, dass der Server während dieser Sitzung
       // sehr wohl geschrieben hat — nur eben nach stderr.
       expect(session.stderr).toContain("audit ");
       expect(session.stderr).toContain("werkzeug=bb_receipts_search");
@@ -491,7 +491,7 @@ async function startWithProfile(
       params: {
         protocolVersion: "2025-11-25",
         capabilities: {},
-        clientInfo: { name: "ap16-werkzeugzahl", version: "0.0.0" },
+        clientInfo: { name: "werkzeugzahl", version: "0.0.0" },
       },
     }),
   );

@@ -1,14 +1,14 @@
-// P7 aus Plan 9.2: die vier MCP-Annotationen je Werkzeug.
+// P7: die vier MCP-Annotationen je Werkzeug.
 //
 // Die Annotationen sind das einzige MASCHINENLESBARE Signal, an dem ein Client erkennt, was
-// ein Aufruf anrichtet. Unter E2 sperrt der Server nichts; der Freigabedialog des Clients ist
-// die einzige menschliche Kontrolle, und er liest genau diese vier Werte.
+// ein Aufruf anrichtet. Der Server sperrt nichts (`docs/entwicklung/tool-design.md` 9.4); der
+// Freigabedialog des Clients ist die einzige menschliche Kontrolle, und er liest genau diese
+// vier Werte.
 //
 // Der Registereintrag trägt keine Annotationen, sondern eine Klasse; die Übersetzung steht
 // als Tabelle in src/registry/classes.ts. Diese Prüfung hält sie gegen eine zweite,
-// unabhängig aus Plan 3.3 abgeschriebene Fassung derselben Tabelle. Ändert AP19b eine Zeile,
-// werden classes.ts, test/registry/class-list.ts und diese Datei gemeinsam nachgezogen
-// (Plan 3.3).
+// unabhängig abgeschriebene Fassung derselben Tabelle. Ändert sich eine Zeile,
+// werden classes.ts, test/registry/class-list.ts und diese Datei gemeinsam nachgezogen.
 
 import { describe, expect, it } from "vitest";
 
@@ -23,7 +23,7 @@ import {
 import { EXPECTED_TOOL_CLASSES, EXPECTED_TOOL_NAMES } from "./class-list.js";
 
 /**
- * Die Hint-Spalten der Tabelle aus Plan 3.3, von Hand abgeschrieben.
+ * Die Hint-Spalten der Tabelle, von Hand abgeschrieben.
  *
  * Zwei Zeilen sind unbequem und stehen deshalb ausdrücklich so da:
  * - M trägt destructiveHint TRUE. Ein Überschreiben ist nicht additiv, und kein Endpunkt
@@ -43,7 +43,7 @@ const EXPECTED_ANNOTATIONS = {
   B: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
 } as const satisfies Record<ToolClass, Record<string, boolean>>;
 
-/** Auszählung aus Plan 3.3 und 3.9, Auslieferungszustand: AR 2 + M 4 + D 7 = 13 destruktive,
+/** Auszählung, Auslieferungszustand: AR 2 + M 4 + D 7 = 13 destruktive,
  *  R 15 + M 4 = 19 idempotente. */
 const DESTRUCTIVE_COUNT = 13;
 const IDEMPOTENT_COUNT = 19;
@@ -62,7 +62,7 @@ describe("P7 Annotationen", () => {
       for (const hint of HINTS) {
         if (typeof definition.annotations[hint] !== "boolean") {
           problems.push(
-            `Klasse ${cls}: ${hint} ist nicht gesetzt. Ein fehlender Hint ist für den Client dasselbe wie eine unbekannte Wirkung (Plan 3.3).`,
+            `Klasse ${cls}: ${hint} ist nicht gesetzt. Ein fehlender Hint ist für den Client dasselbe wie eine unbekannte Wirkung.`,
           );
         }
       }
@@ -71,7 +71,7 @@ describe("P7 Annotationen", () => {
     expectNoIssues(problems);
   });
 
-  it("stimmt Wert für Wert mit der Tabelle aus Plan 3.3 überein", () => {
+  it("stimmt Wert für Wert mit der Tabelle überein", () => {
     const problems: string[] = [];
 
     for (const [cls, expected] of Object.entries(EXPECTED_ANNOTATIONS)) {
@@ -79,7 +79,7 @@ describe("P7 Annotationen", () => {
       for (const hint of HINTS) {
         if (actual[hint] !== expected[hint]) {
           problems.push(
-            `Klasse ${cls}, ${hint}: src/registry/classes.ts sagt ${String(actual[hint])}, Plan 3.3 sagt ${String(expected[hint])}.`,
+            `Klasse ${cls}, ${hint}: src/registry/classes.ts sagt ${String(actual[hint])}.3 sagt ${String(expected[hint])}.`,
           );
         }
       }

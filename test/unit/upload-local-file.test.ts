@@ -47,8 +47,8 @@ async function reasonOf(promise: Promise<unknown>): Promise<UploadSourceError> {
 }
 
 /**
- * Prüft die Kernzusage aus AP13: In keiner Meldung steht ein Dateisystempfad. Übrig bleiben
- * dürfen nur die Schemabeispiele, die hier namentlich abgezogen werden.
+ * Prüft die Kernzusage des Dateizugriffs: In keiner Meldung steht ein Dateisystempfad.
+ * Übrig bleiben dürfen nur die Schemabeispiele, die hier namentlich abgezogen werden.
  */
 function expectNoFilesystemPath(message: string): void {
   expect(message).not.toContain(root);

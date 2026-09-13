@@ -9,7 +9,7 @@ import { createScriptedTerminal, type ScriptedTerminal } from "../../src/cli/pro
 import { UsageError } from "../../src/cli/run.js";
 import { resetTestConfig } from "../helpers/mock-api.js";
 
-// `profiles list|add|remove` (Plan 8.1). Die Werte heißen TESTWERT_*; echte Zugangsdaten
+// `profiles list|add|remove`. Die Werte heißen TESTWERT_*; echte Zugangsdaten
 // kommen in dieser Datei nicht vor.
 
 const VALUES = {

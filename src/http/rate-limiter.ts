@@ -1,5 +1,5 @@
 /**
- * Token-Eimer je (`api_key`, Eimername), serialisiert über eine Promise-Kette (Plan 5.4).
+ * Token-Eimer je (`api_key`, Eimername), serialisiert über eine Promise-Kette.
  *
  * Dokumentiert sind 100 Anfragen je Mandant und Minute, ohne jeden Rate-Limit-Header
  * (`grundlagen.md` 3.1 und 3.3 — live geprüft, es gibt keinen). Ein Client kann sein
@@ -7,7 +7,7 @@
  * zudem **geteilt**: Die Weboberfläche desselben Mandanten verbraucht es mit. Deshalb 60
  * statt 100 als Vorgabe.
  *
- * **Der Eimerschlüssel ist der `api_key`** (Streitfrage S16), weil das Limit pro Mandant
+ * **Der Eimerschlüssel ist der `api_key`**, weil das Limit pro Mandant
  * gilt. Ein Server mit mehreren Profilen führt damit mehrere Eimersätze und drosselt nicht
  * quer über Mandanten hinweg. Abgelegt wird nicht der Schlüssel, sondern sein Hash
  * ({@link tenantKey}), damit er in keiner Diagnoseausgabe auftaucht.
@@ -28,13 +28,13 @@ import { getConfig } from "../config/resolve.js";
 import type { ToolEntry } from "../registry/types.js";
 import { RateLimitGiveUpError, type TransportErrorContext } from "./transport-error.js";
 
-/** Die vier Eimer aus 5.4; der Name steht im Registereintrag. */
+/** Die vier Eimer; der Name steht im Registereintrag. */
 export type BucketName = ToolEntry["bucket"];
 
-/** Ab dieser Wartezeit meldet der Server, dass er wartet (Plan 5.4). */
+/** Ab dieser Wartezeit meldet der Server, dass er wartet. */
 export const SLOW_WAIT_MS = 5_000;
 
-/** Ab dieser Wartezeit gibt der Aufruf auf, statt stumm zu hängen (Plan 5.4). */
+/** Ab dieser Wartezeit gibt der Aufruf auf, statt stumm zu hängen. */
 export const GIVE_UP_WAIT_MS = 30_000;
 
 export interface BucketDefinition {
@@ -45,7 +45,7 @@ export interface BucketDefinition {
 }
 
 /**
- * Die vier Eimer nach der Tabelle in 5.4. Nur der `default`-Eimer hängt an der
+ * Die vier Eimer. Nur der `default`-Eimer hängt an der
  * Konfiguration; die drei übrigen stehen fest, weil sie dokumentierte Einzellimits der API
  * abbilden (`/receipts/upload`: 10 je Minute; `addBatch`: ein Aufruf je 5 Sekunden) oder, im
  * Fall von `reports`, eine bewusste Bremse sind.
@@ -62,7 +62,7 @@ export function bucketDefinitions(ratePerMinute: number): Record<BucketName, Buc
   };
 }
 
-/** Die Uhr des Limiters. Im Betrieb die echte, im Test eine gesteuerte (Plan 9.5). */
+/** Die Uhr des Limiters. Im Betrieb die echte, im Test eine gesteuerte. */
 export interface RateLimiterClock {
   now(): number;
   /** Wartet; bricht ab, sobald das Signal ausgelöst wird. */
@@ -105,7 +105,7 @@ export interface SlowWaitInfo {
   readonly expectedWaitMs: number;
 }
 
-/** Der Empfänger der Wartemeldung. AP10 hängt hier `sendLoggingMessage` ein (Plan 5.4). */
+/** Der Empfänger der Wartemeldung: `sendLoggingMessage` des Servers. */
 export type SlowWaitNotifier = (info: SlowWaitInfo) => void;
 
 export interface RateLimiterOptions {
@@ -118,7 +118,7 @@ export interface RateLimiterOptions {
 }
 
 /**
- * Die nicht blockierende Abschätzung eines Eimerstands (Bauvorlage Bündelwerkzeuge, 6.5).
+ * Die nicht blockierende Abschätzung eines Eimerstands.
  *
  * Sie entnimmt nichts und wartet nicht. Ein Bündel fragt damit vor jedem ZUSÄTZLICHEN
  * Teilaufruf, ob der nächste Token ohne nennenswertes Warten zu haben ist, und bricht lieber
@@ -165,7 +165,7 @@ class TokenBucket {
   // Die Felder stehen einzeln und werden im Rumpf zugewiesen, statt als Parametereigenschaften
   // im Konstruktor: Node lehnt Parametereigenschaften beim reinen Entfernen der Typen mit
   // ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX ab. Sonst ließe sich kein Skript, das den HTTP-Client
-  // zieht, mit `node datei.ts` starten (AP17).
+  // zieht, mit `node datei.ts` starten.
   constructor(
     name: BucketName,
     definition: BucketDefinition,
@@ -297,7 +297,7 @@ export class RateLimiter {
     this.giveUpWaitMs = options.giveUpWaitMs ?? GIVE_UP_WAIT_MS;
   }
 
-  /** Hängt den Empfänger der Wartemeldung ein (AP10: `sendLoggingMessage`). */
+  /** Hängt den Empfänger der Wartemeldung ein (`sendLoggingMessage`). */
   setNotifier(notify: SlowWaitNotifier): void {
     this.notify = notify;
   }
@@ -329,7 +329,7 @@ export class RateLimiter {
    * und dann fünf Sekunden auf den `batch`-Eimer wartet, hat in dieser Zeit ein Kontingent
    * verbraucht, das andere Aufrufe hätten nutzen können.
    *
-   * Wiederholt ein lesendes Werkzeug (5.3), ruft jeder Versuch diese Methode erneut auf.
+   * Wiederholt ein lesendes Werkzeug, ruft jeder Versuch diese Methode erneut auf.
    * Sonst erzeugte ausgerechnet der Fehler, der Drosselung anzeigt, ungebremste Zusatzlast.
    */
   async acquire(request: AcquireRequest): Promise<AcquireResult> {
@@ -380,7 +380,7 @@ let sharedNotifier: SlowWaitNotifier | null = null;
 /**
  * Der Limiter des Prozesses. Er entsteht beim ersten Aufruf aus der Konfiguration und wird
  * danach nicht mehr ausgetauscht; `BB_MCP_RATE_LIMIT` ist zur Laufzeit nicht änderbar, weil
- * das Konfigurationsobjekt eingefroren ist (6.4 Punkt 7).
+ * das Konfigurationsobjekt eingefroren ist.
  */
 export function getRateLimiter(): RateLimiter {
   if (shared === null) {
@@ -394,7 +394,7 @@ export function getRateLimiter(): RateLimiter {
 
 /**
  * Hängt den Empfänger der Wartemeldung ein, auch schon vor dem ersten Aufruf von
- * {@link getRateLimiter}. AP10 ruft das beim Aufbau des Servers auf.
+ * {@link getRateLimiter}. Der Serveraufbau ruft das auf.
  */
 export function setRateLimitNotifier(notify: SlowWaitNotifier): void {
   sharedNotifier = notify;

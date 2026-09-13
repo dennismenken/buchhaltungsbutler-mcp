@@ -12,11 +12,11 @@ import {
 } from "../../src/cache/store.js";
 import { installTestConfig, resetTestConfig } from "../helpers/mock-api.js";
 
-// Plan 7.8 und 9.5: „BB_MCP_CACHE_TTL_MS=0 liefert keinen Treffer, Ablauf nach TTL über eine
+// Die Zusagen: „BB_MCP_CACHE_TTL_MS=0 liefert keinen Treffer, Ablauf nach TTL über eine
 // kontrollierte Uhr, Invalidierung nach invalidatesCache; Negativprüfung: /accounts/get und
 // Bewegungsdaten landen nie im Speicher."
 
-/** Eine gestellte Uhr. Der Ablauf ist damit ohne Warten prüfbar (Plan 7.8, AP09). */
+/** Eine gestellte Uhr. Der Ablauf ist damit ohne Warten prüfbar. */
 function fakeClock(): CacheClock & { advance(ms: number): void } {
   let currentTime = 1_000;
   return {
@@ -114,7 +114,7 @@ describe("Der Ablauf läuft über die eingespeiste Uhr", () => {
   });
 });
 
-describe("Speicherfähig sind ausschließlich die vier Werkzeuge aus 7.8", () => {
+describe("Speicherfähig sind ausschließlich die vier Werkzeuge der Tabelle", () => {
   it("führt genau diese vier", () => {
     expect([...CACHEABLE_TOOLS]).toEqual([
       "bb_postingaccounts_search",
@@ -131,7 +131,7 @@ describe("Speicherfähig sind ausschließlich die vier Werkzeuge aus 7.8", () =>
   });
 
   it("führt bb_payment_accounts_list ausdrücklich nicht", () => {
-    // /accounts/get wird nie zwischengespeichert (Plan 7.8, Auflösung des Widerspruchs).
+    // /accounts/get wird nie zwischengespeichert (Auflösung des Widerspruchs).
     expect(isCacheableTool("bb_payment_accounts_list")).toBe(false);
   });
 
@@ -162,8 +162,8 @@ describe("Speicherfähig sind ausschließlich die vier Werkzeuge aus 7.8", () =>
 
 describe("Die Invalidierung kommt aus dem Register, nicht aus diesem Modul", () => {
   /**
-   * Die Tabelle aus Plan 7.8, so wie sie in den Feldern `invalidatesCache` der
-   * Registereinträge stehen wird (AP12a bis AP12e). Der Speicher bekommt nur die
+   * Die Tabelle, so wie sie in den Feldern `invalidatesCache` der
+   * Registereinträge stehen wird. Der Speicher bekommt nur die
    * Werkzeugnamen übergeben und kennt diese Zuordnung selbst nicht.
    */
   const INVALIDATED_BY: Readonly<Record<string, readonly string[]>> = {
@@ -249,7 +249,7 @@ describe("Die Invalidierung kommt aus dem Register, nicht aus diesem Modul", () 
 
   it("invalidatorsFor nichts bei einem Werkzeug ohne invalidatesCache", () => {
     const store = filledStore();
-    // bb_payment_accounts_create trägt ein leeres invalidatesCache (Plan 7.8, letzter Absatz).
+    // bb_payment_accounts_create trägt ein leeres invalidatesCache.
     expect(store.invalidate([])).toEqual([]);
     expect(store.size()).toBe(CACHEABLE_TOOLS.length);
   });

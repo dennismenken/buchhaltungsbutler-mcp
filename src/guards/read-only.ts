@@ -1,4 +1,4 @@
-// Guard 2 aus Plan 1.4: der optionale Nur-Lesen-Schalter (Plan 6.6).
+// Guard 2: der optionale Nur-Lesen-Schalter.
 //
 // Drei Festlegungen stecken in diesem kurzen Modul, und alle drei sind begründet:
 //
@@ -6,9 +6,9 @@
 //     zweiten Pfadliste. `bb_postings_assign_receipt` endet auf `_receipt` und ist buchend,
 //     `bb_reports_get_ledger` endet auf `_ledger` und ist lesend; ein Schalter, der am Namen
 //     hängt, liegt bei beiden falsch. Verschiebt sich der Schnitt, verschiebt sich der
-//     Schalter mit (Plan 6.6, `registry/classes.ts`).
+//     Schalter mit (`registry/classes.ts`).
 //  2. **Der Schalter wird nur beim Start gelesen.** Dieses Modul liest ihn aus der
-//     eingefrorenen Konfiguration (Plan 6.4 Punkt 7) und kennt keinen Weg, ihn zu ändern.
+//     eingefrorenen Konfiguration und kennt keinen Weg, ihn zu ändern.
 //     Sonst wäre er kein Schutz, sondern eine Einstellung, die der Agent selbst umlegt.
 //  3. **Gesperrte Werkzeuge bleiben in `tools/list`.** Das ist nicht hier sichtbar, sondern
 //     in `server/register-tools.ts`: Dort hängt die Registrierung an keiner Bedingung. Ein
@@ -21,7 +21,7 @@ import { READ_ONLY_TOOL_CLASS } from "../registry/classes.js";
 import type { ToolEntry } from "../registry/types.js";
 
 /**
- * Der kanonische Name des Schalters (Plan 6.1).
+ * Der kanonische Name des Schalters.
  *
  * Er steht hier und nicht in `config/env.ts`, weil genau dieser Text ihn ausliefert: Der
  * wörtlich vorgeschriebene Absagetext nennt die Variable, und eine Absage, die eine nicht
@@ -31,16 +31,16 @@ import type { ToolEntry } from "../registry/types.js";
 export const READ_ONLY_VAR = "BB_MCP_READ_ONLY";
 
 /**
- * Der Absagetext aus Plan 6.6, deutsche Fassung von `tool-design.md` 9.5.
+ * Der Absagetext, deutsche Fassung von `tool-design.md` 9.5.
  *
  * Aufbau und Inhalt folgen dem dort vorgeschriebenen Muster Zeile für Zeile: Werkzeugname,
- * Variable mit ihrem Zielwert, Zustandssatz 1 aus 5.8 **zeichengenau**, der Hinweis auf die
+ * Variable mit ihrem Zielwert, Zustandssatz 1 **zeichengenau**, der Hinweis auf die
  * Betreibereinstellung, die Handlungsanweisung und der abschließende Satz gegen das Umgehen.
  *
- * Der Text ist bewusst **nicht** im Vierblockaufbau aus 5.8 gehalten: Plan 6.6 schreibt ihn
- * wörtlich vor und verlangt, dass er mit dem Satz gegen das Umgehen **schließt**; im
- * Vierblock stünde dort der Zustandssatz. Er trägt den Zustandssatz deshalb als eigene Zeile
- * in der Mitte, genauso wie der wörtlich vorgeschriebene Text aus 6.5 (Guard 1).
+ * Der Text ist bewusst **nicht** im Vierblockaufbau gehalten: Er soll mit dem Satz gegen
+ * das Umgehen **schließen**; im Vierblock stünde dort der Zustandssatz. Er trägt den
+ * Zustandssatz deshalb als eigene Zeile in der Mitte, genauso wie der ebenfalls wörtlich
+ * festgelegte Text von Guard 1.
  */
 export function formatReadOnlyRefusal(toolName: string): string {
   return [
@@ -58,7 +58,7 @@ export function formatReadOnlyRefusal(toolName: string): string {
 /**
  * Prüft den Nur-Lesen-Schalter gegen die Klasse des Werkzeugs.
  *
- * @returns Die Absage aus 6.6, oder `undefined`, wenn der Aufruf weiterlaufen darf.
+ * @returns Die Absage, oder `undefined`, wenn der Aufruf weiterlaufen darf.
  */
 export function checkReadOnly(entry: ToolEntry, config: ResolvedConfig): string | undefined {
   if (!config.readOnly || entry.toolClass === READ_ONLY_TOOL_CLASS) {

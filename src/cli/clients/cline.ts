@@ -1,5 +1,5 @@
 /**
- * Cline, Variante Kommandozeile: `~/.cline/mcp.json` (Plan 8.3).
+ * Cline, Variante Kommandozeile: `~/.cline/mcp.json`.
  *
  * Reines JSON, deshalb wird geschrieben. Der Eintrag trägt zusätzlich `disabled` und
  * `autoApprove`; in `autoApprove` gehören **nur lesende** Werkzeuge, und weil die Liste je

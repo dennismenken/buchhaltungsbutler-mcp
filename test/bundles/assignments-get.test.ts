@@ -1,4 +1,4 @@
-// bb_assignments_get: beide Richtungen, Teilfehler, bedingte Anreicherung (Abschnitt 4.3).
+// bb_assignments_get: beide Richtungen, Teilfehler, bedingte Anreicherung.
 //
 // **Die wichtigste Einzelregel des ganzen Satzes wird hier geprüft**: Scheitert der
 // Zuordnungsabruf, ist `assignments` null und nicht das leere Array, `assignments_status` ist

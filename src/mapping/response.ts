@@ -1,7 +1,7 @@
-// Der Antwortvertrag, angewandt **je Endpunkt** (Plan 7.2), plus Normalisierung (7.4) und
+// Der Antwortvertrag, angewandt **je Endpunkt**, plus Normalisierung und
 // die beiden Projektionen `concise` und `detailed`.
 //
-// Warum je Endpunkt und nicht je Fachobjekt — gemessen, nicht gemeint (Plan 0.3 L2, L3):
+// Warum je Endpunkt und nicht je Fachobjekt — gemessen, nicht gemeint:
 // `/receipts/get` liefert 16 Felder mit `delivery_date` und `due_date`, `/receipts/get/<id>`
 // liefert 23 Felder mit `date_delivery` und `date_payment_due`; `/transactions/get` liefert 6
 // Felder, der Einzelabruf 13; und dieselbe Kennung ist bei `receipts` ein String und bei
@@ -11,7 +11,7 @@
 //
 // Dieses Modul ist zugleich der einzige Leser des Stammdatenspeichers im Ausführungspfad: Es
 // löst Kontonummern in sprechende Bezeichnungen auf, **sofern** der Kontenrahmen im Speicher
-// liegt (Plan 7.4, letzter Absatz). Die Rohnummer bleibt dabei stehen, weil sie der
+// liegt. Die Rohnummer bleibt dabei stehen, weil sie der
 // Parameterwert des nächsten Aufrufs ist.
 
 import { getMasterDataStore, POSTINGACCOUNTS_TOOL, type MasterDataStore } from "../cache/store.js";
@@ -27,7 +27,7 @@ import {
 } from "./contract-violation.js";
 import { specPathOf } from "./path.js";
 
-/** Die beiden Projektionen aus Plan 7.4. Vorgabe ist `concise`. */
+/** Die beiden Projektionen. Vorgabe ist `concise`. */
 export type Projection = "concise" | "detailed";
 
 /** Das rein serverseitige Feld, das die Projektion wählt. Es geht nie an die API. */
@@ -37,11 +37,11 @@ export const DEFAULT_PROJECTION: Projection = "concise";
 
 /**
  * Die Felder, zu denen eine sprechende Kontobezeichnung ergänzt wird, und der Name des
- * ergänzten Feldes (Plan 7.4).
+ * ergänzten Feldes.
  *
  * Bewusst nur diese drei: Sie tragen nachweislich eine Sachkontonummer. `account` bleibt
  * außen vor, weil derselbe Name je Endpunkt Verschiedenes bedeutet — an `/postings/get` eine
- * kommagetrennte Filterliste, an `/transactions/get` ein Zahlungskonto (Plan 3.4, Anhang A).
+ * kommagetrennte Filterliste, an `/transactions/get` ein Zahlungskonto.
  * Eine Auflösung, die an einer Stelle richtig und an einer anderen falsch wäre, unterbleibt.
  */
 export const ACCOUNT_LABEL_FIELDS: Readonly<Record<string, string>> = Object.freeze({
@@ -63,19 +63,22 @@ export interface MapResponseOptions {
 
 export interface MappedResponse {
   readonly toolName: string;
-  /** Der Spezifikationspfad, niemals der gebaute Pfad (Plan 4.6 Regel 6). */
+  /** Der Spezifikationspfad, niemals der gebaute Pfad. */
   readonly endpoint: string;
   readonly shape: ToolEntry["shape"];
   readonly projection: Projection;
   /** Das Feld `message` der Antwort, wörtlich und geschwärzt; `null`, wenn es fehlte. */
   readonly message: string | null;
-  /** Die Zeilenzahl **dieser** Antwort; `null` außerhalb der Listenform (Befund L5). */
+  /**
+   * Die Zeilenzahl **dieser** Antwort; `null` außerhalb der Listenform
+   * (Befund L5 in docs/api/live-befunde.md).
+   */
   readonly rowsReturned: number | null;
   /** Die normalisierten Zeilen der Listenform. */
   readonly items: readonly Record<string, unknown>[];
   /** Das normalisierte Einzelobjekt, sonst `null`. */
   readonly object: Record<string, unknown> | null;
-  /** Was eine Quittung ausnahmsweise mitliefert (Plan 5.5). */
+  /** Was eine Quittung ausnahmsweise mitliefert. */
   readonly ackData: unknown;
   readonly warnings: readonly AggregatedWarning[];
   readonly unknownFields: readonly string[];
@@ -84,7 +87,7 @@ export interface MappedResponse {
   readonly labelsFromCache: boolean;
 }
 
-/** Die Projektion aus den serverseitigen Feldern lesen, mit der Vorgabe aus 7.4. */
+/** Die Projektion aus den serverseitigen Feldern lesen, mit der hinterlegten Vorgabe. */
 export function projectionFrom(
   serverOnly: Readonly<Record<string, unknown>> | undefined,
 ): Projection {
@@ -126,7 +129,7 @@ export function accountLabelsFrom(payload: unknown): ReadonlyMap<string, string>
   return labels;
 }
 
-/** Der Kontenrahmen aus dem Stammdatenspeicher, falls einer darin liegt (Plan 7.4, 7.8). */
+/** Der Kontenrahmen aus dem Stammdatenspeicher, falls einer darin liegt. */
 export function accountLabelsFromStore(
   store: Pick<MasterDataStore, "read" | "isEnabled">,
 ): ReadonlyMap<string, string> | undefined {
@@ -172,7 +175,7 @@ function project(
 
 /**
  * Ergänzt sprechende Kontobezeichnungen. Die Rohnummer bleibt **zusätzlich** stehen, weil sie
- * der Parameterwert des nächsten Aufrufs ist (Plan 7.4).
+ * der Parameterwert des nächsten Aufrufs ist.
  *
  * @returns `true`, wenn mindestens eine Bezeichnung ergänzt wurde.
  */
@@ -201,7 +204,7 @@ function resolveAccountLabels(
  *
  * Bekannte Felder werden typisiert, unbekannte unverändert durchgereicht, fehlende oder
  * typwidrige bekannte Felder als `_contract_warnings` gemeldet — in **derselben Antwort, die
- * der Agent liest** (Plan 7.3). Der Aufruf scheitert daran nicht: Die Spezifikation ist
+ * der Agent liest**. Der Aufruf scheitert daran nicht: Die Spezifikation ist
  * nachweislich falsch, und ein harter Abbruch machte den Server bei jeder Anbieteränderung
  * bei allen Nutzern gleichzeitig unbrauchbar.
  */
@@ -276,7 +279,7 @@ export function mapResponse(
     logWarn(contractWarningLogLine(entry.name, endpoint, aggregated));
   }
   if (unknownFields.size > 0) {
-    // Einmal je Prozesslauf und Feldmenge, Stufe debug (Plan 7.3, letzte Zeile).
+    // Einmal je Prozesslauf und Feldmenge, Stufe debug.
     const names = [...unknownFields].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     logOnce(
       `unknown-fields:${entry.name}:${names.join(",")}`,
@@ -304,7 +307,7 @@ export function mapResponse(
 }
 
 /**
- * Die Felder des Umschlags, die keine Nutzdaten sind (Plan 5.5).
+ * Die Felder des Umschlags, die keine Nutzdaten sind.
  *
  * Sie werden abgetrennt, bevor der Umschlag selbst als Datensatz gelesen wird; sonst stünden
  * `success` und `message` als „unbekannte Felder" im Datensatz und verdeckten die echten.

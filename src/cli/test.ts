@@ -1,6 +1,5 @@
 /**
- * Der Verbindungstest: **genau ein** lesender Aufruf gegen `/accounts/get` (Plan 8.2 Schritt 3,
- * 8.1 `test`).
+ * Der Verbindungstest: **genau ein** lesender Aufruf gegen `/accounts/get`.
  *
  * `/accounts/get` ist die leichteste Leseoperation der API: Der Body trägt nur den `api_key`,
  * die Antwort ist eine Liste mit je zwei Feldern (live gemessen am 2026-09-12: `name` und
@@ -8,7 +7,7 @@
  *
  * **Der Nutzen liegt in der Deutung, nicht im Aufruf.** „Anmeldung fehlgeschlagen" hilft
  * niemandem; die drei Werte müssen auseinandergehalten werden. Genau das leistet die Tabelle
- * aus 8.2 Schritt 3, und sie steht hier als Code:
+ * Schritt 3 des Einrichtungsassistenten, und er steht hier als Code:
  *
  * | Ergebnis | Bedeutung |
  * | --- | --- |
@@ -20,7 +19,7 @@
  * | keine JSON-Antwort | falsche Basis-URL, Proxy oder Portal davor |
  * | Netzwerkfehler | Verbindung zu `webapp.buchhaltungsbutler.de` prüfen |
  *
- * Dieselbe Funktion benutzen `setup` (Schritt 3 und 4) und `doctor` (8.4). Es gibt nur einen
+ * Dieselbe Funktion benutzen `setup` (Schritt 3 und 4) und `doctor`. Es gibt nur einen
  * Ort, an dem diese Deutung steht.
  */
 
@@ -344,10 +343,10 @@ export interface RunTestCommandOptions {
 }
 
 /**
- * Der Unterbefehl `test`: Rückgabewert 0 oder 1, für CI und Skripte (Plan 8.1).
+ * Der Unterbefehl `test`: Rückgabewert 0 oder 1, für CI und Skripte.
  *
- * Ohne Zugangsdaten endet er mit 1 und der Meldung aus 6.5. Das ist die eine Hälfte der
- * beiden getrennten Prüfungen des Paketprobelaufs (9.6 Schritt 4); die andere ist der Server,
+ * Ohne Zugangsdaten endet er mit 1 und der Meldung „nicht konfiguriert". Das ist die
+ * beiden getrennten Prüfungen des Paketprobelaufs; die andere ist der Server,
  * der in derselben Lage **startet**.
  */
 export async function runTestCommand(options: RunTestCommandOptions): Promise<number> {

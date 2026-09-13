@@ -1,11 +1,11 @@
-// Werkzeug 47 von 54: `/cost-locations/add` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 47 von 54: `/cost-locations/add`.
 //
-// **Das einzige anlegende Werkzeug dieses Arbeitspakets mit Pflichtsatz U1**, also mit einem
-// echten Weg zurück: `/cost-locations/delete` nimmt eine Kostenstelle wieder aus dem
-// Mandanten. Debitoren, Kreditoren, Sachkonten, Zahlungskonten und Kommentare haben diesen
-// Weg nicht und tragen deshalb U4 (Plan 3.5).
+// **Das einzige Werkzeug mit `effect: "create"` und Pflichtsatz U1**, also das einzige
+// anlegende Werkzeug mit einem echten Weg zurück: `/cost-locations/delete` nimmt eine
+// Kostenstelle wieder aus dem Mandanten. Debitoren, Kreditoren, Sachkonten, Zahlungskonten
+// und Kommentare haben diesen Weg nicht und tragen deshalb U4.
 //
-// Beide Parameter sind laut Spezifikation Pflicht; verschärft wird nichts (Plan 4.3). Der
+// Beide Parameter sind laut Spezifikation Pflicht; verschärft wird nichts. Der
 // `code` ist zugleich der Identifikator: Eine numerische Kennung vergibt die API nicht.
 
 import { boundedText } from "../../schema/primitives.js";
@@ -53,7 +53,7 @@ export const bb_cost_locations_create: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   // Kein `data`: Der angelegte Code steht auf oberster Ebene des Umschlags.
   responseContract: { container: "none", fields: { code: "id-string" }, source: "dokumentiert" },
   shape: "ack",

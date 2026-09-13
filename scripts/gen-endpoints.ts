@@ -1,14 +1,13 @@
-// Erzeugt src/generated/endpoints.ts aus docs/openapi/buchhaltungsbutler-v1.json (Plan 4.2).
+// Erzeugt src/generated/endpoints.ts aus docs/openapi/buchhaltungsbutler-v1.json.
 //
-// Der Generator zählt, er urteilt nicht (Plan 4.1). Er nimmt die Spezifikation so, wie sie
+// Der Generator zählt, er urteilt nicht. Er nimmt die Spezifikation so, wie sie
 // ist — einschließlich ihrer bekannten Fehler — und macht die Fehler sichtbar, statt sie zu
 // glätten: Array-Parameter ohne `items` werden markiert (32 Fälle), Parameter mit `schema`
 // statt `type` werden aufgelöst und mit ihren Elementfeldern ausgegeben (9 Fälle), und aus
 // den Beschreibungstexten wird ein Wertevorschlag gelesen, der ausdrücklich kein Schema ist.
 //
 // Was dieser Generator NICHT tut: Er erzeugt kein Zod-Schema und keinen Werkzeugeintrag.
-// Die 54 Registerdateien werden von Hand geschrieben und gegen dieses Generat geprüft
-// (Plan 4.3, 4.4).
+// Die 54 Registerdateien werden von Hand geschrieben und gegen dieses Generat geprüft.
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
@@ -146,9 +145,9 @@ function cleanText(raw: string | undefined): string {
 // Wertevorschlag aus dem Beschreibungstext
 // ---------------------------------------------------------------------------------------
 
-// Die Spezifikation führt keinen einzigen Parameter-`enum` (Plan 0.4). Wertevorräte stehen
+// Die Spezifikation führt keinen einzigen Parameter-`enum`. Wertevorräte stehen
 // ausschließlich im Fließtext. Was hier herausgelesen wird, ist deshalb ein VORSCHLAG für
-// den Menschen, der den Registereintrag schreibt, und niemals ein Schema (Plan 4.2, 4.3).
+// den Menschen, der den Registereintrag schreibt, und niemals ein Schema.
 // Ein zu enges Enum lehnt gültige Vorgänge schon vor dem Netzaufruf ab.
 //
 // Drei Quellen, in dieser Reihenfolge: eine Aufzählung mit „- " (der Wert steht dort vorn,
@@ -323,7 +322,8 @@ function describeItemFields(container: SpecSchema): {
 } {
   // Der Behälter ist entweder ein Array (acht Stapelparameter) oder ein Objekt (der
   // Platzhalter `order` an /receipts/get). Bei einem Array liegen Eigenschaften und
-  // `required` unter `.items` — genau dort, wo Entwurf B sie gefunden hat (Plan 0.5).
+  // `required` unter `.items`. In docs/openapi/buchhaltungsbutler-v1.json trägt genau ein
+  // Knoten `required` unterhalb eines `.items`: `definitions.PostingsFree.items`.
   const rawElement = container.type === "array" ? container.items : container;
   if (rawElement === undefined) {
     return { itemRequired: [], itemFields: [], requiredWithoutProperty: [] };
@@ -347,9 +347,9 @@ function describeItemFields(container: SpecSchema): {
     };
     fields.push(field);
   }
-  // PostingsFree führt `amounts` in `required`, hat aber nur `amount` (Plan 0.5,
-  // Korrektur 1). Der Befund wird nicht stillschweigend geglättet, sondern ausgegeben:
-  // Der Deckungstest in AP05 kennt ihn als benannten Ausnahmeeintrag.
+  // PostingsFree führt `amounts` in `required`, hat aber nur `amount`. Der Befund wird
+  // nicht stillschweigend geglättet, sondern ausgegeben: Der Deckungstest kennt ihn als
+  // benannten Ausnahmeeintrag.
   const requiredWithoutProperty = required.filter((name) => !(name in properties));
   return {
     ...(itemRef === undefined ? {} : { itemRef }),
@@ -460,14 +460,14 @@ const specVersion = spec.info?.version ?? "unbekannt";
 
 const header = `// ERZEUGT von scripts/gen-endpoints.ts aus docs/openapi/buchhaltungsbutler-v1.json.
 // NICHT VON HAND ÄNDERN. Änderungen entstehen ausschließlich über \`pnpm generate\`; der
-// CI-Schritt verlangt danach eine leere git-Differenz (Plan 4.2).
+// CI-Schritt verlangt danach eine leere git-Differenz.
 //
 // Quelle: BuchhaltungsButler API, info.version ${specVersion}.
 //
 // Diese Datei ist die maschinelle Wahrheit über den UMFANG der API: ${endpoints.length} Pfade mit
 // zusammen ${parameterCount} Body-Parametern. Sie ist ausdrücklich KEIN Auslieferungsschema. Die
 // Spezifikation ist handgepflegt und nachweislich fehlerhaft; ihre Fehler sind hier sichtbar
-// gemacht statt geglättet (Plan 4.1):
+// gemacht statt geglättet:
 //
 //   - itemsMissing: ${itemsMissingCount} Array-Parameter führen kein \`items\`, darunter alle parallelen Arrays.
 //   - schema:      ${schemaParameterCount} Parameter führen \`schema\` statt \`type\`; ihr Elementaufbau ist hier aufgelöst.
@@ -475,10 +475,10 @@ const header = `// ERZEUGT von scripts/gen-endpoints.ts aus docs/openapi/buchhal
 //     einzigen Parameter-\`enum\`; ein zu enges Enum lehnt gültige Vorgänge vor dem Netzaufruf ab.
 //   - successFields: Feldname und Typ laut Spezifikation. AUSDRÜCKLICH UNZUVERLÄSSIG — die API
 //     liefert nachweislich Felder, die die Spezifikation nicht kennt, und verwendet zwischen
-//     Listen- und Einzelabruf verschiedene Namen (Plan 0.3, Befunde L2 und L4).
+//     Listen- und Einzelabruf verschiedene Namen.
 //
 // Die vier Pfade mit dem Segment \`id_by_customer\` stehen hier UNVERÄNDERT. Das Segment ist
-// ein Platzhalter für den Wert und kein literales Segment (Plan 4.6); der Pfadbau geschieht
+// ein Platzhalter für den Wert und kein literales Segment; der Pfadbau geschieht
 // in src/mapping/path.ts, nachgeschlagen wird weiterhin mit dem Spezifikationspfad.
 `;
 
@@ -502,7 +502,7 @@ export interface GeneratedSchemaInfo {
   readonly itemRef?: string;
   readonly itemRequired: readonly string[];
   readonly itemFields: readonly GeneratedItemField[];
-  /** Namen aus \`required\`, zu denen es keine Eigenschaft gibt (Plan 0.5, Korrektur 1). */
+  /** Namen aus \`required\`, zu denen es keine Eigenschaft gibt. */
   readonly requiredWithoutProperty: readonly string[];
 }
 

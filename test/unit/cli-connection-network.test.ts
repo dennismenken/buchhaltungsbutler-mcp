@@ -41,7 +41,7 @@ describe("runConnectionTest bei Netzwerkfehler", () => {
 
     const result = await runConnectionTest(config, { retryRuntime: FAST_RETRY });
 
-    // Lesende Aufrufe dürfen wiederholt werden (Plan 5.3); die Zahl steht im Ergebnis.
+    // Lesende Aufrufe dürfen wiederholt werden; die Zahl steht im Ergebnis.
     expect(result.attempts).toBeGreaterThan(1);
     expect(api.count(TEST_ENDPOINT)).toBe(result.attempts);
   });

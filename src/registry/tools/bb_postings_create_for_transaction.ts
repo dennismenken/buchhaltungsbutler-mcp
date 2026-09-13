@@ -1,5 +1,4 @@
-// Werkzeug 23, `/postings/add/transaction`: Buchungssätze zu einer vorhandenen Zahlung
-// (Plan 3.8, 4.8, AP12c).
+// Werkzeug 23, `/postings/add/transaction`: Buchungssätze zu einer vorhandenen Zahlung.
 //
 // Der zweite der fünf Endpunkte mit parallelen Arrays auf oberster Ebene. Die Positionsliste
 // `positions` trägt hier **sieben** `apiNames`: dieselben sechs wie bei der Belegbuchung plus
@@ -12,12 +11,12 @@
 // die erste von drei Zeilen einen Beleg hat, setzt die beiden übrigen auf `null`
 // (`buchungen.md` 12.2 und 12.6).
 //
-// **Es gibt keine Querprüfung „Summe der Positionsbeträge"** (Plan 4.7): Der Zahlungsbetrag
+// **Es gibt keine Querprüfung „Summe der Positionsbeträge"**: Der Zahlungsbetrag
 // ist an diesem Endpunkt kein Argument, die API prüft die Summe selbst, und ihre Meldung steht
 // im Fehlerkatalog.
 //
 // Klasse B mit `destructiveHint: false`: Es entstehen neue Buchungszeilen, nichts wird
-// überschrieben. Die Warnung läuft über U3 und den `title` (Plan 3.3, 3.5).
+// überschrieben. Die Warnung läuft über U3 und den `title`.
 
 import { isConfigLoaded } from "../../config/resolve.js";
 import {
@@ -36,7 +35,7 @@ import type { FieldSpec, ToolEntry } from "../types.js";
 const POSITION_LIMIT = isConfigLoaded() ? batchLimit() : API_MAX_BATCH;
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
- *  Eintrag keine eigene nennt (Plan 4.5). */
+ *  Eintrag keine eigene nennt. */
 function field(spec: {
   name: string;
   schema: FieldSpec["schema"];
@@ -83,7 +82,7 @@ const TRANSACTION_ID_DESCRIPTION =
  * `postingPositionItem()` je nach Variante zwei verschiedene Objektschemata liefert und
  * TypeScript diese Union an der siebten Spalte nicht auflöst. Die Bausteine bleiben damit
  * dieselben, die auch das ausgelieferte Schema benutzt — eine zweite Fassung wäre die Stelle,
- * an der Schema und Registereintrag später auseinanderlaufen (Plan 4.5).
+ * an der Schema und Registereintrag später auseinanderlaufen.
  */
 const POSITION_SHAPE: Readonly<Record<string, FieldSpec["schema"]>> =
   postingPositionItem(true).shape;
@@ -144,7 +143,7 @@ export const bb_postings_create_for_transaction: ToolEntry = {
       }),
       transform: "parallel-arrays",
       // Die `apiNames` der Positionsfelder zielen auf die parallelen Array-Parameter des
-      // Endpunkts und nicht auf ein Body-Feld gleichen Namens (Plan 2.1, 4.8). Aus derselben
+      // Endpunkts und nicht auf ein Body-Feld gleichen Namens. Aus derselben
       // Liste leitet `mapping/parallel-arrays.ts` die Spalten der Umformung ab.
       itemFields: [
         field({
@@ -177,7 +176,7 @@ export const bb_postings_create_for_transaction: ToolEntry = {
           schema: positionSchema("amount"),
         }),
         // Pflicht, weil die API das Array immer erwartet; `null` je Position bedeutet
-        // ausdrücklich „dieser Zeile keinen Beleg zuordnen" (Plan 4.8).
+        // ausdrücklich „dieser Zeile keinen Beleg zuordnen".
         field({
           name: "open_item_receipt_id_by_customer",
           apiName: "oi_receipts_ids_by_customer",
@@ -191,7 +190,7 @@ export const bb_postings_create_for_transaction: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Erfolgsantwort `{ "success": true, "message": "" }`, ohne `data` und ohne die erzeugten
@@ -214,7 +213,7 @@ export const bb_postings_create_for_transaction: ToolEntry = {
       "transaction_id_by_customer {transaction_id_by_customer}",
   },
   // Kein duplicateCheck: bb_postings_search nimmt transaction_id_by_customer nicht als Filter
-  // an und verlangt einen Zeitraum, den dieser Aufruf nicht trägt (Plan 2.1).
+  // an und verlangt einen Zeitraum, den dieser Aufruf nicht trägt.
   crossChecks: ["Q3", "Q4"],
   invalidatesCache: [],
 };

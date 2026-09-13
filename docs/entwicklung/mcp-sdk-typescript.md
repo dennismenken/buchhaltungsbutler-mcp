@@ -1094,6 +1094,92 @@ Weitere Punkte:
 | Nachricht größer als 10 MB | Transport meldet Fehler und schließt (Q5, `maxBufferSize`, Default 10 MB) | große Nutzlasten paginieren oder als Ressource anbieten |
 | JSON Schema ist Draft 07 statt 2020-12 | v1 setzt `target` nicht (Q4, Q10) | bekannt und dokumentiert; in v2 behoben |
 
+### 8.8 Nicht parsebare Zeilen auf stdin verschwinden spurlos
+
+**Gemessen am 2026-09-13** gegen `@modelcontextprotocol/server@2.0.0` aus `node_modules` und
+zusätzlich gegen den gebauten Server dieses Projekts. Für diesen Fall gibt es **kein
+Gegenmittel**; der Abschnitt hält eine Grenze fest statt eines Fallstricks, den man umgehen
+könnte.
+
+Eine Zeile auf `stdin`, die kein gültiges JSON ist, wird ohne jede Reaktion verworfen: keine
+JSON-RPC-Fehlerantwort mit Code `-32700`, keine Zeile auf `stderr`, kein Abbruch. Gemessen am
+gebauten Server: 0 Zeichen auf `stdout`, auf `stderr` nur die Zeilen, die dieser Server beim
+Start ohnehin schreibt, Rückgabewert 0. Der Nachrichtenstrom bleibt dabei intakt — ein
+unmittelbar auf die kaputte Zeile folgendes, gültiges `initialize` wird vollständig beantwortet.
+
+**Warum es dafür keinen Haken gibt.** `StdioServerTransport` besitzt die öffentliche
+Rückrufstelle `onerror?: (error: Error) => void`. Sie wird aus `processReadBuffer()` heraus
+aufgerufen, wenn `ReadBuffer.readMessage()` wirft — und genau das tut die Methode bei kaputtem
+JSON nicht (Originalquelle laut Sourcemap des v2-Bundles: `core-internal/src/shared/stdio.ts`):
+
+```js
+readMessage() {
+    while (this._buffer) {
+        const index = this._buffer.indexOf("\n");
+        if (index === -1) return null;
+        const line = this._buffer.toString("utf8", 0, index).replace(/\r$/, "");
+        this._buffer = this._buffer.subarray(index + 1);
+        try {
+            return deserializeMessage(line);
+        } catch (error) {
+            if (error instanceof SyntaxError) continue;   // <— hier verschwindet die Zeile
+            throw error;
+        }
+    }
+    return null;
+}
+```
+
+`deserializeMessage(line)` ist `JSONRPCMessageSchema.parse(JSON.parse(line))`. Scheitert bereits
+`JSON.parse`, entsteht ein `SyntaxError`, und das `continue` geht wortlos zur nächsten Zeile
+über; der Fehler erreicht `processReadBuffer()` nie und damit auch `onerror` nie. Es gibt keine
+Option, keinen Konstruktorparameter und keinen alternativen Einstieg, der das ändert:
+`ReadBuffer` wird von `StdioServerTransport` selbst erzeugt, und der höherwertige Einstieg
+`serveStdio()` benutzt denselben Transport und damit denselben `ReadBuffer`.
+
+Direkt am SDK gemessen, mit einem eigenen `PassThrough` als `stdin` und gesetztem `onerror` und
+`onmessage`:
+
+| Eingabezeile | `onerror` | `onmessage` |
+| --- | --- | --- |
+| `{das ist kein JSON` | **nicht aufgerufen** | nicht aufgerufen |
+| `{"foo":1}` | aufgerufen (`ZodError`) | nicht aufgerufen |
+| `{"jsonrpc":"2.0","method":"x"}` | nicht aufgerufen | aufgerufen |
+
+Die Grenze verläuft also zwischen **gültigem JSON in falscher Gestalt**, das `onerror` erreicht,
+und **kaputtem JSON**, das nichts erreicht.
+
+**Warum hier nichts nachgebaut wird.** Ohne Rückrufstelle bliebe nur, am SDK vorbei einen eigenen
+Strom vor `stdin` zu hängen und die Zeilen ein zweites Mal selbst zu zerlegen. Das verdoppelt die
+Rahmenlogik — Zeilentrennung, `\r`-Behandlung, Puffergrenze — genau an der Stelle, an der eine
+Abweichung zwischen beiden Zerlegungen die Protokollverbindung beschädigt. Der Preis steht in
+keinem Verhältnis zum Nutzen: Ein konformer Client sendet keine kaputten Zeilen, und die
+stdio-Bindung von MCP legt diese Pflicht ausdrücklich auf die Clientseite
+(`mcp-spezifikation.md` 4.1). Die Fehlerantwort mit Code `-32700` und `id: null` schreibt
+JSON-RPC 2.0 allgemein vor; die stdio-Bindung wiederholt sie für den Server **nicht**. Es liegt
+damit ein Abstand zur allgemeinen JSON-RPC-Regel vor, kein Verstoß gegen eine MCP-Regel.
+
+**Wo es trotzdem weh tut:** bei der Fehlersuche an einem fremden oder selbstgebauten Client. Wer
+dort eine Zeile falsch rahmt — ein fehlendes Anführungszeichen, ein abgeschnittener
+Schreibvorgang, eine eingebettete Newline —, sieht kein Signal, sondern nur einen Server, der
+nicht antwortet. Zur Selbsthilfe: Ein gültiges `initialize` wird auch nach einer verworfenen
+Zeile korrekt beantwortet. Antwortet der Server auf ein `initialize` nicht, liegt die Ursache
+also **nicht** an einer vorangegangenen kaputten Zeile.
+
+**Sauber behebbar ist das nur im SDK selbst**, etwa indem `ReadBuffer.readMessage()` den
+`SyntaxError` nach oben durchreicht, statt ihn zu verschlucken. Ein Aktualisieren hilft nicht:
+`2.0.0` ist am Messtag die neueste veröffentlichte Fassung; `npm view
+@modelcontextprotocol/server versions` nennt außer den Vorabfassungen `2.0.0-alpha.1` bis
+`2.0.0-beta.5` keine weitere.
+
+**Angrenzend, hier nur festgehalten und nicht miterledigt:** Dieser Server setzt
+`transport.onerror` nirgends. Damit bleiben auch die Fehler stumm, die das SDK sehr wohl meldet —
+gültiges JSON in falscher Gestalt (Zeile 2 der Tabelle oben), das Überschreiten der Puffergrenze
+von 10 MB und Stromfehler auf `stdin`/`stdout`. `Protocol.connect()` hängt einen bereits
+gesetzten `onerror`-Rückruf ausdrücklich vor den eigenen; ein vor `connect` gesetzter Rückruf
+bliebe also erhalten und würde weiterhin aufgerufen. Eine kaputte Zeile erreicht ihn trotzdem
+nicht — das ist ein anderer Punkt als der oben beschriebene und behebt ihn nicht.
+
 ---
 
 ## 9. v2 im Überblick, `@modelcontextprotocol/server@2.0.0`
@@ -1261,11 +1347,44 @@ Anders als v1 stellt v2 dem Text kein `MCP error -32602: ` voran und emittiert k
   (Stand 2026-09-12, `npm view @modelcontextprotocol/sdk versions --json`, Q1).
 * Der Widerspruch zwischen der Spezifikationszusage 2026-07-28 in Q11 und `LATEST_PROTOCOL_VERSION = 2025-11-25`
   in der ausgelieferten 2.0.0 ist offen.
-* Die Kompatibilität der real eingesetzten Clients (Claude Desktop, Claude Code, andere Hosts) mit v2-Servern wurde
-  **nicht geprüft**. Da beide Linien 2025-11-25 aushandeln, ist ein Problem unwahrscheinlich, aber unbelegt.
+* Die Kompatibilität der real eingesetzten Clients mit v2-Servern war zum Stand dieses Dossiers **nicht geprüft**.
+  Sie ist es inzwischen für zwei von drei Clients; die Ladeprobe steht unmittelbar darunter.
 * Q11 selbst weist darauf hin, dass v2 sich noch setzt („while v2 settles“) und Pull Requests begrenzt sind.
 
 Diese Entscheidung gehört in die Planungsphase. Beide Wege sind in diesem Dokument vollständig beschrieben.
+
+**Ladeprobe mit echten Clients, gemessen am 2026-09-12.** Ein Wegwerf-Server mit genau einem Werkzeug, gebaut nach
+dem Minimalbeispiel aus [9.3](#93-verifiziertes-v2-minimalbeispiel) gegen `@modelcontextprotocol/server@2.0.0` und
+`zod@4.6.2` unter Node v22.23.2, wurde in zwei Clients tatsächlich geladen. Der Server lag außerhalb jedes
+Projektbaums, sprach keine Netzwerkgegenstelle an und wurde nach der Messung in beiden Clients wieder entfernt.
+
+| Client | `initialize` | `tools/list` | Ergebnis |
+| --- | --- | --- | --- |
+| Claude Code CLI 2.1.269 | beantwortet, ausgehandelte Revision `2025-11-25` | beantwortet | gemessen, positiv; ein zusätzlich geprüfter `tools/call` lief ebenfalls durch |
+| OpenAI Codex CLI 0.153.4 | beantwortet, mittelbar über den erfolgreichen `tools/call` belegt | beantwortet | gemessen, positiv |
+| Claude Desktop | — | — | **nicht geprüft**, Grund unten |
+
+Unabhängig von jedem Client bestätigt ein roher JSON-RPC-Austausch über stdio dieselbe Lage: `initialize` antwortet
+mit `protocolVersion: "2025-11-25"`, und `tools/list` liefert `inputSchema` und `outputSchema` als JSON Schema
+Draft 2020-12 (`$schema: "https://json-schema.org/draft/2020-12/schema"`), wie [9.1](#91-eckdaten) es angibt. Damit
+ist die Protokollrevision nicht nur als Konstante im Bundle belegt, sondern als das, was ein echter Client
+aushandelt.
+
+**Claude Desktop ist ausdrücklich nicht gemessen, weder positiv noch negativ.** Der Client liest seine Serverliste
+ausschließlich beim Programmstart aus `~/Library/Application Support/Claude/claude_desktop_config.json`; anders als
+bei Claude Code und der Codex CLI gibt es keinen Weg, einen Server nachzuladen oder zu prüfen, ohne die Anwendung
+vollständig zu beenden und neu zu starten. Zum Messzeitpunkt lief eine Sitzung mit eigenen MCP-Verbindungen, und
+die Messung wurde deshalb bewusst unterlassen. Sie ist nachholbar, sobald ein Neustart ohnehin ansteht: Eintrag
+unter `mcpServers` mit `command: node` und `args: ["<Pfad zum Wegwerf-Server>"]`, Neustart, danach
+`~/Library/Logs/Claude/mcp-server-<name>.log` und `~/Library/Logs/Claude/mcp.log` auf `initialize`- und
+`tools/list`-Einträge prüfen.
+
+**Was daraus für die Wahl der SDK-Linie folgt.** Es liegt keine einzige negative Messung gegen v2 vor, und die fünf
+Gründe für v2 oben bestehen unabhängig von dieser Probe. Die fehlende dritte Messung ist deshalb kein Grund, auf v1
+zurückzugehen, sondern ein offener Punkt: Für Claude Desktop ist der v2-Entscheid **nicht durch eigene Messung
+abgesichert**. Scheitert die Nachprüfung später, ist die Wahl der SDK-Linie neu aufzurollen, einschließlich
+`package.json` und sämtlicher SDK-Importe. `zod` bleibt davon unberührt und in jedem Fall direkte `dependency` mit
+`^4.6.2`.
 
 **Vorrangsatz zur Protokollrevision (verbindlich, wörtlich aus `mcp-spezifikation.md` 11.1a (c), Q18):**
 
@@ -1294,8 +1413,7 @@ für die Zielsetzung die Spezifikation.
 
 ### 10.2 Festgeschriebene Versionen
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 13.1.** **`engines.node` lautet `>=22.19.0`**, nicht `>=22.12.0`. Die
+> **Nachgezogen am 2026-09-13.** **`engines.node` lautet `>=22.19.0`**, nicht `>=22.12.0`. Die
 > Begründung der Zeile unten bleibt richtig — `>=20` ist die SDK-Untergrenze und kein
 > Projektwert —, die Zahl ist es nicht: `undici@8.10.2` ist eine **Laufzeit**abhängigkeit und
 > deklariert selbst `engines.node: ">=22.19.0"`. Zum Bauen gilt zusätzlich die engere Range von
@@ -1316,15 +1434,16 @@ Exakte Versionen, kein Caret, für die MCP-Pakete, für `typescript` und für `t
 
 ### 10.3 Projektkonfiguration
 
-> **Nachgezogen am 2026-09-13 nach `docs/entwicklung/umsetzungsplan.md`, Abschnitt 15 (AP20);
-> Sachgrund in Abschnitt 12, Streitfrage S20 und in Abschnitt 13.6.** **Der `bin`-Name lautet
+> **Nachgezogen am 2026-09-13.** **Der `bin`-Name lautet
 > `bbutler-mcp`, nicht `buchhaltungsbutler-mcp`**, und es gibt genau einen `bin`-Eintrag:
 > `"bin": { "bbutler-mcp": "./dist/cli.js" }`. Der Grund ist geprüft und nicht ästhetisch: Unter
 > dem ungescopten Namen `buchhaltungsbutler-mcp` ist auf npm bereits ein `bin` gleichen Namens
 > belegt (per `npm view buchhaltungsbutler-mcp bin` bestätigt). Zwei global installierte Pakete mit demselben
 > `bin`-Namen kollidieren, und welches gewinnt, hängt von der Installationsreihenfolge ab. Ob der
-> Name `bbutler-mcp` seinerseits bereits belegt ist, lässt sich nicht vollständig
-> prüfen und ist im Umsetzungsplan als Restrisiko benannt. **`engines.node`** lautet hier
+> Name `bbutler-mcp` seinerseits bereits belegt ist, lässt sich nicht vollständig prüfen: npm
+> indiziert `bin`-Namen nicht, und ein freier Paketname belegt nicht, dass auch der `bin`-Name
+> frei ist. Das bleibt ein benanntes Restrisiko von geringer Schwere — tritt es auf, sind nur
+> `package.json` und die README zu ändern, der Paketname bleibt. **`engines.node`** lautet hier
 > ebenfalls **`>=22.19.0`**, siehe 10.2.
 
 * `package.json`: `"type": "module"`, `"files": ["dist"]`, `"engines": { "node": ">=22.19.0" }` sowie

@@ -1,9 +1,9 @@
 /**
  * `file://` als Belegquelle: `realpath`, `O_NOFOLLOW` und **alle Prüfungen am selben
- * Deskriptor** (Plan 11.2 AP13).
+ * Deskriptor**.
  *
  * Der Schalter `BB_MCP_UPLOAD_DIRS` ist standardmäßig leer, und dann gibt es **keinen**
- * Dateisystemzugriff (6.2). Trägt der Betreiber Verzeichnisse ein, liest dieser Server eine
+ * Dateisystemzugriff. Trägt der Betreiber Verzeichnisse ein, liest dieser Server eine
  * Datei, deren Pfad der Agent bestimmt — und der Agent hat seine Eingaben von Dritten. Ohne
  * Schutz wäre das ein Weg, beliebige Dateien des Betreibers in eine Buchhaltung und damit in
  * einen Modellkontext zu heben.
@@ -65,7 +65,7 @@ export interface LocalFileSource {
 }
 
 export interface LocalFileOptions {
-  /** Die Verzeichnisse aus `BB_MCP_UPLOAD_DIRS`, bereits absolut (6.2). */
+  /** Die Verzeichnisse aus `BB_MCP_UPLOAD_DIRS`, bereits absolut. */
   readonly allowedDirs: readonly string[];
   /** Obergrenze der gelesenen Bytes. */
   readonly maxBytes: number;

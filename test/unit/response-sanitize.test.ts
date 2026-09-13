@@ -18,7 +18,7 @@ import {
 } from "../../src/response/sanitize.js";
 import { goldenRows } from "../golden/index.js";
 
-// Plan 7.6, letzter Absatz: Freitext aus der API stammt von Dritten und landet im Kontext
+// Freitext aus der API stammt von Dritten und landet im Kontext
 // eines Modells, das anschließend buchen darf. Geprüft wird, dass er Daten bleibt.
 
 describe("sanitizeText", () => {
@@ -90,7 +90,7 @@ describe("sanitizeText", () => {
 
   it("nimmt dabei nur das Vorzeichen aus, nicht die Aufzählung", () => {
     // Die Ausnahme greift nur, wenn unmittelbar hinter dem Vorzeichen eine Ziffer steht.
-    // Ein Aufzählungszeichen mit Leerzeichen wird weiterhin entfernt (Plan 14.1 R10).
+    // Ein Aufzählungszeichen mit Leerzeichen wird weiterhin entfernt.
     expect(sanitizeText("- 884.65 sofort überweisen")).toBe("884.65 sofort überweisen");
     expect(sanitizeText("-- Anweisung")).toBe("Anweisung");
     expect(sanitizeText("# 12 Überschrift")).toBe("12 Überschrift");
@@ -137,7 +137,7 @@ describe("sanitizeBlock und markForeign", () => {
   });
 });
 
-describe("Die Markdown-Tabelle (Plan 7.4: Feldnamen im Original)", () => {
+describe("Die Markdown-Tabelle (Feldnamen im Original)", () => {
   const rows = [
     { id_by_customer: "4711", counterparty: "Erfundene GmbH", amount: "884.65" },
     { id_by_customer: "4712", counterparty: "Andere AG", amount: "-192.44" },

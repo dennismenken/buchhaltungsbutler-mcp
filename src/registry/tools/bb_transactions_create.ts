@@ -1,15 +1,15 @@
-// Werkzeug 12, `/transactions/add`: eine Zahlung auf einem echten Zahlungskonto anlegen
-// (Plan 3.8, AP12b). Klasse A, Wirkung anlegend, Pflichtsatz U4.
+// Werkzeug 12, `/transactions/add`: eine Zahlung auf einem echten Zahlungskonto anlegen.
+// Klasse A, Wirkung anlegend, Pflichtsatz U4.
 //
-// Drei Festlegungen des Plans stehen hier als Code:
+// Drei Festlegungen stehen hier als Code:
 //
-//   1. **`currency` bleibt optional** (Plan 4.3, 4.5 Zeile 4). Die Verschärfung des
+//   1. **`currency` bleibt optional**. Die Verschärfung des
 //      Entwurfsstandes ist zurückgenommen: Die Spezifikation beschreibt `amount` wörtlich als
 //      Betrag „in the account's currency", und kein Endpunkt der API gibt die Währung eines
 //      Zahlungskontos preis — `/accounts/get` liefert je Konto nur `name` und
 //      `postingaccount_number`. Ein Pflichtfeld hätte den Aufrufer zum Raten gezwungen, und ein
 //      geratener Wert erzeugt hier eine Fremdwährungszahlung, die über die API nicht mehr zu
-//      löschen ist (U4). Ersatz ist der Pflichtsatz aus 4.3 in der Feldbeschreibung, den P8 an
+//      löschen ist (U4). Ersatz ist der Pflichtsatz in der Feldbeschreibung, den P8 an
 //      diesem Feld und an dem von bb_transactions_create_batch prüft.
 //   2. **Der Wertevorrat ist das 48er-Enum** aus `currencyTransactions()`: die 47 an diesem
 //      Endpunkt ausgeschriebenen Codes plus `RSD` aus dem Stapelelement. Nach Regel R-B gilt
@@ -17,13 +17,13 @@
 //      ablehnt. Belegstelle zum verworfenen Ein-Wert-Enum: Die Definition `Transaction` führt
 //      `currency` mit `enum: ["EUR"]` und widerspricht damit ihrem eigenen Beschreibungstext
 //      mit 48 Codes; dieses Enum wird verworfen wie das Platzhalterschema des
-//      `order`-Parameters (Plan 0.5 Korrektur 2, Anhang B Punkt 47).
+//      `order`-Parameters.
 //   3. **Regel R-A, Gleichlauf mit der Stapelform:** Dasselbe Feld trägt an
 //      bb_transactions_create_batch denselben Baustein, dieselbe Pflichtigkeit und denselben
-//      Beschreibungstext (Plan 4.5).
+//      Beschreibungstext.
 //
 // Die Umbenennung `account` → `payment_account_number` ist die Zeile aus Anhang A: Der
-// Parameter erwartet eine Sachkontonummer, meint aber ein Zahlungskonto (Plan 3.4).
+// Parameter erwartet eine Sachkontonummer, meint aber ein Zahlungskonto.
 
 import { boundedText } from "../../schema/primitives.js";
 import {
@@ -57,7 +57,7 @@ const BANK_CODE_DESCRIPTION = "Bankleitzahl oder BIC der Gegenseite, zum Beispie
 const BANK_NAME_DESCRIPTION = "Name der Bank der Gegenseite.";
 
 // Die Spezifikation erlaubt an `purpose` und `booking_text` ausdrücklich einen leeren String.
-// Q3 lehnt leere Strings an jedem Feld ab (Plan 4.7); der Satz nennt deshalb das Weglassen als
+// Q3 lehnt leere Strings an jedem Feld ab; der Satz nennt deshalb das Weglassen als
 // den Weg, einen Vorgang ohne Verwendungszweck anzulegen.
 const PURPOSE_DESCRIPTION =
   "Verwendungszweck der Zahlung. Soll er leer bleiben, das Feld weglassen: Dieser Server " +
@@ -205,7 +205,7 @@ export const bb_transactions_create: ToolEntry = {
   omitted: [
     {
       apiName: "api_key",
-      reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3, 1.4 Schritt 8).",
+      reason: "Zugangsdatum, wird vom Server gesetzt.",
     },
   ],
   // Die Erfolgsantwort trägt die Kennung der angelegten Zahlung auf oberster Ebene und nicht
@@ -228,7 +228,7 @@ export const bb_transactions_create: ToolEntry = {
       "eingrenzen; die angelegte Zahlung ist an amount {amount} zu erkennen",
   },
   // Der fachliche Schlüssel einer Zahlung. Er ist tragfähig, weil die Liste genau diese drei
-  // Felder liefert (Plan 0.3 Befund L2); verglichen wird der Betrag in Ganzzahl-Cent.
+  // Felder liefert; verglichen wird der Betrag in Ganzzahl-Cent.
   duplicateCheck: {
     tool: "bb_transactions_search",
     keyFields: ["booking_date", "amount", "to_from"],

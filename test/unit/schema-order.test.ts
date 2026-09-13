@@ -52,7 +52,7 @@ describe("order an /receipts/get", () => {
     const properties = jsonOf(receiptsOrder())["properties"] as Record<string, unknown>;
     expect(Object.keys(properties).sort()).toEqual([...RECEIPTS_ORDER_FIELDS].sort());
     // Die Spezifikation führt hier eine einzige Eigenschaft namens `field`. Sie ist ein
-    // Platzhalter und wird verworfen (Plan 4.8, Anhang B Punkt 47).
+    // Platzhalter und wird verworfen.
     expect(properties["field"]).toBeUndefined();
     expect(receiptsOrder().safeParse({ field: "ASC" }).success).toBe(false);
   });
@@ -65,7 +65,7 @@ describe("order an /receipts/get", () => {
 });
 
 describe("order an /postings/get", () => {
-  it("führt alle sieben Werte aus Plan 4.8, wörtlich", () => {
+  it("führt alle sieben Werte, wörtlich", () => {
     expect([...POSTINGS_ORDER_VALUES]).toEqual([
       "default",
       "date ASC",

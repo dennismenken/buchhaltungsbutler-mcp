@@ -1,7 +1,8 @@
-// Werkzeug 49 von 54: `/cost-locations/delete` (Plan 3.8, Arbeitspaket AP12d).
+// Werkzeug 49 von 54: `/cost-locations/delete`.
 //
-// Klasse D, also `destructiveHint: true` und `idempotentHint: false` (Plan 3.3, Streitfrage
-// S6). Eine Wiederholung wäre plausibel wirkungslos, das ist aber **nicht verifiziert**, und
+// Klasse D, also `destructiveHint: true` und `idempotentHint: false` (die Begründung steht
+// bei `TOOL_CLASSES` in src/registry/classes.ts). Eine Wiederholung wäre plausibel
+// wirkungslos, das ist aber **nicht verifiziert**, und
 // ein falsches `idempotentHint: true` lädt einen Host zum selbsttätigen Wiederholen ein.
 //
 // **Was mit Buchungen geschieht, die auf diese Kostenstelle verweisen, ist nicht
@@ -47,7 +48,7 @@ export const bb_cost_locations_delete: ToolEntry = {
     },
   ],
   serverOnlyFields: [],
-  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt (Plan 4.3)" }],
+  omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt" }],
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",
   concise: [],

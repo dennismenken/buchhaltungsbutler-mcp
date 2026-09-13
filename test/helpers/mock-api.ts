@@ -1,5 +1,5 @@
 /**
- * Der gemeinsame MockAgent-Aufbau aller Testpakete (Plan 9.4).
+ * Der gemeinsame MockAgent-Aufbau aller Testpakete.
  *
  * Es gibt genau eine Nachbildung des Netzes, und sie setzt auf der Ebene des eingebauten
  * `fetch` an: `undici`-`MockAgent` über `setGlobalDispatcher` (`test/setup.ts`). Damit prüft
@@ -29,7 +29,7 @@ import { resetLoggingForTests } from "../../src/logging/stderr.js";
 import { resetRateLimiterForTests } from "../../src/http/rate-limiter.js";
 import { getMockAgent } from "../setup.js";
 
-/** Herkunft: `vitest.config.ts` setzt genau diese Basis-URL für den Testlauf (Plan 9.1). */
+/** Herkunft: `vitest.config.ts` setzt genau diese Basis-URL für den Testlauf. */
 export const TEST_ORIGIN = "https://nicht-aufloesbar.invalid";
 
 /** Der Pfadteil der Basis-URL. Jeder Endpunktpfad hängt sich hinten an. */
@@ -415,7 +415,7 @@ function toHandler(reply: MockReplySource): (info: MockRequestInfo) => MockReply
  *
  * Die echte Auflösung aus `config/resolve.ts` läuft dabei durch, damit die Tests dieselben
  * Werte sehen wie der Betrieb. Die Zugangsdatendatei wird nicht gelesen, weil alle drei
- * Werte aus der Umgebung kommen (6.3 Punkt 1).
+ * Werte aus der Umgebung kommen.
  */
 export function installTestConfig(overrides: Record<string, string> = {}): ResolvedConfig {
   resetConfigForTests();

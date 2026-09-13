@@ -1,4 +1,4 @@
-// Die Belegquelle im Ausführungspfad (Plan 11.2 AP13).
+// Die Belegquelle im Ausführungspfad.
 //
 // `src/upload/source.ts` war vollständig gebaut und getestet, wurde aber von niemandem
 // aufgerufen: Der Wert des Arguments `file` ging unverändert als Body-Feld hinaus. Damit
@@ -96,7 +96,7 @@ describe("bb_receipts_upload: die Belegquelle wird aufgelöst", () => {
       expect(typeof body.file_name).toBe("string");
       expect(String(body.file_name)).toMatch(/\.pdf$/);
       expect(body.type).toBe("invoice inbound");
-      // Der Schlüssel setzt der Server, nicht das Werkzeug (Plan 4.3).
+      // Der Schlüssel setzt der Server, nicht das Werkzeug.
       expect(body.api_key).toBeDefined();
     } finally {
       await server.close();

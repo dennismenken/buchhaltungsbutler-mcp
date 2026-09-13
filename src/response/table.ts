@@ -1,7 +1,6 @@
-// Die Markdown-Tabelle des Textblocks. **Feldnamen im Original, keine Verschönerung**
-// (Plan 7.4).
+// Die Markdown-Tabelle des Textblocks. **Feldnamen im Original, keine Verschönerung**.
 //
-// Der Grund steht im Plan und ist keine Stilfrage: Der Feldname der Antwort ist der
+// Der Grund ist keine Stilfrage: Der Feldname der Antwort ist der
 // Parametername des nächsten Aufrufs. Wer `id_by_customer` zu „Id By Customer" macht, nimmt
 // dem Modell genau diese Information und erzeugt einen Zwischenschritt, in dem geraten wird.
 //
@@ -35,7 +34,7 @@ export interface TableOptions {
 /**
  * Eine Markdown-Tabelle aus normalisierten Zeilen.
  *
- * Eine leere Zeilenmenge ergibt eine leere Zeichenkette; die Bestandszeile aus 7.5 sagt dann,
+ * Eine leere Zeilenmenge ergibt eine leere Zeichenkette; die Bestandszeile sagt dann,
  * was Sache ist, und eine Tabelle ohne Zeilen sagte nichts.
  */
 export function renderTable(
@@ -63,7 +62,7 @@ export function renderTable(
 }
 
 /**
- * Die lesbare Aufzählung eines Einzelobjekts (Plan 7.1, zweite Zeile der Tabelle).
+ * Die lesbare Aufzählung eines Einzelobjekts (zweite Zeile der Tabelle).
  *
  * Kein Tabellenkopf mit einer einzigen Datenzeile: Bei 23 Feldern wäre das eine Zeile, die
  * niemand liest. Stattdessen Feld für Feld, Name im Original.
@@ -82,7 +81,7 @@ export function renderRecord(
  * Die Vorgabe für die Einzelform. Sie ist bewusst groß: Bei `bb_reports_get_bwa` und
  * `bb_reports_get_sums` **ist** die eine Zelle die gesamte Auskunft, und eine Kürzung auf
  * wenige hundert Zeichen wirft dort die Antwort weg statt sie zu bändigen. Die eigentliche
- * Grenze der Antwort ist das Tokenbudget aus 7.6; diese Zahl verhindert nur, dass ein
+ * Grenze der Antwort ist das Tokenbudget; diese Zahl verhindert nur, dass ein
  * einzelnes Feld sie allein ausschöpft.
  */
 export const DEFAULT_RECORD_CELL_LENGTH = 4000;
@@ -90,7 +89,7 @@ export const DEFAULT_RECORD_CELL_LENGTH = 4000;
 /**
  * Eine Zelle der Einzelform. Anders als {@link sanitizeCell} **beziffert** sie den Verlust.
  *
- * Bei der Liste sagt die Antwort, wie viele Zeilen von wie vielen gezeigt werden (7.6). Für
+ * Bei der Liste sagt die Antwort, wie viele Zeilen von wie vielen gezeigt werden. Für
  * die Einzelform fehlte diese Angabe: Der Text endete auf „…", und weder der Agent noch der
  * Nutzer erfuhr, dass und wie viel fehlt. Genau das ist an einer Berichtsantwort der
  * Unterschied zwischen einer knappen und einer falschen Auskunft.
@@ -107,7 +106,7 @@ export function renderRecordCell(value: unknown, maxLength: number): string {
   );
 }
 
-/** Dieselbe Aufzählung einzeilig, für Sätze wie den Auflösungssatz aus Plan 7.6. */
+/** Dieselbe Aufzählung einzeilig, für Sätze wie den Auflösungssatz. */
 export function renderRecordInline(
   record: Readonly<Record<string, unknown>>,
   options: { readonly maxCellLength?: number } = {},

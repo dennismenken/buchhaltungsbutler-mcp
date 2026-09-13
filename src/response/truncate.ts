@@ -1,8 +1,8 @@
-// Kürzung und Binärinhalte (Plan 7.6).
+// Kürzung und Binärinhalte.
 //
 // Zwei Grenzen: weich `BB_MCP_MAX_RESPONSE_TOKENS` (Vorgabe 5.000 Token), hart 20.000 Token je
-// Antwort. Geschätzt wird über die Zeichenmethode aus 4.10, also über `CHARS_PER_TOKEN` aus
-// `src/registry/budget.ts`; **zur Laufzeit wird kein Tokenizer geladen** (Plan 4.10, 13.2).
+// Antwort. Geschätzt wird über die Zeichenmethode, also über `CHARS_PER_TOKEN` aus
+// `src/registry/budget.ts`; **zur Laufzeit wird kein Tokenizer geladen**.
 //
 // Die Richtung der Ungenauigkeit ist bewusst gewählt: Eine Schätzung, die zu früh kürzt, ist
 // harmlos; eine, die zu spät kürzt, sprengt das Kontextfenster des Clients.
@@ -14,7 +14,7 @@
 import type { Projection } from "../mapping/response.js";
 import { CHARS_PER_TOKEN } from "../registry/budget.js";
 
-/** Die harte Obergrenze je Antwort, in Token (Plan 7.6). Sie ist nicht konfigurierbar. */
+/** Die harte Obergrenze je Antwort, in Token. Sie ist nicht konfigurierbar. */
 export const HARD_RESPONSE_TOKEN_LIMIT = 20_000;
 
 /**
@@ -192,7 +192,7 @@ export function replaceBinaryPayloads(
   return { value: walk(value, path, path), replaced: found };
 }
 
-/** Der Platzhalter, der im **Textblock** an die Stelle einer Datei tritt (Plan 7.6). */
+/** Der Platzhalter, der im **Textblock** an die Stelle einer Datei tritt. */
 export const BINARY_TEXT_MARKER = "(Datei, Größe und Art siehe Hinweiszeile)";
 
 /**
@@ -200,8 +200,8 @@ export const BINARY_TEXT_MARKER = "(Datei, Größe und Art siehe Hinweiszeile)";
  *
  * Das ist bewusst ein zweiter Durchgang neben {@link replaceBinaryPayloads}: Eine
  * ausdrücklich angeforderte Datei bleibt im `structuredContent` stehen, im Textblock steht
- * sie trotzdem **nie** (Plan 7.6). Ohne diese Trennung landeten bei `get_files: true` einige
- * hundert Zeichen Base64 im Kontext des Modells — genau das, was der Plan ausschließt.
+ * sie trotzdem **nie**. Ohne diese Trennung landeten bei `get_files: true` einige
+ * hundert Zeichen Base64 im Kontext des Modells — genau das, was hier ausgeschlossen ist.
  */
 export function stripBinariesForText(value: unknown, field = ""): unknown {
   if (typeof value === "string") {
@@ -227,7 +227,7 @@ export function stripBinariesForText(value: unknown, field = ""): unknown {
   return value;
 }
 
-/** Die Zeile, die im Textblock an die Stelle der Datei tritt (Plan 7.6). */
+/** Die Zeile, die im Textblock an die Stelle der Datei tritt. */
 export function binaryTextLine(replaced: ReplacedBinary): string {
   const type = replaced.mediaType === "application/pdf" ? "PDF" : replaced.mediaType;
   const size = formatBytes(replaced.sizeBytes);
@@ -294,7 +294,7 @@ export function fitRows(
 }
 
 /**
- * Die Kürzungsmeldung aus Plan 7.6.
+ * Die Kürzungsmeldung.
  *
  * Sie nennt beide Zahlen, sagt ausdrücklich, dass auf Seiten der API nichts verloren gegangen
  * ist, und nennt den oder die Wege zum Rest. Ohne den mittleren Satz liest ein Agent die
@@ -309,7 +309,7 @@ export function fitRows(
 export interface TruncationNoteOptions {
   /**
    * `true`, wenn der gekürzte Bestand selbst unvollständig ist, also bei einem Bündel mit
-   * `bundle.complete` = false (Bauvorlage Bündelwerkzeuge, Abschnitt 3).
+   * `bundle.complete` = false.
    *
    * Der Satz „Auf Seiten der API ist nichts verloren gegangen" ist richtig, solange eine
    * vollständig gelesene Liste für die Anzeige gekürzt wird. Kürzt ein Bündel einen ohnehin
