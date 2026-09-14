@@ -4,7 +4,10 @@ node_modules/
 # Build-Artefakte
 dist/
 *.tsbuildinfo
-*.mcpb
+# Gebautes Bundle im Wurzelverzeichnis. Nur das Artefakt, nicht das Verzeichnis .mcpb/
+# mit der Manifestvorlage: Das Muster *.mcpb wuerde auch den Verzeichnisnamen .mcpb
+# erfassen, weil * auch die leere Zeichenkette trifft.
+/bbutler-mcp-*.mcpb
 
 # Erzeugter Registerindex. Einziges Generat, das nicht eingecheckt wird:
 # Es leitet sich allein aus dem Inhalt von src/registry/tools/ ab und wird vor build,

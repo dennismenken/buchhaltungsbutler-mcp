@@ -1,0 +1,80 @@
+{
+  "manifest_version": "0.4",
+  "name": "bbutler-mcp",
+  "display_name": "BuchhaltungsButler (inoffiziell)",
+  "version": "0.0.0-vorlage",
+  "description": "Inoffizieller MCP-Server für die BuchhaltungsButler-API: 54 Endpunktwerkzeuge, genau eines je Endpunkt, dazu 5 Bündelwerkzeuge für wiederkehrende Abläufe.",
+  "long_description": "Dieses Bundle enthält einen quelloffenen, **inoffiziellen** MCP-Server für die BuchhaltungsButler-API v1. Er stellt 59 Werkzeuge bereit: 54 Endpunktwerkzeuge, genau eines je API-Endpunkt (15 lesende, 24 anlegende, 8 ändernde und 7 löschende), und 5 Bündelwerkzeuge, die mehrere dieser Endpunkte zu einem Ablauf zusammenfassen. 19 der 59 Werkzeuge lesen nur, 40 schreiben.\n\nDie fünf Bündel beantworten die Fragen, die in der Buchhaltung täglich vorkommen, in je einem Aufruf statt in mehreren: ein Zahlungskonto, ein Sachkonto, einen Debitor, einen Kreditor oder eine Kostenstelle über den Namen finden, ohne die Nummer zu kennen (bb_masterdata_search); Belege, Zahlungen oder Buchungen über alle Seiten hinweg zählen und summieren (bb_records_collect); einen Beleg oder eine Zahlung samt ihren Zuordnungen holen (bb_assignments_get); das Kontenblatt eines Kontos mit fortgeschriebenem Saldo abrufen (bb_balances_get); eine BWA oder eine Summen- und Saldenliste erzeugen, auf die Berechnung warten und sie abholen (bb_reports_run). Kein Bündel ersetzt ein Endpunktwerkzeug; alle 54 bleiben daneben nutzbar. Vier der fünf lesen nur. Das fünfte, bb_reports_run, schreibt als einziges: Es lässt den Bericht serverseitig neu berechnen, und der ersetzt dabei den zuvor erzeugten Bericht desselben Typs im ganzen Mandanten.\n\n**Der Server arbeitet gegen Ihre echte Buchhaltung.** 40 der 59 Werkzeuge schreiben, und die API kennt für diese Vorgänge keinen Probelauf. Gelöschte Belege lassen sich wiederherstellen, ein angelegter Kommentar dagegen nicht mehr entfernen. Die Werkzeuge sind mit MCP-Annotationen gekennzeichnet (readOnlyHint, destructiveHint, idempotentHint, openWorldHint), damit Ihr Client vor einem schreibenden Aufruf nachfragen kann; erzwungen wird die Rückfrage vom Server nicht.\n\nWer den Server nur lesen lassen will, setzt in den Einstellungen den Schalter „Nur lesen“. Dann lehnen alle 40 schreibenden Werkzeuge ab, bevor eine Anfrage an die API hinausgeht, darunter bb_reports_run; die vier lesenden Bündel bleiben nutzbar. Die Werkzeugliste bleibt dabei unverändert sichtbar.\n\nDie drei Zugangsdaten holen Sie in BuchhaltungsButler unter Einstellungen, API. Der API Key wählt den Mandanten aus; er ist kein harmloser Bezeichner. Die Werte bleiben auf diesem Rechner und gehen ausschließlich an BuchhaltungsButler.\n\nBuchhaltungsButler ist eine Marke der BuchhaltungsButler GmbH. Dieses Projekt steht in keiner Verbindung zum Anbieter und wird von ihm weder betrieben noch unterstützt.",
+  "author": {
+    "name": "Dennis Menken",
+    "url": "https://github.com/dennismenken"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dennismenken/buchhaltungsbutler-mcp"
+  },
+  "homepage": "https://github.com/dennismenken/buchhaltungsbutler-mcp#readme",
+  "documentation": "https://github.com/dennismenken/buchhaltungsbutler-mcp#readme",
+  "support": "https://github.com/dennismenken/buchhaltungsbutler-mcp/issues",
+  "license": "MIT",
+  "keywords": ["buchhaltung", "buchhaltungsbutler", "accounting", "mcp", "unofficial"],
+  "server": {
+    "type": "node",
+    "entry_point": "server/dist/cli.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/dist/cli.js"],
+      "env": {
+        "BB_API_CLIENT": "${user_config.api_client}",
+        "BB_API_SECRET": "${user_config.api_secret}",
+        "BB_API_KEY": "${user_config.api_key}",
+        "BB_MCP_READ_ONLY": "${user_config.read_only}",
+        "BB_MCP_TOOL_GROUPS": "${user_config.tool_groups}"
+      }
+    }
+  },
+  "tools": [],
+  "tools_generated": false,
+  "user_config": {
+    "api_client": {
+      "type": "string",
+      "title": "API Client",
+      "description": "Benutzername der HTTP-Basic-Authentifizierung. In BuchhaltungsButler unter Einstellungen, API zu finden.",
+      "required": true,
+      "sensitive": true
+    },
+    "api_secret": {
+      "type": "string",
+      "title": "API Secret",
+      "description": "Passwort der HTTP-Basic-Authentifizierung, aus derselben Maske wie der API Client.",
+      "required": true,
+      "sensitive": true
+    },
+    "api_key": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Wählt den Mandanten aus und wird als Feld api_key im Anfragekörper gesendet. Ein falscher Wert schreibt in die falsche Buchhaltung.",
+      "required": true,
+      "sensitive": true
+    },
+    "read_only": {
+      "type": "boolean",
+      "title": "Nur lesen",
+      "description": "Beschränkt den Server auf die 19 lesenden Werkzeuge, also auf die 15 lesenden Endpunkte und die vier lesenden Bündel. Die 40 schreibenden Werkzeuge lehnen dann ab, bevor eine Anfrage hinausgeht; dazu zählt bb_reports_run, weil es den Bericht neu berechnen lässt und damit den zuvor erzeugten desselben Typs ersetzt. Vorgabe: aus.",
+      "required": false,
+      "default": false
+    },
+    "tool_groups": {
+      "type": "string",
+      "title": "Werkzeuggruppen",
+      "description": "Kommaliste. Leer lassen für alle Gruppen. Gültig: bundles, receipts, transactions, postings, invoices, debtors, creditors, postingaccounts, payment_accounts, cost_locations, reports, comments. Empfehlung für Claude Desktop: bundles",
+      "required": false
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=22.19.0"
+    }
+  }
+}
