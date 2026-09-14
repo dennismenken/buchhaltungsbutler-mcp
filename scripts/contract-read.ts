@@ -48,6 +48,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import type { EndpointCall } from "../src/http/client.js";
 import type { SuccessEnvelope } from "../src/http/envelope.js";
 import type { ContractFieldType, ToolEntry } from "../src/registry/types.js";
+import type { reportRowsOf as ReportRowsOf } from "../src/mapping/report-rows.js";
 
 // ---------------------------------------------------------------------------------------
 // Auflösungshaken
@@ -436,6 +437,7 @@ const ALLOWED_TYPES: Readonly<Record<ContractFieldType, readonly JsonKind[]>> = 
   "amount-string": ["string"],
   "bool-string": ["string"],
   "id-string": ["string", "number"],
+  array: ["array"],
 };
 
 export interface FieldObservation {
@@ -570,7 +572,21 @@ export function compareContract(
  * und nicht zum Antwortvertrag; sie bleiben draußen, sonst erzeugte jeder Lauf drei
  * „neu"-Einträge, die niemand nachträgt.
  */
-export function rowsOf(entry: ToolEntry, envelope: SuccessEnvelope): readonly unknown[] {
+export function rowsOf(
+  entry: ToolEntry,
+  envelope: SuccessEnvelope,
+  // Wird hereingereicht statt importiert: Module aus src/ lädt dieses Skript erst nach dem
+  // Auflösungshaken, ein statischer Import scheiterte davor.
+  extractReport?: typeof ReportRowsOf,
+): readonly unknown[] {
+  const reportKind = entry.responseContract.reportRows;
+  if (reportKind !== undefined && extractReport !== undefined) {
+    // Dieselbe Umformung wie im Server: Geprüft wird die Zeile, die der Agent sieht.
+    const report = extractReport(reportKind, envelope.body);
+    if (report !== null) {
+      return report.rows;
+    }
+  }
   if (entry.responseContract.container === "none") {
     const envelopeFields = ["success", "message", "rows"];
     const rest: Record<string, unknown> = {};
@@ -689,6 +705,7 @@ async function main(): Promise<number> {
 
   const { TOOL_BY_NAME, TOOL_ENTRIES } = await import("../src/registry/index.generated.js");
   const { buildPath, specPathOf } = await import("../src/mapping/path.js");
+  const { reportRowsOf } = await import("../src/mapping/report-rows.js");
 
   const allowList = buildAllowList(TOOL_ENTRIES);
 
@@ -852,7 +869,7 @@ async function main(): Promise<number> {
       continue;
     }
 
-    const rows = rowsOf(entry, envelope);
+    const rows = rowsOf(entry, envelope, reportRowsOf);
     const observed = observeRows(rows);
 
     const harvestSpec = probe.harvest ?? {};

@@ -102,19 +102,56 @@ export const bb_reports_get_ledger: ToolEntry = {
   ],
   serverOnlyFields: ["response_format"],
   omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt." }],
-  // Das Wrapper-Feld heißt `report_sums_postingaccount_ledger` und folgt weder dem
-  // `data`-Muster der Listen noch dem `report`-Muster der beiden anderen Abholwerkzeuge
-  // (berichte.md 8.8 Punkt 3); es steht auf oberster Ebene des Umschlags.
-  // Der Vertragslauf kann diesen Endpunkt aufrufen — er ist der einzige der
-  // drei Abholwerkzeuge ohne schreibende Vorbedingung —, hat es am 2026-09-13 aber nicht getan:
-  // Der Lauf war auf acht Aufrufe begrenzt, und die gingen an die acht Endpunkte mit einem
-  // nicht leeren Antwortvertrag. Hier ist nichts nachzutragen, weil `fields` leer ist und
-  // `ContractFieldType` für ein untypisiertes Wrapper-Objekt keinen Typ kennt. Der Eintrag
-  // steht im Ablaufplan von `scripts/contract-read.ts` und läuft beim nächsten vollen
-  // Durchgang mit.
-  responseContract: { container: "none", fields: {}, source: "dokumentiert" },
+  // Das Kontenblatt kommt ohne data-Hülle unter `report_sums_postingaccount_ledger`, die
+  // Buchungszeilen stehen darin als Liste `postingaccountLedger`. Die Umformung in
+  // src/mapping/report-rows.ts legt sie flach; `fields` beschreibt eine Buchungszeile.
+  // Gemessen am 2026-09-14 mit 28 Zeilen (Befund L7 in docs/api/live-befunde.md). Felder, die
+  // in allen Zeilen null waren, tragen den offensten passenden Typ; der Vertragslauf meldet,
+  // sobald ein anderer Typ auftaucht.
+  responseContract: {
+    container: "none",
+    reportRows: "ledger",
+    fields: {
+      id_by_customer: "id-string",
+      date: "string",
+      postingTextFull: "string",
+      counterRecordPostingaccountNumber: "id-string",
+      record_side: "string",
+      record_amount: "amount-string",
+      balanceAfterAbsolute: "number",
+      balanceAfterSide: "string",
+      tax_key: "string",
+      tax_key_effective: "string",
+      vatRate: "null-or-string",
+      vatPostingaccountNumbers: "array",
+      standard_chart: "string",
+      journal_number: "null-or-string",
+      tax_journal_number: "null-or-string",
+      cost_location: "null-or-string",
+      costLocationName: "null-or-string",
+      receipts_id_by_customer: "id-string",
+      receipts_direction: "null-or-string",
+      transactions_id_by_customer: "id-string",
+      reversed_by_id: "id-string",
+      reversal_for_id: "id-string",
+      receiptsAssignedFilenamesServerPlain: "array",
+      receiptsAssignedFileSuffix: "array",
+    },
+    source: "gemessen",
+    measuredOn: "2026-09-14",
+  },
   shape: "ack",
-  concise: [],
+  concise: [
+    "date",
+    "postingTextFull",
+    "counterRecordPostingaccountNumber",
+    "record_side",
+    "record_amount",
+    "balanceAfterAbsolute",
+    "balanceAfterSide",
+    "receipts_id_by_customer",
+    "transactions_id_by_customer",
+  ],
   bucket: "default",
   timeoutTier: "long",
   crossChecks: ["Q1", "Q3"],

@@ -78,15 +78,47 @@ export const bb_reports_get_sums: ToolEntry = {
   ],
   serverOnlyFields: ["response_format"],
   omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt." }],
-  // `report` und `files` stehen auf oberster Ebene des Umschlags, nicht unter `data`
-  // (Spezifikation `ReportsGetSums_Success`).
-  // Wie bei bb_reports_get_bwa: Der Vertragslauf erreicht diesen Endpunkt
-  // nicht, weil seine Vorbedingung bb_reports_create_sums schreibend ist. Die Antwortform
-  // bleibt aus der Spezifikation und aus berichte.md übernommen und ist erst mit einem
-  // Testmandat außerhalb der Produktivbuchhaltung zu klären.
-  responseContract: { container: "none", fields: {}, source: "dokumentiert" },
+  // Die Summen- und Saldenliste kommt ohne data-Hülle unter `report`; die Konten stehen in
+  // `report.sums` als Objekt mit der Kontonummer als Schlüssel, die Kontoangaben darin
+  // verschachtelt unter `postingaccount`. Die Umformung in src/mapping/report-rows.ts macht
+  // daraus eine Zeile je Konto. Beträge liefert die API hier als Zahl, anders als sonst; sie
+  // bleiben Zahlen. Gemessen am 2026-09-14 mit 166 Konten über einen einmaligen Lauf von
+  // bb_reports_create_sums mit Freigabe des Projektinhabers (Befund L7 in
+  // docs/api/live-befunde.md). `sumPeriodDebit` und `sumPeriodCredit` waren in allen
+  // Einträgen null.
+  responseContract: {
+    container: "none",
+    reportRows: "sums",
+    fields: {
+      postingaccount_number: "id-string",
+      name: "string",
+      class: "string",
+      type: "string",
+      balanceBeforeDebit: "number",
+      balanceBeforeCredit: "number",
+      balanceBeforeAbsolute: "number",
+      balanceBeforeSide: "string",
+      sumPeriodDebit: "number",
+      sumPeriodCredit: "number",
+      balanceAfterDebit: "number",
+      balanceAfterCredit: "number",
+      balanceAfterAbsolute: "number",
+      balanceAfterSide: "string",
+    },
+    source: "gemessen",
+    measuredOn: "2026-09-14",
+  },
   shape: "ack",
-  concise: [],
+  concise: [
+    "postingaccount_number",
+    "name",
+    "balanceBeforeAbsolute",
+    "balanceBeforeSide",
+    "sumPeriodDebit",
+    "sumPeriodCredit",
+    "balanceAfterAbsolute",
+    "balanceAfterSide",
+  ],
   bucket: "default",
   timeoutTier: "long",
   crossChecks: ["Q3"],

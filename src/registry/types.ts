@@ -87,7 +87,14 @@ export interface ResponseContract {
   fields: Record<string, ContractFieldType>; // gemessene oder dokumentierte Feldnamen
   source: "gemessen" | "dokumentiert"; // Herkunft; "gemessen" nur für 0.3
   measuredOn?: string; // ISO-Datum der Messung, Pflicht bei "gemessen"
+  // Nur die drei Berichtsabholwerkzeuge: Der Bericht kommt ohne data-Hülle als
+  // verschachteltes Objekt und wird vor dem Vertrag in flache Zeilen umgeformt
+  // (src/mapping/report-rows.ts). `fields` beschreibt dann eine dieser Zeilen.
+  reportRows?: ReportRowsKind;
 }
+
+/** Die Form eines Berichts, die src/mapping/report-rows.ts flach legt. */
+export type ReportRowsKind = "ledger" | "sums" | "bwa";
 
 export type ContractFieldType =
   | "string"
@@ -97,7 +104,9 @@ export type ContractFieldType =
   | "amount-string" // Betrag als String; erzeugt zusätzlich <feld>_cents
   | "bool-string" // "0"/"1"; wird zu echtem Boolean normalisiert
   // Kennung; ausgehend immer String (Umwandlungsregel 2 im Kopf von src/mapping/coerce.ts)
-  | "id-string";
+  | "id-string"
+  // Liste unverändert; Inhalt ungeprüft, damit sie nicht als unbekanntes Feld zählt
+  | "array";
 
 /** Der Prüfweg nach einem Zeitlimit. Datenstruktur statt Prosa. */
 export type VerifySpec =

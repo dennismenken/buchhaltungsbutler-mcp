@@ -212,7 +212,10 @@ export function buildToolResponse(input: BuildResponseInput): ToolResponsePayloa
 
   const binaries: ReplacedBinary[] = [];
 
-  if (entry.shape === "list" && entry.effect === "read") {
+  // Ein flach gelegter Bericht (rowsReturned gesetzt) wird wie eine Liste dargestellt.
+  const reportAsList =
+    entry.responseContract.reportRows !== undefined && mapped.rowsReturned !== null;
+  if ((entry.shape === "list" || reportAsList) && entry.effect === "read") {
     appendList(input, structured, lines, binaries, { maxResponseTokens, requested });
   } else if (entry.effect === "read") {
     appendSingle(input, structured, lines, binaries, { maxResponseTokens, requested });
@@ -254,6 +257,31 @@ function appendList(
   const { entry, mapped, args } = input;
   const limitUsed = numberArg(args, "limit");
   const offsetUsed = numberArg(args, "offset") ?? 0;
+
+  if (entry.responseContract.reportRows !== undefined && mapped.object !== null) {
+    // Die Kopfangaben können die Berichtsdateien tragen; Base64 wird hier wie in den Zeilen
+    // ersetzt, damit es nie in den Kontext läuft.
+    const summary = replaceBinaryPayloads(mapped.object, { requested: options.requested });
+    binaries.push(...summary.replaced);
+    structured.summary = summary.value;
+    const facts = Object.entries(summary.value as Record<string, unknown>).map(([name, value]) => {
+      if (Array.isArray(value)) {
+        // Kurze Listen aus einfachen Werten, etwa die verwendeten Kontonummern, sind selbst die
+        // Auskunft; längere oder verschachtelte stehen vollständig in `summary`.
+        const simple = value.every((item) => typeof item !== "object" || item === null);
+        return simple && value.length > 0 && value.length <= 20
+          ? `${name}: ${value.map(String).join(", ")}`
+          : `${name}: ${String(value.length)} Einträge`;
+      }
+      if (typeof value === "object" && value !== null) {
+        return `${name}: ${Object.keys(value).join(", ") || "leer"}`;
+      }
+      return `${name}: ${String(value)}`;
+    });
+    if (facts.length > 0) {
+      lines.push(`Kopfangaben des Berichts: ${facts.join(", ")}.`);
+    }
+  }
 
   const cleaned = mapped.items.map((row) => {
     const result = replaceBinaryPayloads(row, { requested: options.requested });

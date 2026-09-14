@@ -81,18 +81,32 @@ export const bb_reports_get_bwa: ToolEntry = {
   ],
   serverOnlyFields: ["response_format"],
   omitted: [{ apiName: "api_key", reason: "Zugangsdatum, wird vom Server gesetzt." }],
-  // `report` und `files` stehen auf oberster Ebene des Umschlags, nicht unter `data`
-  // (Spezifikation `ReportsGetBwa_Success`): `shape: "ack"` zusammen mit
-  // `container: "none"` ist die einzige Kombination, die diese Antwort trifft.
-  // Der Vertragslauf hat diesen Endpunkt am 2026-09-13 NICHT aufgerufen, und
-  // er kann es auch künftig nicht: Die Vorbedingung ist ein Lauf von bb_reports_create_bwa,
-  // und der ist schreibend. Ein Vertragslauf, der dafür eine Ausnahme machte, wäre kein
-  // lesender Lauf mehr. Der Endpunkt bleibt damit einer der beiden, deren Antwortform
-  // ausschließlich aus der Spezifikation und aus berichte.md stammt; geklärt wird sie im
-  // Testmandat und nicht gegen die Produktivbuchhaltung.
-  responseContract: { container: "none", fields: {}, source: "dokumentiert" },
+  // Die BWA kommt ohne data-Hülle unter `report`, als Baum aus Gruppen, darin Klassen, dazu
+  // Ergebniszeilen unter `totals`. Die Umformung in src/mapping/report-rows.ts legt den Baum
+  // in Lesereihenfolge flach: `level` ist group, class oder total. `files` wandert in die
+  // Kopfangaben. Gemessen am 2026-09-14 über einen einmaligen Lauf von bb_reports_create_bwa
+  // mit Freigabe des Projektinhabers (Befund L7 in docs/api/live-befunde.md). Im Messzeitraum
+  // gab es keine bestätigten Buchungen, deshalb waren alle Listen `postingaccounts` leer und
+  // ihr Eintragsaufbau ist nicht gemessen.
+  responseContract: {
+    container: "none",
+    reportRows: "bwa",
+    fields: {
+      level: "string",
+      group: "string",
+      name: "string",
+      amountsSum: "number",
+      empty: "boolean",
+      postingaccounts: "array",
+    },
+    source: "gemessen",
+    measuredOn: "2026-09-14",
+  },
   shape: "ack",
-  concise: [],
+  // `postingaccounts` gehört in die Standardansicht: Die Aufschlüsselung nach Konten ist die
+  // eigentliche Auskunft einer BWA. Die Liste geht unverändert hinaus, weil ihr Eintragsaufbau
+  // nicht gemessen ist und flach gelegte Felder geraten wären.
+  concise: ["level", "group", "name", "amountsSum", "postingaccounts"],
   bucket: "default",
   timeoutTier: "long",
   crossChecks: ["Q3"],

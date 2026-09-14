@@ -654,36 +654,68 @@ const TASKS: readonly EvalTask[] = [
           json: {
             success: true,
             message: "",
+            // Aufbau wie gemessen am 2026-09-14 (Befund L7 in docs/api/live-befunde.md):
+            // Gruppen und Klassen als Objekte mit dem Namen als Schlüssel, Beträge als Zahl,
+            // Ergebniszeilen mit `after`. Der Aufbau der Einträge in `postingaccounts` ist
+            // nicht gemessen, weil die Listen im Messzeitraum leer waren; hier stehen
+            // angenommene Einträge, damit die Aufgabe eine Antwort hat.
             report: {
               integrityError: false,
-              standardChart: "SKR03",
+              standardChart: "skr03",
+              usedCostLocations: [],
+              usedPostingaccountsNumbers: ["4980", "4930", "6815", "4650"],
               postingsRecordsCount: 41,
               uncompletedPostingsCount: 0,
-              groups: [
-                {
-                  name: "Betrieblicher Aufwand",
-                  amountsSum: "7412.55",
-                  classes: [
-                    {
-                      name: "Raumkosten und Betriebsbedarf",
-                      amountsSum: "5233.21",
+              groups: {
+                Gesamtkosten: {
+                  groupName: "Gesamtkosten",
+                  groupDisplayName: "Gesamtkosten",
+                  empty: false,
+                  amountsSum: 7412.55,
+                  classes: {
+                    Raumkosten: {
+                      className: "Raumkosten",
+                      classDisplayName: "Raumkosten",
+                      empty: false,
+                      amountsSum: 5233.21,
                       postingaccounts: [
-                        { number: "4980", name: "Sonstiger Betriebsbedarf", amountsSum: "3120.44" },
-                        { number: "4930", name: "Bürobedarf", amountsSum: "2112.77" },
+                        { number: "4980", name: "Sonstiger Betriebsbedarf", amountsSum: 3120.44 },
+                        { number: "4930", name: "Bürobedarf", amountsSum: 2112.77 },
                       ],
                     },
-                    {
-                      name: "Sonstiger Aufwand",
-                      amountsSum: "2179.34",
+                    "Sonstige Kosten": {
+                      className: "Sonstige Kosten",
+                      classDisplayName: "Sonstige Kosten",
+                      empty: false,
+                      amountsSum: 2179.34,
                       postingaccounts: [
-                        { number: "6815", name: "Fremdleistungen", amountsSum: "1804.10" },
-                        { number: "4650", name: "Bewirtung", amountsSum: "375.24" },
+                        { number: "6815", name: "Fremdleistungen", amountsSum: 1804.1 },
+                        { number: "4650", name: "Bewirtung", amountsSum: 375.24 },
                       ],
                     },
-                  ],
+                  },
                 },
-              ],
-              totals: { amountsSum: "7412.55" },
+              },
+              totals: {
+                Betriebsergebnis: {
+                  totalName: "Betriebsergebnis",
+                  totalDisplayName: "Betriebsergebnis",
+                  empty: false,
+                  amountsSum: -7412.55,
+                  type: "subtotal",
+                  after: "Gesamtkosten",
+                  hideIfEmpty: false,
+                },
+                Ergebnis: {
+                  totalName: "Ergebnis",
+                  totalDisplayName: "Ergebnis",
+                  empty: false,
+                  amountsSum: -7412.55,
+                  type: "total",
+                  after: null,
+                  hideIfEmpty: false,
+                },
+              },
             },
           },
         },

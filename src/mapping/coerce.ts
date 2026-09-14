@@ -184,6 +184,15 @@ export function coerceField(field: string, type: ContractFieldType, value: unkno
       }
       return keepWithWarning(field, type, value);
     }
+
+    case "array": {
+      // Nur die Form wird geprüft, nicht der Inhalt: Die Listen in den Berichten tragen
+      // Dateinamen oder Kontonummern, deren Aufbau nicht gemessen ist.
+      if (Array.isArray(value)) {
+        return keep(value);
+      }
+      return keepWithWarning(field, type, value);
+    }
   }
 }
 

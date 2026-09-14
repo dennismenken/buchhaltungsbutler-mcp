@@ -26,6 +26,7 @@ import {
   type ContractWarning,
 } from "./contract-violation.js";
 import { specPathOf } from "./path.js";
+import { reportRowsOf } from "./report-rows.js";
 
 /** Die beiden Projektionen. Vorgabe ist `concise`. */
 export type Projection = "concise" | "detailed";
@@ -261,6 +262,33 @@ export function mapResponse(
       break;
     }
     case "ack": {
+      // Die drei Berichte kommen ohne data-Hülle als verschachteltes Objekt. Flach gelegt
+      // werden sie wie eine Liste behandelt; die Kopfangaben tragen `object`. Passt die
+      // Antwort nicht zur erwarteten Form, gilt der allgemeine Weg darunter, und der Bericht
+      // geht unverändert hinaus.
+      const reportKind = entry.responseContract.reportRows;
+      const report = reportKind === undefined ? null : reportRowsOf(reportKind, envelope.body);
+      if (report !== null) {
+        rowsReturned = report.rows.length;
+        items = report.rows.map((row) =>
+          isPlainObject(row) ? normalize(row) : fallbackRow(row, warnings),
+        );
+        object = report.summary;
+        break;
+      }
+      if (reportKind !== undefined) {
+        // Der Bericht hat nicht die gemessene Form. `fields` beschreibt eine Berichtszeile und
+        // passt nicht auf das ganze Objekt; angewandt meldete es lauter erfundene
+        // Verletzungen. Der Bericht geht deshalb unverändert hinaus, mit einer ehrlichen
+        // Meldung statt vieler falscher.
+        object = { ...stripEnvelopeKeys(envelope.body) };
+        warnings.push({
+          field: "report",
+          expected: `Berichtsform ${reportKind}`,
+          seen: "andere Form, unverändert durchgereicht",
+        });
+        break;
+      }
       // Bei `container: "none"` stehen die Felder der Schreibantwort **auf oberster Ebene**
       // des Umschlags und nicht unter `data`; die Spezifikation führt das so, etwa bei
       // `InvoicesCreate_Success` mit `id_by_customer`, `invoicenumber` und `file_name`.

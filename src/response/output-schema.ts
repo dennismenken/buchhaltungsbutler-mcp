@@ -41,6 +41,8 @@ function jsonTypeOf(type: ContractFieldType): unknown {
     case "bool-string":
       // "0"/"1" wird zu echtem Boolean normalisiert.
       return ["boolean", "null"];
+    case "array":
+      return ["array", "null"];
     default:
       // Auch ein Betrag bleibt String: Es entsteht niemals ein number-Betragsfeld
       // (Umwandlungsregel 1 im Kopf von src/mapping/coerce.ts).
@@ -118,6 +120,14 @@ export function buildOutputSchema(entry: ToolEntry): Record<string, unknown> {
       break;
     }
     case "ack": {
+      if (entry.responseContract.reportRows !== undefined) {
+        // Ein Bericht, flach gelegt: Zeilen wie bei einer Liste, dazu die Kopfangaben. Nicht
+        // Pflicht, weil ein Bericht unerwarteter Form unverändert hinausgeht.
+        properties.rows_returned = { type: "integer" };
+        properties[LIST_CONTAINER] = { type: "array", items: record };
+        properties.summary = { type: "object", additionalProperties: true };
+        break;
+      }
       // Eine Quittung trägt keine Nutzdaten; kommt doch etwas, steht es unter data und ist
       // durch additionalProperties gedeckt.
       properties[OBJECT_CONTAINER] = { type: ["object", "array", "string", "null"] };

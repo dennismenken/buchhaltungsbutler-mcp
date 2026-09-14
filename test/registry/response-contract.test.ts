@@ -102,15 +102,19 @@ const PROJECTIONS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /**
- * Die vier Endpunkte, deren Antwortvertrag am 2026-09-12 live gemessen wurde.
- * Nur sie dürfen `source: "gemessen"` tragen; bei allen übrigen ist der Vertrag aus den
- * Dossiers übernommen und durch den Vertragslauf zu bestätigen.
+ * Die Endpunkte, deren Antwortvertrag live gemessen wurde: die vier Beleg- und
+ * Zahlungsendpunkte am 2026-09-12, die drei Berichte am 2026-09-14 (Befund L7 in
+ * docs/api/live-befunde.md). Nur sie dürfen `source: "gemessen"` tragen; bei allen übrigen ist
+ * der Vertrag aus den Dossiers übernommen und durch den Vertragslauf zu bestätigen.
  */
 const MEASURED_TOOLS: readonly string[] = [
   "bb_receipts_search",
   "bb_receipts_get",
   "bb_transactions_search",
   "bb_transactions_get",
+  "bb_reports_get_ledger",
+  "bb_reports_get_bwa",
+  "bb_reports_get_sums",
 ];
 
 const MEASUREMENT_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -186,7 +190,11 @@ describe("P13 Antwortvertrag gegen Projektion", () => {
     const problems: string[] = [];
 
     for (const tool of REGISTRY) {
-      if (tool.concise.length > 0 && tool.responseContract.container !== "data") {
+      // Ein flach gelegter Bericht hat Zeilen, auch ohne data-Hülle.
+      const hasRows =
+        tool.responseContract.container === "data" ||
+        tool.responseContract.reportRows !== undefined;
+      if (tool.concise.length > 0 && !hasRows) {
         problems.push(
           `${tool.name}: concise ist gesetzt, aber container ist "${tool.responseContract.container}". Eine Projektion ohne Datenbehälter projiziert nichts.`,
         );
@@ -206,7 +214,7 @@ describe("P13 Antwortvertrag gegen Projektion", () => {
 });
 
 describe("P13 Herkunft des Antwortvertrags", () => {
-  it("kennzeichnet genau die vier live gemessenen Endpunkte als gemessen", () => {
+  it("kennzeichnet genau die live gemessenen Endpunkte als gemessen", () => {
     const problems: string[] = [];
 
     for (const tool of REGISTRY) {
@@ -215,7 +223,7 @@ describe("P13 Herkunft des Antwortvertrags", () => {
 
       if (shouldBeMeasured && !isMeasured) {
         problems.push(
-          `${tool.name} (${specPathOf(tool)}): source "${tool.responseContract.source}". Die Feldmenge dieses Endpunkts ist am 2026-09-12 gemessen.`,
+          `${tool.name} (${specPathOf(tool)}): source "${tool.responseContract.source}". Die Feldmenge dieses Endpunkts ist live gemessen.`,
         );
       }
       if (!shouldBeMeasured && isMeasured) {

@@ -11,6 +11,7 @@ import {
 import { createMasterDataStore } from "../../src/cache/store.js";
 import { setLogLevel } from "../../src/logging/stderr.js";
 import type { ToolEntry } from "../../src/registry/types.js";
+import { TOOL_BY_NAME } from "../../src/registry/index.generated.js";
 import {
   POSTINGACCOUNTS_SEARCH,
   POSTINGS_SEARCH,
@@ -379,5 +380,74 @@ describe("Sprechende Kontobezeichnungen aus dem Stammdatenspeicher", () => {
     expect(accountLabelsFrom([{ postingaccount_number: 4980, name: "Material" }]).get("4980")).toBe(
       "4980 Material",
     );
+  });
+});
+
+describe("Berichte ohne data-Hülle", () => {
+  const found = TOOL_BY_NAME.get("bb_reports_get_bwa");
+  if (found === undefined) {
+    throw new Error("bb_reports_get_bwa fehlt im Register.");
+  }
+  const bwa: ToolEntry = found;
+
+  function reportEnvelope(body: Record<string, unknown>): SuccessEnvelope {
+    return parseEnvelope({
+      status: 200,
+      contentType: "application/json",
+      bodyText: JSON.stringify(body),
+      shape: bwa.shape,
+      context: { toolName: bwa.name, specPath: "/reports/get/bwa", toolClass: bwa.toolClass },
+    });
+  }
+
+  it("legt eine BWA in der gemessenen Form flach, ohne Vertragswarnung", () => {
+    const mapped = mapResponse(
+      bwa,
+      reportEnvelope({
+        success: true,
+        message: "",
+        report: {
+          integrityError: false,
+          standardChart: "skr03",
+          groups: {
+            Gesamtkosten: {
+              groupName: "Gesamtkosten",
+              groupDisplayName: "Gesamtkosten",
+              empty: false,
+              amountsSum: 400,
+              classes: {
+                Raumkosten: {
+                  className: "Raumkosten",
+                  classDisplayName: "Raumkosten",
+                  empty: false,
+                  amountsSum: 400,
+                  postingaccounts: [],
+                },
+              },
+            },
+          },
+          totals: {},
+        },
+      }),
+      { projection: "detailed", accountLabels: new Map() },
+    );
+    expect(mapped.rowsReturned).toBe(2);
+    expect(mapped.items.map((row) => row["level"])).toEqual(["group", "class"]);
+    expect(mapped.object).toEqual({ standardChart: "skr03", integrityError: false });
+    expect(mapped.warnings).toEqual([]);
+    expect(mapped.unknownFields).toEqual([]);
+  });
+
+  it("reicht einen Bericht unerwarteter Form unverändert durch, mit genau einer Meldung", () => {
+    const mapped = mapResponse(
+      bwa,
+      reportEnvelope({ success: true, message: "", report: { groups: ["anders", "gebaut"] } }),
+      { projection: "detailed", accountLabels: new Map() },
+    );
+    expect(mapped.rowsReturned).toBeNull();
+    expect(mapped.items).toEqual([]);
+    expect(mapped.object).toEqual({ report: { groups: ["anders", "gebaut"] } });
+    expect(mapped.warnings).toHaveLength(1);
+    expect(mapped.warnings[0]?.warning.field).toBe("report");
   });
 });

@@ -9,9 +9,9 @@ Basis-URL `https://webapp.buchhaltungsbutler.de/api/v1`, Methode ausnahmslos `PO
 JSON-Body. Die Zugangsdaten (API Client, API Secret, `api_key`) stehen in keiner Aufrufform
 dieses Dokuments; wo sie im Body stünden, steht `"api_key": "…"`.
 
-## Die Kennungen L1 bis L6 sind stabil
+## Die Kennungen L1 bis L7 sind stabil
 
-Jeder Befund trägt eine Kennung von **L1** bis **L6**. Diese Kennungen sind hier definiert und
+Jeder Befund trägt eine Kennung von **L1** bis **L7**. Diese Kennungen sind hier definiert und
 **werden im Quelltext zitiert** — in Kommentaren, Werkzeugbeschreibungen und Tests. Ein Satz
 wie „gemessen (Befund L5)" im Code ist ein Verweis auf genau diese Datei und auf genau diesen
 Abschnitt. Deshalb gilt:
@@ -19,8 +19,8 @@ Abschnitt. Deshalb gilt:
 - **Kennungen werden nicht umnummeriert.** Wer L4 zu L5 macht, macht jede Zitatstelle im
   Quelltext falsch, ohne dass ein Test das bemerkt.
 - **Kennungen werden nicht wiederverwendet.** Ein Befund, der sich als falsch erweist, bleibt
-  mit seiner Kennung stehen und wird als widerlegt gekennzeichnet. Neue Befunde bekommen L7,
-  L8 und so weiter.
+  mit seiner Kennung stehen und wird als widerlegt gekennzeichnet. Neue Befunde bekommen L8,
+  L9 und so weiter.
 - **Der Inhalt einer Kennung darf wachsen, nicht wandern.** Eine neue Messung zum selben
   Sachverhalt wird unter derselben Kennung ergänzt; ein anderer Sachverhalt bekommt eine neue.
 
@@ -81,6 +81,7 @@ Platzhalter, sondern die oben genannten strukturellen Messwerte.
 | **L4** | Die Antworten führen Felder, die die Spezifikation nicht kennt — unter anderem `amount_paid` und `amount_paid_fixed` bei Belegen —, und lassen Felder aus, die die Spezifikation führt. | 2026-09-13 | hoch |
 | **L5** | `rows` ist die Zeilenzahl **dieser Antwort** und keine Gesamttrefferzahl. | 2026-09-13 | hoch |
 | **L6** | Zu `error_code` 15 liefert `/receipts/get` den Text `invalid field specified`, der **weder** dem `message`-Enum **noch** der `description` des `responses`-Eintrags entspricht. | 2026-09-13 | mittel |
+| **L7** | Die drei Berichte kommen ohne `data`-Hülle als verschachteltes Objekt, jeder in eigener Form: Kontenblatt als Liste, Summen- und Saldenliste als Objekt je Konto, BWA als Baum. Die Summenliste liefert Beträge als Zahl. | 2026-09-14 | hoch |
 
 ---
 
@@ -495,6 +496,65 @@ unterscheiden sich um das Wort „is". Die Schnittstelle wiederum lässt „sort
   `error_code`; der Text ist Anzeige, nicht Logik.
 - `error_code` 15 ist bei `/receipts/get` ein Eingabefehler des Aufrufers und gehört in die
   Klasse „input", nicht in die der vorübergehenden Störungen.
+
+---
+
+## L7: Die drei Berichte kommen ohne `data`-Hülle, jeder in eigener Form
+
+Betrifft `/reports/get/sums/ledger`, `/reports/get/bwa` und `/reports/get/sums`.
+
+### Was gemessen wurde
+
+Wo die Nutzdaten der drei Abholendpunkte stehen, welche Form sie haben und welche Typen ihre
+Felder tragen. Die Spezifikation beschreibt die Antworten nur grob; vor dieser Messung waren die
+drei Werkzeuge als Quittung ohne Daten modelliert, und der Bericht kam als unbekanntes Feld und
+roher JSON-Block beim Agenten an.
+
+### Wie gemessen wurde
+
+- Kontenblatt: lesend, `POST /reports/get/sums/ledger` mit `postingaccount_number` 1200 und dem
+  Zeitraum 2026-01-01 bis 2026-09-14. 28 Buchungszeilen.
+- BWA und Summen- und Saldenliste: Ihre Abholendpunkte verlangen die Kennung eines zuvor
+  erzeugten Berichts. **Mit ausdrücklicher Freigabe des Projektinhabers** wurde deshalb je
+  einmal `POST /reports/create/bwa` und `POST /reports/create/sums` für den Zeitraum 2026-09-01
+  bis 2026-09-14 aufgerufen. Das erzeugt einen Bericht und ersetzt den zuletzt über die API
+  erzeugten desselben Typs; Buchungen, Belege und Zahlungen berührt es nicht. Danach lesend
+  `POST /reports/get/bwa` und `POST /reports/get/sums` mit der gelieferten Kennung. Die BWA war
+  sofort fertig, die Summenliste nach einem Wartezustand (`error_code` 8) beim zweiten Versuch.
+
+### Ergebnis
+
+| Bericht | Nutzdaten stehen in | Form |
+| --- | --- | --- |
+| Kontenblatt | `report_sums_postingaccount_ledger` | `integrityError`, `postingaccount_number` (String), `postingaccountLedger`: Liste der Buchungszeilen |
+| Summen- und Saldenliste | `report` | `integrityError`, `countPostingsWithDateVatEffectiveNotConsideredInReport`, `sums`: Objekt mit der Kontonummer als Schlüssel, je Eintrag `postingaccount` (Objekt mit `name`, `postingaccount_number`, `class`, `type`) und zehn Saldenfelder |
+| BWA | `report` | `integrityError`, `standardChart`, `postingsRecordsCount`, `uncompletedPostingsCount`, `usedPostingaccountsNumbers`, `usedCostLocations`, `groups`: Objekt je Gruppe mit `classes` (Objekt je Klasse), `totals`: Ergebniszeilen mit `after` |
+
+Einzelheiten, die für die Umsetzung zählen:
+
+1. **Keine `data`-Hülle.** Bei allen drei steht der Bericht auf der obersten Ebene des
+   Umschlags, neben `success` und `message`.
+2. **Beträge als Zahl in Summenliste und BWA.** `balanceBeforeAbsolute`, `amountsSum` und die
+   übrigen Salden sind JSON-Zahlen, anders als sonst in dieser API. Im Kontenblatt ist
+   `record_amount` dagegen ein String, `balanceAfterAbsolute` eine Zahl.
+3. **Kennungen als Zahl im Kontenblatt.** `id_by_customer`, `transactions_id_by_customer` und
+   `counterRecordPostingaccountNumber` kamen als Zahl.
+4. **Reihenfolge der BWA.** `totals` nennt in `after` die Gruppe, hinter der die Ergebniszeile
+   steht (gemessen: `Betriebsergebnis` hinter `Gesamtkosten`, `Ergebnis` mit `after` null am
+   Ende).
+5. **Nicht gemessen:** der Aufbau der Einträge in `postingaccounts` einer BWA-Klasse. Im
+   Messzeitraum gab es keine bestätigten Buchungen (`postingsRecordsCount` 0,
+   `uncompletedPostingsCount` 10), alle Listen waren leer. Ebenso nicht gemessen: `files` bei
+   `get_files: true`, und die Typen der Felder, die in allen Zeilen `null` waren, etwa `vatRate`,
+   `cost_location` oder `sumPeriodDebit`.
+
+### Was daraus für den Server folgt
+
+Die drei Werkzeuge legen den Bericht vor dem Antwortvertrag in flache Zeilen um
+(`src/mapping/report-rows.ts`), sodass Tabelle, Kürzung und Ausgabeschema greifen wie bei einer
+Liste. Die Kopfangaben stehen in `summary`, die Berichtsdateien ebenfalls dort, mit
+Base64-Ersetzung. Hat eine Antwort nicht die gemessene Form, geht sie unverändert hinaus, mit
+einer einzigen Meldung statt einer Reihe erfundener Vertragsverletzungen.
 
 ---
 

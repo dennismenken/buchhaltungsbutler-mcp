@@ -213,7 +213,7 @@ describe("die eingecheckte Tokenmessung je Gruppe", () => {
     // 48.368 ist die Zahl aus docs/entwicklung/tokenbudget.md und aus
     // src/registry/definition.ts. Die Gruppensummen sind kein eigener Gegenstand: Sie zerlegen
     // dieselbe Messung.
-    expect(sum).toBe(48_368);
+    expect(sum).toBe(48_946);
 
     const problems: string[] = [];
     for (const [group, wanted] of Object.entries(expected)) {
