@@ -12,9 +12,19 @@ version: 2
 #   @modelcontextprotocol/server und -client — beide stehen exakt und ohne Caret; sie werden
 #     nur gemeinsam und nur nach einem Blick in die Änderungsliste angehoben.
 #
-# Warum kein ignore: Ein ignorierter Pull-Request ist ein Zustand, den niemand mehr sieht.
-# Der Sinn des wöchentlichen Laufs ist gerade, dass der Konflikt sichtbar bleibt, bis er
-# aufgelöst werden kann. Abgelehnt wird von Hand, mit einem Satz zur Begründung.
+# Warum für diese beiden kein ignore: Ein ignorierter Pull-Request ist ein Zustand, den
+# niemand mehr sieht. Der Sinn des wöchentlichen Laufs ist gerade, dass der Konflikt sichtbar
+# bleibt, bis er aufgelöst werden kann. Abgelehnt wird von Hand, mit einem Satz zur Begründung.
+#
+# Genau ein ignore-Eintrag steht weiter unten, und er ist aus einem anderen Grund dort:
+#
+#   @types/node, nur Hauptversionen — keine Abwägung, sondern eine feste Kopplung. Die
+#     Hauptversion von @types/node folgt der Hauptversion von Node. Typen einer höheren
+#     Node-Version lassen Code durch, der Schnittstellen benutzt, die es in der niedrigsten
+#     unterstützten Laufzeit nicht gibt: Die Typprüfung bliebe grün, und der Fehler träfe
+#     erst den Nutzer. `engines.node` lautet `>=22.19.0`, also bleiben die Typen bei 22.
+#     Steigt `engines.node`, steigt dieser Eintrag mit. Nebenversionen und Patches laufen
+#     weiter durch.
 
 updates:
   - package-ecosystem: "npm"
@@ -30,6 +40,10 @@ updates:
       prefix-development: "deps-dev"
     labels:
       - "abhängigkeiten"
+    ignore:
+      # Begründung im Kopf dieser Datei. Die Hauptversion ist an engines.node gebunden.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   # Pflege der SHA-Pinnung in .github/workflows. Die Workflows nennen keine Tags, sondern
   # 40-stellige Commit-SHAs; dahinter steht als Kommentar der Tag des geprüften Releases, etwa

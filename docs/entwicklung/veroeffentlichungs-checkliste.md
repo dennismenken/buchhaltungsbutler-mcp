@@ -175,6 +175,21 @@ Projektinhaber sie getroffen hat. Genau diese Bestätigung gehört vor die Verö
 - [ ] **Sauberer Stand auf `main`.**
       `git status --porcelain` → **keine Ausgabe**.
       `git rev-parse --abbrev-ref HEAD` → `main`.
+- [ ] **Die Prüfkette läuft aus einem frischen Klon, nicht aus dem Arbeitsverzeichnis.**
+      Ein Arbeitsverzeichnis enthält Dateien, die es im Repository nicht gibt: nicht
+      eingecheckte, versehentlich ignorierte oder lokal erzeugte. Wer nur dort prüft, sieht
+      eine Umgebung, die kein Nutzer und keine CI je vorfindet. Genau so ist am 2026-09-13
+      die Manifestvorlage unter `.mcpb/` durchgerutscht: Das Muster `*.mcpb` in der
+      `.gitignore` sollte das gebaute Bundle ausschließen und erfasste auch den
+      Verzeichnisnamen, weil `*` die leere Zeichenkette trifft.
+
+      ```
+      git clone . /tmp/pruefklon && cd /tmp/pruefklon
+      pnpm install --frozen-lockfile
+      pnpm generate && git diff --exit-code
+      pnpm typecheck && pnpm lint && pnpm format --check && pnpm build && pnpm test
+      ```
+      Alle Schritte enden mit Rückgabewert 0. Danach `rm -rf /tmp/pruefklon`.
 - [ ] **Abhängigkeiten genau nach Lockfile.**
       `pnpm install --frozen-lockfile` → endet mit Rückgabewert 0. Meldet pnpm eine
       Abweichung zum Lockfile, ist das Lockfile nicht in der eingecheckten Fassung; es gehört
