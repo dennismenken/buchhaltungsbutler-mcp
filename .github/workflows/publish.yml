@@ -224,11 +224,27 @@ jobs:
       # Node 22.19.0 bringt npm 10 mit; OIDC Trusted Publishing verlangt npm 11.5.1 oder
       # neuer. Ohne diesen Schritt scheiterte die Veröffentlichung mit einer Meldung über
       # fehlende Zugangsdaten, obwohl in Wahrheit die npm-Fassung zu alt ist.
+      #
+      # Die Fassung ist fest gesetzt und nicht `latest`. Zwei Bedingungen muss sie zugleich
+      # erfüllen: mindestens 11.5.1 für Trusted Publishing, und ihr `engines.node` muss die
+      # Node-Fassung dieses Jobs einschließen. `latest` hat am 2026-09-14 den ersten
+      # Veröffentlichungslauf abgebrochen: npm 12.0.2 verlangt Node `^22.22.2 || ^24.15.0 ||
+      # >=26.0.0`, der Job läuft auf 22.19.0, und die Installation endete mit EBADENGINE.
+      # npm 11.19.1 führt `^20.17.0 || >=22.9.0`. Beim Anheben beide Bedingungen mit
+      # `npm view npm@<fassung> engines` prüfen. Die Kontrolle unten bricht ab, wenn nach der
+      # Installation eine andere Fassung aktiv ist.
       - name: npm auf eine Fassung mit Trusted Publishing bringen
+        env:
+          NPM_FASSUNG: "11.19.1"
         run: |
           set -euo pipefail
-          npm install -g npm@latest
-          npm --version
+          npm install -g "npm@${NPM_FASSUNG}"
+          AKTIV="$(npm --version)"
+          if [ "$AKTIV" != "$NPM_FASSUNG" ]; then
+            echo "::error::Erwartet war npm ${NPM_FASSUNG}, aktiv ist ${AKTIV}. Es wird nichts veröffentlicht."
+            exit 1
+          fi
+          echo "npm ${AKTIV} aktiv."
 
       - name: Auf npm veröffentlichen
         run: npm publish --provenance --access public
