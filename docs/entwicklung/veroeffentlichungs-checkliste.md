@@ -409,18 +409,70 @@ Netzwerkaufruf gegen die API ab. Deshalb ist er hier ein abzuhakender Punkt, und
       **Dieser Schritt ist unumkehrbar in dem Sinne, dass der Quelltext danach öffentlich ist.**
       Vorher ein letztes Mal prüfen, dass nichts Vertrauliches mitgeht:
       `git ls-files | grep -E '^\.env$|\.pem$|\.key$'` → **keine Ausgabe**.
-- [ ] **OIDC Trusted Publishing im npm-Konto einrichten**, damit kein langlebiges Token nötig
-      ist. Auf npmjs.com: Paketeinstellungen beziehungsweise, vor der ersten Veröffentlichung,
-      die Einstellungen des Namensraums, Abschnitt *Trusted Publisher*. Einzutragen sind fünf
-      Werte:
+- [ ] **Zwei-Faktor-Authentifizierung im npm-Konto aktiv.** Auf npmjs.com unter *Account,
+      Two-Factor Authentication*. `npm publish` und `npm deprecate` fragen danach einen
+      Einmalcode ab; `npm trust` setzt sie zwingend voraus.
+- [ ] **Nur vor der allerersten Veröffentlichung: Platzhalter `0.0.0` veröffentlichen.**
+      Trusted Publishing lässt sich auf npm erst für ein Paket einrichten, das bereits
+      existiert. Das gilt für die Weboberfläche wie für `npm trust`: „The package you're
+      configuring must already exist on the npm registry"
+      (<https://docs.npmjs.com/cli/v11/commands/npm-trust/>, abgerufen 2026-09-14). Einen
+      Trusted Publisher für einen ganzen Namensraum gibt es nicht. Die erste Fassung muss also
+      von Hand hinaus.
+
+      Das ist bewusst **nicht** die echte `0.1.0`. Provenance entsteht nur auf einem gehosteten
+      CI-Runner, nie auf dem eigenen Rechner
+      (<https://docs.npmjs.com/generating-provenance-statements>), und `package.json` verlangt
+      sie über `publishConfig.provenance`. Eine lokal veröffentlichte `0.1.0` ginge bestenfalls
+      mit `--provenance=false` hinaus, also ohne Herkunftsnachweis, und die Versionsnummer wäre
+      für immer verbraucht. Deshalb ein leerer Platzhalter, außerhalb des Repositorys. Die
+      Befehle kommen ohne Heredoc aus und vertragen deshalb die Einrückung beim Kopieren:
+
+      ```bash
+      mkdir -p /tmp/bb-platzhalter && cd /tmp/bb-platzhalter
+      npm init -y >/dev/null
+      npm pkg set name=@dennismenken/buchhaltungsbutler-mcp version=0.0.0 license=MIT author="Dennis Menken" description="Platzhalter ohne Inhalt, nur zur Einrichtung von Trusted Publishing. Bitte 0.1.0 oder neuer verwenden." repository.type=git repository.url=git+https://github.com/dennismenken/buchhaltungsbutler-mcp.git
+      npm pkg delete main scripts keywords
+      printf '%s\n' '# @dennismenken/buchhaltungsbutler-mcp 0.0.0' '' 'Platzhalter ohne Inhalt, nur zur Einrichtung von Trusted Publishing auf npm.' '' 'Bitte 0.1.0 oder neuer verwenden: https://github.com/dennismenken/buchhaltungsbutler-mcp' > README.md
+      npm publish --dry-run --access public
+      ```
+      Der Trockenlauf muss `total files: 2`, `version: 0.0.0` und `public access` melden. Am
+      2026-09-14 genau so ausgeführt, ohne Anmeldung, mit diesem Ergebnis. Erst dann:
+
+      ```bash
+      npm publish --access public
+      npm view @dennismenken/buchhaltungsbutler-mcp version
+      npm deprecate @dennismenken/buchhaltungsbutler-mcp@0.0.0 "Platzhalter ohne Inhalt. Bitte 0.1.0 oder neuer verwenden."
+      cd - && rm -rf /tmp/bb-platzhalter
+      ```
+      `--access public` ist Pflicht, weil ein Paket mit Namensraum sonst als privat angelegt
+      wird. Erwartet: `npm view` → `0.0.0`.
+
+      **Abschnitt 6 und 7 danach in einem Zug erledigen.** Solange nur der Platzhalter
+      existiert, zeigt `latest` auf ihn, und `npx -y @dennismenken/buchhaltungsbutler-mcp` aus
+      der README findet ein Paket ohne Programm.
+      Dieser Punkt entfällt bei jeder weiteren Veröffentlichung.
+- [ ] **Trusted Publisher einrichten**, damit kein langlebiges Token nötig ist. Auf npmjs.com in
+      den Einstellungen des Pakets `@dennismenken/buchhaltungsbutler-mcp`, Abschnitt
+      *Trusted Publisher*, oder mit `npm trust github` (verlangt npm ab 11.15.0). Einzutragen:
       - Provider: **GitHub Actions**
       - Organization beziehungsweise Owner: **`dennismenken`**
       - Repository: **`buchhaltungsbutler-mcp`**
-      - Workflow: **`publish.yml`**
+      - Workflow: **`publish.yml`**, nur der Dateiname, nicht der Pfad
       - Environment: **`npm`** (der Name aus `publish.yml`) oder leer lassen
+      - **Allowed actions: `npm publish` ausdrücklich erlauben.** Trusted Publisher, die nach
+        dem 2026-09-03 angelegt werden, erlauben von sich aus nur `npm stage publish`
+        (<https://docs.npmjs.com/trusted-publishers>, abgerufen 2026-09-14). `publish.yml` ruft
+        `npm publish` auf und würde ohne diesen Haken abgewiesen. Veröffentlicht wäre dann
+        nichts, aber der Lauf scheitert erst nach allen Prüfungen.
 
       Der Workflowname muss **genau** stimmen; npm gleicht ihn gegen das OIDC-Token ab.
-      Erwartet: Der Eintrag erscheint in der Liste der Trusted Publisher.
+      `repository.url` in `package.json` muss auf dieses Repository zeigen. Die Form
+      `git+https://github.com/dennismenken/buchhaltungsbutler-mcp.git` wird akzeptiert: Am
+      2026-09-14 geprüft an vitest, @biomejs/biome, tsdown und zod, die dieselbe Form führen und
+      mit SLSA-Provenance veröffentlichen. Die Doku selbst sagt dazu nur „must exactly match".
+      Erwartet: Der Eintrag erscheint in der Liste der Trusted Publisher, mit `npm publish`
+      unter den erlaubten Aktionen.
 - [ ] **Optional, aber empfohlen: eine Freigabe von Hand vor dem Veröffentlichen.** Im
       GitHub-Repository unter *Settings, Environments* die Umgebung `npm` anlegen und dort
       *Required reviewers* auf das eigene Konto setzen. `publish.yml` läuft dann bis vor
@@ -480,6 +532,13 @@ dem `.mcpb` als Anhang und dem Abschnitt aus `CHANGELOG.md` als Text.
       Zusätzlich in einem leeren Verzeichnis:
       `npm install @dennismenken/buchhaltungsbutler-mcp@<version> && npm audit signatures`
       → meldet eine verifizierte Attestierung.
+- [ ] **Nur nach der ersten Veröffentlichung über den Workflow: Token-Veröffentlichung
+      sperren.** Auf npmjs.com in den Einstellungen des Pakets unter *Publishing access* die
+      Option *Require two-factor authentication and disallow tokens* wählen. npm empfiehlt das
+      ausdrücklich, sobald ein Trusted Publisher eingerichtet ist
+      (<https://docs.npmjs.com/trusted-publishers>, abgerufen 2026-09-14). Erst jetzt und nicht
+      früher, weil vorher noch nicht belegt ist, dass der Weg über OIDC trägt.
+      Erwartet: Die Option ist gesetzt; eine Veröffentlichung mit einem Token wird abgelehnt.
 - [ ] **Das Release trägt das Bundle.**
       `gh release view v<version>` → der Anhang `bbutler-mcp-<version>.mcpb` ist gelistet, und
       der Text ist der Abschnitt aus `CHANGELOG.md`.
@@ -505,6 +564,12 @@ dem `.mcpb` als Anhang und dem Abschnitt aus `CHANGELOG.md` als Text.
 
 - **Der Lauf bricht vor `npm publish` ab.** Nichts ist passiert. Ursache beheben, Tag löschen
   (`git tag -d v<version>` und `git push origin :refs/tags/v<version>`), Tag neu setzen.
+- **`npm publish` scheitert mit einem Berechtigungsfehler (`E401`, `E403`, `E404` oder
+  `ENEEDAUTH`).** Nichts ist veröffentlicht. Die üblichen Ursachen, in dieser Reihenfolge
+  prüfen: Der Trusted Publisher fehlt, weil das Paket beim Einrichten noch nicht existierte;
+  unter *Allowed actions* ist nur `npm stage publish` erlaubt; Workflowname oder Owner weichen
+  ab; `repository.url` zeigt auf ein anderes Repository. Korrigieren, Tag löschen und neu
+  setzen wie im Punkt darüber.
 - **`npm publish` ist durchgelaufen, das Release nicht.** Die Fassung liegt auf npm und bleibt
   dort; npm erlaubt kein erneutes Veröffentlichen derselben Versionsnummer. Das Release lässt
   sich von Hand nachziehen:

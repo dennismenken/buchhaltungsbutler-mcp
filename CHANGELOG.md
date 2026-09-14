@@ -8,8 +8,9 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
 
 ## [Unveröffentlicht]
 
-Stand der Arbeit vor der ersten Veröffentlichung. Version `0.1.0` ist **noch nicht auf npm
-veröffentlicht**; es gibt daher bisher keinen abgeschlossenen Versionsabschnitt.
+## [0.1.0] - 2026-09-14
+
+Erste Fassung auf npm, veröffentlicht über den Workflow `publish.yml` mit Provenance.
 
 ### Hinzugefügt
 
@@ -160,3 +161,8 @@ geführt. Sie sind kein offener Fehler, sondern der ehrliche Stand.
   (`@modelcontextprotocol/server`, `undici`, `zod`).
 - `CHARS_PER_TOKEN` in `src/registry/budget.ts` steht nach der Messung mit `pnpm measure-tokens`
   auf `4` statt auf dem geschätzten Wert 3,2.
+
+## [0.0.0]
+
+Platzhalter ohne Inhalt. Er existiert nur, weil npm Trusted Publishing erst für ein bereits
+veröffentlichtes Paket einrichten lässt. Auf npm als veraltet markiert; nicht verwenden.
