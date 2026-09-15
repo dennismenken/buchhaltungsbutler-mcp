@@ -76,7 +76,7 @@ export function measureToolDefinitionChars(entries: readonly ToolEntry[]): numbe
  * rechnet sie bei jedem Testlauf nach und schlägt fehl, sobald sich eine Beschreibung oder
  * ein Schema ändert.
  */
-export const MEASURED_TOOL_DEFINITION_CHARS = 200_265;
+export const MEASURED_TOOL_DEFINITION_CHARS = 200_342;
 
 /**
  * Die Tokenzahl derselben 54 Definitionen, **gemessen** mit `gpt-tokenizer@4.0.0` in der
@@ -93,4 +93,4 @@ export const MEASURED_TOOL_DEFINITION_CHARS = 200_265;
  * Auseinanderlaufen von Messung, Ausgabe und Dokumentation fällt dort auf und nicht beim
  * Nutzer.
  */
-export const MEASURED_TOOL_DEFINITION_TOKENS = 48_946;
+export const MEASURED_TOOL_DEFINITION_TOKENS = 48_964;

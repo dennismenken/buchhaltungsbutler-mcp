@@ -65,7 +65,10 @@ function apiError(
   return { status: 400, json: { success: false, error_code: code, message } };
 }
 
-/** Ein fertiger BWA-Bericht, in der Form aus `docs/api/berichte.md` 6.3. */
+/**
+ * Ein fertiger BWA-Bericht in der gemessenen Form (Befund L7 in docs/api/live-befunde.md), hier
+ * ohne Gruppen: Gruppen und Ergebniszeilen sind Objekte, nicht Listen.
+ */
 function bwaReport(overrides: Record<string, unknown> = {}): {
   status: number;
   json: Record<string, unknown>;
@@ -80,8 +83,8 @@ function bwaReport(overrides: Record<string, unknown> = {}): {
         standardChart: "skr03",
         postingsRecordsCount: 42,
         uncompletedPostingsCount: 0,
-        groups: [],
-        totals: { amountsSum: "0.00" },
+        groups: {},
+        totals: {},
         ...overrides,
       },
     },
@@ -192,6 +195,54 @@ describe("bb_reports_run im Erfolgsfall", () => {
     expect(block.api_calls).toBe(2);
     expect(blockValue<unknown[]>(block, "gaps")).toHaveLength(0);
     expect(textOf(outcome)).toContain("der zuvor erzeugte Bericht desselben Typs ist ersetzt");
+  });
+
+  it("zeigt die BWA in der Kurzform als Tabelle bis auf die Konten", async () => {
+    const config = installTestConfig();
+    api?.post(CREATE_BWA, createdReply("124"));
+    api?.post(
+      GET_BWA,
+      bwaReport({
+        groups: {
+          Gesamtkosten: {
+            groupName: "Gesamtkosten",
+            groupDisplayName: "Gesamtkosten",
+            empty: false,
+            amountsSum: 400,
+            classes: {
+              Raumkosten: {
+                className: "Raumkosten",
+                classDisplayName: "Raumkosten",
+                empty: false,
+                amountsSum: 400,
+                postingaccounts: { "4210": { name: "Miete", amountsSum: 400 } },
+              },
+            },
+          },
+        },
+        totals: {
+          Ergebnis: {
+            totalName: "Ergebnis",
+            totalDisplayName: "Ergebnis",
+            amountsSum: -400,
+            after: null,
+          },
+        },
+      }),
+    );
+
+    const { outcome } = await runBundle(config, {
+      report_type: "bwa",
+      date_from: "2024-01-01",
+      date_to: "2024-12-31",
+    });
+
+    const text = textOf(outcome);
+    expect(text).toContain("| level | group | class | postingaccount_number | name | amountsSum |");
+    expect(text).toContain("| account | Gesamtkosten | Raumkosten | 4210 | Miete | 400 |");
+    expect(text).toContain("| total |");
+    // Die Übersicht der obersten Ebene ist durch die Tabelle ersetzt, nicht ergänzt.
+    expect(text).not.toContain("Objekt mit");
   });
 
   it("schickt den Zeitraum und base an /reports/create/sums", async () => {

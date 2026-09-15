@@ -421,7 +421,7 @@ describe("Berichte ohne data-Hülle", () => {
                   classDisplayName: "Raumkosten",
                   empty: false,
                   amountsSum: 400,
-                  postingaccounts: [],
+                  postingaccounts: { "4210": { name: "Miete", amountsSum: 400 } },
                 },
               },
             },
@@ -431,8 +431,9 @@ describe("Berichte ohne data-Hülle", () => {
       }),
       { projection: "detailed", accountLabels: new Map() },
     );
-    expect(mapped.rowsReturned).toBe(2);
-    expect(mapped.items.map((row) => row["level"])).toEqual(["group", "class"]);
+    expect(mapped.rowsReturned).toBe(3);
+    expect(mapped.items.map((row) => row["level"])).toEqual(["group", "class", "account"]);
+    expect(mapped.items[2]?.["postingaccount_number"]).toBe("4210");
     expect(mapped.object).toEqual({ standardChart: "skr03", integrityError: false });
     expect(mapped.warnings).toEqual([]);
     expect(mapped.unknownFields).toEqual([]);

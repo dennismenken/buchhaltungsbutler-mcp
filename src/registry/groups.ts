@@ -77,7 +77,7 @@ export const TOOL_GROUPS = {
   reports: {
     label: "Berichte",
     withoutIt: "BWA, Summen- und Saldenliste und Kontenblatt erzeugen und abholen",
-    measuredTokens: 3_781,
+    measuredTokens: 3_799,
   },
   debtors: {
     label: "Debitoren",

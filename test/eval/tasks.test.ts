@@ -654,16 +654,15 @@ const TASKS: readonly EvalTask[] = [
           json: {
             success: true,
             message: "",
-            // Aufbau wie gemessen am 2026-09-14 (Befund L7 in docs/api/live-befunde.md):
-            // Gruppen und Klassen als Objekte mit dem Namen als Schlüssel, Beträge als Zahl,
-            // Ergebniszeilen mit `after`. Der Aufbau der Einträge in `postingaccounts` ist
-            // nicht gemessen, weil die Listen im Messzeitraum leer waren; hier stehen
-            // angenommene Einträge, damit die Aufgabe eine Antwort hat.
+            // Aufbau wie gemessen am 2026-09-14 für das Jahr 2024 (Befund L7 in
+            // docs/api/live-befunde.md): Gruppen, Klassen und Konten als Objekte mit Namen
+            // beziehungsweise Kontonummer als Schlüssel, Beträge als Zahl, Ergebniszeilen mit
+            // `after`. Die Werte sind erfunden.
             report: {
               integrityError: false,
               standardChart: "skr03",
               usedCostLocations: [],
-              usedPostingaccountsNumbers: ["4980", "4930", "6815", "4650"],
+              usedPostingaccountsNumbers: [4980, 4930, 6815, 4650],
               postingsRecordsCount: 41,
               uncompletedPostingsCount: 0,
               groups: {
@@ -678,20 +677,20 @@ const TASKS: readonly EvalTask[] = [
                       classDisplayName: "Raumkosten",
                       empty: false,
                       amountsSum: 5233.21,
-                      postingaccounts: [
-                        { number: "4980", name: "Sonstiger Betriebsbedarf", amountsSum: 3120.44 },
-                        { number: "4930", name: "Bürobedarf", amountsSum: 2112.77 },
-                      ],
+                      postingaccounts: {
+                        "4980": { name: "Sonstiger Betriebsbedarf", amountsSum: 3120.44 },
+                        "4930": { name: "Bürobedarf", amountsSum: 2112.77 },
+                      },
                     },
                     "Sonstige Kosten": {
                       className: "Sonstige Kosten",
                       classDisplayName: "Sonstige Kosten",
                       empty: false,
                       amountsSum: 2179.34,
-                      postingaccounts: [
-                        { number: "6815", name: "Fremdleistungen", amountsSum: 1804.1 },
-                        { number: "4650", name: "Bewirtung", amountsSum: 375.24 },
-                      ],
+                      postingaccounts: {
+                        "6815": { name: "Fremdleistungen", amountsSum: 1804.1 },
+                        "4650": { name: "Bewirtung", amountsSum: 375.24 },
+                      },
                     },
                   },
                 },

@@ -113,19 +113,19 @@ describe("Summen- und Saldenliste", () => {
 });
 
 describe("BWA", () => {
+  const cls = (name: string, sum: number, accounts: unknown) => ({
+    className: name,
+    classDisplayName: name,
+    empty: sum === 0,
+    amountsSum: sum,
+    postingaccounts: accounts,
+  });
   const group = (name: string, sum: number, classes: Record<string, unknown>) => ({
     groupName: name,
     groupDisplayName: name,
     empty: sum === 0,
     amountsSum: sum,
     classes,
-  });
-  const cls = (name: string, sum: number) => ({
-    className: name,
-    classDisplayName: name,
-    empty: sum === 0,
-    amountsSum: sum,
-    postingaccounts: [],
   });
   const body = {
     success: true,
@@ -134,11 +134,18 @@ describe("BWA", () => {
       standardChart: "skr03",
       postingsRecordsCount: 3,
       uncompletedPostingsCount: 0,
-      usedPostingaccountsNumbers: ["8400", "4210"],
+      usedPostingaccountsNumbers: [8400, 4210],
       usedCostLocations: [],
       groups: {
-        Gesamtleistung: group("Gesamtleistung", 1000, { Umsatzerlöse: cls("Umsatzerlöse", 1000) }),
-        Gesamtkosten: group("Gesamtkosten", 400, { Raumkosten: cls("Raumkosten", 400) }),
+        Gesamtleistung: group("Gesamtleistung", 1000, {
+          Umsatzerlöse: cls("Umsatzerlöse", 1000, {
+            "8400": { name: "Erlöse 19 %", amountsSum: 1000 },
+          }),
+        }),
+        Gesamtkosten: group("Gesamtkosten", 400, {
+          Raumkosten: cls("Raumkosten", 400, { "4210": { name: "Miete", amountsSum: 400 } }),
+          Kfz: cls("Kfz", 0, []),
+        }),
         "Neutraler Ertrag": group("Neutraler Ertrag", 0, {}),
       },
       totals: {
@@ -161,26 +168,62 @@ describe("BWA", () => {
     },
   };
 
-  it("legt Gruppen, Klassen und Ergebniszeilen in Lesereihenfolge flach", () => {
+  it("legt Gruppen, Klassen, Konten und Ergebniszeilen in Lesereihenfolge flach", () => {
     const rows = reportRowsOf("bwa", body)?.rows as Record<string, unknown>[];
     expect(rows.map((row) => `${String(row["level"])}:${String(row["name"])}`)).toEqual([
       "group:Gesamtleistung",
       "class:Umsatzerlöse",
+      "account:Erlöse 19 %",
       "group:Gesamtkosten",
       "class:Raumkosten",
+      "account:Miete",
+      "class:Kfz",
       "total:Betriebsergebnis",
       "group:Neutraler Ertrag",
       "total:Verwaist",
       "total:Ergebnis",
     ]);
-    expect(rows[3]).toEqual({
-      level: "class",
+    expect(rows[5]).toEqual({
+      level: "account",
       group: "Gesamtkosten",
-      name: "Raumkosten",
+      class: "Raumkosten",
+      postingaccount_number: "4210",
+      name: "Miete",
       amountsSum: 400,
-      empty: false,
-      postingaccounts: [],
+      empty: null,
     });
+  });
+
+  it("liest auch eine Kontenliste in Arrayform und verliert keinen Eintrag", () => {
+    const rows = reportRowsOf("bwa", {
+      report: {
+        groups: {
+          G: group("G", 5, {
+            K: cls("K", 5, [{ postingaccount_number: 1000, name: "Kasse", amountsSum: 5 }, 7]),
+          }),
+        },
+      },
+    })?.rows as Record<string, unknown>[];
+    expect(rows.slice(2)).toEqual([
+      {
+        level: "account",
+        group: "G",
+        class: "K",
+        postingaccount_number: 1000,
+        name: "Kasse",
+        amountsSum: 5,
+        empty: null,
+      },
+      {
+        level: "account",
+        group: "G",
+        class: "K",
+        postingaccount_number: null,
+        name: null,
+        amountsSum: 7,
+        empty: null,
+      },
+    ]);
   });
 
   it("übernimmt die Kopfangaben ohne die Gruppen", () => {
@@ -189,7 +232,7 @@ describe("BWA", () => {
       integrityError: false,
       postingsRecordsCount: 3,
       uncompletedPostingsCount: 0,
-      usedPostingaccountsNumbers: ["8400", "4210"],
+      usedPostingaccountsNumbers: [8400, 4210],
       usedCostLocations: [],
     });
   });

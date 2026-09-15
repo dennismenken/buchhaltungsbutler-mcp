@@ -7,7 +7,8 @@
  *
  * - Kontenblatt: `report_sums_postingaccount_ledger.postingaccountLedger`, eine Liste.
  * - Summen- und Saldenliste: `report.sums`, ein Objekt mit der Kontonummer als Schlüssel.
- * - BWA: `report.groups`, ein Baum aus Gruppen und darin Klassen, dazu `report.totals`.
+ * - BWA: `report.groups`, ein Baum aus Gruppen, darin Klassen, darin Konten, dazu
+ *   `report.totals`.
  *
  * Ohne Umformung wäre der ganze Bericht ein einziges unbekanntes Feld und käme als roher
  * JSON-Block beim Agenten an. Flach gelegt greifen Antwortvertrag, Tabelle und Kürzung wie bei
@@ -94,6 +95,39 @@ function sumsRows(body: Readonly<Record<string, unknown>>): ReportRows | null {
   };
 }
 
+/**
+ * Die Konten einer BWA-Klasse als eigene Zeilen.
+ *
+ * Gemessen für 2024: Eine gefüllte Kontenliste kommt als Objekt mit der Kontonummer als
+ * Schlüssel und je Konto `name` und `amountsSum`, eine leere dagegen als `[]`. Das ist die
+ * übliche Eigenheit der PHP-Kodierung, die ein leeres assoziatives Array als JSON-Array
+ * ausgibt. Beide Formen werden gelesen; ein Eintrag, der kein Objekt ist, geht mit seinem
+ * Wert als Betrag hinaus, statt zu verschwinden.
+ */
+function accountRows(
+  accounts: unknown,
+  group: unknown,
+  className: unknown,
+): Record<string, unknown>[] {
+  const entries: [unknown, unknown][] = isPlainObject(accounts)
+    ? Object.entries(accounts)
+    : Array.isArray(accounts)
+      ? accounts.map((account) => [
+          isPlainObject(account) ? (account["postingaccount_number"] ?? null) : null,
+          account,
+        ])
+      : [];
+  return entries.map(([number, account]) => ({
+    level: "account",
+    group,
+    class: className,
+    postingaccount_number: number,
+    name: isPlainObject(account) ? (account["name"] ?? null) : null,
+    amountsSum: isPlainObject(account) ? (account["amountsSum"] ?? null) : account,
+    empty: null,
+  }));
+}
+
 function bwaRows(body: Readonly<Record<string, unknown>>): ReportRows | null {
   const report = body["report"];
   if (!isPlainObject(report) || !isPlainObject(report["groups"])) {
@@ -113,10 +147,11 @@ function bwaRows(body: Readonly<Record<string, unknown>>): ReportRows | null {
       const row = {
         level: "total",
         group: null,
+        class: null,
+        postingaccount_number: null,
         name: total["totalDisplayName"] ?? total["totalName"] ?? null,
         amountsSum: total["amountsSum"] ?? null,
         empty: total["empty"] ?? null,
-        postingaccounts: null,
       };
       const after = total["after"];
       if (typeof after === "string") {
@@ -137,25 +172,28 @@ function bwaRows(body: Readonly<Record<string, unknown>>): ReportRows | null {
     rows.push({
       level: "group",
       group: groupName,
+      class: null,
+      postingaccount_number: null,
       name: groupName,
       amountsSum: group["amountsSum"] ?? null,
       empty: group["empty"] ?? null,
-      postingaccounts: null,
     });
     if (isPlainObject(group["classes"])) {
       for (const cls of Object.values(group["classes"])) {
         if (!isPlainObject(cls)) {
           continue;
         }
+        const className = cls["classDisplayName"] ?? cls["className"] ?? null;
         rows.push({
           level: "class",
           group: groupName,
-          name: cls["classDisplayName"] ?? cls["className"] ?? null,
+          class: className,
+          postingaccount_number: null,
+          name: className,
           amountsSum: cls["amountsSum"] ?? null,
           empty: cls["empty"] ?? null,
-          // Der Aufbau der Einträge ist nicht gemessen: Im Messzeitraum waren alle Listen leer.
-          postingaccounts: cls["postingaccounts"] ?? null,
         });
+        rows.push(...accountRows(cls["postingaccounts"], groupName, className));
       }
     }
     for (const candidate of [key, group["groupName"]]) {

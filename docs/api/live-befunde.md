@@ -81,7 +81,7 @@ Platzhalter, sondern die oben genannten strukturellen Messwerte.
 | **L4** | Die Antworten führen Felder, die die Spezifikation nicht kennt — unter anderem `amount_paid` und `amount_paid_fixed` bei Belegen —, und lassen Felder aus, die die Spezifikation führt. | 2026-09-13 | hoch |
 | **L5** | `rows` ist die Zeilenzahl **dieser Antwort** und keine Gesamttrefferzahl. | 2026-09-13 | hoch |
 | **L6** | Zu `error_code` 15 liefert `/receipts/get` den Text `invalid field specified`, der **weder** dem `message`-Enum **noch** der `description` des `responses`-Eintrags entspricht. | 2026-09-13 | mittel |
-| **L7** | Die drei Berichte kommen ohne `data`-Hülle als verschachteltes Objekt, jeder in eigener Form: Kontenblatt als Liste, Summen- und Saldenliste als Objekt je Konto, BWA als Baum. Die Summenliste liefert Beträge als Zahl. | 2026-09-14 | hoch |
+| **L7** | Die drei Berichte kommen ohne `data`-Hülle als verschachteltes Objekt, jeder in eigener Form: Kontenblatt als Liste, Summen- und Saldenliste als Objekt je Konto, BWA als Baum. Beträge dort als Zahl. Die Kontenliste einer BWA-Klasse ist gefüllt ein Objekt, leer ein Array. | 2026-09-14, für September 2026 und das Jahr 2024 | hoch |
 
 ---
 
@@ -521,6 +521,10 @@ roher JSON-Block beim Agenten an.
   erzeugten desselben Typs; Buchungen, Belege und Zahlungen berührt es nicht. Danach lesend
   `POST /reports/get/bwa` und `POST /reports/get/sums` mit der gelieferten Kennung. Die BWA war
   sofort fertig, die Summenliste nach einem Wartezustand (`error_code` 8) beim zweiten Versuch.
+- Weil September 2026 noch keine bestätigten Buchungen hatte, wurden **mit derselben Freigabe**
+  beide Berichte ein zweites Mal für das abgeschlossene Jahr 2024 erzeugt (2024-01-01 bis
+  2024-12-31) und abgeholt: BWA mit 305 Buchungen und 25 Konten, Summenliste mit 166 Konten.
+  Dazu lesend das Kontenblatt des Erlöskontos 8400 für 2024 mit 19 Zeilen.
 
 ### Ergebnis
 
@@ -528,7 +532,7 @@ roher JSON-Block beim Agenten an.
 | --- | --- | --- |
 | Kontenblatt | `report_sums_postingaccount_ledger` | `integrityError`, `postingaccount_number` (String), `postingaccountLedger`: Liste der Buchungszeilen |
 | Summen- und Saldenliste | `report` | `integrityError`, `countPostingsWithDateVatEffectiveNotConsideredInReport`, `sums`: Objekt mit der Kontonummer als Schlüssel, je Eintrag `postingaccount` (Objekt mit `name`, `postingaccount_number`, `class`, `type`) und zehn Saldenfelder |
-| BWA | `report` | `integrityError`, `standardChart`, `postingsRecordsCount`, `uncompletedPostingsCount`, `usedPostingaccountsNumbers`, `usedCostLocations`, `groups`: Objekt je Gruppe mit `classes` (Objekt je Klasse), `totals`: Ergebniszeilen mit `after` |
+| BWA | `report` | `integrityError`, `standardChart`, `postingsRecordsCount`, `uncompletedPostingsCount`, `usedPostingaccountsNumbers` (Liste von Zahlen), `usedCostLocations`, `groups`: Objekt je Gruppe mit `classes` (Objekt je Klasse), darin `postingaccounts` (Konten), `totals`: Ergebniszeilen mit `after` |
 
 Einzelheiten, die für die Umsetzung zählen:
 
@@ -542,17 +546,26 @@ Einzelheiten, die für die Umsetzung zählen:
 4. **Reihenfolge der BWA.** `totals` nennt in `after` die Gruppe, hinter der die Ergebniszeile
    steht (gemessen: `Betriebsergebnis` hinter `Gesamtkosten`, `Ergebnis` mit `after` null am
    Ende).
-5. **Nicht gemessen:** der Aufbau der Einträge in `postingaccounts` einer BWA-Klasse. Im
-   Messzeitraum gab es keine bestätigten Buchungen (`postingsRecordsCount` 0,
-   `uncompletedPostingsCount` 10), alle Listen waren leer. Ebenso nicht gemessen: `files` bei
-   `get_files: true`, und die Typen der Felder, die in allen Zeilen `null` waren, etwa `vatRate`,
-   `cost_location` oder `sumPeriodDebit`.
+5. **Die Kontenliste einer BWA-Klasse hat zwei Formen.** Gefüllt (2024) ist `postingaccounts`
+   ein Objekt mit der Kontonummer als Schlüssel und je Konto `name` (String) und `amountsSum`
+   (Zahl); leer (September 2026) ist es `[]`. Das ist die übliche Eigenheit der PHP-Kodierung,
+   die ein leeres assoziatives Array als JSON-Array ausgibt. Wer nur eine Form erwartet,
+   scheitert an der anderen.
+6. **Im Jahr 2024 gefüllt und damit belegt:** `sumPeriodDebit` und `sumPeriodCredit` der
+   Summenliste als Zahl; `vatRate` und `receipts_direction` im Kontenblatt als String;
+   `vatPostingaccountNumbers` als Liste von Zahlen, `receiptsAssignedFilenamesServerPlain` und
+   `receiptsAssignedFileSuffix` als Listen von Strings. `postingaccount_number` kommt in der
+   Summenliste teils als Zahl, teils als String.
+7. **Nicht gemessen:** `files` bei `get_files: true`, und die Typen der Felder, die auch 2024 in
+   allen Zeilen `null` waren: `journal_number`, `tax_journal_number`, `cost_location`,
+   `costLocationName`, `reversed_by_id` und `reversal_for_id` im Kontenblatt.
 
 ### Was daraus für den Server folgt
 
 Die drei Werkzeuge legen den Bericht vor dem Antwortvertrag in flache Zeilen um
 (`src/mapping/report-rows.ts`), sodass Tabelle, Kürzung und Ausgabeschema greifen wie bei einer
-Liste. Die Kopfangaben stehen in `summary`, die Berichtsdateien ebenfalls dort, mit
+Liste. Die BWA wird dabei bis auf die Konten flach gelegt, in beiden Formen der Kontenliste.
+`bb_reports_run` zeigt denselben Bericht mit derselben Umformung als Tabelle. Die Kopfangaben stehen in `summary`, die Berichtsdateien ebenfalls dort, mit
 Base64-Ersetzung. Hat eine Antwort nicht die gemessene Form, geht sie unverändert hinaus, mit
 einer einzigen Meldung statt einer Reihe erfundener Vertragsverletzungen.
 

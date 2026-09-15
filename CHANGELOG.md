@@ -16,21 +16,24 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
   Objekt liefert. Der Bericht kam dadurch als ein einziges unbekanntes Feld und als roher
   JSON-Block beim Agenten an. Die Antworten werden jetzt vor dem Antwortvertrag in flache Zeilen
   umgeformt: das Kontenblatt eine Zeile je Buchung, die Summen- und Saldenliste eine Zeile je
-  Konto, die BWA Gruppen, Klassen und Ergebniszeilen in Lesereihenfolge. Die Kopfangaben stehen
-  in `summary`, angeforderte Berichtsdateien ebenfalls dort. Hat eine Antwort nicht die
-  gemessene Form, geht sie unverändert hinaus, mit einer einzigen Meldung.
+  Konto, die BWA Gruppen, Klassen, Konten und Ergebniszeilen in Lesereihenfolge. Die
+  Kopfangaben stehen in `summary`, angeforderte Berichtsdateien ebenfalls dort. Hat eine
+  Antwort nicht die gemessene Form, geht sie unverändert hinaus, mit einer einzigen Meldung.
+- **`bb_reports_run` zeigt BWA und Summen- und Saldenliste als Tabelle.** Bisher stand in der
+  Kurzform nur die oberste Ebene des Berichts, die Beträge fanden sich allein im strukturierten
+  Teil. Jetzt stehen sie im Textblock, mit denselben Spalten wie bei den Abholwerkzeugen.
 - **Der Antwortvertrag der drei Werkzeuge ist gemessen**, nicht mehr aus der Spezifikation
   übernommen (Befund L7 in `docs/api/live-befunde.md`). BWA und Summen- und Saldenliste sind
-  dafür mit Freigabe je einmal über die API erzeugt worden. **Nicht gemessen** ist der Aufbau
-  der Konteneinträge in einer BWA-Klasse, weil sie im Messzeitraum leer waren; die Liste
-  `postingaccounts` geht deshalb unverändert hinaus.
+  dafür mit Freigabe über die API erzeugt worden, für September 2026 und für das
+  abgeschlossene Jahr 2024. Dabei zeigte sich, dass die Kontenliste einer BWA-Klasse gefüllt als
+  Objekt und leer als Array kommt; beide Formen werden gelesen.
 
 ### Geändert
 
 - Der Antwortvertrag kennt den Feldtyp `array` für Listen, deren Inhalt nicht geprüft wird.
-- Die 54 Endpunktwerkzeuge wiegen jetzt **48.946 Token** (vorher 48.368) bei einer Grenze von
+- Die 54 Endpunktwerkzeuge wiegen jetzt **48.964 Token** (vorher 48.368) bei einer Grenze von
   49.000. Der Zuwachs sind die Ausgabeschemata der drei Berichte. Der Spielraum bis zur Grenze
-  beträgt damit nur noch 54 Token.
+  beträgt damit nur noch 36 Token.
 
 ## [0.1.0] - 2026-09-14
 

@@ -58,7 +58,8 @@ import { bb_reports_create_bwa } from "../../registry/tools/bb_reports_create_bw
 import { bb_reports_create_sums } from "../../registry/tools/bb_reports_create_sums.js";
 import { bb_reports_get_bwa } from "../../registry/tools/bb_reports_get_bwa.js";
 import { bb_reports_get_sums } from "../../registry/tools/bb_reports_get_sums.js";
-import { renderRecord } from "../../response/table.js";
+import { reportRowsOf } from "../../mapping/report-rows.js";
+import { renderRecord, renderTable } from "../../response/table.js";
 import { estimateTokensOfValue, replaceBinaryPayloads } from "../../response/truncate.js";
 import { dateValue } from "../../schema/primitives.js";
 import { EMPTY_STRING_SENTENCE } from "../../schema/vocab.js";
@@ -625,7 +626,8 @@ function outcome(
     lines.push(
       ctx.projection === "detailed"
         ? renderRecord(shortened.value)
-        : renderRecord(topLevelOverview(shortened.value)),
+        : (reportTable(reportType, shortened.value) ??
+            renderRecord(topLevelOverview(shortened.value))),
     );
   }
   lines.push(ctx.callBudgetLine());
@@ -647,6 +649,31 @@ function outcome(
     },
     lines,
   };
+}
+
+/** Die Abholwerkzeuge, deren Kurzform die Tabellenspalten vorgibt. */
+const GET_ENTRIES = { bwa: bb_reports_get_bwa, sums: bb_reports_get_sums } as const;
+
+/**
+ * Der Bericht als Tabelle für die Kurzform.
+ *
+ * Dieselbe Umformung und dieselben Spalten wie bei bb_reports_get_bwa und bb_reports_get_sums,
+ * damit ein Bericht über beide Wege gleich aussieht und die Beträge im Textblock stehen, den
+ * das Modell liest. Vorher stand dort nur die oberste Ebene, und die Zahlen fanden sich allein
+ * im strukturierten Teil. `null`, wenn der Bericht nicht die gemessene Form hat oder leer ist;
+ * dann bleibt es bei der Übersicht der obersten Ebene.
+ */
+function reportTable(reportType: ReportType, report: Record<string, unknown>): string | null {
+  const flat = reportRowsOf(reportType, { report });
+  if (flat === null || flat.rows.length === 0) {
+    return null;
+  }
+  const columns = GET_ENTRIES[reportType].concise;
+  const rows = flat.rows
+    .filter(isPlainObject)
+    .map((row) => Object.fromEntries(columns.map((column) => [column, row[column] ?? null])));
+  const table = renderTable(rows);
+  return table === "" ? null : table;
 }
 
 /**
