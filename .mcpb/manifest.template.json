@@ -68,7 +68,8 @@
       "type": "string",
       "title": "Werkzeuggruppen",
       "description": "Kommaliste. Leer lassen für alle Gruppen. Gültig: bundles, receipts, transactions, postings, invoices, debtors, creditors, postingaccounts, payment_accounts, cost_locations, reports, comments. Empfehlung für Claude Desktop: bundles",
-      "required": false
+      "required": false,
+      "default": ""
     }
   },
   "compatibility": {

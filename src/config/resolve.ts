@@ -277,11 +277,17 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
   }
 
   // Punkt 3
-  const { values, emptyVars } = parseEnv(env);
+  const { values, emptyVars, unresolvedVars } = parseEnv(env);
   for (const name of emptyVars) {
     warnings.push({
       code: "empty-env-var",
       text: `${name} ist auf eine leere Zeichenkette gesetzt und wird wie nicht gesetzt behandelt.`,
+    });
+  }
+  for (const name of unresolvedVars) {
+    warnings.push({
+      code: "unresolved-placeholder",
+      text: `${name} enthält einen nicht ersetzten Platzhalter der Erweiterung; das Feld wurde nicht ausgefüllt und wird wie nicht gesetzt behandelt.`,
     });
   }
 

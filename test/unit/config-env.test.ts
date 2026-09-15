@@ -82,6 +82,29 @@ describe("Vorgaben", () => {
     expect(values.BB_MCP_LOG_LEVEL).toBe("warn");
   });
 
+  it("behandelt einen nicht ersetzten Platzhalter einer Erweiterung wie nicht gesetzt", () => {
+    // Claude Desktop ersetzt ${user_config.<feld>} nur bei Feldern mit Wert oder Vorgabe; ein
+    // leer gelassenes optionales Feld kommt wörtlich an (gemessen am 2026-09-15).
+    const parsed = parseEnv({
+      BB_MCP_TOOL_GROUPS: "${user_config.tool_groups}",
+      BB_MCP_READ_ONLY: " ${user_config.read_only} ",
+    });
+
+    expect(parsed.values.BB_MCP_TOOL_GROUPS).toBeUndefined();
+    expect(parsed.values.BB_MCP_READ_ONLY).toBeUndefined();
+    expect([...parsed.unresolvedVars].sort()).toEqual(["BB_MCP_READ_ONLY", "BB_MCP_TOOL_GROUPS"]);
+    expect(parsed.emptyVars).toEqual([]);
+  });
+
+  it("hält einen Wert, der den Platzhalter nur enthält, nicht für einen Platzhalter", () => {
+    // Nur ein Wert, der vollständig aus dem Platzhalter besteht, bedeutet „nicht ausgefüllt".
+    // Alles andere bleibt ein Wert und wird von der nachfolgenden Prüfung beurteilt.
+    const parsed = parseEnv({ BB_MCP_TOOL_GROUPS: "bundles,${user_config.tool_groups}" });
+
+    expect(parsed.values.BB_MCP_TOOL_GROUPS).toBeDefined();
+    expect(parsed.unresolvedVars).toEqual([]);
+  });
+
   it("behandelt eine leer gesetzte Variable wie nicht gesetzt und meldet das", () => {
     const parsed = parseEnv({ BB_API_KEY: "", BB_MCP_MAX_BATCH: "   " });
 

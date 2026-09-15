@@ -277,7 +277,19 @@ export interface ParsedEnv {
   readonly values: EnvValues;
   /** Namen, die gesetzt, aber leer waren. Sie gelten als nicht gesetzt. */
   readonly emptyVars: readonly string[];
+  /** Namen, die einen nicht ersetzten Platzhalter `${user_config.…}` trugen. Nicht gesetzt. */
+  readonly unresolvedVars: readonly string[];
 }
+
+/**
+ * Ein Platzhalter aus dem Manifest eines `.mcpb`-Bundles, den der Host nicht ersetzt hat.
+ *
+ * Claude Desktop ersetzt `${user_config.<feld>}` nur für Felder mit einem Wert oder einer
+ * Vorgabe; ein leer gelassenes optionales Feld ohne Vorgabe kommt wörtlich an. So geschehen am
+ * 2026-09-15 mit `BB_MCP_TOOL_GROUPS`: Der Platzhalter galt als unbekannter Gruppenname, und
+ * der Server brach beim Start ab. Gemeint ist „nicht ausgefüllt", also nicht gesetzt.
+ */
+const UNRESOLVED_PLACEHOLDER = /^\$\{user_config\.[^}]+\}$/;
 
 function formatIssues(error: z.ZodError): string {
   const lines: string[] = [];
@@ -300,6 +312,7 @@ function formatIssues(error: z.ZodError): string {
 export function parseEnv(env: NodeJS.ProcessEnv): ParsedEnv {
   const input: Record<string, string> = {};
   const emptyVars: string[] = [];
+  const unresolvedVars: string[] = [];
 
   for (const name of KNOWN_ENV_VARS) {
     const raw = env[name];
@@ -308,6 +321,10 @@ export function parseEnv(env: NodeJS.ProcessEnv): ParsedEnv {
     }
     if (raw.trim() === "") {
       emptyVars.push(name);
+      continue;
+    }
+    if (UNRESOLVED_PLACEHOLDER.test(raw.trim())) {
+      unresolvedVars.push(name);
       continue;
     }
     input[name] = raw;
@@ -326,7 +343,7 @@ export function parseEnv(env: NodeJS.ProcessEnv): ParsedEnv {
     );
   }
 
-  return { values: result.data, emptyVars };
+  return { values: result.data, emptyVars, unresolvedVars };
 }
 
 // --- Unbekannte Variablen ------------------------------------------------------------

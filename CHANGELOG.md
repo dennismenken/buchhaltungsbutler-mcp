@@ -8,6 +8,23 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
 
 ## [Unveröffentlicht]
 
+## [0.1.2] - 2026-09-15
+
+### Behoben
+
+- **Das `.mcpb`-Bundle startete in Claude Desktop nicht, wenn „Werkzeuggruppen" leer blieb.**
+  Claude Desktop ersetzt `${user_config.<feld>}` nur für Felder mit einem Wert oder einer
+  Vorgabe im Manifest. Das optionale Feld hatte keine Vorgabe, der Platzhalter kam wörtlich im
+  Server an, galt als unbekannter Gruppenname, und der Server beendete sich beim Start. In
+  Claude Desktop erschien das als „Server disconnected" ohne eigene Fehlermeldung. Belegt an
+  der Referenzimplementierung `getMcpConfigForManifest` von `@anthropic-ai/mcpb`.
+  Die Behebung hat zwei Teile: Die optionalen Felder „Nur lesen" und „Werkzeuggruppen" tragen
+  jetzt Vorgaben, und der Server behandelt einen nicht ersetzten Platzhalter wie einen nicht
+  gesetzten Wert, mit einer Warnung, statt abzubrechen.
+- Ein neuer Integrationstest startet den gebauten Server mit der Umgebung, die der Bundle-Host
+  aus der Vorlage erzeugt, wenn nur die Pflichtfelder ausgefüllt sind. Gegen den Stand von
+  0.1.1 schlägt er fehl.
+
 ## [0.1.1] - 2026-09-15
 
 ### Behoben
