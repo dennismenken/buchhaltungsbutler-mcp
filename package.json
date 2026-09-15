@@ -1,6 +1,6 @@
 {
   "name": "@dennismenken/buchhaltungsbutler-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unofficial MCP server for the BuchhaltungsButler API",
   "type": "module",
   "license": "MIT",

@@ -9,7 +9,7 @@
 export const PACKAGE_NAME = "@dennismenken/buchhaltungsbutler-mcp";
 
 /** Die Paketversion aus package.json, wörtlich. */
-export const VERSION = "0.1.0";
+export const VERSION = "0.1.1";
 
 /** Name und Version in der Form, die der MCP-Server bei `initialize` meldet. */
 export const SERVER_INFO = {

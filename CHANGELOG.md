@@ -8,6 +8,8 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
 
 ## [Unveröffentlicht]
 
+## [0.1.1] - 2026-09-15
+
 ### Behoben
 
 - **Die drei Berichtsabholwerkzeuge liefern ihre Daten jetzt als Tabelle.**
