@@ -16,8 +16,8 @@
 // nicht vorausgesetzt (`pnpm test` baut nicht); `scripts/build-mcpb.ts` lädt zur Bauzeit
 // dagegen ausdrücklich das gebaute Register und bricht ab, wenn `dist/` veraltet ist.
 //
-// **Die ausgelieferte Werkzeugmenge sind beide Listen zusammen**: die 54 Endpunktwerkzeuge aus
-// `TOOL_ENTRIES` und die 5 Bündelwerkzeuge aus `BUNDLE_ENTRIES`; die 54 bleiben neben den
+// **Die ausgelieferte Werkzeugmenge sind beide Listen zusammen**: die 59 Endpunktwerkzeuge aus
+// `TOOL_ENTRIES` und die 5 Bündelwerkzeuge aus `BUNDLE_ENTRIES`; die 59 bleiben neben den
 // Bündeln unverändert bestehen. Das Manifest trägt
 // `tools_generated: false` und behauptet damit eine vollständige Liste; eine Liste aus nur
 // einer der beiden Mengen wäre im Installationsdialog von Claude Desktop schlicht falsch.
@@ -119,17 +119,17 @@ describe("Bundle-Manifest, Vorlage", () => {
 
   it("kennzeichnet die Werkzeugliste als vollständig und nicht zur Laufzeit erzeugt", () => {
     // tools_generated: true hieße, der Server melde zur Laufzeit weitere Werkzeuge an. Das
-    // tut er nicht: Es sind 54 Endpunktwerkzeuge, eines je Endpunkt, und 5 Bündel daneben.
+    // tut er nicht: Es sind 59 Endpunktwerkzeuge, eines je Endpunkt, und 5 Bündel daneben.
     expect(template["tools_generated"]).toBe(false);
   });
 });
 
 describe("Bundle-Manifest, erzeugte Werkzeugliste", () => {
-  it("führt beide Werkzeugmengen, also 54 Endpunktwerkzeuge und 5 Bündel", () => {
+  it("führt beide Werkzeugmengen, also 59 Endpunktwerkzeuge und 5 Bündel", () => {
     expect(manifestTools()).toHaveLength(COUNT);
-    expect(REGISTRY).toHaveLength(54);
+    expect(REGISTRY).toHaveLength(59);
     expect(BUNDLE_ENTRIES).toHaveLength(5);
-    expect(COUNT).toBe(59);
+    expect(COUNT).toBe(64);
   });
 
   it("deckt sich in beide Richtungen mit der ausgelieferten Werkzeugmenge", () => {

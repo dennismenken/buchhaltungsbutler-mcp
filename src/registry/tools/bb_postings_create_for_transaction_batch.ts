@@ -1,4 +1,4 @@
-// Werkzeug 24, `/postings/add-batch/transactions`: Zahlungsbuchungen für mehrere Zahlungen in
+// Werkzeug 25, `/postings/add-batch/transactions`: Zahlungsbuchungen für mehrere Zahlungen in
 // einem Aufruf. Mit 40 Zeichen der längste Werkzeugname des Satzes.
 //
 // **Auf oberster Ebene findet keine Umformung statt.** Der Endpunkt führt genau einen

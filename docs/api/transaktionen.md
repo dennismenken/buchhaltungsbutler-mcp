@@ -112,6 +112,7 @@ Achtung: `error_code` 10, 15 und 23 sind **nicht** global eindeutig. `/transacti
 | `/transactions/unassign/receipt` | **schreibend** | Zuordnung eines Belegs lösen | 3 |
 | `/transactions/assign-batch/receipt` | **schreibend** | Bis zu 50 Zuordnungen auf einmal | 2 |
 | `/transactions/assigned-receipts/get` | lesend | Alle zugeordneten Belege einer Transaktion | 3 |
+| `/transactions/delete` | **schreibend, destruktiv** | Eine Transaktion löschen | 2 |
 
 Die Parameteranzahlen wurden gegen `jq '.paths["<pfad>"].post.parameters | length'` geprüft.
 
@@ -1075,9 +1076,82 @@ damit **nicht verifiziert**; angesichts des Befunds bei `/transactions/get` ist 
 
 ---
 
-## 11. Querschnittsthemen
+## 11. `/transactions/delete`
 
-### 11.1 Vorzeichenkonvention, Soll und Haben
+Löscht eine Transaktion, also einen Kontoumsatz.
+
+**Einordnung: SCHREIBEND und destruktiv.** Nicht live verifiziert.
+
+### 11.1 Parameter (2 von 2)
+
+| Feld | Typ | Pflicht | Default | Beschreibung | Erlaubte Werte | Format |
+| --- | --- | --- | --- | --- | --- | --- |
+| `api_key` | string | **ja** | — | API-Key des zu verwaltenden Mandanten | Mandantenschlüssel | frei |
+| `transaction_id_by_customer` | integer | **ja** | — | Kennung der zu löschenden Transaktion. Die Kennung stammt aus `/transactions/get`. | `id_by_customer` | integer |
+
+Die Spezifikation nennt den Parameter `transaction_id_by_customer`, beschreibt ihn aber als
+„the id_by_customer of the transaction to delete". Beides meint dieselbe Kennung.
+
+### 11.2 Erfolgsantwort
+
+```json
+{
+  "success": true,
+  "message": "",
+  "id_by_customer": "123"
+}
+```
+
+Die Kennung steht auf oberster Ebene des Umschlags, nicht in einem `data`-Objekt. Sie ist
+laut Spezifikation ein **String**, während `/transactions/get` sie als JSON-Zahl liefert.
+
+### 11.3 Fehlerfälle
+
+| HTTP-Status | error_code | message | Bedeutung | Abhilfe |
+| --- | --- | --- | --- | --- |
+| 401 | 3 | `API credentials unknown or invalid` | Basic-Auth falsch | Zugangsdaten prüfen |
+| 401 | 4 | `customer not found or insufficient privileges` | `api_key` falsch | `api_key` prüfen |
+| 403 | 11 | `customer has no active status` | Mandant inaktiv | Vertragsstatus klären |
+| 400 | 5 | `invalid transaction_id_by_customer specified` | Kennung formal falsch | Kennung aus `/transactions/get` übernehmen |
+| 400 | 6 | `transaction not found` | Keine Transaktion mit dieser Kennung | Kennung prüfen |
+| 400 | 7 | `account of the transaction not found` | Das Zahlungskonto der Transaktion existiert nicht | Mandant und Konto prüfen |
+| 400 | 8 | `type of the transaction does not allow deletion` | Der Transaktionstyp lässt sich nicht löschen | Transaktionstyp prüfen |
+| 400 | 9 | `transaction can not be deleted, because fixed postings exist` | Die Transaktion trägt festgeschriebene Buchungen | Buchungen prüfen; die Transaktion bleibt bestehen |
+| 400 | 10 | `transaction is already canceled or is a cancelation` | Die Transaktion ist bereits storniert oder selbst eine Stornozahlung | Nichts tun |
+| 500 | 0 | `error while processing the request` | Interner Fehler | Zustand prüfen, dann wiederholen |
+| 504 | 30 | `a timeout occurred while processing the request` | Zeitüberschreitung | Zustand prüfen, dann wiederholen |
+
+### 11.4 curl-Beispiel
+
+```bash
+curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/transactions/delete" \
+  -u "<API_CLIENT>:<API_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "api_key": "<API_KEY>",
+        "transaction_id_by_customer": 4716
+      }'
+```
+
+### 11.5 Fallstricke
+
+- **Der Endpunkt löscht nicht immer.** Die Spezifikation sagt wörtlich: Für Transaktionen in
+  einem revisionssicheren Konto wird die Transaktion **nicht** gelöscht, sondern es wird
+  eine Stornotransaktion (STORNO) angelegt. Der HTTP-Status 200 sagt in diesem Fall also
+  **nicht**, dass die Transaktion verschwunden ist.
+- **Ob `id_by_customer` in der Antwort im Stornofall die Kennung der Stornotransaktion
+  ist, ist nicht verifiziert.** Die Spezifikation beschreibt das Feld nicht. Ein Client darf
+  die Antwort daher nicht als Bestätigung lesen, dass die genannte Transaktion entfernt
+  wurde.
+- Transaktionen mit festgeschriebenen Buchungen lassen sich nicht löschen (Fehler 9).
+- Eine Stornozahlung selbst lässt sich nicht löschen (Fehler 10).
+- Ein MCP-Tool sollte den Aufruf nur mit ausdrücklicher Bestätigung ausführen.
+
+---
+
+## 12. Querschnittsthemen
+
+### 12.1 Vorzeichenkonvention, Soll und Haben
 
 Die API kennt **kein** Feld für Soll und Haben auf Transaktionsebene. Die einzige Richtungsinformation ist das
 Vorzeichen von `amount`.
@@ -1097,7 +1171,7 @@ Die Gegenkontierung und die Soll-/Haben-Logik gehören zu `/postings/*`, nicht z
 
 `0.00` ist als Transaktionsbetrag ausdrücklich unzulässig (Fehler 13).
 
-### 11.2 Betragsformate
+### 12.2 Betragsformate
 
 | Kontext | Typ | Beispiel |
 | --- | --- | --- |
@@ -1108,7 +1182,7 @@ Die Gegenkontierung und die Soll-/Haben-Logik gehören zu `/postings/*`, nicht z
 Kein Tausendertrennzeichen, kein Komma als Dezimaltrenner, kein Währungssymbol im Betrag. Die Währung steht separat
 im Feld `currency` und wird von `/transactions/get` nicht mitgeliefert.
 
-### 11.3 Datums- und Zeitformate
+### 12.3 Datums- und Zeitformate
 
 | Feld | Endpunkt | Format | Bemerkung |
 | --- | --- | --- | --- |
@@ -1120,7 +1194,7 @@ im Feld `currency` und wird von `/transactions/get` nicht mitgeliefert.
 Zeitzone: In der Spezifikation nicht angegeben, in den Antworten kein Offset enthalten. **Nicht verifiziert.**
 Naheliegend ist die Mandantenzeitzone bzw. Europe/Berlin, das ist aber eine Annahme.
 
-### 11.4 Bezug zum Konto
+### 12.4 Bezug zum Konto
 
 - `/accounts/get` liefert pro Konto ein Objekt mit `name` und `postingaccount_number`. Laut Schema ist
   `postingaccount_number` ein **String** (Beispiel `"1200"`).
@@ -1138,7 +1212,7 @@ Zahlungskonten; Sachkonten insgesamt kommen über `/settings/get/postingaccounts
 Zahlungskonten liefert, ist aus der Beschreibung „Get all the accounts" nicht eindeutig ableitbar und
 **nicht verifiziert**.
 
-### 11.5 Die Zuordnung Beleg zu Transaktion in beide Richtungen
+### 12.5 Die Zuordnung Beleg zu Transaktion in beide Richtungen
 
 | Richtung | Endpunkt | Art | Liefert bzw. bewirkt |
 | --- | --- | --- | --- |
@@ -1158,7 +1232,7 @@ Beide Leseendpunkte kennen den Schalter `confirmed_only`. „Bestätigt" bezieht
 Zuordnung selbst: `/postings/unconfirm/transaction` und `/postings/unconfirm/receipt` heben eine Bestätigung wieder
 auf, und eine bestätigte Buchung blockiert das Lösen der Zuordnung (Fehler 10 bei `/transactions/unassign/receipt`).
 
-### 11.6 Sammelliste der Spezifikationsmängel
+### 12.6 Sammelliste der Spezifikationsmängel
 
 Alle Punkte stammen aus der Datei `docs/openapi/buchhaltungsbutler-v1.json`, Stand 2026-09-12.
 
@@ -1183,9 +1257,9 @@ Alle Punkte stammen aus der Datei `docs/openapi/buchhaltungsbutler-v1.json`, Sta
 
 ---
 
-## 12. Hinweise für das MCP-Tool-Design
+## 13. Hinweise für das MCP-Tool-Design
 
-### 12.1 Fachliche Gruppen
+### 13.1 Fachliche Gruppen
 
 Aus Agentensicht zerfallen die Transaktions-Endpunkte in drei Gruppen:
 
@@ -1201,7 +1275,7 @@ Ein sinnvoller Zuschnitt ist ein Tool pro Endpunkt, weil die Fehlerbilder zu unt
 generischen Tool sauber zu melden. Die Batch-Varianten sollten eigene Tools bleiben, damit ihre Teilerfolgssemantik
 sichtbar ist.
 
-### 12.2 Mehrstufige Abläufe
+### 13.2 Mehrstufige Abläufe
 
 | Ziel | Nötige Schritte |
 | --- | --- |
@@ -1212,7 +1286,7 @@ sichtbar ist.
 | Inkrementelle Synchronisation | `/transactions/get` mit `date_since_last_modified` und `limit` 500, dann über `offset` blättern; alternativ mit `id_by_customer_from` vorrücken, was zugleich aufsteigend sortiert. |
 | Kontieren | Erst Transaktion, dann Belegzuordnung, dann `/postings/add/transaction`. Die Buchung selbst ist nicht Teil dieses Dossiers. |
 
-### 12.3 Parameter, die ein Agent schlecht erraten kann
+### 13.3 Parameter, die ein Agent schlecht erraten kann
 
 Diese Felder brauchen ausführliche `description`-Texte im Tool-Schema, weil ein Sprachmodell sie sonst falsch füllt.
 
@@ -1232,7 +1306,7 @@ Diese Felder brauchen ausführliche `description`-Texte im Tool-Schema, weil ein
 | optionale Stringfelder allgemein | Leerstring ist bei den meisten ungültig | „Feld weglassen, wenn kein Wert vorliegt. Ein Leerstring löst einen Validierungsfehler aus. Ausnahmen: `purpose` und `booking_text`." |
 | `transactions_to_receipts` | Langer Name, verschachtelte Struktur | Vollständiges Beispiel in die Beschreibung. |
 
-### 12.4 Technische Empfehlungen für den MCP-Server
+### 13.4 Technische Empfehlungen für den MCP-Server
 
 - **Typen defensiv lesen.** `id_by_customer` kann Zahl oder String sein. Intern auf einen Typ normalisieren, nach
   außen konsistent ausgeben.

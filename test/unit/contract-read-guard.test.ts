@@ -71,7 +71,7 @@ describe("Erlaubnisliste des Vertragslaufs", () => {
     for (const entry of WRITING_TOOLS) {
       expect(ALLOW_LIST.has(specPathOf(entry))).toBe(false);
     }
-    expect(WRITING_TOOLS).toHaveLength(39);
+    expect(WRITING_TOOLS).toHaveLength(44);
   });
 });
 

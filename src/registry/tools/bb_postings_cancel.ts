@@ -1,4 +1,4 @@
-// Werkzeug 31, `/postings/cancel`: storniert eine einzelne Buchungszeile.
+// Werkzeug 32, `/postings/cancel`: storniert eine einzelne Buchungszeile.
 //
 // **Zwei völlig verschiedene Wirkungen hinter einem Aufruf**, gesteuert allein durch `fixed`:
 // War die Buchung festgeschrieben, entsteht eine dauerhaft sichtbare Stornobuchung; war sie es

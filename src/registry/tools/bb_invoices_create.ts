@@ -1,4 +1,4 @@
-// Werkzeug 17: `/invoices/create`, die endgültige Ausgangsrechnung.
+// Werkzeug 18: `/invoices/create`, die endgültige Ausgangsrechnung.
 //
 // Klasse B: Das Werkzeug legt ein neues, nummeriertes Dokument an und
 // überschreibt nichts, trägt deshalb `destructiveHint: false` — die Warnung läuft über den

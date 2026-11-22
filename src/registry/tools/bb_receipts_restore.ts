@@ -1,4 +1,4 @@
-// Werkzeug 8 von 54: `/receipts/restore/id_by_customer`, Löschmarkierung zurücknehmen.
+// Werkzeug 8 von 59: `/receipts/restore/id_by_customer`, Löschmarkierung zurücknehmen.
 //
 // **Pfadvorlage statt literalem Pfad.** Wie bei bb_receipts_delete ist das Segment
 // `id_by_customer` ein Platzhalter für den Wert; der Eintrag trägt `template`, `params` und

@@ -1,4 +1,4 @@
-// Werkzeug 49 von 54: `/cost-locations/delete`.
+// Werkzeug 54 von 59: `/cost-locations/delete`.
 //
 // Klasse D, also `destructiveHint: true` und `idempotentHint: false` (die Begründung steht
 // bei `TOOL_CLASSES` in src/registry/classes.ts). Eine Wiederholung wäre plausibel

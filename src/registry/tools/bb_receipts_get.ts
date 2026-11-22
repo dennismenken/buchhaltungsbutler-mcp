@@ -1,4 +1,4 @@
-// Werkzeug 2 von 54: `/receipts/get/id_by_customer`, der Belegeinzelabruf.
+// Werkzeug 2 von 59: `/receipts/get/id_by_customer`, der Belegeinzelabruf.
 //
 // **Pfadvorlage statt literalem Pfad.** Das Segment `id_by_customer` im Pfad der
 // Spezifikation ist ein Platzhalter für den Wert und kein literales Segment. Gemessen am

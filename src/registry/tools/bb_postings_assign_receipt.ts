@@ -1,4 +1,4 @@
-// Werkzeug 30, `/postings/assign/receipt-to-free-posting`: bindet einen vorhandenen Beleg an
+// Werkzeug 31, `/postings/assign/receipt-to-free-posting`: bindet einen vorhandenen Beleg an
 // eine vorhandene freie Buchung.
 //
 // **Der Sonderfall innerhalb der Klasse B**: Es ist das einzige Werkzeug mit der

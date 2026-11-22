@@ -938,7 +938,7 @@ Ausnahme in die andere Richtung: `/reports/get/sums/ledger` wird laut SPEC "on t
 erzeugt und benötigt keinen vorherigen Create-Aufruf. Es ist damit trotz der
 Berichtserzeugung ein lesender Endpunkt ohne persistente Nebenwirkung.
 
-### 7.3 Vollständige Tabelle aller 54 Endpunkte
+### 7.3 Vollständige Tabelle aller 59 Endpunkte
 
 Legende der Spalte **Wirkung**:
 
@@ -975,6 +975,7 @@ falschen oder versehentlichen Aufruf.
 | `/transactions/assign/receipt` | ändernd | Mittel bis hoch. Ordnet einen Beleg einer Zahlung zu und kann damit Folgeautomatiken auslösen. Über `/transactions/unassign/receipt` prinzipiell rücknehmbar. |
 | `/transactions/assign-batch/receipt` | ändernd | Hoch. Bis zu 50 Zuordnungen auf einmal, mit Drosselungsrisiko 403/15. |
 | `/transactions/unassign/receipt` | löschend | Hoch. Entfernt eine bestehende Zuordnung. Schlägt fehl, wenn eine bestätigte Buchung daran hängt (Fehlercode 10, `receipt could not be removed from transaction, because of a confirmed posting.`). Genau dieser Schutz zeigt, wie tief die Zuordnung im Buchungsstand verankert ist. |
+| `/transactions/delete` | löschend | Hoch. Entfernt eine Zahlung. Löscht in einem revisionssicheren Konto nicht, sondern legt eine Stornotransaktion (STORNO) an; Transaktionen mit festgeschriebenen Buchungen lassen sich nicht löschen. Der HTTP-Status 200 sagt im Stornofall nicht, dass die Transaktion verschwunden ist. |
 
 #### Invoices
 
@@ -1016,6 +1017,9 @@ falschen oder versehentlichen Aufruf.
 | `/settings/update/debtor` | ändernd | Hoch. Überschreibt Stammdaten eines bestehenden Kontos. Kein Endpunkt liefert den Zustand vor der Änderung zurück, ein Rückgängigmachen erfordert eine vorher gezogene Kopie. |
 | `/settings/update/creditor` | ändernd | Hoch. Wie Debitor. |
 | `/settings/update/postingaccount` | ändernd | Hoch. Ändert ein Buchungskonto, auf das bestehende Buchungen verweisen. |
+| `/settings/delete/debtor` | löschend | Mittel bis hoch. Entfernt ein Debitorenkonto, aber nur, wenn für es keine Buchungen existieren. Die gelöschten Stammdaten sind über die API nicht wiederherstellbar. |
+| `/settings/delete/creditor` | löschend | Mittel bis hoch. Wie Debitor. |
+| `/settings/delete/postingaccount` | löschend | Hoch. Entfernt ein Sachkonto, aber nur ein manuell angelegtes oder bearbeitetes ohne Buchungen und ohne Anlagen. Bei einem manuell bearbeiteten Standardkonto setzt die API nur den Namen auf den Standardwert zurück und löscht es nicht. |
 
 #### Accounts, Comments, Cost Locations
 
@@ -1023,6 +1027,7 @@ falschen oder versehentlichen Aufruf.
 | --- | --- | --- |
 | `/accounts/get` | lesend | Gering. Kennt kein `limit`, liefert immer alle Basiskonten. |
 | `/accounts/add` | anlegend | Hoch. Legt ein Zahlungskonto an. Die Flags `receipt_creates_transaction` und `is_revision_safe` steuern dauerhaftes Verhalten. `is_revision_safe` betrifft die Revisionssicherheit, also einen Aspekt mit Aufbewahrungsrelevanz. |
+| `/accounts/delete` | löschend | Hoch. Entfernt ein Zahlungskonto, aber nur, wenn es keine festgeschriebenen Buchungen und keine revisionssicheren Transaktionen enthält. Ein revisionssicheres Konto kann damit unter Umständen gar nicht mehr gelöscht werden. |
 | `/comments/add` | anlegend | Gering bis mittel. Fügt einen Kommentar an einen Beleg oder eine Zahlung. Keine buchhalterische Wirkung, aber für andere Nutzer sichtbar und nicht über die API löschbar. |
 | `/cost-locations/get` | lesend | Gering. Maximal 1000 Kostenstellen pro Anfrage. |
 | `/cost-locations/add` | anlegend | Mittel. Neue Kostenstelle, wirkt auf die Kostenstellenauswertung. |
@@ -1046,8 +1051,8 @@ falschen oder versehentlichen Aufruf.
 | lesend | 15 |
 | anlegend | 24 |
 | ändernd | 8 |
-| löschend | 7 |
-| **Summe** | **54** |
+| löschend | 12 |
+| **Summe** | **59** |
 
 Die 15 lesenden Endpunkte, und nur diese, dürfen in einem Nur-Lesen-Modus freigeschaltet
 sein:

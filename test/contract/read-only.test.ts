@@ -3,7 +3,7 @@
 // Geprüft werden vier Zusagen, und jede einzelne ist eine, an der ein Nutzer den Server misst,
 // der ihn ausdrücklich eingeschränkt hat:
 //
-//  1. Mit `BB_MCP_READ_ONLY=true` lehnt **jedes** der 39 schreibenden Werkzeuge ab, und zwar
+//  1. Mit `BB_MCP_READ_ONLY=true` lehnt **jedes** der 44 schreibenden Werkzeuge ab, und zwar
 //     **bevor** ein Request abgeht. Nachgewiesen wird das nicht am Text allein, sondern am
 //     MockAgent: Er darf keinen einzigen Aufruf sehen. Die Absage nennt die Variable mit ihrem
 //     Zielwert.
@@ -14,13 +14,13 @@
 //  4. Die Berichtszeile: Mit Schalter antworten die drei `bb_reports_get_*` weiter, die beiden
 //     `bb_reports_create_*` sagen ab, und die `instructions` nennen die Einschränkung.
 //
-// **Zur zweiten Hälfte („ohne die Variable führen dieselben 39 aus").** Sie wird hier
-// über den Schalter selbst geprüft: Ohne die Variable meldet der Server für alle 54 Einträge
-// `blockedByReadOnly: false`, kein einziger der 39 Aufrufe endet in der Absage, und
+// **Zur zweiten Hälfte („ohne die Variable führen dieselben 44 aus").** Sie wird hier
+// über den Schalter selbst geprüft: Ohne die Variable meldet der Server für alle 59 Einträge
+// `blockedByReadOnly: false`, kein einziger der 44 Aufrufe endet in der Absage, und
 // fünf Werkzeuge — eines je schreibender Klasse — laufen vollständig bis zur Antwort durch.
-// **Dass alle 39 ohne den Schalter wirklich bis zur HTTP-Schicht kommen, belegt
+// **Dass alle 44 ohne den Schalter wirklich bis zur HTTP-Schicht kommen, belegt
 // `test/contract/no-write-retry.test.ts`**, das ohne `BB_MCP_READ_ONLY` läuft und für jedes
-// der 39 einen Request am MockAgent nachzählt. Diese Datei wiederholt das nicht; zwei Tests
+// der 44 einen Request am MockAgent nachzählt. Diese Datei wiederholt das nicht; zwei Tests
 // mit derselben Aussage sind kein doppelter Nachweis, sondern doppelte Pflege.
 
 import { Client } from "@modelcontextprotocol/client";
@@ -74,7 +74,7 @@ const READ_ARGUMENTS: Readonly<Record<string, Record<string, unknown>>> = {
 /**
  * Ein vollständiger schreibender Aufruf je Klasse (A, AR, M, D, B).
  *
- * Fünf Aufrufe und nicht 39: Die vollständige Durchsicht aller 39 ohne Schalter steht in
+ * Fünf Aufrufe und nicht 44: Die vollständige Durchsicht aller 44 ohne Schalter steht in
  * `no-write-retry.test.ts` (siehe Dateikopf). Hier geht es um die Frage, ob ohne den Schalter
  * wirklich **ausgeführt** und nicht nur „nicht gesperrt" wird, und dafür ist je Klasse ein
  * Beleg der richtige Zuschnitt.
@@ -188,8 +188,8 @@ afterEach(() => {
 // --- Mit Schalter -------------------------------------------------------------------------
 
 describe(`mit ${READ_ONLY_VAR}=true`, () => {
-  it("lehnen alle 39 schreibenden Werkzeuge ab, ohne dass ein Request abgeht", async () => {
-    expect(WRITE_ENTRIES).toHaveLength(39);
+  it("lehnen alle 44 schreibenden Werkzeuge ab, ohne dass ein Request abgeht", async () => {
+    expect(WRITE_ENTRIES).toHaveLength(44);
     const config = installTestConfig({ BB_MCP_READ_ONLY: "true" });
     api = mockApi();
     const server = await startServer(config);
@@ -215,7 +215,7 @@ describe(`mit ${READ_ONLY_VAR}=true`, () => {
       // Der eigentliche Beweis: Es ging nichts hinaus. Ein Text allein belegt das nicht.
       expect(api.count(), "Bei aktivem Nur-Lesen-Schalter ging ein Request hinaus").toBe(0);
 
-      // Dieselbe Aussage noch einmal aus der Sicht des Servers, über alle 54 Einträge.
+      // Dieselbe Aussage noch einmal aus der Sicht des Servers, über alle 59 Einträge.
       const blocked = server.tools
         .filter((tool) => tool.blockedByReadOnly)
         .map((tool) => tool.name);
@@ -308,19 +308,19 @@ describe(`mit ${READ_ONLY_VAR}=true`, () => {
 // --- Ohne Schalter --------------------------------------------------------------------------
 
 describe(`ohne ${READ_ONLY_VAR}`, () => {
-  it("sperrt der Schalter kein einziges der 54 Werkzeuge", async () => {
+  it("sperrt der Schalter kein einziges der 59 Werkzeuge", async () => {
     const config = installTestConfig();
     api = mockApi();
     const server = await startServer(config);
 
     try {
-      expect(server.tools).toHaveLength(54);
+      expect(server.tools).toHaveLength(59);
       expect(server.tools.filter((tool) => tool.blockedByReadOnly)).toEqual([]);
 
       for (const entry of WRITE_ENTRIES) {
         const result = await server.client.callTool({ name: entry.name, arguments: {} });
         const text = textOf(result);
-        // Ohne Schalter darf die Absage an keinem der 39 auftauchen. Was hier
+        // Ohne Schalter darf die Absage an keinem der 44 auftauchen. Was hier
         // stattdessen kommt, ist die Schemameldung aus Guard 3 — also ein **späterer**
         // Schritt der Kette, den der Schalter vorher abgefangen hätte.
         expect(text, `${entry.name} wurde ohne Schalter gesperrt`).not.toContain("ist gesperrt");
@@ -383,7 +383,7 @@ describe("die Werkzeugliste", () => {
       await serverWithoutFlag.close();
     }
 
-    // 54 Endpunktwerkzeuge plus die Bündelwerkzeuge der Gruppe `bundles` (die 54 bleiben
+    // 59 Endpunktwerkzeuge plus die Bündelwerkzeuge der Gruppe `bundles` (die 59 bleiben
     // unverändert bestehen, die Bündel kommen hinzu). Auch das anlegende Bündel steht in der
     // Liste: Gesperrt ist nicht versteckt.
     expect(JSON.parse(listWithFlag)).toHaveLength(TOOL_ENTRIES.length + BUNDLE_ENTRIES.length);

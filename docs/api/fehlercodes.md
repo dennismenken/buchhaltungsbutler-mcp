@@ -20,24 +20,24 @@ Diese Datei ist eine systematische Extraktion aller `error_code`-Werte, die in d
 
 ## Vollständigkeitsprüfung
 
-- Anzahl `_ErrorCode*`-Definitionen in der Spec-Datei: **718**
+- Anzahl `_ErrorCode*`-Definitionen in der Spec-Datei: **803**
 
-- Anzahl `_ErrorCode*`-Definitionen, die in dieser Datei erfasst sind (Abschnitt B, pro Endpunkt, plus Abschnitt "Nicht referenzierte Definitionen"): **718**
+- Anzahl `_ErrorCode*`-Definitionen, die in dieser Datei erfasst sind (Abschnitt B, pro Endpunkt, plus Abschnitt "Nicht referenzierte Definitionen"): **803**
 
-  (676 sind mindestens einem Endpunkt in `.paths` zugeordnet, 42 sind in `.definitions` vorhanden, aber in keinem `responses`-Block referenziert; beide Gruppen zusammen ergeben 718.)
+  (761 sind mindestens einem Endpunkt in `.paths` zugeordnet, 42 sind in `.definitions` vorhanden, aber in keinem `responses`-Block referenziert; beide Gruppen zusammen ergeben 803.)
 
-- Anzahl Endpunkte (`.paths`-Einträge) insgesamt: **54**
+- Anzahl Endpunkte (`.paths`-Einträge) insgesamt: **61**
 
 > **Nachgezogen am 2026-09-13 nach maschineller Auszählung der Spezifikation vom 2026-09-12.**
 > Die Zahlen oben sind richtig, aber sie beschreiben die **Definitionen**, nicht den Katalog.
 > Der Fehlerkatalog der Umsetzung wird nach dem Paar
-> **(Pfad, `error_code`)** geschlüsselt, und davon gibt es **786**, maschinell ausgezählt über
-> die `responses`-Schlüssel der Form `"400 (5)"`. Die **718** sind Definitionsnamen; 676 davon
-> sind referenziert, **42** in keinem `responses`-Block. „718" als Abnahmebedingung für die
+> **(Pfad, `error_code`)** geschlüsselt, und davon gibt es **899**, maschinell ausgezählt über
+> die `responses`-Schlüssel der Form `"400 (5)"`. Die **803** sind Definitionsnamen; 761 davon
+> sind referenziert, **42** in keinem `responses`-Block. „803" als Abnahmebedingung für die
 > Vollständigkeit des Katalogs wäre deshalb falsch und würde falsch abnehmen. Die 42 verwaisten
 > Definitionen werden bewusst **nicht** in den Katalog aufgenommen: Sie sind kein belegtes
 > Serververhalten. Die Abschnitte B und „Nicht referenzierte Definitionen" dieses Dossiers
-> bleiben unverändert; sie sind die Quelle, aus der die 786 Paare gebildet werden.
+> bleiben unverändert; sie sind die Quelle, aus der die 899 Paare gebildet werden.
 
 ## A) Globale Fehlercodes (endpunktübergreifend gleiche Bedeutung)
 
@@ -76,6 +76,25 @@ Add a basic account.
 | 400 | 17 | `invalid postingaccount_number specified` | Ungültige postingaccount_number angegeben. |
 | 400 | 18 | `invalid receipt_creates_transaction specified` | Ungültiger Wert für receipt_creates_transaction angegeben. |
 | 400 | 19 | `invalid is_revision_safe specified` | Ungültiger Wert für is_revision_safe angegeben. |
+| 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
+| 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
+| 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
+| 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
+| 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
+
+### `/accounts/delete`
+
+Delete a basic account.
+
+| HTTP-Status | error_code | message (Original) | Bedeutung auf Deutsch |
+|---|---|---|---|
+| 400 | 5 | `no postingaccount_number specified` | Keine postingaccount_number angegeben. |
+| 400 | 6 | `invalid postingaccount_number specified` | Ungültige postingaccount_number angegeben. |
+| 400 | 7 | `account was not found` | Basiskonto (account) wurde nicht gefunden. |
+| 400 | 8 | `account may not be deleted because confirmed postings exist` | Basiskonto darf nicht gelöscht werden, weil bestätigte Buchungen existieren. |
+| 400 | 9 | `account may not be deleted because revision safe transactions exist` | Basiskonto darf nicht gelöscht werden, weil revisionssichere Transaktionen existieren. |
+| 400 | 10 | `account may not be deleted` | Basiskonto darf nicht gelöscht werden. |
+| 400 | 23 | `no post and files content received or declined` | Kein POST- und Dateiinhalt empfangen oder abgelehnt. |
 | 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
 | 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
 | 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
@@ -955,6 +974,22 @@ Add postingaccount.
 | 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
 | 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
 
+### `/settings/delete/debtor`
+
+Delete debtor.
+
+| HTTP-Status | error_code | message (Original) | Bedeutung auf Deutsch |
+|---|---|---|---|
+| 400 | 5 | `invalid settings type specified` | Ungültiger settings type angegeben. |
+| 400 | 6 | `wrong debtor account postingaccount_number specified` | Falsche postingaccount_number für das Debitorenkonto angegeben. |
+| 400 | 7 | `no debtor found for specified postingaccount_number` | Kein Debitor für die angegebene postingaccount_number gefunden. |
+| 400 | 8 | `debtor may not be deleted because postings exist` | Debitor darf nicht gelöscht werden, weil Buchungen existieren. |
+| 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
+| 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
+| 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
+| 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
+| 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
+
 ### `/settings/get/creditors`
 
 Get creditors.
@@ -968,6 +1003,22 @@ Get creditors.
 | 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
 | 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
 
+### `/settings/delete/creditor`
+
+Delete creditor.
+
+| HTTP-Status | error_code | message (Original) | Bedeutung auf Deutsch |
+|---|---|---|---|
+| 400 | 5 | `invalid settings type specified` | Ungültiger settings type angegeben. |
+| 400 | 6 | `wrong creditor account postingaccount_number specified` | Falsche postingaccount_number für das Kreditorenkonto angegeben. |
+| 400 | 7 | `no creditor found for specified postingaccount_number` | Kein Kreditor für die angegebene postingaccount_number gefunden. |
+| 400 | 8 | `creditor may not be deleted because postings exist` | Kreditor darf nicht gelöscht werden, weil Buchungen existieren. |
+| 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
+| 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
+| 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
+| 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
+| 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
+
 ### `/settings/get/debtors`
 
 Get debitors.
@@ -975,6 +1026,27 @@ Get debitors.
 | HTTP-Status | error_code | message (Original) | Bedeutung auf Deutsch |
 |---|---|---|---|
 | 400 | 5 | `invalid settings type specified` | Ungültiger settings type angegeben. |
+| 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
+| 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
+| 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
+| 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
+| 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
+
+### `/settings/delete/postingaccount`
+
+Delete postingaccount.
+
+| HTTP-Status | error_code | message (Original) | Bedeutung auf Deutsch |
+|---|---|---|---|
+| 400 | 5 | `invalid settings type specified` | Ungültiger settings type angegeben. |
+| 400 | 6 | `no postingaccount_number specified` | Keine postingaccount_number angegeben. |
+| 400 | 7 | `invalid postingaccount_number specified` | Ungültige postingaccount_number angegeben. |
+| 400 | 8 | `postingaccount was not found` | Sachkonto (postingaccount) wurde nicht gefunden. |
+| 400 | 9 | `postingaccount may not be deleted because it is a standard postingaccount` | Sachkonto darf nicht gelöscht werden, weil es ein Standardkonto ist. |
+| 400 | 10 | `postingaccount may not be deleted because postings exist` | Sachkonto darf nicht gelöscht werden, weil Buchungen existieren. |
+| 400 | 12 | `postingaccount may not be deleted because assets exist` | Sachkonto darf nicht gelöscht werden, weil Anlagen existieren. |
+| 400 | 13 | `postingaccount may not be deleted` | Sachkonto darf nicht gelöscht werden. |
+| 400 | 23 | `no post and files content received or declined` | Kein POST- und Dateiinhalt empfangen oder abgelehnt. |
 | 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
 | 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
 | 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
@@ -1217,6 +1289,24 @@ Unassign a specific receipt from a transaction.
 | 400 | 23 | `no receipts assigned to transaction` | Der Transaktion sind keine Belege (receipts) zugeordnet. |
 | 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
 | 401 | 4 | `customer not found or invalid api client for customer or insufficient privileges` | Mandant nicht gefunden, API Client für den Mandanten ungültig, oder unzureichende Rechte. |
+| 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
+| 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
+| 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
+
+### `/transactions/delete`
+
+Delete a transaction.
+
+| HTTP-Status | error_code | message (Original) | Bedeutung auf Deutsch |
+|---|---|---|---|
+| 400 | 5 | `invalid transaction_id_by_customer specified` | Ungültige transaction_id_by_customer angegeben. |
+| 400 | 6 | `transaction not found` | Transaktion nicht gefunden. |
+| 400 | 7 | `account of the transaction not found` | Konto der Transaktion nicht gefunden. |
+| 400 | 8 | `type of the transaction does not allow deletion` | Der Typ der Transaktion lässt kein Löschen zu. |
+| 400 | 9 | `transaction can not be deleted, because fixed postings exist` | Transaktion kann nicht gelöscht werden, weil festgeschriebene Buchungen existieren. |
+| 400 | 10 | `transaction is already canceled or is a cancelation` | Transaktion ist bereits storniert oder selbst eine Stornozahlung. |
+| 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
+| 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
 | 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
 | 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
 | 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |

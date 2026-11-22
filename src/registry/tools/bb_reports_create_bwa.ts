@@ -1,4 +1,4 @@
-// Werkzeug 53: `/reports/create/bwa`, Erzeugung der BWA anstoßen.
+// Werkzeug 58: `/reports/create/bwa`, Erzeugung der BWA anstoßen.
 //
 // Klasse AR: `destructiveHint: true`, weil ein neu erzeugter Bericht den
 // vorherigen desselben Typs **ersetzt** — dass er jederzeit neu berechenbar ist, ändert

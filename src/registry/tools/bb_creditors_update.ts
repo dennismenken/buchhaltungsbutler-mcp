@@ -1,4 +1,4 @@
-// Werkzeug 39 von 54: `/settings/update/creditor`.
+// Werkzeug 41 von 59: `/settings/update/creditor`.
 //
 // Klasse M, also `destructiveHint: true` und `idempotentHint: true` (die Begründung steht
 // bei `TOOL_CLASSES` in src/registry/classes.ts). Für dieses Werkzeug wiegt der Hinweis am schwersten: Hier steht die **Bankverbindung**

@@ -1,4 +1,4 @@
-// Werkzeug 23, `/postings/add/transaction`: Buchungssätze zu einer vorhandenen Zahlung.
+// Werkzeug 24, `/postings/add/transaction`: Buchungssätze zu einer vorhandenen Zahlung.
 //
 // Der zweite der fünf Endpunkte mit parallelen Arrays auf oberster Ebene. Die Positionsliste
 // `positions` trägt hier **sieben** `apiNames`: dieselben sechs wie bei der Belegbuchung plus

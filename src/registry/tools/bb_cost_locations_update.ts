@@ -1,4 +1,4 @@
-// Werkzeug 48 von 54: `/cost-locations/update`.
+// Werkzeug 53 von 59: `/cost-locations/update`.
 //
 // Klasse M, also `destructiveHint: true` und `idempotentHint: true` (die Begründung steht
 // bei `TOOL_CLASSES` in src/registry/classes.ts): Der Aufruf ersetzt die Bezeichnung, und

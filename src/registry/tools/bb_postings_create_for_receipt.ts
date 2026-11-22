@@ -1,4 +1,4 @@
-// Werkzeug 21, `/postings/add/receipt`: Buchungssätze zu einem vorhandenen Beleg.
+// Werkzeug 22, `/postings/add/receipt`: Buchungssätze zu einem vorhandenen Beleg.
 //
 // Einer der **fünf** Endpunkte mit parallelen Arrays auf oberster Ebene. Das
 // Werkzeug nimmt stattdessen eine Positionsliste `positions` mit sechs `apiNames`; die

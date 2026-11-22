@@ -18,7 +18,7 @@
 import type { ToolClass } from "../../src/registry/types.js";
 
 /**
- * Werkzeugname zu Klasse, alle 54 Einträge, in der Reihenfolge der Werkzeugnummern.
+ * Werkzeugname zu Klasse, alle 59 Einträge, in der Reihenfolge der Werkzeugnummern.
  * Die Nummern stehen als Kommentar dabei, damit ein Abgleich ohne Zählen möglich ist.
  */
 export const EXPECTED_TOOL_CLASSES = {
@@ -32,7 +32,7 @@ export const EXPECTED_TOOL_CLASSES = {
   bb_receipts_delete: "D",
   bb_receipts_restore: "A",
 
-  // Zahlungen, Werkzeuge 9 bis 16
+  // Zahlungen, Werkzeuge 9 bis 17
   bb_transactions_search: "R",
   bb_transactions_get: "R",
   bb_transactions_list_receipts: "R",
@@ -41,13 +41,14 @@ export const EXPECTED_TOOL_CLASSES = {
   bb_transactions_assign_receipt: "A",
   bb_transactions_assign_receipt_batch: "A",
   bb_transactions_unassign_receipt: "D",
+  bb_transactions_delete: "D",
 
-  // Rechnungen, Werkzeuge 17 bis 19
+  // Rechnungen, Werkzeuge 18 bis 20
   bb_invoices_create: "B",
   bb_invoices_create_draft: "B",
   bb_invoices_create_einvoice: "B",
 
-  // Buchungen, Werkzeuge 20 bis 31
+  // Buchungen, Werkzeuge 21 bis 32
   bb_postings_search: "R",
   bb_postings_create_for_receipt: "B",
   bb_postings_create_for_receipt_batch: "B",
@@ -61,37 +62,41 @@ export const EXPECTED_TOOL_CLASSES = {
   bb_postings_assign_receipt: "B",
   bb_postings_cancel: "D",
 
-  // Debitoren, Werkzeuge 32 bis 35
+  // Debitoren, Werkzeuge 33 bis 37
   bb_debtors_search: "R",
   bb_debtors_create: "A",
   bb_debtors_create_batch: "A",
   bb_debtors_update: "M",
+  bb_debtors_delete: "D",
 
-  // Kreditoren, Werkzeuge 36 bis 39
+  // Kreditoren, Werkzeuge 38 bis 42
   bb_creditors_search: "R",
   bb_creditors_create: "A",
   bb_creditors_create_batch: "A",
   bb_creditors_update: "M",
+  bb_creditors_delete: "D",
 
-  // Sachkonten, Werkzeuge 40 bis 42
+  // Sachkonten, Werkzeuge 43 bis 46
   bb_postingaccounts_search: "R",
   bb_postingaccounts_create: "A",
   bb_postingaccounts_update: "M",
+  bb_postingaccounts_delete: "D",
 
-  // Zahlungskonten, Werkzeuge 43 und 44
+  // Zahlungskonten, Werkzeuge 47 bis 49
   bb_payment_accounts_list: "R",
   bb_payment_accounts_create: "A",
+  bb_payment_accounts_delete: "D",
 
-  // Kommentare, Werkzeug 45
+  // Kommentare, Werkzeug 50
   bb_comments_create: "A",
 
-  // Kostenstellen, Werkzeuge 46 bis 49
+  // Kostenstellen, Werkzeuge 51 bis 54
   bb_cost_locations_search: "R",
   bb_cost_locations_create: "A",
   bb_cost_locations_update: "M",
   bb_cost_locations_delete: "D",
 
-  // Berichte, Werkzeuge 50 bis 54
+  // Berichte, Werkzeuge 55 bis 59
   bb_reports_get_bwa: "R",
   bb_reports_get_sums: "R",
   bb_reports_get_ledger: "R",
@@ -100,7 +105,7 @@ export const EXPECTED_TOOL_CLASSES = {
 } as const satisfies Record<string, ToolClass>;
 
 /**
- * Die Anzahl je Klasse, ebenfalls von Hand abgeschrieben. Summe 54.
+ * Die Anzahl je Klasse, ebenfalls von Hand abgeschrieben. Summe 59.
  * Sie ist die Quersumme zur Liste oben: Ein Tippfehler dort, der eine Klasse verschiebt,
  * fällt hier auf.
  */
@@ -109,15 +114,15 @@ export const EXPECTED_CLASS_COUNTS = {
   A: 16,
   AR: 2,
   M: 4,
-  D: 7,
+  D: 12,
   B: 10,
 } as const satisfies Record<ToolClass, number>;
 
-/** Die 54 erwarteten Werkzeugnamen. Abgeleitet aus der Liste oben, keine zweite Quelle. */
+/** Die 59 erwarteten Werkzeugnamen. Abgeleitet aus der Liste oben, keine zweite Quelle. */
 export const EXPECTED_TOOL_NAMES: readonly string[] = Object.keys(EXPECTED_TOOL_CLASSES);
 
 /**
- * Die 39 schreibenden Werkzeuge, also alles außer Klasse R. Abgeleitet, keine zweite Quelle.
+ * Die 44 schreibenden Werkzeuge, also alles außer Klasse R. Abgeleitet, keine zweite Quelle.
  * Sie sind die Menge, die den Nur-Lesen-Schalter nicht passiert und die ein
  * `verifyWith` sowie einen Pflichtsatz tragen muss (P8, P10).
  */

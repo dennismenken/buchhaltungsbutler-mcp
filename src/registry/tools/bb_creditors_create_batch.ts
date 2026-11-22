@@ -1,4 +1,4 @@
-// Werkzeug 38 von 54: `/settings/add-batch/creditors`.
+// Werkzeug 40 von 59: `/settings/add-batch/creditors`.
 //
 // Ein fachlicher Parameter, `creditors`, mit einem Verweis auf die Definition
 // `SettingsCreditors`. Der Behälter wird **nicht** umbenannt (Anhang A). Die zwölf

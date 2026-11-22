@@ -100,7 +100,7 @@ export const TOOL_CLASSES = {
       idempotentHint: false,
       openWorldHint: true,
     },
-    count: 7,
+    count: 12,
   },
   B: {
     meaning: "buchend oder belegbindend, ohne Weg zurück in der API",
@@ -135,5 +135,5 @@ export const TOOL_EFFECTS = {
   read: { german: "lesend", count: 15 },
   create: { german: "anlegend", count: 24 },
   modify: { german: "ändernd", count: 8 },
-  delete: { german: "löschend", count: 7 },
+  delete: { german: "löschend", count: 12 },
 } as const satisfies Record<ToolEffect, ToolEffectDefinition>;

@@ -3,10 +3,10 @@
 > **Inoffizielles Projekt.** Keine Verbindung zur BuchhaltungsButler GmbH, keine Unterstützung
 > von dort. Die Marke gehört ihrem Rechteinhaber.
 >
-> **Der Server arbeitet auf echten Buchhaltungsdaten. 40 der 59 Werkzeuge schreiben.**
+> **Der Server arbeitet auf echten Buchhaltungsdaten. 45 der 64 Werkzeuge schreiben.**
 > Buchungen und Rechnungen sind über diese API nicht löschbar.
 >
-> Nach der Installation sind alle 59 Werkzeuge sofort aufrufbar. Welche Ihr Assistent benutzen
+> Nach der Installation sind alle 64 Werkzeuge sofort aufrufbar. Welche Ihr Assistent benutzen
 > darf, entscheiden Sie in Ihrem Client.
 
 Dieser Server verbindet einen KI-Assistenten über das Model Context Protocol (MCP) mit Ihrem
@@ -19,8 +19,8 @@ außer an BuchhaltungsButler selbst.
 
 Der Server bietet zwei Sorten von Werkzeugen an.
 
-**54 Endpunktwerkzeuge, genau eines je Endpunkt der BuchhaltungsButler-API v1, davon 15
-lesend.** Kein Endpunkt bleibt ohne Werkzeug, und keines dieser 54 fasst zwei Endpunkte
+**59 Endpunktwerkzeuge, genau eines je Endpunkt der BuchhaltungsButler-API v1, davon 15
+lesend.** Kein Endpunkt bleibt ohne Werkzeug, und keines dieser 59 fasst zwei Endpunkte
 zusammen. Wer einen Vorgang genau so auslösen will, wie die Schnittstelle ihn kennt, nimmt
 eines davon.
 
@@ -30,22 +30,22 @@ blättern oder eine Auswertung anzustoßen, auf sie zu warten und sie abzuholen.
 **ersetzen kein Endpunktwerkzeug**; sie kommen daneben. Was sie beantworten, steht in
 [Abschnitt 11.1](#111-die-fünf-bündelwerkzeuge).
 
-Zusammen meldet der Server damit **59 Werkzeuge, davon 19 lesend**.
+Zusammen meldet der Server damit **64 Werkzeuge, davon 19 lesend**.
 
 <!-- werkzeuge-bereiche:anfang -->
 
 | Bereich | Werkzeuge | davon lesend |
 | --- | --- | --- |
 | Belege | 9 | 3 |
-| Zahlungen | 8 | 3 |
+| Zahlungen | 9 | 3 |
 | Rechnungen | 3 | 0 |
 | Buchungen | 12 | 1 |
-| Stammdaten | 13 | 4 |
+| Stammdaten | 17 | 4 |
 | Kostenstellen | 4 | 1 |
 | Berichte | 5 | 3 |
-| **Endpunktwerkzeuge zusammen** | **54** | **15** |
+| **Endpunktwerkzeuge zusammen** | **59** | **15** |
 | Bündelwerkzeuge ([11.1](#111-die-fünf-bündelwerkzeuge)) | 5 | 4 |
-| **Alle Werkzeuge zusammen** | **59** | **19** |
+| **Alle Werkzeuge zusammen** | **64** | **19** |
 
 <!-- werkzeuge-bereiche:ende -->
 
@@ -132,7 +132,7 @@ siehe [Abschnitt 6](#6-statt-npx-feste-installation).
 Eintragsnamen jedem Werkzeugnamen als `mcp__<name>__` voran, und ein Werkzeugname darf
 höchstens 64 Zeichen lang sein. Mit dem früheren Eintragsnamen `buchhaltungsbutler` kam
 `mcp__buchhaltungsbutler__bb_postings_create_for_transaction_batch` auf 65 Zeichen und fiel
-deshalb aus, erfahrungsgemäß ohne sprechende Meldung. Mit `bbutler` sind es 54. Wer einen
+deshalb aus, erfahrungsgemäß ohne sprechende Meldung. Mit `bbutler` sind es 59. Wer einen
 eigenen Namen einträgt, rechnet ihn gegen diese Grenze nach.
 
 **Eine ältere Installation führt den Eintrag noch unter `buchhaltungsbutler`.** Schreiben Sie
@@ -485,7 +485,7 @@ Verwaltet wird die Datei mit `bbutler-mcp profiles list|add|remove`.
 BB_MCP_TOOL_GROUPS=bundles
 ```
 
-**Der Gruppenschalter spart Kontext, nicht Zugriff.** Die 54 Werkzeugdefinitionen wiegen
+**Der Gruppenschalter spart Kontext, nicht Zugriff.** Die 59 Werkzeugdefinitionen wiegen
 zusammen gemessen **48.211 Token**, und Claude Desktop legt sie in seinem ungünstigsten Modus in
 **jede** Anfrage. Wer Buchhaltung auswertet und nicht erfasst, bezahlt davon den größten Teil
 umsonst. Claude Code und die Codex CLI laden Werkzeugdefinitionen dagegen erst bei Bedarf; dort
@@ -503,17 +503,17 @@ nicht diesen Schalter.
 | --- | --- | --- | --- |
 | `postings` | 12 | 12.092 | Buchungen suchen, anlegen, stornieren, Belege an Buchungen binden |
 | `receipts` | 8 | 8.474 | Belege suchen, hochladen, anlegen, löschen, wiederherstellen |
-| `transactions` | 8 | 6.606 | Zahlungen suchen und anlegen, Belege an Zahlungen binden |
+| `transactions` | 9 | 6.606 | Zahlungen suchen und anlegen, Belege an Zahlungen binden |
 | `invoices` | 3 | 5.733 | Ausgangsrechnungen, Entwürfe, E-Rechnungen schreiben |
-| `creditors` | 4 | 3.161 | Lieferanten nachschlagen, anlegen, ändern |
+| `creditors` | 5 | 3.161 | Lieferanten nachschlagen, anlegen, ändern |
 | `reports` | 5 | 3.777 | BWA, Summen- und Saldenliste, Kontenblatt |
-| `debtors` | 4 | 3.018 | Kunden nachschlagen, anlegen, ändern |
-| `postingaccounts` | 3 | 1.825 | Sachkonten nachschlagen, anlegen, ändern |
+| `debtors` | 5 | 3.018 | Kunden nachschlagen, anlegen, ändern |
+| `postingaccounts` | 4 | 1.825 | Sachkonten nachschlagen, anlegen, ändern |
 | `cost_locations` | 4 | 1.806 | Kostenstellen nachschlagen, anlegen, ändern, löschen |
-| `payment_accounts` | 2 | 1.131 | Zahlungskonten auflisten und anlegen |
+| `payment_accounts` | 3 | 1.131 | Zahlungskonten auflisten und anlegen |
 | `comments` | 1 | 588 | Kommentar an Beleg oder Zahlung hängen |
 | `bundles` | 5 | 6.852 | Bündelwerkzeuge: mehrere Endpunkte in einem Aufruf |
-| **Summe der elf Endpunktgruppen** | **54** | **48.211** | |
+| **Summe der elf Endpunktgruppen** | **59** | **48.211** | |
 
 Die Tokenzahlen sind mit `gpt-tokenizer` (Kodierung `o200k_base`) an den ausgelieferten
 Definitionen gemessen, nicht geschätzt; `pnpm measure-tokens` weist sie je Gruppe neu aus. Die
@@ -527,7 +527,7 @@ sie hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` eine eigene Grenze und ist als Ganz
 | Claude Desktop, Buchhaltung ohne Erfassung | `BB_MCP_TOOL_GROUPS=bundles` | nur die Bündel | 6.852 statt 55.063 |
 | Claude Desktop, mit Belegerfassung | `BB_MCP_TOOL_GROUPS=bundles,receipts,payment_accounts` | 10 plus die Bündel | 16.457 |
 | Nur auswerten | `BB_MCP_TOOL_GROUPS=bundles,reports` plus `BB_MCP_READ_ONLY=true` | 5 plus die Bündel | 10.629 |
-| Claude Code, Codex CLI | alles an, also nichts setzen | 54 plus die Bündel | im Leerlauf rund 2.000, nur die Namen |
+| Claude Code, Codex CLI | alles an, also nichts setzen | 59 plus die Bündel | im Leerlauf rund 2.000, nur die Namen |
 
 Die Zahlen der ersten drei Zeilen enthalten die Bündelgruppe. Sie sind seit dem 2026-09-13
 gemessen und keine Schätzungen mehr: 6.852 Token für die fünf Bündel, dazu 8.474 für `receipts`
@@ -567,10 +567,10 @@ Der Schalter wird nur beim Start gelesen und wirkt erst nach einem Neustart des 
 BB_MCP_READ_ONLY=true
 ```
 
-**Standard ist `false`, der Schalter ist also aus.** Nach der Installation sind alle 59
+**Standard ist `false`, der Schalter ist also aus.** Nach der Installation sind alle 64
 Werkzeuge aufrufbar.
 
-Steht er auf `true`, führt der Server nur die 19 lesenden Werkzeuge aus. Die übrigen 40 lehnen
+Steht er auf `true`, führt der Server nur die 19 lesenden Werkzeuge aus. Die übrigen 45 lehnen
 ab, **bevor** ein Request an BuchhaltungsButler abgeht, und die Absage nennt die Variable und
 ihren Zielwert. Gesperrte Werkzeuge bleiben in der Werkzeugliste sichtbar: Ein Assistent, der
 ein Werkzeug nicht sieht, schließt auf eine fehlende Fähigkeit und sucht Umwege; einer, der eine
@@ -675,6 +675,7 @@ fünf Bündelwerkzeuge stehen nicht darin, sondern in [11.1](#111-die-fünf-bün
 | `bb_transactions_assign_receipt_batch` | ändernd | Stellt bis zu 50 Zuordnungen aus Beleg und Zahlung in BuchhaltungsButler in einem Aufruf her. |
 | `bb_transactions_create` | anlegend | Legt in BuchhaltungsButler eine Zahlung auf einem echten Zahlungskonto an, also einen Kontoumsatz. |
 | `bb_transactions_create_batch` | anlegend | Legt bis zu 50 Zahlungen in BuchhaltungsButler in einem Aufruf an. |
+| `bb_transactions_delete` | löschend | Löscht eine Zahlung in BuchhaltungsButler, etwa eine falsch erfasste Kontoumsatzbuchung. |
 | `bb_transactions_get` | lesend | Holt genau eine Zahlung aus BuchhaltungsButler über ihre mandantenbezogene Nummer. |
 | `bb_transactions_list_receipts` | lesend | Listet die Belege auf, die in BuchhaltungsButler einer bestimmten Zahlung zugeordnet sind. |
 | `bb_transactions_search` | lesend | Sucht Zahlungen, also Kontoumsätze, in BuchhaltungsButler und liefert sie seitenweise. |
@@ -711,15 +712,19 @@ fünf Bündelwerkzeuge stehen nicht darin, sondern in [11.1](#111-die-fünf-bün
 | --- | --- | --- |
 | `bb_creditors_create` | anlegend | Legt ein Kreditorenkonto, also ein Lieferantenkonto, in BuchhaltungsButler an. |
 | `bb_creditors_create_batch` | anlegend | Legt mehrere Kreditorenkonten in BuchhaltungsButler in einem Aufruf an. |
+| `bb_creditors_delete` | löschend | Löscht ein Kreditorenkonto in BuchhaltungsButler, etwa einen Lieferanten, der nicht mehr beliefert. |
 | `bb_creditors_search` | lesend | Listet die Kreditorenkonten des Mandanten in BuchhaltungsButler auf, also die Lieferantenkonten, mit Kontonummer, Name und Anschrift. |
 | `bb_creditors_update` | ändernd | Überschreibt die Stammdaten eines Kreditorenkontos in BuchhaltungsButler, die Bankverbindung eingeschlossen. |
 | `bb_debtors_create` | anlegend | Legt ein Debitorenkonto, also ein Kundenkonto, in BuchhaltungsButler an. |
 | `bb_debtors_create_batch` | anlegend | Legt mehrere Debitorenkonten in BuchhaltungsButler in einem Aufruf an. |
+| `bb_debtors_delete` | löschend | Löscht ein Debitorenkonto in BuchhaltungsButler, etwa einen Kunden, den es nicht mehr gibt. |
 | `bb_debtors_search` | lesend | Listet die Debitorenkonten des Mandanten in BuchhaltungsButler auf, also die Kundenkonten, mit Kontonummer, Name, Kundennummer und Anschrift. |
 | `bb_debtors_update` | ändernd | Überschreibt die Stammdaten eines Debitorenkontos in BuchhaltungsButler, Anschrift und Bankverbindung eingeschlossen. |
 | `bb_payment_accounts_create` | anlegend | Legt ein manuell geführtes Zahlungskonto in BuchhaltungsButler an, etwa eine Kasse oder ein Kreditkartenkonto. |
+| `bb_payment_accounts_delete` | löschend | Löscht ein Zahlungskonto in BuchhaltungsButler, etwa eine Kasse, die nicht mehr benutzt wird. |
 | `bb_payment_accounts_list` | lesend | Listet die Zahlungskonten des Mandanten in BuchhaltungsButler auf, also Kassen, Bank- und Kreditkartenkonten. |
 | `bb_postingaccounts_create` | anlegend | Legt ein neues Sachkonto im Kontenrahmen des Mandanten in BuchhaltungsButler an. |
+| `bb_postingaccounts_delete` | löschend | Löscht ein Sachkonto in BuchhaltungsButler. |
 | `bb_postingaccounts_search` | lesend | Durchsucht den Kontenrahmen des Mandanten in BuchhaltungsButler. |
 | `bb_postingaccounts_update` | ändernd | Überschreibt die Bezeichnung eines Sachkontos in BuchhaltungsButler. |
 
@@ -753,7 +758,7 @@ Schritt, bei dem er sich nicht verlaufen kann.
 
 Drei Dinge gelten für alle fünf gleich:
 
-- **Sie ersetzen nichts.** Jedes der 54 Endpunktwerkzeuge bleibt da und kann weiterhin einzeln
+- **Sie ersetzen nichts.** Jedes der 59 Endpunktwerkzeuge bleibt da und kann weiterhin einzeln
   aufgerufen werden. Braucht man ein Feld, das ein Bündel zusammenfasst oder weglässt, nennt die
   Antwort das Einzelwerkzeug, das es liefert.
 - **Sie sagen, wenn etwas offen geblieben ist.** Jede Antwort führt ein Feld `bundle.complete`.
@@ -890,7 +895,7 @@ Der Server reicht sie sichtbar durch, statt sie zu verstecken.
   genau einer Gegenstelle: der BuchhaltungsButler-API.
 - **Protokolliert wird auf stderr**, nie auf stdout, weil stdout dem MCP-Protokoll gehört. Die
   Stufe stellen Sie mit `BB_MCP_LOG_LEVEL` ein.
-- **Kontextkosten.** Die Definitionen der 54 Endpunktwerkzeuge sind rund **48.000 Token** groß,
+- **Kontextkosten.** Die Definitionen der 59 Endpunktwerkzeuge sind rund **48.000 Token** groß,
   die der fünf Bündelwerkzeuge weitere 6.852, die Serverbeschreibung rund 1.400. Gemessen mit
   `gpt-tokenizer` in der Kodierung `o200k_base`; für andere Modellfamilien ist das eine
   Größenordnung und keine exakte Zahl. Das ist der Preis
@@ -942,7 +947,7 @@ Eine gesunde Ausgabe zeigt
 - die Rechte der Zugangsdatendatei,
 - das Ergebnis des Verbindungstests mit der Zahl der gefundenen Zahlungskonten,
 - die Schalterlage, also `BB_MCP_READ_ONLY`, die Grenzen und den Stammdatenspeicher,
-- „Registriert: 59 — 54 Endpunktwerkzeuge und 5 Bündelwerkzeuge" und darunter die Wirkungen der
+- „Registriert: 64 — 59 Endpunktwerkzeuge und 5 Bündelwerkzeuge" und darunter die Wirkungen der
   Endpunktwerkzeuge, also „15 lesend, 24 anlegend, 8 ändernd, 7 löschend",
 - die geschätzte Größe der Werkzeugdefinitionen,
 - die gefundenen Clientkonfigurationen mit Pfad,
@@ -979,7 +984,7 @@ Diese Punkte sind bekannt, benannt und nicht wegkonstruierbar.
   Der Server erzwingt keine Bestätigung; das ist eine bewusste Entscheidung. Ihr Schutz sind die
   Annotationen ([11.2](#112-was-die-annotationen-bedeuten)), die Freigabe in Ihrem Client, der
   Nur-Lesen-Schalter und die Betrags- und Mengengrenzen.
-- **Die Werkzeuge kosten Kontext.** Die 54 Endpunktwerkzeuge wiegen rund 48.000 Token (gemessen
+- **Die Werkzeuge kosten Kontext.** Die 59 Endpunktwerkzeuge wiegen rund 48.000 Token (gemessen
   48.211), die fünf Bündelwerkzeuge weitere 6.852, zusammen 55.063. Bei vielen gleichzeitig
   aktiven Servern kann die Trefferquote eines Assistenten darunter leiden. Wer nur einen Teil
   braucht, meldet mit `BB_MCP_TOOL_GROUPS` nur diesen an ([7.4](#74-werkzeuggruppen-abschalten)). In Claude Code und

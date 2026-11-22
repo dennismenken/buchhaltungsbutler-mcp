@@ -1,4 +1,4 @@
-// Werkzeug 22, `/postings/add-batch/receipts`: Belegbuchungen für mehrere Belege in einem
+// Werkzeug 23, `/postings/add-batch/receipts`: Belegbuchungen für mehrere Belege in einem
 // Aufruf.
 //
 // **Auf oberster Ebene findet hier KEINE Umformung statt.** Der Endpunkt führt genau einen

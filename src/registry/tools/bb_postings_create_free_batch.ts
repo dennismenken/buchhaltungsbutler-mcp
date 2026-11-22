@@ -1,4 +1,4 @@
-// Werkzeug 26, `/postings/add-batch/free`: mehrere freie Buchungen in einem Aufruf.
+// Werkzeug 27, `/postings/add-batch/free`: mehrere freie Buchungen in einem Aufruf.
 //
 // **Hier findet keinerlei Umformung statt.** Der Endpunkt führt genau einen Parameter
 // `free_postings`, und der ist laut Definition `PostingsFree` **bereits** eine Objektliste aus

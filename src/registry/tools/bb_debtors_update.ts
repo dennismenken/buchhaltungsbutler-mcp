@@ -1,4 +1,4 @@
-// Werkzeug 35 von 54: `/settings/update/debtor`.
+// Werkzeug 36 von 59: `/settings/update/debtor`.
 //
 // Klasse M, also `destructiveHint: true` und `idempotentHint: true` (die Begründung steht
 // bei `TOOL_CLASSES` in src/registry/classes.ts): Ein Überschreiben ist nicht additiv, und

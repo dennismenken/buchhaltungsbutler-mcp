@@ -1,4 +1,4 @@
-// Werkzeug 3 von 54: `/receipts/assigned-transactions/get`.
+// Werkzeug 3 von 59: `/receipts/assigned-transactions/get`.
 //
 // Die Antwort trägt **Zahlungen**, nicht Belege: `id_by_customer` ist dort die Nummer der
 // Zahlung und nicht die des angefragten Belegs. Wer beides verwechselt, ruft mit einer

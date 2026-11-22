@@ -34,16 +34,16 @@ const VERBS: readonly string[] = [
   "unassign",
 ];
 
-/** Die Auszählung nach Ressource, von Hand abgeschrieben. Summe 54. */
+/** Die Auszählung nach Ressource, von Hand abgeschrieben. Summe 59. */
 const TOOLS_BY_RESOURCE: Readonly<Record<string, number>> = {
   receipts: 8,
-  transactions: 8,
+  transactions: 9,
   invoices: 3,
   postings: 12,
-  debtors: 4,
-  creditors: 4,
-  postingaccounts: 3,
-  payment_accounts: 2,
+  debtors: 5,
+  creditors: 5,
+  postingaccounts: 4,
+  payment_accounts: 3,
   comments: 1,
   cost_locations: 4,
   reports: 5,
@@ -145,7 +145,7 @@ describe("P4 Namensschema", () => {
     expectNoIssues(problems);
   });
 
-  it("verteilt die 54 Werkzeuge genau wie die Auszählung nach Ressource", () => {
+  it("verteilt die 59 Werkzeuge genau wie die Auszählung nach Ressource", () => {
     const problems: string[] = [];
     const countByResource = new Map<string, number>();
 
@@ -171,7 +171,7 @@ describe("P4 Namensschema", () => {
     }
 
     expectNoIssues(problems);
-    expect(Object.values(TOOLS_BY_RESOURCE).reduce((a, b) => a + b, 0)).toBe(54);
+    expect(Object.values(TOOLS_BY_RESOURCE).reduce((a, b) => a + b, 0)).toBe(59);
   });
 
   it("vergibt jeden Namen genau einmal", () => {

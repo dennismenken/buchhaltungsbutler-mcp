@@ -543,8 +543,9 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/settings/add/debto
 - `country` akzeptiert laut Spezifikation ausschließlich den deutschen Landesnamen oder den
   ISO-3166-1-alpha-2-Code. Englische Namen wie `Denmark` sind nicht vorgesehen. Für einen
   Agenten ist der ISO-Code der sichere Weg.
-- Es gibt keinen Endpunkt zum Löschen eines Debitors. Anlegen ist nicht rückgängig zu
-  machen. Ein MCP-Tool muss das dem Agenten und dem Nutzer klar signalisieren.
+- Es gibt einen Endpunkt zum Löschen eines Debitors, `/settings/delete/debtor`. Er löscht
+  nur ein Konto ohne Buchungen, und die gelöschten Stammdaten sind über die API nicht
+  wiederherstellbar. Ein MCP-Tool muss das dem Agenten und dem Nutzer klar signalisieren.
 - Ein Duplikatschutz auf `name` ist nicht dokumentiert. Anders als bei
   `/settings/add/postingaccount` und `/accounts/add` gibt es hier keinen Fehlercode
   `the specified name already exists`. Es ist daher zu **vermuten**, dass zwei Debitoren mit
@@ -820,6 +821,70 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/settings/update/de
 - Auch hier gilt: Schreibfeldnamen `additional_address_line` und `sales_tax_id` stehen
   Lesefeldnamen `additional_addressline` und `sales_tax_id_eu` gegenüber.
 
+## `/settings/delete/debtor`
+
+Löscht ein Debitorenkonto.
+
+**Einordnung: SCHREIBEND und destruktiv.** Nicht live verifiziert.
+
+### Parameter
+
+Vollständig, 2 Parameter laut `jq '.paths["/settings/delete/debtor"].post.parameters | length'`.
+
+| Feld | Typ | Pflicht | Default | Beschreibung | Werte und Format |
+| --- | --- | --- | --- | --- | --- |
+| `api_key` | string | ja | kein | API-Schlüssel des Mandanten | siehe Grundlagen |
+| `postingaccount_number` | integer | ja | kein | Buchungskontonummer des zu löschenden Debitorenkontos. Dient als Identifikator | **Typ `integer`**, abweichend vom Anlegen |
+
+Verschachtelte Objekt- oder Array-Parameter: keine.
+
+### Erfolgsantwort
+
+```json
+{
+  "success": true,
+  "message": ""
+}
+```
+
+Keine weiteren Felder. Die Antwort nennt die gelöschte Kontonummer **nicht** zurück.
+
+### Fehlerfälle
+
+| HTTP-Status | error_code | message | Bedeutung | Abhilfe |
+| --- | --- | --- | --- | --- |
+| 401 | 3 | `API credentials unknown or invalid` | Basic-Auth falsch | Zugangsdaten prüfen |
+| 401 | 4 | `customer not found or insufficient privileges` | `api_key` falsch | `api_key` prüfen |
+| 403 | 11 | `customer has no active status` | Mandant inaktiv | Vertragsstatus klären |
+| 400 | 5 | `invalid settings type specified` | Interner Settings-Typ | Über die API nicht direkt auslösbar |
+| 400 | 6 | `wrong debtor account postingaccount_number specified` | Nummer formal falsch, etwa nicht numerisch oder außerhalb des Debitorenbereichs | Nummer aus `/settings/get/debtors` übernehmen |
+| 400 | 7 | `no debtor found for specified postingaccount_number` | Nummer formal in Ordnung, aber kein Debitor darunter | Nummer prüfen |
+| 400 | 8 | `debtor may not be deleted because postings exist` | Für das Konto existieren Buchungen, deshalb ist das Löschen gesperrt | Debitor behalten; die Buchungen prüfen |
+| 500 | 0 | `error while processing the request` | Interner Fehler | Zustand prüfen, dann wiederholen |
+| 504 | 30 | `a timeout occurred while processing the request` | Zeitüberschreitung | Zustand prüfen, dann wiederholen |
+
+### curl-Beispiel
+
+```bash
+curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/settings/delete/debtor" \
+  -u "<API_CLIENT>:<API_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "api_key": "<API_KEY>",
+        "postingaccount_number": 10001
+      }'
+```
+
+### Fallstricke
+
+- Die Löschbedingung steht wörtlich in der Spezifikation: Das Konto lässt sich nur löschen,
+  wenn für es keine Buchungen existieren. Ob das Konto danach wieder anlegbar ist, sagt die
+  Spezifikation nicht.
+- `postingaccount_number` ist hier `integer`, beim Anlegen `string`.
+- Die Stammdaten des gelöschten Kontos sind über die API **nicht wiederherstellbar**. Ein
+  Anlegen mit `POST /settings/add/debtor` legt ein leeres Konto an, nicht das frühere.
+- Ein MCP-Tool sollte den Aufruf nur mit ausdrücklicher Bestätigung ausführen.
+
 ---
 
 # Kreditoren
@@ -1020,7 +1085,7 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/settings/add/credi
 - Fehlercode 21 hat hier eine andere Bedeutung als beim Debitor.
 - Die Feldbeschreibung von `due_in_days` spricht in der Spezifikation von einem
   "debtor account". Das ist ein Copy-Paste-Fehler, fachlich gilt Kreditor.
-- Kein Löschendpunkt vorhanden.
+- Der Löschendpunkt `/settings/delete/creditor` löscht nur ein Konto ohne Buchungen.
 - Kein dokumentierter Duplikatschutz auf `name`.
 
 ## `/settings/add-batch/creditors`
@@ -1235,6 +1300,70 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/settings/update/cr
 - `postingaccount_number` ist `integer`, beim Anlegen `string`.
 - Die Nummer selbst kann nicht geändert werden.
 - Kein `customer_number`-Parameter, obwohl die Leseantwort das Feld enthält.
+
+## `/settings/delete/creditor`
+
+Löscht ein Kreditorenkonto.
+
+**Einordnung: SCHREIBEND und destruktiv.** Nicht live verifiziert.
+
+### Parameter
+
+Vollständig, 2 Parameter laut `jq '.paths["/settings/delete/creditor"].post.parameters | length'`.
+
+| Feld | Typ | Pflicht | Default | Beschreibung | Werte und Format |
+| --- | --- | --- | --- | --- | --- |
+| `api_key` | string | ja | kein | API-Schlüssel des Mandanten | siehe Grundlagen |
+| `postingaccount_number` | integer | ja | kein | Buchungskontonummer des zu löschenden Kreditorenkontos. Dient als Identifikator | **Typ `integer`**, abweichend vom Anlegen |
+
+Verschachtelte Objekt- oder Array-Parameter: keine.
+
+### Erfolgsantwort
+
+```json
+{
+  "success": true,
+  "message": ""
+}
+```
+
+Keine weiteren Felder. Die Antwort nennt die gelöschte Kontonummer **nicht** zurück.
+
+### Fehlerfälle
+
+| HTTP-Status | error_code | message | Bedeutung | Abhilfe |
+| --- | --- | --- | --- | --- |
+| 401 | 3 | `API credentials unknown or invalid` | Basic-Auth falsch | Zugangsdaten prüfen |
+| 401 | 4 | `customer not found or insufficient privileges` | `api_key` falsch | `api_key` prüfen |
+| 403 | 11 | `customer has no active status` | Mandant inaktiv | Vertragsstatus klären |
+| 400 | 5 | `invalid settings type specified` | Interner Settings-Typ | Über die API nicht direkt auslösbar |
+| 400 | 6 | `wrong creditor account postingaccount_number specified` | Nummer formal falsch, etwa nicht numerisch oder außerhalb des Kreditorenbereichs | Nummer aus `/settings/get/creditors` übernehmen |
+| 400 | 7 | `no creditor found for specified postingaccount_number` | Nummer formal in Ordnung, aber kein Kreditor darunter | Nummer prüfen |
+| 400 | 8 | `creditor may not be deleted because postings exist` | Für das Konto existieren Buchungen, deshalb ist das Löschen gesperrt | Kreditor behalten; die Buchungen prüfen |
+| 500 | 0 | `error while processing the request` | Interner Fehler | Zustand prüfen, dann wiederholen |
+| 504 | 30 | `a timeout occurred while processing the request` | Zeitüberschreitung | Zustand prüfen, dann wiederholen |
+
+### curl-Beispiel
+
+```bash
+curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/settings/delete/creditor" \
+  -u "<API_CLIENT>:<API_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "api_key": "<API_KEY>",
+        "postingaccount_number": 70150
+      }'
+```
+
+### Fallstricke
+
+- Die Löschbedingung steht wörtlich in der Spezifikation: Das Konto lässt sich nur löschen,
+  wenn für es keine Buchungen existieren. Ob das Konto danach wieder anlegbar ist, sagt die
+  Spezifikation nicht.
+- `postingaccount_number` ist hier `integer`, beim Anlegen `string`.
+- Die Stammdaten des gelöschten Kontos sind über die API **nicht wiederherstellbar**. Ein
+  Anlegen mit `POST /settings/add/creditor` legt ein leeres Konto an, nicht das frühere.
+- Ein MCP-Tool sollte den Aufruf nur mit ausdrücklicher Bestätigung ausführen.
 
 ---
 
@@ -1512,7 +1641,8 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/settings/add/posti
 - Das Vorlagekonto überträgt Steuerautomatiken. Falsche Wahl bedeutet falsche
   Steuerbuchungen. Ein MCP-Tool sollte hier eine Bestätigung durch den Nutzer erzwingen.
 - Ein individuell angelegtes Konto darf nicht selbst wieder als Vorlage dienen, Code 18.
-- Es gibt keinen Endpunkt zum Löschen eines Sachkontos.
+- Es gibt einen Endpunkt zum Löschen eines Sachkontos, `/settings/delete/postingaccount`.
+  Er löscht nur manuell angelegte oder bearbeitete Konten ohne Buchungen und ohne Anlagen.
 
 ## `/settings/update/postingaccount`
 
@@ -1593,6 +1723,79 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/settings/update/po
   Wissensdatenbank an der Kontoeigenschaft hängen. Ein Umbenennen kann dadurch zu einem
   irreführenden Kontenplan führen.
 - Die Nummer lässt sich nicht ändern.
+
+## `/settings/delete/postingaccount`
+
+Löscht ein Sachkonto.
+
+**Einordnung: SCHREIBEND und destruktiv.** Nicht live verifiziert.
+
+### Parameter
+
+Vollständig, 2 Parameter laut `jq '.paths["/settings/delete/postingaccount"].post.parameters | length'`.
+
+| Feld | Typ | Pflicht | Default | Beschreibung | Werte und Format |
+| --- | --- | --- | --- | --- | --- |
+| `api_key` | string | ja | kein | API-Schlüssel des Mandanten | siehe Grundlagen |
+| `postingaccount_number` | integer | ja | kein | Buchungskontonummer des zu löschenden Sachkontos. Dient als Identifikator | **Typ `integer`**, abweichend vom Anlegen |
+
+Verschachtelte Objekt- oder Array-Parameter: keine.
+
+### Erfolgsantwort
+
+```json
+{
+  "success": true,
+  "message": "",
+  "postingaccount_number": "7001"
+}
+```
+
+Die Kontonummer steht auf oberster Ebene des Umschlags, nicht in einem `data`-Objekt. Sie
+ist laut Spezifikation ein **String**.
+
+### Fehlerfälle
+
+| HTTP-Status | error_code | message | Bedeutung | Abhilfe |
+| --- | --- | --- | --- | --- |
+| 401 | 3 | `API credentials unknown or invalid` | Basic-Auth falsch | Zugangsdaten prüfen |
+| 401 | 4 | `customer not found or insufficient privileges` | `api_key` falsch | `api_key` prüfen |
+| 403 | 11 | `customer has no active status` | Mandant inaktiv | Vertragsstatus klären |
+| 400 | 5 | `invalid settings type specified` | Interner Settings-Typ | Über die API nicht direkt auslösbar |
+| 400 | 6 | `no postingaccount_number specified` | Pflichtfeld fehlt | `postingaccount_number` setzen |
+| 400 | 7 | `invalid postingaccount_number specified` | Nummer formal falsch | Ganzzahl aus `/settings/get/postingaccounts` übernehmen |
+| 400 | 8 | `postingaccount was not found` | Konto existiert nicht | Nummer prüfen |
+| 400 | 9 | `postingaccount may not be deleted because it is a standard postingaccount` | Standardkonto des Kontenrahmens, nicht gelöschbar | Konto behalten |
+| 400 | 10 | `postingaccount may not be deleted because postings exist` | Für das Konto existieren Buchungen | Konto behalten; die Buchungen prüfen |
+| 400 | 12 | `postingaccount may not be deleted because assets exist` | Für das Konto sind Anlagen erfasst | Anlagen zuerst klären |
+| 400 | 13 | `postingaccount may not be deleted` | Löschen gesperrt, Grund nicht weiter spezifiziert | Konto behalten |
+| 400 | 23 | `no post and files content received or declined` | Kein oder abgelehnter Body | Gültiges JSON senden |
+| 500 | 0 | `error while processing the request` | Interner Fehler | Zustand prüfen, dann wiederholen |
+| 504 | 30 | `a timeout occurred while processing the request` | Zeitüberschreitung | Zustand prüfen, dann wiederholen |
+
+### curl-Beispiel
+
+```bash
+curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/settings/delete/postingaccount" \
+  -u "<API_CLIENT>:<API_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "api_key": "<API_KEY>",
+        "postingaccount_number": 4931
+      }'
+```
+
+### Fallstricke
+
+- **Nur manuell angelegte oder bearbeitete Sachkonten sind löschbar.** Die
+  Standardkonten des Kontenrahmens sind es nicht; das ist Fehler 9.
+- **Bei einem manuell bearbeiteten Standardkonto setzt die API nur den Namen auf den
+  Standardwert zurück.** Das Konto wird in diesem Fall **nicht** gelöscht. Die Spezifikation
+  sagt nicht, ob der Aufruf trotzdem erfolgreich meldet. Wer diesen Endpunkt aufruft, muss
+  das Ergebnis prüfen und darf den Erfolg nicht ungeprüft übernehmen.
+- Buchungen und Anlagen auf dem Konto sperren das Löschen (Fehler 10 und 12).
+- `postingaccount_number` ist hier `integer`, beim Anlegen `string`.
+- Ein MCP-Tool sollte den Aufruf nur mit ausdrücklicher Bestätigung ausführen.
 
 ---
 
@@ -1692,7 +1895,8 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/accounts/get" \
 - Die Einträge sind identisch mit den `type == "account"`-Einträgen aus
   `/settings/get/postingaccounts`. Live verifiziert: dieselben fünf Nummern in beiden
   Antworten.
-- Es gibt keinen Endpunkt zum Aktualisieren oder Löschen eines Basiskontos.
+- Es gibt keinen Endpunkt zum Aktualisieren eines Basiskontos. Ein Löschendpunkt ist seit
+  Spezifikation 1.9.1 vorhanden: `/accounts/delete`.
 
 ## `/accounts/add`
 
@@ -1815,7 +2019,78 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/accounts/add" \
   Wer Debitoren- und Kreditorenbuchhaltung nutzt, sollte das Flag bewusst wählen.
 - Die Nummer muss zum Kontotyp passen. Es gibt keinen API-Endpunkt, der die zulässigen
   Bereiche ausliest. Der Server liefert im Fehlerfall 14 eine genauere Meldung.
-- Kein Update- und kein Löschendpunkt.
+- Kein Update-Endpunkt. Es gibt aber einen Löschendpunkt, `/accounts/delete`.
+
+## `/accounts/delete`
+
+Löscht ein Basiskonto, also ein Zahlungskonto.
+
+**Einordnung: SCHREIBEND und destruktiv.** Nicht live verifiziert.
+
+### Parameter
+
+Vollständig, 2 Parameter laut `jq '.paths["/accounts/delete"].post.parameters | length'`.
+
+| Feld | Typ | Pflicht | Default | Beschreibung | Werte und Format |
+| --- | --- | --- | --- | --- | --- |
+| `api_key` | string | ja | kein | API-Schlüssel des Mandanten | siehe Grundlagen |
+| `postingaccount_number` | integer | ja | kein | Buchungskontonummer des zu löschenden Basiskontos. Dient als Identifikator | **Typ `integer`**, abweichend vom Anlegen |
+
+Verschachtelte Objekt- oder Array-Parameter: keine.
+
+### Erfolgsantwort
+
+```json
+{
+  "success": true,
+  "message": "",
+  "postingaccount_number": "1200"
+}
+```
+
+Die Kontonummer steht auf oberster Ebene des Umschlags, nicht in einem `data`-Objekt. Sie
+ist laut Spezifikation ein **String**.
+
+### Fehlerfälle
+
+| HTTP-Status | error_code | message | Bedeutung | Abhilfe |
+| --- | --- | --- | --- | --- |
+| 401 | 3 | `API credentials unknown or invalid` | Basic-Auth falsch | Zugangsdaten prüfen |
+| 401 | 4 | `customer not found or insufficient privileges` | `api_key` falsch | `api_key` prüfen |
+| 403 | 11 | `customer has no active status` | Mandant inaktiv | Vertragsstatus klären |
+| 400 | 5 | `no postingaccount_number specified` | Pflichtfeld fehlt | `postingaccount_number` setzen |
+| 400 | 6 | `invalid postingaccount_number specified` | Nummer formal falsch | Ganzzahl aus `/accounts/get` übernehmen |
+| 400 | 7 | `account was not found` | Konto existiert nicht | Nummer prüfen |
+| 400 | 8 | `account may not be deleted because confirmed postings exist` | Das Konto trägt festgeschriebene Buchungen | Konto behalten; die Buchungen prüfen |
+| 400 | 9 | `account may not be deleted because revision safe transactions exist` | Das Konto trägt revisionssichere Transaktionen | Konto behalten; die Transaktionen prüfen |
+| 400 | 10 | `account may not be deleted` | Löschen gesperrt, Grund nicht weiter spezifiziert | Konto behalten |
+| 400 | 23 | `no post and files content received or declined` | Kein oder abgelehnter Body | Gültiges JSON senden |
+| 500 | 0 | `error while processing the request` | Interner Fehler | Zustand prüfen, dann wiederholen |
+| 504 | 30 | `a timeout occurred while processing the request` | Zeitüberschreitung | Zustand prüfen, dann wiederholen |
+
+### curl-Beispiel
+
+```bash
+curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/accounts/delete" \
+  -u "<API_CLIENT>:<API_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "api_key": "<API_KEY>",
+        "postingaccount_number": 1200
+      }'
+```
+
+### Fallstricke
+
+- **Die Löschbedingung steht wörtlich in der Spezifikation:** Das Konto lässt sich nur
+  löschen, wenn es keine festgeschriebenen Buchungen und keine revisionssicheren
+  Transaktionen enthält. Beide Bedingungen prüft die API, nicht der Client.
+- `is_revision_safe` ist beim Anlegen dauerhaft gesetzt worden. Ein revisionssicheres Konto
+  lässt sich deshalb unter Umständen gar nicht mehr löschen; die Eigenschaft selbst ist
+  über die API nicht abschaltbar, weil es keinen Update-Endpunkt für Basiskonten gibt.
+- `postingaccount_number` ist hier `integer`, beim Anlegen `string`.
+- Die Kontoeigenschaften des gelöschten Kontos sind über die API **nicht wiederherstellbar**.
+- Ein MCP-Tool sollte den Aufruf nur mit ausdrücklicher Bestätigung ausführen.
 
 ---
 
@@ -2404,11 +2679,12 @@ Diese Felder brauchen in der Tool-Beschreibung ausführliche, beispielhafte Erkl
 
 ## Absicherung schreibender Tools
 
-Von den 18 dokumentierten Endpunkten sind 13 schreibend:
+Von den 23 dokumentierten Endpunkten sind 18 schreibend:
 `/settings/add/debtor`, `/settings/add-batch/debtors`, `/settings/update/debtor`,
-`/settings/add/creditor`, `/settings/add-batch/creditors`, `/settings/update/creditor`,
-`/settings/add/postingaccount`, `/settings/update/postingaccount`, `/accounts/add`,
-`/cost-locations/add`, `/cost-locations/update`, `/cost-locations/delete`,
+`/settings/delete/debtor`, `/settings/add/creditor`, `/settings/add-batch/creditors`,
+`/settings/update/creditor`, `/settings/delete/creditor`, `/settings/add/postingaccount`,
+`/settings/update/postingaccount`, `/settings/delete/postingaccount`, `/accounts/add`,
+`/accounts/delete`, `/cost-locations/add`, `/cost-locations/update`, `/cost-locations/delete`,
 `/comments/add`.
 
 Fünf sind lesend: `/settings/get/debtors`, `/settings/get/creditors`,
@@ -2418,9 +2694,12 @@ Empfehlungen:
 
 - Schreibende Tools brauchen ein eigenes, deutlich markiertes Namensschema und sollten
   hinter einer expliziten Freigabe liegen.
-- Für Debitoren, Kreditoren, Sachkonten und Basiskonten gibt es **kein Löschen und kein
-  Rückgängigmachen**. Jeder Anlegevorgang ist dauerhaft.
-- `/cost-locations/delete` ist der einzige destruktive Endpunkt.
+- Für Debitoren, Kreditoren, Sachkonten und Basiskonten gibt es seit Spezifikation 1.9.1
+  je einen Löschendpunkt. Die gelöschten Stammdaten sind trotzdem **nicht** rückgängig zu
+  machen: Ein erneutes Anlegen legt ein leeres Konto an.
+- Destruktive Endpunkte sind `/cost-locations/delete`, `/settings/delete/debtor`,
+  `/settings/delete/creditor`, `/settings/delete/postingaccount`, `/accounts/delete` und
+  `/transactions/delete`.
 - `/comments/add` ist nicht idempotent und nicht rückgängig zu machen. Automatische Retrys
   vermeiden.
 - Bei Timeout (Code 30) und internem Fehler (Code 0) darf ein schreibender Aufruf nicht

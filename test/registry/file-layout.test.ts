@@ -22,14 +22,14 @@ import {
 } from "../helpers/registry-fixtures.js";
 import { EXPECTED_TOOL_NAMES } from "./class-list.js";
 
-const COUNT = 54;
+const COUNT = 59;
 
 function expectNoIssues(problems: readonly string[]): void {
   expect(problems.join("\n")).toBe("");
 }
 
 describe("P12 Dateiaufbau", () => {
-  it("führt genau 54 Dateien unter src/registry/tools/", () => {
+  it("führt genau 59 Dateien unter src/registry/tools/", () => {
     const files = registryFileNames();
     const present = new Set(files);
     const problems: string[] = [];

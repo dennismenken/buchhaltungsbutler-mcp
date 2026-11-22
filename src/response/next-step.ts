@@ -35,9 +35,27 @@ export type Reversal =
       readonly note: string;
     };
 
-const NO_TRANSACTION_DELETE =
-  "Die API kennt keinen Endpunkt, eine Zahlung zu löschen. Eine falsch angelegte Zahlung ist " +
-  "nur in der Weboberfläche von BuchhaltungsButler zu bereinigen.";
+/**
+ * Der Weg zurück zu einer angelegten Zahlung.
+ *
+ * Der Endpunkt `/transactions/delete` entfernt die Zahlung nicht in jedem Fall: In einem
+ * revisionssicheren Konto legt er eine Stornotransaktion (STORNO) an, und eine Zahlung mit
+ * festgeschriebenen Buchungen lässt sich nicht löschen. Der Hinweis nennt das, weil der
+ * Aufrufer sonst einen endgültig gelöschten Datensatz erwartet.
+ */
+const TRANSACTION_DELETE_NOTE =
+  "entfernt die Zahlung, sofern sie keine festgeschriebenen Buchungen trägt. In einem " +
+  "revisionssicheren Konto legt die API stattdessen eine Stornotransaktion (STORNO) an.";
+
+/**
+ * Der Weg zurück zu einem angelegten Stammdatensatz.
+ *
+ * Die Löschbedingungen stehen bei den Löschwerkzeugen; hier geht es nur darum, dass es
+ * überhaupt einen Weg zurück gibt.
+ */
+const DELETE_RECREATES_NOTE =
+  "legt das Konto wieder an, sofern die Nummer danach noch frei ist. Die übrigen Stammdaten " +
+  "stehen nur in der Weboberfläche.";
 
 const NO_PREVIOUS_STATE =
   "Kein Endpunkt liefert den Vorzustand zurück. Er ist nach dem Überschreiben über die API " +
@@ -54,7 +72,7 @@ const RECREATE_NOTE =
   "Buchungsnummern und Zeitstempel sind danach andere.";
 
 /**
- * Der Weg zurück je schreibendem Werkzeug, vollständig für alle 39.
+ * Der Weg zurück je schreibendem Werkzeug, vollständig für alle 44.
  *
  * Lesende Werkzeuge stehen nicht in der Tabelle: Sie verändern nichts, und ein „Weg zurück"
  * wäre dort eine sinnlose Zeile.
@@ -93,8 +111,24 @@ export const REVERSAL_BY_TOOL: Readonly<Record<string, Reversal>> = Object.freez
   },
 
   // --- Zahlungen ---------------------------------------------------------------------
-  bb_transactions_create: { kind: "none", note: NO_TRANSACTION_DELETE },
-  bb_transactions_create_batch: { kind: "none", note: NO_TRANSACTION_DELETE },
+  bb_transactions_create: {
+    kind: "tool",
+    tool: "bb_transactions_delete",
+    argFrom: { transaction_id_by_customer: "id_by_customer" },
+    note: TRANSACTION_DELETE_NOTE,
+  },
+  bb_transactions_create_batch: {
+    kind: "tool",
+    tool: "bb_transactions_delete",
+    argFrom: {},
+    note: `${TRANSACTION_DELETE_NOTE} Für einen Stapel ist es je Zahlung ein Aufruf.`,
+  },
+  bb_transactions_delete: {
+    kind: "tool",
+    tool: "bb_transactions_create",
+    argFrom: { transaction_id_by_customer: "id_by_customer" },
+    note: "legt die Zahlung wieder an. Die ursprünglichen Angaben stehen nur in der Weboberfläche.",
+  },
   bb_transactions_assign_receipt: {
     kind: "tool",
     tool: "bb_transactions_unassign_receipt",
@@ -211,48 +245,72 @@ export const REVERSAL_BY_TOOL: Readonly<Record<string, Reversal>> = Object.freez
 
   // --- Debitoren und Kreditoren ------------------------------------------------------
   bb_debtors_create: {
-    kind: "none",
-    note:
-      "Die API kennt keinen Endpunkt, ein Debitorenkonto zu löschen. Es bleibt im " +
-      "Kontenrahmen; nur bb_debtors_update kann seine Stammdaten überschreiben.",
+    kind: "tool",
+    tool: "bb_debtors_delete",
+    argFrom: { postingaccount_number: "postingaccount_number" },
+    note: DELETE_RECREATES_NOTE,
   },
   bb_debtors_create_batch: {
-    kind: "none",
-    note:
-      "Die API kennt keinen Endpunkt, ein Debitorenkonto zu löschen. Das gilt für jedes " +
-      "Element des Stapels.",
+    kind: "tool",
+    tool: "bb_debtors_delete",
+    argFrom: {},
+    note: `${DELETE_RECREATES_NOTE} Für einen Stapel ist es je Konto ein Aufruf.`,
   },
   bb_debtors_update: { kind: "none", note: NO_PREVIOUS_STATE },
+  bb_debtors_delete: {
+    kind: "tool",
+    tool: "bb_debtors_create",
+    argFrom: { postingaccount_number: "postingaccount_number" },
+    note: "legt ein Debitorenkonto wieder an. Die gelöschten Stammdaten stehen nur in der Weboberfläche.",
+  },
   bb_creditors_create: {
-    kind: "none",
-    note:
-      "Die API kennt keinen Endpunkt, ein Kreditorenkonto zu löschen. Es bleibt im " +
-      "Kontenrahmen; nur bb_creditors_update kann seine Stammdaten überschreiben.",
+    kind: "tool",
+    tool: "bb_creditors_delete",
+    argFrom: { postingaccount_number: "postingaccount_number" },
+    note: DELETE_RECREATES_NOTE,
   },
   bb_creditors_create_batch: {
-    kind: "none",
-    note:
-      "Die API kennt keinen Endpunkt, ein Kreditorenkonto zu löschen. Das gilt für jedes " +
-      "Element des Stapels.",
+    kind: "tool",
+    tool: "bb_creditors_delete",
+    argFrom: {},
+    note: `${DELETE_RECREATES_NOTE} Für einen Stapel ist es je Konto ein Aufruf.`,
   },
   bb_creditors_update: {
     kind: "none",
     note: `${NO_PREVIOUS_STATE} Überschrieben wird dabei auch die Bankverbindung.`,
   },
+  bb_creditors_delete: {
+    kind: "tool",
+    tool: "bb_creditors_create",
+    argFrom: { postingaccount_number: "postingaccount_number" },
+    note: "legt ein Kreditorenkonto wieder an. Die gelöschten Stammdaten stehen nur in der Weboberfläche.",
+  },
 
   // --- Konten -----------------------------------------------------------------------
   bb_postingaccounts_create: {
-    kind: "none",
-    note:
-      "Die API kennt keinen Endpunkt, ein Sachkonto zu löschen. Das neue Konto bleibt im " +
-      "Kontenrahmen des Mandanten.",
+    kind: "tool",
+    tool: "bb_postingaccounts_delete",
+    argFrom: { postingaccount_number: "postingaccount_number" },
+    note: DELETE_RECREATES_NOTE,
   },
   bb_postingaccounts_update: { kind: "none", note: NO_PREVIOUS_STATE },
+  bb_postingaccounts_delete: {
+    kind: "tool",
+    tool: "bb_postingaccounts_create",
+    argFrom: { postingaccount_number: "postingaccount_number" },
+    note: "legt ein Sachkonto wieder an. Die gelöschten Stammdaten stehen nur in der Weboberfläche.",
+  },
   bb_payment_accounts_create: {
-    kind: "none",
-    note:
-      "Die API kennt keinen Endpunkt, ein Zahlungskonto zu entfernen. is_revision_safe legt " +
-      "dauerhaftes Verhalten fest und ist später nicht umzustellen.",
+    kind: "tool",
+    tool: "bb_payment_accounts_delete",
+    argFrom: { postingaccount_number: "postingaccount_number" },
+    note: `${DELETE_RECREATES_NOTE} is_revision_safe legt dauerhaftes Verhalten fest und ist später nicht umzustellen.`,
+  },
+  bb_payment_accounts_delete: {
+    kind: "tool",
+    tool: "bb_payment_accounts_create",
+    argFrom: { postingaccount_number: "postingaccount_number" },
+    note: "legt ein Zahlungskonto wieder an. Die gelöschten Stammdaten stehen nur in der Weboberfläche.",
   },
 
   // --- Kommentare und Kostenstellen --------------------------------------------------

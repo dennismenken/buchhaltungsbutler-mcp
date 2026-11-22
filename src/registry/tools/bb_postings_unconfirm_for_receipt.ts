@@ -1,4 +1,4 @@
-// Werkzeug 27, `/postings/unconfirm/receipt`: hebt die Bestätigung der Buchungen eines Belegs
+// Werkzeug 28, `/postings/unconfirm/receipt`: hebt die Bestätigung der Buchungen eines Belegs
 // auf und entfernt sie damit.
 //
 // Klasse D: `destructiveHint: true`, `idempotentHint: false`. Dass eine Wiederholung

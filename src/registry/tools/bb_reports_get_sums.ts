@@ -1,4 +1,4 @@
-// Werkzeug 51: `/reports/get/sums`, eine erzeugte Summen- und Saldenliste
+// Werkzeug 56: `/reports/get/sums`, eine erzeugte Summen- und Saldenliste
 // abholen.
 //
 // Lesend (Klasse R), deshalb kein Pflichtsatz und `response_format` als einziges

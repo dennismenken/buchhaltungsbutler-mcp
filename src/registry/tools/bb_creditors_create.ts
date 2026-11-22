@@ -1,4 +1,4 @@
-// Werkzeug 37 von 54: `/settings/add/creditor`.
+// Werkzeug 39 von 59: `/settings/add/creditor`.
 //
 // Wie `bb_debtors_create`, mit **drei** Unterschieden, die in der Spezifikation leicht
 // übersehen werden und hier deshalb ausgeschrieben sind:

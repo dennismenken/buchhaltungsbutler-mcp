@@ -19,7 +19,7 @@
 import type { ToolEffect } from "../../src/registry/types.js";
 
 /**
- * Spezifikationspfad zu Wirkung, alle 54 Endpunkte, in der Gliederung von
+ * Spezifikationspfad zu Wirkung, alle 59 Endpunkte, in der Gliederung von
  * grundlagen.md 7.3 (Receipts, Transactions, Invoices, Postings, Settings, Accounts und
  * Comments und Cost Locations, Reports).
  */
@@ -43,6 +43,7 @@ export const EXPECTED_ENDPOINT_EFFECTS = {
   "/transactions/assign/receipt": "modify",
   "/transactions/assign-batch/receipt": "modify",
   "/transactions/unassign/receipt": "delete",
+  "/transactions/delete": "delete",
 
   // Invoices
   "/invoices/create": "create",
@@ -75,10 +76,14 @@ export const EXPECTED_ENDPOINT_EFFECTS = {
   "/settings/update/debtor": "modify",
   "/settings/update/creditor": "modify",
   "/settings/update/postingaccount": "modify",
+  "/settings/delete/debtor": "delete",
+  "/settings/delete/creditor": "delete",
+  "/settings/delete/postingaccount": "delete",
 
   // Accounts, Comments, Cost Locations
   "/accounts/get": "read",
   "/accounts/add": "create",
+  "/accounts/delete": "delete",
   "/comments/add": "create",
   "/cost-locations/get": "read",
   "/cost-locations/add": "create",
@@ -95,17 +100,17 @@ export const EXPECTED_ENDPOINT_EFFECTS = {
 
 /**
  * Die Auszählung aus grundlagen.md 7.3, Abschnitt „Zusammenfassung für einen
- * Nur-Lesen-Modus", von Hand abgeschrieben. Summe 54. Sie ist die Quersumme zur Tabelle
+ * Nur-Lesen-Modus", von Hand abgeschrieben. Summe 59. Sie ist die Quersumme zur Tabelle
  * oben: Eine verrutschte Zeile dort fällt hier auf.
  */
 export const EXPECTED_EFFECT_COUNTS = {
   read: 15,
   create: 24,
   modify: 8,
-  delete: 7,
+  delete: 12,
 } as const satisfies Record<ToolEffect, number>;
 
-/** Alle 54 Spezifikationspfade. Abgeleitet aus der Tabelle oben, keine zweite Quelle. */
+/** Alle 59 Spezifikationspfade. Abgeleitet aus der Tabelle oben, keine zweite Quelle. */
 export const EXPECTED_SPEC_PATHS: readonly string[] = Object.keys(EXPECTED_ENDPOINT_EFFECTS);
 
 /**

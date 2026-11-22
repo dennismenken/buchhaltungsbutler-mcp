@@ -1,4 +1,4 @@
-// Werkzeug 28, `/postings/unconfirm/transaction`: hebt die Bestätigung der Buchungen einer
+// Werkzeug 29, `/postings/unconfirm/transaction`: hebt die Bestätigung der Buchungen einer
 // Zahlung auf und entfernt sie damit.
 //
 // Klasse D: `destructiveHint: true`, `idempotentHint: false`. Eine wirkungslose Wiederholung

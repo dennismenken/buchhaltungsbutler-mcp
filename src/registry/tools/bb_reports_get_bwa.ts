@@ -1,4 +1,4 @@
-// Werkzeug 50: `/reports/get/bwa`, eine erzeugte BWA abholen.
+// Werkzeug 55: `/reports/get/bwa`, eine erzeugte BWA abholen.
 //
 // Lesend (Klasse R), deshalb kein Pflichtsatz und `response_format` als einziges
 // serverseitiges Feld. Zeitlimitstufe `long`: Die fünf Berichtswerkzeuge

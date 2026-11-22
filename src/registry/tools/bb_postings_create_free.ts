@@ -1,4 +1,4 @@
-// Werkzeug 25, `/postings/add/free`: die freie Buchung, ein vollständiger Buchungssatz ohne
+// Werkzeug 26, `/postings/add/free`: die freie Buchung, ein vollständiger Buchungssatz ohne
 // Beleg- und Zahlungsbezug.
 //
 // **Dieses Werkzeug trägt ausdrücklich KEINE Positionsliste.** Der Endpunkt führt acht rein

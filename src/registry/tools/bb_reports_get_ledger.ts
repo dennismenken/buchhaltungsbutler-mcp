@@ -1,4 +1,4 @@
-// Werkzeug 52: `/reports/get/sums/ledger`, das Kontenblatt eines Sachkontos.
+// Werkzeug 57: `/reports/get/sums/ledger`, das Kontenblatt eines Sachkontos.
 //
 // Der Endpunkt liegt unterhalb von `/reports/get/sums/`, gehört aber **nicht** zum
 // zweistufigen Muster aus Erzeugen und Abholen: Die Spezifikation sagt ausdrücklich „the

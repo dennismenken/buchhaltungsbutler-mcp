@@ -45,7 +45,7 @@ const EXPECTED_ANNOTATIONS = {
 
 /** Auszählung, Auslieferungszustand: AR 2 + M 4 + D 7 = 13 destruktive,
  *  R 15 + M 4 = 19 idempotente. */
-const DESTRUCTIVE_COUNT = 13;
+const DESTRUCTIVE_COUNT = 18;
 const IDEMPOTENT_COUNT = 19;
 
 const HINTS = ["readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"] as const;
@@ -127,7 +127,7 @@ describe("P7 Annotationen", () => {
     expectNoIssues(problems);
   });
 
-  it("zählt 13 destruktive und 19 idempotente Werkzeuge", () => {
+  it("zählt 18 destruktive und 19 idempotente Werkzeuge", () => {
     const destructiveTools = REGISTRY.filter((tool) => annotationsOf(tool).destructiveHint).map(
       (tool) => `${tool.name} (${tool.toolClass})`,
     );

@@ -33,7 +33,7 @@ const MANDATORY_SENTENCE_IDS: readonly MandatorySentenceId[] = [
 
 /**
  * Die namentliche Zuordnung der Pflichtsätze, von Hand abgeschrieben.
- * Prüfsumme 6 + 3 + 6 + 13 + 4 + 5 + 2 = 39, also genau die 39 Werkzeuge mit den Wirkungen
+ * Prüfsumme 6 + 3 + 6 + 13 + 4 + 10 + 2 = 44, also genau die 44 Werkzeuge mit den Wirkungen
  * anlegend, ändernd und löschend. Die 15 lesenden tragen keinen dieser Sätze; der Test prüft
  * beide Richtungen.
  */
@@ -86,6 +86,11 @@ const MANDATORY_SENTENCE_BY_TOOL: Readonly<Record<string, MandatorySentenceId>> 
   bb_postings_unconfirm_free: "U6",
   bb_postings_cancel: "U6",
   bb_cost_locations_delete: "U6",
+  bb_debtors_delete: "U6",
+  bb_creditors_delete: "U6",
+  bb_postingaccounts_delete: "U6",
+  bb_payment_accounts_delete: "U6",
+  bb_transactions_delete: "U6",
 
   // U7, ersetzt eine Auswertung
   bb_reports_create_bwa: "U7",
@@ -307,13 +312,13 @@ describe("P8 Sprache", () => {
 });
 
 describe("P8 Pflichtsätze", () => {
-  it("ordnet genau den 39 schreibenden Werkzeugen einen Pflichtsatz zu", () => {
+  it("ordnet genau den 44 schreibenden Werkzeugen einen Pflichtsatz zu", () => {
     // Selbstprüfung der Abschrift gegen die zweite Klassenliste: Beide Listen
     // sind von Hand geführt, und genau deshalb werden sie gegeneinander gehalten.
     expect([...Object.keys(MANDATORY_SENTENCE_BY_TOOL)].sort()).toEqual(
       [...EXPECTED_WRITING_TOOL_NAMES].sort(),
     );
-    expect(Object.keys(MANDATORY_SENTENCE_BY_TOOL)).toHaveLength(39);
+    expect(Object.keys(MANDATORY_SENTENCE_BY_TOOL)).toHaveLength(44);
   });
 
   it("trägt bei jedem schreibenden Werkzeug den zutreffenden Satz, zeichengenau", () => {

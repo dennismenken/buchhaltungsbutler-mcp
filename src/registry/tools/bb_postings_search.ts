@@ -1,4 +1,4 @@
-// Werkzeug 20, `/postings/get`: das einzige LESENDE der zwölf Buchungswerkzeuge.
+// Werkzeug 21, `/postings/get`: das einzige LESENDE der zwölf Buchungswerkzeuge.
 //
 // Drei Eigenheiten tragen diesen Eintrag:
 //

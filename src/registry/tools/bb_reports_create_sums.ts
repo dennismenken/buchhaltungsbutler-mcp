@@ -1,4 +1,4 @@
-// Werkzeug 54: `/reports/create/sums`, Erzeugung der Summen- und Saldenliste
+// Werkzeug 59: `/reports/create/sums`, Erzeugung der Summen- und Saldenliste
 // anstoßen.
 //
 // Klasse AR: `destructiveHint: true`, weil der neue Bericht den vorherigen

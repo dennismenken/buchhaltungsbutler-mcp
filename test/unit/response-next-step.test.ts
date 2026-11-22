@@ -14,7 +14,7 @@ import {
 // gibt, und ausdrücklich dessen Fehlen, wo es keinen gibt". Die Tabelle folgt der
 // Werkzeugtabelle und dem Buchungswegweiser.
 
-/** Die 39 schreibenden Werkzeuge (24 anlegend, 8 ändernd, 7 löschend). */
+/** Die 44 schreibenden Werkzeuge (24 anlegend, 8 ändernd, 12 löschend). */
 const WRITING_TOOLS = [
   "bb_receipts_create",
   "bb_receipts_create_batch",
@@ -26,6 +26,7 @@ const WRITING_TOOLS = [
   "bb_transactions_assign_receipt",
   "bb_transactions_assign_receipt_batch",
   "bb_transactions_unassign_receipt",
+  "bb_transactions_delete",
   "bb_invoices_create",
   "bb_invoices_create_draft",
   "bb_invoices_create_einvoice",
@@ -43,12 +44,16 @@ const WRITING_TOOLS = [
   "bb_debtors_create",
   "bb_debtors_create_batch",
   "bb_debtors_update",
+  "bb_debtors_delete",
   "bb_creditors_create",
   "bb_creditors_create_batch",
   "bb_creditors_update",
+  "bb_creditors_delete",
   "bb_postingaccounts_create",
   "bb_postingaccounts_update",
+  "bb_postingaccounts_delete",
   "bb_payment_accounts_create",
+  "bb_payment_accounts_delete",
   "bb_comments_create",
   "bb_cost_locations_create",
   "bb_cost_locations_update",
@@ -77,9 +82,9 @@ const READING_TOOLS = [
 ] as const;
 
 describe("Die Tabelle deckt alle schreibenden Werkzeuge ab", () => {
-  it("führt genau die 39 schreibenden Werkzeuge", () => {
+  it("führt genau die 44 schreibenden Werkzeuge", () => {
     expect(Object.keys(REVERSAL_BY_TOOL).sort()).toEqual([...WRITING_TOOLS].sort());
-    expect(WRITING_TOOLS).toHaveLength(39);
+    expect(WRITING_TOOLS).toHaveLength(44);
   });
 
   it("führt kein lesendes Werkzeug", () => {
@@ -101,15 +106,20 @@ describe("Die Tabelle deckt alle schreibenden Werkzeuge ab", () => {
     const reversalMissingTools = Object.entries(REVERSAL_BY_TOOL)
       .filter(([, reversal]) => reversal.kind === "none")
       .map(([name]) => name);
-    // Belegt: Rechnungen, Zuordnung an freie Buchung, Storno, Debitoren,
-    // Kreditoren, Sachkonten, Zahlungskonten, Kommentare, Berichte, Zahlungen, Updates.
+    // Belegt: Rechnungen, Zuordnung an freie Buchung, Storno, Kommentare, Berichte, Updates.
     expect(reversalMissingTools).toContain("bb_invoices_create");
     expect(reversalMissingTools).toContain("bb_postings_assign_receipt");
     expect(reversalMissingTools).toContain("bb_postings_cancel");
-    expect(reversalMissingTools).toContain("bb_transactions_create");
     expect(reversalMissingTools).toContain("bb_comments_create");
     expect(reversalMissingTools).toContain("bb_debtors_update");
     expect(reversalMissingTools).toContain("bb_reports_create_bwa");
+    // Die fünf Löschwerkzeuge der Stammdaten haben seit der Spezifikation 1.9.1 einen
+    // Weg zurück: das Anlegen desselben Kontos.
+    expect(reversalMissingTools).not.toContain("bb_transactions_create");
+    expect(reversalMissingTools).not.toContain("bb_debtors_create");
+    expect(reversalMissingTools).not.toContain("bb_creditors_create");
+    expect(reversalMissingTools).not.toContain("bb_postingaccounts_create");
+    expect(reversalMissingTools).not.toContain("bb_payment_accounts_create");
   });
 });
 

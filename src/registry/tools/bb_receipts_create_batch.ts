@@ -1,4 +1,4 @@
-// Werkzeug 5 von 54: `/receipts/addBatch`, bis zu 50 Belege ohne Datei.
+// Werkzeug 5 von 59: `/receipts/addBatch`, bis zu 50 Belege ohne Datei.
 //
 // **Währung, Regel R-A.** Das Feld `currency` je Element trägt denselben
 // Wertevorrat, dieselbe Pflichtigkeit und wortgleich dieselbe Beschreibung wie `currency` an

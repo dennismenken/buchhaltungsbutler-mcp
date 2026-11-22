@@ -1,4 +1,4 @@
-// Werkzeug 6 von 54: `/receipts/upload`, Belegdatei hochladen.
+// Werkzeug 6 von 59: `/receipts/upload`, Belegdatei hochladen.
 //
 // Der einzige Endpunkt der API, der eine Datei entgegennimmt, und der einzige mit einem
 // eigenen Minutenlimit (zehn Aufrufe, Eimer `upload`). Die Verarbeitung umfasst

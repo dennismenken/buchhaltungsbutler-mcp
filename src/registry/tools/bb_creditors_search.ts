@@ -1,4 +1,4 @@
-// Werkzeug 36 von 54: `/settings/get/creditors`.
+// Werkzeug 38 von 59: `/settings/get/creditors`.
 //
 // Kreditoren sind die Lieferantenkonten des Mandanten. Der Endpunkt ist strukturell gleich
 // `/settings/get/debtors` und führt ebenfalls nur `limit` und `offset`; einen Namens- oder

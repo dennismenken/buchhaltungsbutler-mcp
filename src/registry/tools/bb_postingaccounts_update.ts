@@ -1,4 +1,4 @@
-// Werkzeug 42 von 54: `/settings/update/postingaccount`.
+// Werkzeug 45 von 59: `/settings/update/postingaccount`.
 //
 // Klasse M, also `destructiveHint: true` und `idempotentHint: true` (die Begründung steht
 // bei `TOOL_CLASSES` in src/registry/classes.ts): Der Aufruf ersetzt einen bestehenden Wert,

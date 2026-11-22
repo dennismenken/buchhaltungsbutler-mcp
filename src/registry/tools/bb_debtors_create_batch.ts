@@ -1,4 +1,4 @@
-// Werkzeug 34 von 54: `/settings/add-batch/debtors`.
+// Werkzeug 35 von 59: `/settings/add-batch/debtors`.
 //
 // Der Endpunkt führt genau einen fachlichen Parameter, `debtors`, und der verweist auf die
 // Definition `SettingsDebtors`. Der Behälter wird **nicht** umbenannt (Anhang A): Er ist

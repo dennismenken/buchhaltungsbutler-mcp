@@ -1,4 +1,4 @@
-// Werkzeug 47 von 54: `/cost-locations/add`.
+// Werkzeug 52 von 59: `/cost-locations/add`.
 //
 // **Das einzige Werkzeug mit `effect: "create"` und Pflichtsatz U1**, also das einzige
 // anlegende Werkzeug mit einem echten Weg zurück: `/cost-locations/delete` nimmt eine
