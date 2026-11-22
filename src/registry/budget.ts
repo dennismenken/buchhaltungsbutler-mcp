@@ -15,6 +15,13 @@
 // Begründung und Eintrag in CHANGELOG.md auf den gemessenen Stand anheben. Seither steht hier
 // 49.000, und P11 bricht wieder hart daran ab statt nur zu warnen.
 //
+// Stand 2026-11-23: Der Anbieter hat die Spezifikation am 2026-11-22 ohne neue Versionsnummer um
+// sieben Endpunkte und die OSS-Felder der Buchungsendpunkte erweitert. Mit den sieben neuen
+// Werkzeugen und den OSS-Feldern misst P11 53.086 Token für 61 Definitionen. Der Projektinhaber
+// hat vorab entschieden, die Grenze auf den gemessenen Wert nach der Umsetzung plus rund 1.000
+// Token Luft zu setzen (Board F-1 vom 2026-11-22, Eintrag in CHANGELOG.md). Seither steht hier
+// 54.000.
+//
 // Die zuvor eingeführte Sperrgrenze TOOL_DEFINITION_TOKEN_REGRESSION_LIMIT ist damit entfallen:
 // Sie war der Ersatz für ein Budget, das nur noch warnte. Zwei harte Zahlen nebeneinander wären
 // dieselbe Grenze zweimal.
@@ -22,9 +29,14 @@
 import type { DescriptionTier } from "./types.js";
 
 /**
- * Obergrenze für alle 54 Werkzeugdefinitionen zusammen, in Token. P11 bricht hart daran ab.
+ * Obergrenze für alle 61 Werkzeugdefinitionen zusammen, in Token. P11 bricht hart daran ab.
  *
- * **49.000 ist die ausdrückliche Entscheidung des Projektinhabers vom 2026-09-13**, festgehalten
+ * **54.000 ist die ausdrückliche Entscheidung des Projektinhabers vom 2026-11-22** (Board F-1):
+ * der am 2026-11-23 gemessene Stand von 53.086 Token nach Umsetzung der Spezifikation vom
+ * 2026-11-22 zuzüglich 914 Token Luft, festgehalten in CHANGELOG.md. Die Absätze darunter
+ * beschreiben die vorherige Grenze 49.000 und gelten für sie.
+ *
+ * **49.000 war die ausdrückliche Entscheidung des Projektinhabers vom 2026-09-13**, festgehalten
  * in CHANGELOG.md, und keine Zahl, die ein Agent nebenbei angehoben hat. Sie ist der am
  * 2026-09-12 gemessene Stand von 48.305 Token (`gpt-tokenizer@4.0.0`, Kodierung `o200k_base`)
  * zuzüglich 695 Token Luft. Den jeweils aktuellen Stand führt
@@ -59,7 +71,7 @@ import type { DescriptionTier } from "./types.js";
  * Projektinhaber vorlegen. **Diese Zahl darf ein Agent senken, niemals anheben.** Sinkt die
  * gemessene Summe dauerhaft, wird sie nachgezogen.
  *
- * **Was sie kostet, offen genannt:** rund 48.000 Token je Sitzung allein für diesen Server,
+ * **Was sie kostet, offen genannt:** rund 53.000 Token je Sitzung allein für diesen Server,
  * sobald ein Client ihn verbindet. Abschnitt 13 der README nennt die Zahl dem Nutzer, damit er
  * sie gegen sein Kontextfenster halten kann. Das ist die teuerste Folge der Vorgabe, genau
  * ein Werkzeug je Endpunkt auszuliefern, und so beziffert.
@@ -68,7 +80,7 @@ import type { DescriptionTier } from "./types.js";
  * ausdrücklich nicht über CHARS_PER_TOKEN: Ein Budget, das über einen Schätzfaktor erzwungen
  * wird, erzwingt die Schätzung und nicht das Budget.
  */
-export const TOTAL_TOOL_DEFINITION_TOKEN_BUDGET = 49_000;
+export const TOTAL_TOOL_DEFINITION_TOKEN_BUDGET = 54_000;
 
 /**
  * Obergrenze für die Definitionen der Gruppe `bundles`, in Token. Eine **zweite, getrennte,
@@ -77,12 +89,12 @@ export const TOTAL_TOOL_DEFINITION_TOKEN_BUDGET = 49_000;
  * (test/registry/token-budget.test.ts), diese Grenze in test/bundles/read-bundles-contract.test.ts
  * über `bundleDefinitionJson`. `pnpm measure-tokens` weist beide zusätzlich im Bericht aus.
  *
- * **Warum getrennt und nicht aufgeschlagen.** Die 49.000 sind die dokumentierte Entscheidung
- * des Projektinhabers über die 54 Endpunktwerkzeuge, also über die Vorgabe, genau ein Werkzeug
- * je Endpunkt auszuliefern. Eine als Ganzes über `BB_MCP_TOOL_GROUPS` abschaltbare
- * Bündelgruppe ist ein anderer Gegenstand und verdient eine eigene, sichtbare Zahl, statt sich
- * in einer fremden zu verstecken. Das Hauptbudget bleibt bei 49.000 und deckt weiterhin
- * genau die 54 Endpunktwerkzeuge.
+ * **Warum getrennt und nicht aufgeschlagen.** Das Hauptbudget (seit 2026-11-23 54.000, davor
+ * 49.000) ist die dokumentierte Entscheidung des Projektinhabers über die Endpunktwerkzeuge,
+ * also über die Vorgabe, genau ein Werkzeug je Endpunkt auszuliefern. Eine als Ganzes über
+ * `BB_MCP_TOOL_GROUPS` abschaltbare Bündelgruppe ist ein anderer Gegenstand und verdient eine
+ * eigene, sichtbare Zahl, statt sich in einer fremden zu verstecken. Das Hauptbudget deckt
+ * weiterhin genau die Endpunktwerkzeuge, heute 61.
  *
  * **6.950 stehen auf einer Messung, und die Messung steht nur an EINER Stelle.** Die gemessene
  * Tokenzahl der fünf Bündeldefinitionen und ihre fünf Summanden führt `src/registry/groups.ts`
@@ -110,7 +122,7 @@ export const TOTAL_TOOL_DEFINITION_TOKEN_BUDGET = 49_000;
  * ist 6.950 eine Anhebung um 150 Token, gegenüber den zunächst angesetzten 7.000 eine
  * Senkung um 50. Die Sperre unten gilt einer Grenze, die auf
  * einer Messung steht; die 6.800 taten das nie. Der Eintrag dazu steht in CHANGELOG.md, genau
- * wie bei den 49.000.
+ * wie beim Hauptbudget.
  *
  * **Was die Zahl nicht ist: eine Erlaubnis zu wachsen.** Die Luft von 98 Token trägt eine
  * Umformulierung, aber weder ein sechstes Bündel noch einen weiteren Parameter von Gewicht.
@@ -118,7 +130,7 @@ export const TOTAL_TOOL_DEFINITION_TOKEN_BUDGET = 49_000;
  *
  * **Diese Zahl darf ein Agent senken, niemals anheben.** Sinkt die gemessene Summe dauerhaft,
  * wird sie nachgezogen. Anheben ist eine Entscheidung des Projektinhabers mit Eintrag in
- * CHANGELOG.md, genau wie bei den 49.000.
+ * CHANGELOG.md, genau wie beim Hauptbudget.
  */
 export const BUNDLE_DEFINITION_TOKEN_BUDGET = 6_950;
 

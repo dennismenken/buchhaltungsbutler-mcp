@@ -16,6 +16,19 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
   Versionsnummer 1.9.1 zu erhöhen. Ein Vergleich der Versionsnummer allein fand das nicht. Der
   Schritt nennt neue, entfernte und geänderte Pfade und Datentypen und läuft auch, wenn ein
   Schritt davor gescheitert ist.
+- **Sieben neue Werkzeuge für die Endpunkte der Spezifikation vom 2026-11-22**:
+  `bb_payment_accounts_update`, `bb_invoices_create_correction` (Rechnungskorrektur einer
+  Ausgangsrechnung), `bb_payment_accounts_delete`, `bb_creditors_delete`, `bb_debtors_delete`,
+  `bb_postingaccounts_delete` und `bb_transactions_delete`. Der Server führt damit 61
+  Endpunktwerkzeuge. Alle sieben schreiben und sind nicht live aufgerufen; ihre Beschreibungen
+  nennen die Bedingungen der Spezifikation, etwa dass `/transactions/delete` in einem
+  revisionssicheren Konto ein Storno anlegt.
+- **One-Stop-Shop an den sechs Buchungswerkzeugen.** Sechs neue Steuerschlüssel `vat_oss_*`
+  (29 statt 23) und je Buchung bzw. Position die Felder `oss_origin_country`,
+  `oss_destination_country` und `oss_vat_rate`. Die neue Kreuzprüfung Q10 verlangt die Länder
+  bei jedem OSS-Schlüssel und den Satz außer bei `vat_oss_deli_eude_19`, und sie weist OSS-Werte
+  ab, die die API stillschweigend verwerfen würde. Die Resource `bb://vat-keys` erklärt die
+  Schlüssel.
 
 ### Behoben
 
@@ -29,12 +42,26 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
   war. Das Ausgabeschema eines Schreibwerkzeugs verlangt jetzt `success` und den aufgelösten
   Datensatz (`created`, `changed` oder `removed`) und keinen Datenbehälter mehr. Drei neue
   Golden-Dateien aus der Spezifikation prüfen die drei Werkzeuge im Vertragstest.
+- **Acht Anlegewerkzeuge nennen jetzt ihren Weg zurück.** `bb_debtors_create`,
+  `bb_creditors_create`, beide Stapelfassungen, `bb_postingaccounts_create`,
+  `bb_payment_accounts_create`, `bb_transactions_create` und `bb_transactions_create_batch`
+  sagten, die API biete keinen Endpunkt, sie rückgängig zu machen. Mit den neuen
+  Löschendpunkten stimmt das nicht mehr; sie tragen jetzt den Pflichtsatz U1 mit dem passenden
+  Löschwerkzeug.
+- `pnpm measure-tokens` nannte im Bericht fest „54
+  Werkzeugdefinitionen“, gleich wie viele es maß. Die Zahl wird jetzt gezählt.
 
 ### Geändert
 
-- Die 54 Endpunktwerkzeuge wiegen jetzt **48.211 Token** (vorher 48.964) bei einer Grenze von
-  49.000. Die Ersparnis stammt aus den Ausgabeschemata der Schreibwerkzeuge, die kein
-  ungenutztes Feld `data` mehr ankündigen.
+- **Die Grenze für die Endpunktwerkzeuge steigt von 49.000 auf 54.000 Token**, auf Entscheidung
+  des Projektinhabers vom 2026-11-22: gemessener Stand nach Umsetzung plus rund 1.000 Token
+  Luft. Die 61 Endpunktwerkzeuge wiegen **53.086 Token** (216.820 Zeichen); vorher waren es 54
+  mit 48.964 Token. Zuwachs aus den sieben neuen Werkzeugen und den OSS-Feldern, abzüglich der
+  Ersparnis aus den Ausgabeschemata der Schreibwerkzeuge, die kein ungenutztes Feld `data` mehr
+  ankündigen. Die Bündel bleiben bei 6.852 Token, zusammen 59.938.
+- Der Fehlerkatalog führt 899 Paare über 61 Pfade (vorher 786 über 54). Die zwei
+  Einstellungstexte des One-Stop-Shops stehen in der Klasse `config`, damit der Rat auf die
+  Steuereinstellungen zeigt.
 
 ## [0.1.2] - 2026-09-15
 

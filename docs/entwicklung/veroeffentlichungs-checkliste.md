@@ -93,13 +93,13 @@ Projektinhaber sie getroffen hat. Genau diese Bestätigung gehört vor die Verö
         damit zur Deckung gebracht. **Offen bleibt genau eine Sache, und die kann diese Liste
         nicht abnehmen:** Ein Eintrag im Änderungsprotokoll belegt, dass die Anhebung
         dokumentiert ist, nicht, dass der Projektinhaber sie getroffen hat. Diese Bestätigung
-        gehört vor die Veröffentlichung. Gegenprobe, zuletzt am 2026-11-22:
-        `pnpm measure-tokens` meldet `54 Werkzeugdefinitionen: 197.395 Zeichen, 48.211 Token
-        (Grenze 49.000).` **Die 54 in dieser Zeile sind richtig und keine veraltete Zahl:**
-        Gezählt werden die 54 Endpunktdefinitionen, die zusammen unter
+        gehört vor die Veröffentlichung. Gegenprobe, zuletzt am 2026-11-23:
+        `pnpm measure-tokens` meldet `61 Werkzeugdefinitionen: 216.820 Zeichen, 53.086 Token
+        (Grenze 54.000).` **Die 61 in dieser Zeile ist gezählt, nicht eingetragen:**
+        Gemeldet werden die 61 Endpunktdefinitionen, die zusammen unter
         `TOTAL_TOOL_DEFINITION_TOKEN_BUDGET` fallen. Die fünf Bündel haben mit
         `BUNDLE_DEFINITION_TOKEN_BUDGET` ein eigenes Budget und stehen in derselben Ausgabe als
-        `Gruppe bundles: 6.852 Token (Grenze 6.950).` Ausgeliefert werden 54 + 5 = 59 Werkzeuge.
+        `Gruppe bundles: 6.852 Token (Grenze 6.950).` Ausgeliefert werden 61 + 5 = 66 Werkzeuge.
       - ~~`test/registry/secrets.test.ts` (P9): zehn Golden-Dateien gelten als verdächtig, unter
         anderem `test/golden/entries.ts` wegen des Wortes `api_key` und mehrere JSON-Dateien
         wegen langer Zeichenketten (Dateiinhalte in Base64, Prüfsummen).~~ **Geklärt am

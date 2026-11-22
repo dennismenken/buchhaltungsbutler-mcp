@@ -52,7 +52,7 @@ export const TOOL_GROUPS = {
   postings: {
     label: "Buchungen",
     withoutIt: "Buchungen suchen, anlegen, stornieren und Belege an Buchungen binden",
-    measuredTokens: 12_092,
+    measuredTokens: 13_965,
   },
   receipts: {
     label: "Belege",
@@ -62,17 +62,17 @@ export const TOOL_GROUPS = {
   transactions: {
     label: "Zahlungen",
     withoutIt: "Zahlungen suchen und anlegen sowie Belege an Zahlungen binden",
-    measuredTokens: 6_606,
+    measuredTokens: 7_024,
   },
   invoices: {
     label: "Ausgangsrechnungen",
     withoutIt: "Ausgangsrechnungen, Entwürfe und E-Rechnungen schreiben",
-    measuredTokens: 5_733,
+    measuredTokens: 6_215,
   },
   creditors: {
     label: "Kreditoren",
     withoutIt: "Lieferanten nachschlagen, anlegen und ändern",
-    measuredTokens: 3_161,
+    measuredTokens: 3_549,
   },
   reports: {
     label: "Berichte",
@@ -82,12 +82,12 @@ export const TOOL_GROUPS = {
   debtors: {
     label: "Debitoren",
     withoutIt: "Kunden nachschlagen, anlegen und ändern",
-    measuredTokens: 3_018,
+    measuredTokens: 3_409,
   },
   postingaccounts: {
     label: "Sachkonten",
     withoutIt: "Sachkonten des Kontenrahmens nachschlagen, anlegen und ändern",
-    measuredTokens: 1_825,
+    measuredTokens: 2_229,
   },
   cost_locations: {
     label: "Kostenstellen",
@@ -97,7 +97,7 @@ export const TOOL_GROUPS = {
   payment_accounts: {
     label: "Zahlungskonten",
     withoutIt: "Zahlungskonten auflisten und anlegen",
-    measuredTokens: 1_131,
+    measuredTokens: 2_050,
   },
   comments: {
     label: "Kommentare",

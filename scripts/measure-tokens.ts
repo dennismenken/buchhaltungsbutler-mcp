@@ -252,7 +252,7 @@ interface GroupMeasurement extends Measurement {
   /** Die eingecheckte Zahl aus `groups.ts`, oder `null`, solange keine hinterlegt ist. */
   readonly recorded: number | null;
   /**
-   * `true`, solange die Gruppe zu den 54 Endpunktwerkzeugen zählt. Nur diese Gruppen haben
+   * `true`, solange die Gruppe zu den Endpunktwerkzeugen zählt. Nur diese Gruppen haben
    * einen Anteil an den budgetierten {@link definitions}; `bundles` hat sein eigenes Budget.
    */
   readonly partOfDefinitions: boolean;
@@ -351,7 +351,7 @@ const instructionsMax = instructionsFor({
 
 /**
  * Die Grundlage des Zeichen-je-Token-Verhältnisses: alles, was der Client beim Verbinden
- * bekommt, also die 54 Definitionen plus den Servertext im Auslieferungszustand.
+ * bekommt, also alle Endpunktdefinitionen plus den Servertext im Auslieferungszustand.
  */
 const connectTotal: Measurement = {
   chars: definitions.chars + instructionsDefault.chars,
@@ -424,7 +424,7 @@ function groupTable(): string {
     "| Gruppe | Werkzeuge | Zeichen | Token | eingecheckt | Anteil |",
     "| --- | --- | --- | --- | --- | --- |",
   ];
-  // Absteigend nach Token, `bundles` aber immer zuletzt: Die Gruppe zählt nicht zu den 54
+  // Absteigend nach Token, `bundles` aber immer zuletzt: Die Gruppe zählt nicht zu den
   // Endpunktwerkzeugen und hat deshalb keinen Anteil an deren Summe. Stünde sie mitten in der
   // Tabelle, läse sich die Spalte „Anteil" als Lücke statt als Hinweis.
   const ordered = [...groupMeasurements].sort((a, b) => {
@@ -483,13 +483,13 @@ function measurementTable(): string {
   const rows = [
     "| Größe | Zeichen | Token | Zeichen je Token |",
     "| --- | --- | --- | --- |",
-    row("54 Werkzeugdefinitionen, wie ausgeliefert", definitions),
+    row(`${tools.length} Werkzeugdefinitionen, wie ausgeliefert`, definitions),
     row("instructions, Auslieferungszustand", instructionsDefault),
     row("instructions, alle Schalter an", instructionsMax),
     row("Was der Client beim Verbinden sieht", connectTotal),
   ];
   if (p11 !== undefined) {
-    rows.push(row("54 Definitionen in der Rechenweise von P11", p11));
+    rows.push(row(`${tools.length} Definitionen in der Rechenweise von P11`, p11));
   }
   return rows.join("\n");
 }
@@ -686,7 +686,7 @@ const blocks: string[] = [
     "Die elf Endpunktgruppen sind über `TOOL_ENTRIES` gemessen, die Gruppe `bundles` über",
     "`BUNDLE_ENTRIES` und `bundleDefinitionJson` — die Bündel tragen einen eigenen Eintragstyp",
     "und stehen nicht im erzeugten Registerindex. Ihre Zeile steht am Ende und trägt in der",
-    'Spalte „Anteil" einen Strich: Sie zählt nicht zu den 54 Endpunktwerkzeugen und damit nicht',
+    'Spalte „Anteil" einen Strich: Sie zählt nicht zu den Endpunktwerkzeugen und damit nicht',
     "zu deren budgetierter Summe, sondern hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` ihre eigene",
     "Grenze.",
   ),
@@ -762,7 +762,7 @@ const blocks: string[] = [
   prose(
     "Zwei Lesehilfen zu den Abweichungen. **Erstens:** Die Zeile `outputSchema` ist nicht Folge",
     "einer ausgelassenen Sparmaßnahme. S6 ist umgesetzt, und die Messung belegt es:",
-    `${de(totalOutputTextChars)} Zeichen Feldbeschreibung in allen 54 Ausgabeschemata zusammen.`,
+    `${de(totalOutputTextChars)} Zeichen Feldbeschreibung in allen ${tools.length} Ausgabeschemata zusammen.`,
     "Größer als angesetzt ist das Schema, weil es den Umschlag dieses Servers mitbeschreibt:",
     "`endpoint`, die Paginierungstatsachen, `_contract_warnings`, die Ganzzahl-Cent-Felder und",
     "bei schreibenden Werkzeugen den aufgelösten Datensatz samt Rückweg. Das sind Zusagen des",
@@ -801,7 +801,7 @@ writeFileSync(filePath(REPORT_FILE), `${blocks.join("\n\n")}\n`, "utf8");
 
 console.log(
   [
-    `54 Werkzeugdefinitionen: ${de(definitions.chars)} Zeichen, ${de(definitions.tokens)} Token ` +
+    `${tools.length} Werkzeugdefinitionen: ${de(definitions.chars)} Zeichen, ${de(definitions.tokens)} Token ` +
       `(Grenze ${de(budget.TOTAL_TOOL_DEFINITION_TOKEN_BUDGET)}).`,
     `instructions: ${de(instructionsDefault.chars)} Zeichen, ` +
       `${de(instructionsDefault.tokens)} Token im Auslieferungszustand, ` +

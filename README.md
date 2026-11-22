@@ -491,7 +491,7 @@ BB_MCP_TOOL_GROUPS=bundles
 
 **Der Gruppenschalter spart Kontext, nicht Zugriff.** Die 61 Werkzeugdefinitionen wiegen
 
-zusammen gemessen **48.211 Token**, und Claude Desktop legt sie in seinem ungünstigsten Modus in
+zusammen gemessen **53.086 Token**, und Claude Desktop legt sie in seinem ungünstigsten Modus in
 **jede** Anfrage. Wer Buchhaltung auswertet und nicht erfasst, bezahlt davon den größten Teil
 umsonst. Claude Code und die Codex CLI laden Werkzeugdefinitionen dagegen erst bei Bedarf; dort
 kostet ein Werkzeug im Leerlauf nur seinen Namen, und der Schalter lohnt sich nicht.
@@ -506,38 +506,38 @@ nicht diesen Schalter.
 
 | Gruppe | Werkzeuge | Token (gemessen) | Was sie kann |
 | --- | --- | --- | --- |
-| `postings` | 12 | 12.092 | Buchungen suchen, anlegen, stornieren, Belege an Buchungen binden |
+| `postings` | 12 | 13.965 | Buchungen suchen, anlegen, stornieren, Belege an Buchungen binden |
 | `receipts` | 8 | 8.474 | Belege suchen, hochladen, anlegen, löschen, wiederherstellen |
-| `transactions` | 9 | 6.606 | Zahlungen suchen und anlegen, Belege an Zahlungen binden |
-| `invoices` | 4 | 5.733 | Ausgangsrechnungen, Entwürfe, E-Rechnungen und Rechnungskorrekturen schreiben |
-| `creditors` | 5 | 3.161 | Lieferanten nachschlagen, anlegen, ändern |
+| `transactions` | 9 | 7.024 | Zahlungen suchen und anlegen, Belege an Zahlungen binden |
+| `invoices` | 4 | 6.215 | Ausgangsrechnungen, Entwürfe, E-Rechnungen und Rechnungskorrekturen schreiben |
+| `creditors` | 5 | 3.549 | Lieferanten nachschlagen, anlegen, ändern |
 | `reports` | 5 | 3.777 | BWA, Summen- und Saldenliste, Kontenblatt |
-| `debtors` | 5 | 3.018 | Kunden nachschlagen, anlegen, ändern |
-| `postingaccounts` | 4 | 1.825 | Sachkonten nachschlagen, anlegen, ändern |
+| `debtors` | 5 | 3.409 | Kunden nachschlagen, anlegen, ändern |
+| `postingaccounts` | 4 | 2.229 | Sachkonten nachschlagen, anlegen, ändern |
 | `cost_locations` | 4 | 1.806 | Kostenstellen nachschlagen, anlegen, ändern, löschen |
-| `payment_accounts` | 4 | 1.131 | Zahlungskonten auflisten, anlegen, ändern und löschen |
+| `payment_accounts` | 4 | 2.050 | Zahlungskonten auflisten, anlegen, ändern und löschen |
 | `comments` | 1 | 588 | Kommentar an Beleg oder Zahlung hängen |
 | `bundles` | 5 | 6.852 | Bündelwerkzeuge: mehrere Endpunkte in einem Aufruf |
-| **Summe der elf Endpunktgruppen** | **61** | **48.211** | |
+| **Summe der elf Endpunktgruppen** | **61** | **53.086** | |
 
 Die Tokenzahlen sind mit `gpt-tokenizer` (Kodierung `o200k_base`) an den ausgelieferten
 Definitionen gemessen, nicht geschätzt; `pnpm measure-tokens` weist sie je Gruppe neu aus. Die
-Gruppe `bundles` steht nicht in der Summe darüber: Ihre 6.852 Token kommen zu den 48.211 hinzu,
+Gruppe `bundles` steht nicht in der Summe darüber: Ihre 6.852 Token kommen zu den 53.086 hinzu,
 sie hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` eine eigene Grenze und ist als Ganzes abschaltbar.
 
 #### Empfohlene Profile
 
 | Zweck | Einstellung | Werkzeuge | Token |
 | --- | --- | --- | --- |
-| Claude Desktop, Buchhaltung ohne Erfassung | `BB_MCP_TOOL_GROUPS=bundles` | nur die Bündel | 6.852 statt 55.063 |
-| Claude Desktop, mit Belegerfassung | `BB_MCP_TOOL_GROUPS=bundles,receipts,payment_accounts` | 10 plus die Bündel | 16.457 |
+| Claude Desktop, Buchhaltung ohne Erfassung | `BB_MCP_TOOL_GROUPS=bundles` | nur die Bündel | 6.852 statt 59.938 |
+| Claude Desktop, mit Belegerfassung | `BB_MCP_TOOL_GROUPS=bundles,receipts,payment_accounts` | 12 plus die Bündel | 17.376 |
 | Nur auswerten | `BB_MCP_TOOL_GROUPS=bundles,reports` plus `BB_MCP_READ_ONLY=true` | 5 plus die Bündel | 10.629 |
 | Claude Code, Codex CLI | alles an, also nichts setzen | 61 plus die Bündel | im Leerlauf rund 2.000, nur die Namen |
 
 
 Die Zahlen der ersten drei Zeilen enthalten die Bündelgruppe. Sie sind seit dem 2026-09-13
 gemessen und keine Schätzungen mehr: 6.852 Token für die fünf Bündel, dazu 8.474 für `receipts`
-und 1.131 für `payment_accounts` beziehungsweise 3.777 für `reports`.
+und 2.050 für `payment_accounts` beziehungsweise 3.777 für `reports`.
 
 #### Vier Startfehler statt stiller Wirkung
 
@@ -905,7 +905,7 @@ Der Server reicht sie sichtbar durch, statt sie zu verstecken.
   genau einer Gegenstelle: der BuchhaltungsButler-API.
 - **Protokolliert wird auf stderr**, nie auf stdout, weil stdout dem MCP-Protokoll gehört. Die
   Stufe stellen Sie mit `BB_MCP_LOG_LEVEL` ein.
-- **Kontextkosten.** Die Definitionen der 61 Endpunktwerkzeuge sind rund **48.000 Token** groß,
+- **Kontextkosten.** Die Definitionen der 61 Endpunktwerkzeuge sind rund **53.000 Token** groß,
 
   die der fünf Bündelwerkzeuge weitere 6.852, die Serverbeschreibung rund 1.400. Gemessen mit
   `gpt-tokenizer` in der Kodierung `o200k_base`; für andere Modellfamilien ist das eine
@@ -996,9 +996,8 @@ Diese Punkte sind bekannt, benannt und nicht wegkonstruierbar.
   Der Server erzwingt keine Bestätigung; das ist eine bewusste Entscheidung. Ihr Schutz sind die
   Annotationen ([11.2](#112-was-die-annotationen-bedeuten)), die Freigabe in Ihrem Client, der
   Nur-Lesen-Schalter und die Betrags- und Mengengrenzen.
-- **Die Werkzeuge kosten Kontext.** Die 61 Endpunktwerkzeuge wiegen rund 48.000 Token (gemessen
-
-  48.211), die fünf Bündelwerkzeuge weitere 6.852, zusammen 55.063. Bei vielen gleichzeitig
+- **Die Werkzeuge kosten Kontext.** Die 61 Endpunktwerkzeuge wiegen rund 53.000 Token (gemessen
+  53.086), die fünf Bündelwerkzeuge weitere 6.852, zusammen 59.938. Bei vielen gleichzeitig
   aktiven Servern kann die Trefferquote eines Assistenten darunter leiden. Wer nur einen Teil
   braucht, meldet mit `BB_MCP_TOOL_GROUPS` nur diesen an ([7.4](#74-werkzeuggruppen-abschalten)). In Claude Code und
   der Codex CLI erübrigt sich das: Dort werden Definitionen erst bei Bedarf geladen.

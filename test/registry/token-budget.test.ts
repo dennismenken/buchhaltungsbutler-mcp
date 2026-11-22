@@ -255,11 +255,12 @@ describe("P11 Gesamtbudget", () => {
   });
 
   it("bestätigt die Zahlen, an denen P11 abbricht", () => {
-    // 49.000 statt der 32.000: die ausdrückliche Entscheidung des
-    // Projektinhabers vom 2026-09-13 über den gemessenen Stand, begründet in
+    // 54.000 statt der 49.000: die ausdrückliche Entscheidung des Projektinhabers vom
+    // 2026-11-22 (gemessener Stand nach Umsetzung der Spezifikation vom 2026-11-22 plus rund
+    // 1.000 Token), davor 49.000 vom 2026-09-13 statt der 32.000; begründet in
     // src/registry/budget.ts und in CHANGELOG.md. Hier mitgeprüft, damit ein weiteres,
     // stilles Anheben auffällt.
-    expect(TOTAL_TOOL_DEFINITION_TOKEN_BUDGET).toBe(49_000);
+    expect(TOTAL_TOOL_DEFINITION_TOKEN_BUDGET).toBe(54_000);
     expect(INSTRUCTIONS_TOKEN_BUDGET).toBe(2_100);
   });
 
