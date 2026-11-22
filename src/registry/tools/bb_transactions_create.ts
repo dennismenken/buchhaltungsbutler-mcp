@@ -1,5 +1,6 @@
 // Werkzeug 12 von 61, `/transactions/add`: eine Zahlung auf einem echten Zahlungskonto anlegen.
-// Klasse A, Wirkung anlegend, Pflichtsatz U4.
+// Klasse A, Wirkung anlegend, Pflichtsatz U1 mit bb_transactions_delete (seit der Spezifikation
+// vom 2026-11-22; in einem revisionssicheren Konto legt der Endpunkt ein Storno an).
 //
 // Drei Festlegungen stehen hier als Code:
 //
@@ -8,8 +9,9 @@
 //      Betrag „in the account's currency", und kein Endpunkt der API gibt die Währung eines
 //      Zahlungskontos preis — `/accounts/get` liefert je Konto nur `name` und
 //      `postingaccount_number`. Ein Pflichtfeld hätte den Aufrufer zum Raten gezwungen, und ein
-//      geratener Wert erzeugt hier eine Fremdwährungszahlung, die über die API nicht mehr zu
-//      löschen ist (U4). Ersatz ist der Pflichtsatz in der Feldbeschreibung, den P8 an
+//      geratener Wert erzeugt hier eine Fremdwährungszahlung, die sich nur mit
+//      bb_transactions_delete wieder entfernen lässt, in einem revisionssicheren Konto nur als
+//      Storno. Ersatz ist der Pflichtsatz in der Feldbeschreibung, den P8 an
 //      diesem Feld und an dem von bb_transactions_create_batch prüft.
 //   2. **Der Wertevorrat ist das 48er-Enum** aus `currencyTransactions()`: die 47 an diesem
 //      Endpunkt ausgeschriebenen Codes plus `RSD` aus dem Stapelelement. Nach Regel R-B gilt
@@ -83,7 +85,7 @@ export const bb_transactions_create: ToolEntry = {
   effect: "create",
   toolClass: "A",
   tier: 1,
-  mandatorySentence: "U4",
+  mandatorySentence: "U1",
   description:
     "Legt in BuchhaltungsButler eine Zahlung auf einem echten Zahlungskonto an, also einen " +
     "Kontoumsatz. Zu nehmen für Vorgänge, die kein Bankabruf einspielt, zum Beispiel eine " +
@@ -91,8 +93,7 @@ export const bb_transactions_create: ToolEntry = {
     "bb_postings_create_for_transaction an, und einen Beleg verknüpft " +
     "bb_transactions_assign_receipt. payment_account_number bezeichnet das Zahlungskonto und " +
     "nicht das Sachkonto der Buchung. Der Umsatz verändert Kontostand und Abstimmung sofort. " +
-    "Schreibt in die echten Buchhaltungsdaten von BuchhaltungsButler. Die API bietet keinen " +
-    "Endpunkt, das rückgängig zu machen.",
+    "Schreibt in die echten Buchhaltungsdaten von BuchhaltungsButler. Rückgängig zu machen mit bb_transactions_delete.",
   fields: [
     {
       name: "payment_account_number",

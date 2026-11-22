@@ -125,8 +125,8 @@ export const bb_debtors_create_batch: ToolEntry = {
     "Übernahme einer Kundenliste. Ein Element trägt dieselben Felder wie bb_debtors_create, " +
     "allerdings ohne email. Die Antwort meldet Teilerfolg: Das Array errors nennt jeden " +
     "abgelehnten Eintrag. Schreibt in die echten Buchhaltungsdaten von BuchhaltungsButler. " +
-    "Die API bietet keinen Endpunkt, das rückgängig zu machen.",
-  mandatorySentence: "U4",
+    "Rückgängig zu machen mit bb_debtors_delete.",
+  mandatorySentence: "U1",
   fields: [
     {
       name: "debtors",

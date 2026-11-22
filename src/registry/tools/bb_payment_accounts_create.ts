@@ -59,9 +59,8 @@ export const bb_payment_accounts_create: ToolEntry = {
     "Nummern zeigt bb_payment_accounts_list. Ein Aufwands- oder Ertragskonto ist kein " +
     "Zahlungskonto und gehört zu bb_postingaccounts_create. is_revision_safe wirkt nur bei " +
     "einer Kasse und legt dauerhaftes Verhalten fest. Schreibt in die echten " +
-    "Buchhaltungsdaten von BuchhaltungsButler. Die API bietet keinen Endpunkt, das " +
-    "rückgängig zu machen.",
-  mandatorySentence: "U4",
+    "Buchhaltungsdaten von BuchhaltungsButler. Rückgängig zu machen mit bb_payment_accounts_delete.",
+  mandatorySentence: "U1",
   fields: [
     {
       name: "payment_account_type",

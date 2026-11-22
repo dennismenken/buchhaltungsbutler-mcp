@@ -45,6 +45,14 @@ const MANDATORY_SENTENCE_BY_TOOL: Readonly<Record<string, MandatorySentenceId>> 
   bb_transactions_assign_receipt_batch: "U1",
   bb_transactions_unassign_receipt: "U1",
   bb_cost_locations_create: "U1",
+  bb_debtors_create: "U1",
+  bb_debtors_create_batch: "U1",
+  bb_creditors_create: "U1",
+  bb_creditors_create_batch: "U1",
+  bb_postingaccounts_create: "U1",
+  bb_payment_accounts_create: "U1",
+  bb_transactions_create: "U1",
+  bb_transactions_create_batch: "U1",
 
   // U2, nur als Löschmarkierung umkehrbar
   bb_receipts_create: "U2",
@@ -60,19 +68,11 @@ const MANDATORY_SENTENCE_BY_TOOL: Readonly<Record<string, MandatorySentenceId>> 
   bb_postings_create_free_batch: "U3",
 
   // U4, über die API gar nicht umkehrbar
-  bb_transactions_create: "U4",
-  bb_transactions_create_batch: "U4",
   bb_invoices_create: "U4",
   bb_invoices_create_draft: "U4",
   bb_invoices_create_einvoice: "U4",
   bb_invoices_create_correction: "U4",
   bb_postings_assign_receipt: "U4",
-  bb_debtors_create: "U4",
-  bb_debtors_create_batch: "U4",
-  bb_creditors_create: "U4",
-  bb_creditors_create_batch: "U4",
-  bb_postingaccounts_create: "U4",
-  bb_payment_accounts_create: "U4",
   bb_comments_create: "U4",
 
   // U5, überschreibt ohne abrufbaren Vorzustand

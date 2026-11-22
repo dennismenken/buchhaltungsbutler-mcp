@@ -41,8 +41,8 @@ export const bb_postingaccounts_create: ToolEntry = {
     "parent_postingaccount_number; dieses vorher mit bb_postingaccounts_search heraussuchen. " +
     "Kundenkonten legt bb_debtors_create an, Lieferantenkonten bb_creditors_create, " +
     "Zahlungskonten bb_payment_accounts_create. Schreibt in die echten Buchhaltungsdaten von " +
-    "BuchhaltungsButler. Die API bietet keinen Endpunkt, das rückgängig zu machen.",
-  mandatorySentence: "U4",
+    "BuchhaltungsButler. Rückgängig zu machen mit bb_postingaccounts_delete.",
+  mandatorySentence: "U1",
   fields: [
     {
       name: "name",

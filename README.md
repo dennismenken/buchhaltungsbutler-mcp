@@ -842,8 +842,8 @@ nachfragt. Das ist der eigentliche Schutz**, denn dieser Server fragt selbst nic
 | Annotation | Bedeutung | Bei diesem Server |
 | --- | --- | --- |
 | `readOnlyHint` | verändert nichts | `true` bei den 19 lesenden Werkzeugen, also den 15 lesenden Endpunktwerkzeugen und den vier lesenden Bündeln |
-| `destructiveHint` | überschreibt, löscht oder ersetzt Bestehendes | `true` bei 14 Werkzeugen: den sieben löschenden, den vier überschreibenden Stammdatenwerkzeugen, den beiden Berichtserzeugern, die den Vorgängerbericht ersetzen, und dem Bündel `bb_reports_run`, das genau diese Erzeugung anstößt |
-| `idempotentHint` | ein zweiter Aufruf ändert nichts mehr | `true` bei 23 Werkzeugen, nämlich nur dort, wo das beweisbar ist: bei den 19 lesenden und den 4 überschreibenden. Bei allen übrigen `false`, weil es **nicht verifiziert** ist und ein falsches `true` einen Client zum automatischen Wiederholen einlädt |
+| `destructiveHint` | überschreibt, löscht oder ersetzt Bestehendes | `true` bei 20 Werkzeugen: den zwölf löschenden, den fünf überschreibenden Stammdatenwerkzeugen, den beiden Berichtserzeugern, die den Vorgängerbericht ersetzen, und dem Bündel `bb_reports_run`, das genau diese Erzeugung anstößt |
+| `idempotentHint` | ein zweiter Aufruf ändert nichts mehr | `true` bei 24 Werkzeugen, nämlich nur dort, wo das beweisbar ist: bei den 19 lesenden und den 5 überschreibenden. Bei allen übrigen `false`, weil es **nicht verifiziert** ist und ein falsches `true` einen Client zum automatischen Wiederholen einlädt |
 | `openWorldHint` | spricht mit einem fremden System | überall `true` |
 
 So vergeben Sie Leserechte getrennt von Schreibrechten:
@@ -960,7 +960,7 @@ Eine gesunde Ausgabe zeigt
 - die Schalterlage, also `BB_MCP_READ_ONLY`, die Grenzen und den Stammdatenspeicher,
 - „Registriert: 66 — 61 Endpunktwerkzeuge und 5 Bündelwerkzeuge" und darunter die Wirkungen der
 
-  Endpunktwerkzeuge, also „15 lesend, 24 anlegend, 8 ändernd, 7 löschend",
+  Endpunktwerkzeuge, also „15 lesend, 25 anlegend, 9 ändernd, 12 löschend",
 - die geschätzte Größe der Werkzeugdefinitionen,
 - die gefundenen Clientkonfigurationen mit Pfad,
 - jede unbekannte `BB_*`-Variable mit dem ähnlichsten bekannten Namen.

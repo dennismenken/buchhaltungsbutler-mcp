@@ -1,5 +1,5 @@
 // Werkzeug 13 von 61, `/transactions/addBatch`: bis zu 50 Zahlungen in einem Aufruf anlegen.
-// Klasse A, Wirkung anlegend, Pflichtsatz U4.
+// Klasse A, Wirkung anlegend, Pflichtsatz U1 mit bb_transactions_delete.
 //
 // **Keine Umformung.** Der Endpunkt führt genau einen Parameter `transactions`, Definition
 // `Transactions`, und der ist bereits eine Objektliste. Der Behälter wird deshalb
@@ -219,13 +219,12 @@ export const bb_transactions_create_batch: ToolEntry = {
   effect: "create",
   toolClass: "A",
   tier: 3,
-  mandatorySentence: "U4",
+  mandatorySentence: "U1",
   description:
     "Legt bis zu 50 Zahlungen in BuchhaltungsButler in einem Aufruf an. Fachlich gleich " +
     "bb_transactions_create, dessen Beschreibung die Felder erklärt; für eine einzelne Zahlung " +
     "dieses Werkzeug nicht nehmen. Die API erlaubt nur einen Aufruf je fünf Sekunden. " +
-    "Schreibt in die echten Buchhaltungsdaten von BuchhaltungsButler. Die API bietet keinen " +
-    "Endpunkt, das rückgängig zu machen.",
+    "Schreibt in die echten Buchhaltungsdaten von BuchhaltungsButler. Rückgängig zu machen mit bb_transactions_delete.",
   fields: [
     {
       name: "transactions",

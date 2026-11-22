@@ -1,9 +1,9 @@
 // Werkzeug 54 von 61: `/cost-locations/add`.
 //
-// **Das einzige Werkzeug mit `effect: "create"` und Pflichtsatz U1**, also das einzige
-// anlegende Werkzeug mit einem echten Weg zurück: `/cost-locations/delete` nimmt eine
-// Kostenstelle wieder aus dem Mandanten. Debitoren, Kreditoren, Sachkonten, Zahlungskonten
-// und Kommentare haben diesen Weg nicht und tragen deshalb U4.
+// Pflichtsatz U1: `/cost-locations/delete` nimmt eine Kostenstelle wieder aus dem Mandanten.
+// Seit der Spezifikation vom 2026-11-22 haben auch Debitoren, Kreditoren, Sachkonten,
+// Zahlungskonten und Zahlungen einen Löschendpunkt und tragen U1; Kommentare haben keinen
+// und tragen weiter U4.
 //
 // Beide Parameter sind laut Spezifikation Pflicht; verschärft wird nichts. Der
 // `code` ist zugleich der Identifikator: Eine numerische Kennung vergibt die API nicht.

@@ -29,15 +29,15 @@ export const MANDATORY_SENTENCE_SCOPE_PLACEHOLDER = "<was genau>";
  * Die sieben Pflichtsätze. U1 und U6 tragen einen Platzhalter, der im Registereintrag
  * ersetzt wird; die übrigen fünf stehen wörtlich in der Beschreibung.
  *
- * - U1: umkehrbar mit genau einem Werkzeug (6 Werkzeuge)
+ * - U1: umkehrbar mit genau einem Werkzeug (14 Werkzeuge)
  * - U2: nur als Löschmarkierung umkehrbar (3 Werkzeuge)
  * - U3: nur durch Storno korrigierbar (6 Werkzeuge)
- * - U4: über die API gar nicht umkehrbar (13 Werkzeuge)
- * - U5: überschreibt ohne abrufbaren Vorzustand (4 Werkzeuge)
- * - U6: entfernt Bestehendes (5 Werkzeuge)
+ * - U4: über die API gar nicht umkehrbar (6 Werkzeuge)
+ * - U5: überschreibt ohne abrufbaren Vorzustand (5 Werkzeuge)
+ * - U6: entfernt Bestehendes (10 Werkzeuge)
  * - U7: ersetzt eine Auswertung (2 Werkzeuge)
  *
- * Prüfsumme 6 + 3 + 6 + 13 + 4 + 5 + 2 = 39, also genau die 39 schreibenden Werkzeuge.
+ * Prüfsumme 14 + 3 + 6 + 6 + 5 + 10 + 2 = 46, also genau die 46 schreibenden Werkzeuge.
  * Die namentliche Zuordnung steht und in den Registereinträgen selbst, nicht
  * hier: P8 prüft sie gegen den Registereintrag, und eine zweite Namensliste an dieser
  * Stelle wäre eine konkurrierende Quelle.

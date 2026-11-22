@@ -64,9 +64,8 @@ export const bb_debtors_create: ToolEntry = {
     "postingaccount_number vergibt BuchhaltungsButler die nächste freie Nummer und nennt " +
     "sie in der Antwort. Mehrere Konten in einem Aufruf legt bb_debtors_create_batch an; " +
     "Lieferanten sind Kreditoren und gehören zu bb_creditors_create. Schreibt in die echten " +
-    "Buchhaltungsdaten von BuchhaltungsButler. Die API bietet keinen Endpunkt, das " +
-    "rückgängig zu machen.",
-  mandatorySentence: "U4",
+    "Buchhaltungsdaten von BuchhaltungsButler. Rückgängig zu machen mit bb_debtors_delete.",
+  mandatorySentence: "U1",
   fields: [
     textField("name", true, "Name des Kundenkontos, zum Beispiel Musterkunde GmbH."),
     textField(
