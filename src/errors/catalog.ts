@@ -29,13 +29,15 @@ export type { ErrorClass, ErrorEntry };
 export type ErrorCatalog = Readonly<Record<string, Readonly<Record<number, ErrorEntry>>>>;
 
 /**
- * Die Abnahmezahlen. Sie sind am 2026-09-12 maschinell gegen
- * `docs/openapi/buchhaltungsbutler-v1.json` ausgezählt: 786 **referenzierte** Paare über 54
- * Pfade. Ausdrücklich nicht 718 — das sind Definitionsnamen, von denen 42 in keinem
- * `responses`-Block vorkommen und damit kein belegtes Serververhalten sind.
+ * Die Abnahmezahlen. Sie sind am 2026-11-22 maschinell gegen
+ * `docs/openapi/buchhaltungsbutler-v1.json` ausgezählt: 899 **referenzierte** Paare über 61
+ * Pfade. Ausdrücklich nicht 803 — das sind Definitionsnamen, von denen 42 in keinem
+ * `responses`-Block vorkommen und damit kein belegtes Serververhalten sind. Der Stand vom
+ * 2026-09-12 war 786 Paare über 54 Pfade bei 718 Definitionsnamen; der Anbieter hat die
+ * Spezifikation dazwischen ohne neue Versionsnummer erweitert.
  */
-export const EXPECTED_PAIR_COUNT = 786;
-export const EXPECTED_PATH_COUNT = 54;
+export const EXPECTED_PAIR_COUNT = 899;
+export const EXPECTED_PATH_COUNT = 61;
 
 let cached: Promise<ErrorCatalog> | null = null;
 

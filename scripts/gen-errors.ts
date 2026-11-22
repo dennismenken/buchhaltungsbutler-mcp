@@ -163,7 +163,18 @@ const FINAL_PATTERNS: readonly string[] = [
 
 // Der Wortlaut „not activated" ist der Beleg für eine Kontoeinstellung und nicht für eine
 // falsche Eingabe. Ein Muster auf „is not activated" fände nur zwei der vier belegten Texte.
-const CONFIG_PATTERN = "not activated";
+// Seit der Spezifikation vom 2026-11-22 kommen zwei Einstellungstexte des One-Stop-Shops hinzu:
+// „has to be activated" (OSS im Mandanten nicht aktiviert) und „are configured for the country
+// of dispatch" (keine USt-IdNr. und keine Steuernummer für das Abgangsland hinterlegt). Beide
+// enthalten „not available" bzw. „could not be" und fielen sonst unter `final`; der Nutzer kann
+// sie aber in den Steuereinstellungen beheben, und genau das sagt der Rat der Klasse `config`.
+// Nicht hierher gehören „is not configured as a country of dispatch" und „… as a destination
+// country": Dort ist meist das gesendete Land falsch, und sie bleiben `input`.
+const CONFIG_PATTERNS: readonly string[] = [
+  "not activated",
+  "has to be activated",
+  "are configured for the country of dispatch",
+];
 
 // Ein Feldname, den kein Muster aus dem Meldungstext holen kann: „invalid sort field
 // specified" meint den Parameter `order` (Beispieltabelle).
@@ -194,8 +205,10 @@ function messageOf(ref: string): string {
 function classify(path: string, code: number, status: number, message: string): ErrorClass {
   const lower = message.toLowerCase();
   // 1. Zugangsdaten und Kontoeinstellungen. Codes 3, 4 und 11 tragen endpunktübergreifend
-  //    dieselbe Bedeutung; dazu die vier belegten „not activated"-Texte.
-  if (code === 3 || code === 4 || code === 11 || lower.includes(CONFIG_PATTERN)) return "config";
+  //    dieselbe Bedeutung; dazu die vier belegten „not activated"-Texte und die zwei
+  //    Einstellungstexte des One-Stop-Shops (CONFIG_PATTERNS).
+  if (code === 3 || code === 4 || code === 11) return "config";
+  if (CONFIG_PATTERNS.some((pattern) => lower.includes(pattern))) return "config";
   // 2. Vorübergehend. Code 0 mit HTTP 500, Code 30 mit HTTP 504 und Code 15 an den zehn
   //    Pfaden mit HTTP 403. Unterschieden wird über den STATUS, nicht über den Wortlaut.
   if (code === 0 && status === 500) return "transient";

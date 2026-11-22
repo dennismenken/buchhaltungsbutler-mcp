@@ -8,7 +8,7 @@
 // `message` und `summary` voneinander ab; die Zahl ist ein Driftanzeiger und wird von
 // test/unit/generated.test.ts festgehalten.
 //
-// Verteilung der Klassen: config 189, input 447, transient 132, final 123, special 8.
+// Verteilung der Klassen: config 195, input 447, transient 132, final 117, special 8.
 //
 // ZWEI REGELN FÜR JEDEN, DER DIESEN KATALOG LIEST:
 //   1. Kein Text aus dieser Datei wird als Wortlaut der API ausgegeben. Zitiert wird das
@@ -2699,13 +2699,13 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "status": 400,
       "message": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
       "summary": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
-      "cls": "final"
+      "cls": "config"
     },
     "53": {
       "status": 400,
       "message": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
       "summary": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
-      "cls": "final"
+      "cls": "config"
     },
     "54": {
       "status": 400,
@@ -2979,13 +2979,13 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "status": 400,
       "message": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
       "summary": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
-      "cls": "final"
+      "cls": "config"
     },
     "53": {
       "status": 400,
       "message": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
       "summary": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
-      "cls": "final"
+      "cls": "config"
     },
     "54": {
       "status": 400,
@@ -3287,13 +3287,13 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "status": 400,
       "message": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
       "summary": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
-      "cls": "final"
+      "cls": "config"
     },
     "53": {
       "status": 400,
       "message": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
       "summary": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
-      "cls": "final"
+      "cls": "config"
     },
     "54": {
       "status": 400,

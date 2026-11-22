@@ -51,7 +51,7 @@ describe("src/errors/catalog.ts", () => {
     expect(second).toBe(first);
   });
 
-  it("deckt alle 786 Paare über 54 Pfade ab", async () => {
+  it("deckt alle 899 Paare über 61 Pfade ab", async () => {
     const catalog = await loadErrorCatalog();
     expect(Object.keys(catalog)).toHaveLength(EXPECTED_PATH_COUNT);
     expect(countCatalogPairs(catalog)).toBe(EXPECTED_PAIR_COUNT);

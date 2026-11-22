@@ -20,13 +20,15 @@ import { THROTTLE_ERROR_CODE, THROTTLE_PATHS } from "../../src/errors/classify.j
 // ändert, ohne dass jemand diese Datei anfasst.
 //
 // Geprüft am 2026-09-12 gegen src/generated/errors.ts, docs/api/fehlercodes.md und
-// docs/openapi/buchhaltungsbutler-v1.json.
+// docs/openapi/buchhaltungsbutler-v1.json. Ergänzt am 2026-11-22 um die 32 Texte, die der
+// Anbieter ohne neue Versionsnummer hinzugefügt hat (sieben neue Pfade und der One-Stop-Shop an
+// den drei Buchungspfaden); bestehende Paare haben sich dabei nicht geändert.
 //
-// PRÜFWEG. Die Klasse hängt am Paar (Pfad, error_code), aber nur EIN Text der 263 im Katalog
+// PRÜFWEG. Die Klasse hängt am Paar (Pfad, error_code), aber nur EIN Text der 295 im Katalog
 // vorkommenden Meldungstexte trägt an verschiedenen Pfaden verschiedene Klassen. Die Prüfung
-// ist deshalb zweistufig: eine Tabelle Text → Klasse über alle 263 Texte, dazu eine
+// ist deshalb zweistufig: eine Tabelle Text → Klasse über alle 295 Texte, dazu eine
 // Ausnahmeliste für die Paare, bei denen der Pfad die Klasse kippt. Zusammen decken beide
-// Tabellen alle 786 Paare ab; der Test rechnet das nach und lässt keinen Text unerwähnt.
+// Tabellen alle 899 Paare ab; der Test rechnet das nach und lässt keinen Text unerwähnt.
 //
 // BEFUND DER PRÜFUNG, in vier Punkten:
 //
@@ -36,7 +38,8 @@ import { THROTTLE_ERROR_CODE, THROTTLE_PATHS } from "../../src/errors/classify.j
 //    einer anderen Klasse, und kein Text in `transient` benennt einen Dauerzustand. Damit ist
 //    die einzige Einstufung, die ein FALSCHES Verhalten auslösen könnte — Retry ja oder nein —
 //    vollständig gegengelesen.
-// 2. `config` enthält genau die Codes 3, 4 und 11 sowie die vier belegten „not activated"-Texte.
+// 2. `config` enthält genau die Codes 3, 4 und 11 sowie die vier belegten „not activated"-Texte und die zwei
+//    Einstellungstexte des One-Stop-Shops.
 //    Kein Zugangs- oder Aktivierungsfall ist in `input` oder `final` gerutscht; das ist der
 //    zweite Fall, in dem eine falsche Klasse den Agenten in die falsche Richtung schickte.
 // 3. Die Grenze zwischen `input` und `final` ist an einigen Stellen eine Auslegung und keine
@@ -54,26 +57,34 @@ import { THROTTLE_ERROR_CODE, THROTTLE_PATHS } from "../../src/errors/classify.j
 // =========================================================================================
 
 /**
- * Alle 263 Meldungstexte des Katalogs mit der geprüften Klasse.
+ * Alle 295 Meldungstexte des Katalogs mit der geprüften Klasse.
  *
  * Die Zahl hinter jeder Zeile ist die Zahl der Paare, die diesen Text tragen. Sie ist eine
  * Prüfgröße und keine Zierde: Ein Text, der plötzlich an mehr Pfaden auftaucht, ist eine
  * geänderte Spezifikation.
  */
 const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
-  // --- config: 8 Texte ---
-  ["API credentials unknown or invalid", "config"], // 54 — Code 3, endpunktübergreifend.
+  // --- config: 10 Texte ---
+  ["API credentials unknown or invalid", "config"], // 61 — Code 3, endpunktübergreifend.
   ["creditor posting is not activated", "config"], // 1 — einer der vier belegten not-activated-Texte.
   ["creditors are not activated for the customer", "config"], // 2 — einer der vier belegten not-activated-Texte.
-  ["customer has no active status", "config"], // 54 — Code 11, endpunktübergreifend.
-  ["customer not found or insufficient privileges", "config"], // 35 — Code 4, endpunktübergreifend.
-  ["customer not found or invalid api client for customer or insufficient privileges", "config"], // 19 — zweiter Wortlaut zu Code 4.
+  ["customer has no active status", "config"], // 61 — Code 11, endpunktübergreifend.
+  ["customer not found or insufficient privileges", "config"], // 37 — Code 4, endpunktübergreifend.
+  ["customer not found or invalid api client for customer or insufficient privileges", "config"], // 24 — zweiter Wortlaut zu Code 4.
   ["debtor posting is not activated", "config"], // 1 — einer der vier belegten not-activated-Texte.
   ["debtors are not activated for the customer", "config"], // 2 — einer der vier belegten not-activated-Texte.
+  [
+    'no vat identification number and no tax number are configured for the country of dispatch ("%country%"), so the posting could not be reported',
+    "config",
+  ], // 3 — fehlende USt-IdNr. oder Steuernummer für das Abgangsland; der zweite OSS-Einstellungstext.
+  [
+    "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+    "config",
+  ], // 3 — Aktivierung des One-Stop-Shops im Mandanten; einer der zwei OSS-Einstellungstexte, Muster in scripts/gen-errors.ts.
   // --- transient: 5 Texte ---
-  ["a timeout occurred while processing the request", "transient"], // 51 — Code 30 mit HTTP 504.
+  ["a timeout occurred while processing the request", "transient"], // 58 — Code 30 mit HTTP 504.
   ["adding temporarily restricted", "transient"], // 9 — neun der zehn Drosselungspfade; unten einzeln abgehakt.
-  ["error while processing the request", "transient"], // 54 — Code 0 mit HTTP 500.
+  ["error while processing the request", "transient"], // 61 — Code 0 mit HTTP 500.
   ["timeout", "transient"], // 3 — Kurzform derselben Bedeutung wie der lange Text; Code 30, HTTP 504.
   ["upload temporarily restricted", "transient"], // 1 — der zehnte Drosselungspfad.
   // --- special: 5 Texte ---
@@ -82,17 +93,23 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["invalid e_invoice_type specified", "special"], // 1 — einen Parameter dieses Namens führt der Endpunkt nicht.
   ["report generation already in progress", "special"], // 2 — Sonderfall 3: laufende Erzeugung nicht verwerfen.
   ["report generation has not been finished yet", "special"], // 2 — Sonderfall 1: Zwischenstand, kein Fehler.
-  // --- final: 68 Texte ---
+  // --- final: 83 Texte ---
   ["a receipt linked to the transaction has already been posted", "final"], // 1
   ["a receipt of type '<type>' cannot be assigned to a creditor account", "final"], // 2
   ["a receipt of type '<type>' cannot be assigned to a debtor account", "final"], // 2
   ["a transaction linked to the receipt has already been posted", "final"], // 1
+  ["account may not be deleted", "final"], // 1
+  ["account may not be deleted because confirmed postings exist", "final"], // 1
+  ["account may not be deleted because revision safe transactions exist", "final"], // 1
   ["account specified does not exist for the customer", "final"], // 3
+  ["account was not found", "final"], // 2
   ["assignment failed", "final"], // 1
   ["cost location may not be deleted", "final"], // 1
   ["cost location was not found", "final"], // 2
+  ["creditor may not be deleted because postings exist", "final"], // 1
   ["creditor/debtor specified does not exist for the customer", "final"], // 2
-  ["customer has reached the upload limit", "final"], // 3 — Tarifkontingent, Sonderfall 4; kein Minutenlimit.
+  ["customer has reached the upload limit", "final"], // 4 — Tarifkontingent, Sonderfall 4; kein Minutenlimit.
+  ["debtor may not be deleted because postings exist", "final"], // 1
   ["expected account type by receipt does not match the creditor/debtor account's type", "final"], // 1
   ["invalid postingaccount_credit specified or postingaccount_credit is not available", "final"], // 1 — grenznah: wie die Zeile zum Sollkonto.
   ["invalid postingaccount_debit specified or postingaccount_debit is not available", "final"], // 1 — grenznah: nennt zwei Lesarten; die Zustandslesart nennt den Prüfaufruf.
@@ -101,7 +118,11 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["Posting is fixed and cannot be unconfirmed.", "final"], // 1
   ["posting not found", "final"], // 2
   ["Posting not found.", "final"], // 2
-  ["postingaccount was not found", "final"], // 1
+  ["postingaccount may not be deleted", "final"], // 1
+  ["postingaccount may not be deleted because assets exist", "final"], // 1
+  ["postingaccount may not be deleted because it is a standard postingaccount", "final"], // 1
+  ["postingaccount may not be deleted because postings exist", "final"], // 1
+  ["postingaccount was not found", "final"], // 2
   ["postings are not allowed on receipts without currency", "final"], // 1
   ["postings with foreign currencies are not allowed", "final"], // 1
   ["receipt can´t be marked as deleted - fixed postings exist", "final"], // 1
@@ -109,7 +130,7 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["receipt has fixed postings that cannot be unconfirmed", "final"], // 1
   ["receipt has no postings to unconfirm", "final"], // 1
   ["receipt is already deleted", "final"], // 1
-  ["receipt is deleted", "final"], // 2
+  ["receipt is deleted", "final"], // 3
   ["receipt is not marked as deleted", "final"], // 1
   ["receipt not found", "final"], // 4
   ["Receipt not found.", "final"], // 1
@@ -135,6 +156,7 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ], // 1
   ['The account %postingaccount_number% must be posted with vat option "%vat_option%"', "final"], // 1
   ["The account %postingaccount_number% must be posted with vat option %vat_option%", "final"], // 1
+  ["the account could not be validated", "final"], // 1
   [
     "the parent_postingaccount_number is not valid or is not available due to your settings or was added manually",
     "final",
@@ -144,10 +166,14 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["the receipt has already created a transaction", "final"], // 1
   ["the receipt is not valid, please complete the data", "final"], // 1
   ["the specified creditor/debtor is invalid", "final"], // 1
-  ["the specified name already exists", "final"], // 2
+  ["the specified name already exists", "final"], // 3
   ["the specified postingaccount cannot be booked manually", "final"], // 2
   ["the specified postingaccount is not available", "final"], // 2
   ["the specified postingaccount is not valid", "final"], // 2
+  [
+    "the specified vat rate does not exist in the destination country on the delivery date",
+    "final",
+  ], // 3 — grenznah: Der Satz stammt aus den Argumenten; final wie „the vat option is not available for this date“.
   ["the tax key is invalid for specified account combination", "final"], // 1
   ["the total amount of all postings does not match the receipt amount", "final"], // 1 — Betragsprüfung, final.
   ["the total amount of all postings does not match the transaction amount", "final"], // 1 — Betragsprüfung, final.
@@ -162,6 +188,9 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
     "final",
   ], // 1
   ["the vat option is not available for this date", "final"], // 1
+  ["transaction can´t be deleted - fixed postings exist", "final"], // 1
+  ["transaction can´t be deleted - transaction is already canceled or is a cancelation", "final"], // 1
+  ["transaction can´t be deleted - type of transaction does not allow deletion", "final"], // 1
   ["transaction has fixed postings that cannot be unconfirmed", "final"], // 1
   ["transaction has no postings to unconfirm", "final"], // 1
   ["transaction not found", "final"], // 4
@@ -169,7 +198,16 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["transaction was not found", "final"], // 1
   ["vat option unavailable due to current settings", "final"], // 3 — Zustand einer Kontoeinstellung, nicht ein gesendeter Wert.
   ["vat option unavailable with 'not liable to sales tax' setting", "final"], // 3 — Zustand einer Kontoeinstellung.
-  // --- input: 177 Texte ---
+  // --- input: 192 Texte ---
+  ["a vat rate is required for the specified vat option", "input"], // 3
+  [
+    'country of origin and country of destination are identical ("%country%"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop',
+    "input",
+  ], // 3
+  [
+    "country of origin and country of destination are required for the specified vat option",
+    "input",
+  ], // 3
   ["either transaction_id_by_customer or receipt_id_by_customer should be specified", "input"], // 1
   ["file name is not specified", "input"], // 1
   ["file type not accepted", "input"], // 1
@@ -234,7 +272,8 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["invalid id_by_customer_to specified", "input"], // 1
   ["invalid include_offers specified", "input"], // 1
   ["invalid invoice number specified", "input"], // 2
-  ["invalid invoicenumber specified", "input"], // 3
+  ["invalid invoicenumber specified", "input"], // 4
+  ["invalid is_disabled_in_select specified", "input"], // 1
   ["invalid is_revision_safe specified", "input"], // 1
   ["invalid item_amount specified", "input"], // 2
   ["invalid item_name specified", "input"], // 2
@@ -246,7 +285,7 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["invalid limit specified", "input"], // 5
   ["invalid link_to_receipt_id_by_customer specified", "input"], // 2
   ["invalid list_direction specified", "input"], // 1
-  ["invalid name specified", "input"], // 9
+  ["invalid name specified", "input"], // 10
   ["invalid offset specified", "input"], // 5
   ["invalid or not existing parameters", "input"], // 2
   ["invalid order specified", "input"], // 2
@@ -258,15 +297,15 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["invalid posting type specified", "input"], // 3
   ["invalid posting_status specified", "input"], // 1
   ["invalid postingaccount flag specified", "input"], // 1
-  ["invalid postingaccount_number specified", "input"], // 5
+  ["invalid postingaccount_number specified", "input"], // 8
   ["invalid purpose specified", "input"], // 1
-  ["invalid receipt_creates_transaction specified", "input"], // 1
-  ["invalid receipt_id_by_customer specified", "input"], // 2
+  ["invalid receipt_creates_transaction specified", "input"], // 2
+  ["invalid receipt_id_by_customer specified", "input"], // 3
   ["invalid recurring_date_next specified", "input"], // 3
   ["invalid recurring_interval specified", "input"], // 3
   ["invalid report_id_by_customer specified", "input"], // 2
   ["invalid sales_tax_id specified", "input"], // 4
-  ["invalid settings type specified", "input"], // 8
+  ["invalid settings type specified", "input"], // 11
   ["invalid show_bankdata specified", "input"], // 3
   ["invalid show_contactdata specified", "input"], // 3
   ["invalid show_prices_type specified", "input"], // 3
@@ -275,7 +314,7 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["invalid street specified", "input"], // 11
   ["invalid tax key specified", "input"], // 2
   ["invalid to_from specified", "input"], // 1
-  ["invalid transaction_id_by_customer specified", "input"], // 2
+  ["invalid transaction_id_by_customer specified", "input"], // 3
   ["invalid type specified", "input"], // 9
   ["invalid unconfirm type specified", "input"], // 3
   ["invalid value date specified", "input"], // 1
@@ -287,35 +326,39 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["invalid vat rate specified", "input"], // 2
   ["invalid vat specified", "input"], // 1
   ["invalid zip specified", "input"], // 7
+  ["invoice correction data is invalid", "input"], // 1 — grenznah: nennt kein Argument; bleibt input, weil „… is invalid“ bewusst nicht final ist.
   ["maximum file size is <max>MB", "input"], // 1 — Grenze; render.ts nennt dazu das billigere Aufrufmuster.
   ["maximum number of pages is <max>", "input"], // 1 — Grenze; render.ts nennt dazu das billigere Aufrufmuster.
+  ["no account found for transaction", "input"], // 1
   ["no account specified", "input"], // 1
   ["no amount specified", "input"], // 1
   ["No amount specified", "input"], // 1
   ["no booking date specified", "input"], // 1
   ["no comment_text is specified", "input"], // 1
   ["no cost location code specified", "input"], // 2
-  ["no creditor found for specified postingaccount_number", "input"], // 1 — grenznah zu final, siehe Befund 4 im Kopf.
+  ["no creditor found for specified postingaccount_number", "input"], // 2 — grenznah zu final, siehe Befund 4 im Kopf.
   ["no date specified", "input"], // 1
-  ["no debtor found for specified postingaccount_number", "input"], // 1 — grenznah zu final, siehe Befund 4 im Kopf.
+  ["no debtor found for specified postingaccount_number", "input"], // 2 — grenznah zu final, siehe Befund 4 im Kopf.
   ["no file provided", "input"], // 1
+  ["no invoice data found for the receipt", "input"], // 1
+  ["no invoice data items found for the receipt", "input"], // 1
   ["no items specified", "input"], // 3
   ["no name specified", "input"], // 3
   ["no or invalid receipt_id_by_customer specified", "input"], // 1
   ["no or invalid transaction_id_by_customer specified", "input"], // 1
   ["no parent_postingaccount_number specified", "input"], // 1
   ["no payment recipient or sender (to_from) specified", "input"], // 1
-  ["no post and files content received or declined", "input"], // 21 — an /transactions/add special, siehe PAIR_EXCEPTIONS.
+  ["no post and files content received or declined", "input"], // 24 — an /transactions/add special, siehe PAIR_EXCEPTIONS.
   ["no postingaccount found for specified postingaccount_number", "input"], // 1 — grenznah zu final, siehe Befund 4 im Kopf.
   ["no postingaccount number specified", "input"], // 2
   ["no postingaccount_credit specified", "input"], // 1
   ["no postingaccount_debit specified", "input"], // 1
-  ["no postingaccount_number specified", "input"], // 2
+  ["no postingaccount_number specified", "input"], // 5
   ["no postingtext specified", "input"], // 1
-  ["no receipt found", "input"], // 3 — grenznah zu final, siehe Befund 4 im Kopf.
+  ["no receipt found", "input"], // 4 — grenznah zu final, siehe Befund 4 im Kopf.
   ["no receipts assigned to transaction", "input"], // 1 — grenznah: Zustand der Zahlung; der Rat auf die Kennung passt trotzdem.
   ["No receipts found", "input"], // 1 — leerer Stapel, also wirklich eine Eingabeprüfung.
-  ["no transaction found", "input"], // 1 — grenznah zu final, siehe Befund 4 im Kopf.
+  ["no transaction found", "input"], // 2 — grenznah zu final, siehe Befund 4 im Kopf.
   ["no transaction_id_by_customer specified", "input"], // 1
   ["No transactions to receipts found", "input"], // 1 — leerer Stapel, also wirklich eine Eingabeprüfung.
   ["no type specified", "input"], // 1
@@ -338,7 +381,14 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["Posting is not a free posting.", "input"], // 1
   ["postingaccount_number is out of allowed range [detailed error message]", "input"], // 2
   ["receipt is directly assigned to confirmed postings", "input"], // 1
+  ["receipt is not an outbound invoice", "input"], // 1
+  ["receipt_creates_transaction is only allowed for manual accounts", "input"], // 1 — grenznah: die Kontoart; Abhilfe ist, das Feld wegzulassen.
+  [
+    "the account name may not be changed because the dropbox folder of the account is not empty",
+    "input",
+  ], // 1 — grenznah: ein Kontozustand; Abhilfe ist, den Namen nicht mitzusenden.
   ["the account name must be %min% to %max% characters long", "input"], // 1
+  ["the account name must be 2 to 120 characters long", "input"], // 1
   ["the cost location is longer than 10 characters", "input"], // 3
   [
     "the cost location must consist of alphanumeric characters or be a number greater than 0",
@@ -349,6 +399,9 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
     "the cost location two must consist of alphanumeric characters or be a number greater than 0",
     "input",
   ], // 3
+  ['the country "%country%" is not configured as a country of dispatch', "input"], // 3 — grenznah: meist ist das gesendete Land falsch, sonst fehlt die OSS-Einstellung.
+  ['the country "%country%" is not configured as a destination country', "input"], // 3 — grenznah: wie die Zeile zum Abgangsland.
+  ['the country "%country%" is outside the EU and is not permitted for an OSS posting', "input"], // 3
   ["the date delivery is invalid", "input"], // 1
   ["the posting text is longer than 128 characters", "input"], // 3
   ["the postingaccount name must be %min% to %max% characters long", "input"], // 2
@@ -356,8 +409,8 @@ const REVIEWED_TEXTS: ReadonlyMap<string, ErrorClass> = new Map([
   ["the postingaccount_number must be at least %min% digits long", "input"], // 1
   ["the postingaccount_number must have %min% to %max% digits", "input"], // 2
   ["there are no negative amounts allowed", "input"], // 1
-  ["wrong creditor account postingaccount_number specified", "input"], // 1
-  ["wrong debtor account postingaccount_number specified", "input"], // 1
+  ["wrong creditor account postingaccount_number specified", "input"], // 2
+  ["wrong debtor account postingaccount_number specified", "input"], // 2
   ["wrong postingaccount_number specified", "input"], // 1
 ]);
 
@@ -377,10 +430,10 @@ const PAIR_EXCEPTIONS: ReadonlyMap<string, ErrorClass> = new Map([
 
 /** Die Verteilung aus dem Kopf des Generats. Ändert sie sich, ist eine Einstufung gewandert. */
 const EXPECTED_DISTRIBUTION: Record<ErrorClass, number> = {
-  config: 168,
-  input: 397,
-  transient: 118,
-  final: 95,
+  config: 195,
+  input: 447,
+  transient: 132,
+  final: 117,
   special: 8,
 };
 
@@ -452,7 +505,7 @@ const catalog = await loadErrorCatalog();
 const pairs = listCatalogPairs(catalog);
 
 describe("Handprüfung der Klassenspalte", () => {
-  it("deckt alle 786 Paare über 54 Pfade ab", () => {
+  it("deckt alle 899 Paare über 61 Pfade ab", () => {
     expect(countCatalogPairs(catalog)).toBe(EXPECTED_PAIR_COUNT);
     expect(Object.keys(catalog)).toHaveLength(EXPECTED_PATH_COUNT);
     expect(pairs).toHaveLength(EXPECTED_PAIR_COUNT);
