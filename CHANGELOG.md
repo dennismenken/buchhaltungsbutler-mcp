@@ -8,6 +8,15 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+
+- **Der wöchentliche Lauf `drift.yml` gleicht die eingecheckte Spezifikationsdatei mit der
+  Live-Spezifikation des Anbieters ab** (`pnpm check-spec-drift`). Anlass: BuchhaltungsButler
+  hat die Spezifikation geändert, sieben neue Pfade und geänderte Parameter, ohne die
+  Versionsnummer 1.9.1 zu erhöhen. Ein Vergleich der Versionsnummer allein fand das nicht. Der
+  Schritt nennt neue, entfernte und geänderte Pfade und Datentypen und läuft auch, wenn ein
+  Schritt davor gescheitert ist.
+
 ### Behoben
 
 - **`bb_debtors_update`, `bb_creditors_update` und `bb_postingaccounts_update` meldeten eine

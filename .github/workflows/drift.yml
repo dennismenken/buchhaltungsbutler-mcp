@@ -1,6 +1,6 @@
 name: Abdrift
 
-# Wöchentlicher Lauf für die beiden Verschlechterungen, die sonst erst bei der nächsten
+# Wöchentlicher Lauf für die drei Verschlechterungen, die sonst erst bei der nächsten
 # Veröffentlichung auffielen:
 #
 #   1. **Generatordifferenz.** src/generated/endpoints.ts und src/generated/errors.ts sind
@@ -11,6 +11,12 @@ name: Abdrift
 #      scripts/check-size.ts. Der teuerste Fall ist eine Abhängigkeit, die der Bündler nach
 #      dist/ einrechnet, statt sie als dependency zu belassen: Die Dateiliste bleibt dabei
 #      unverändert, und nur die Bytezahl verrät es.
+#   3. **Spezifikationsabweichung.** Die eingecheckte Spezifikationsdatei gegen die Live-
+#      Spezifikation des Anbieters. Der Anbieter ändert den Inhalt seiner Spezifikation
+#      (neue Pfade, geänderte Parameter), ohne die Versionsnummer zu erhöhen: Ein Vergleich
+#      nur über die Versionsnummer findet das nicht. Abhilfe ist der Weg aus README-Abschnitt
+#      18: Die Datei neu einspielen, `pnpm generate` ausführen, und die Registerprüfungen
+#      nennen anschließend genau die Lücken.
 #
 # Dieser Workflow veröffentlicht nichts. Er baut, misst und meldet.
 
@@ -49,3 +55,10 @@ jobs:
       # Ohne Bau misst check-size ein Paket ohne Inhalt und meldete ein eingehaltenes Budget.
       - name: Größenbudget
         run: pnpm check-size
+
+      # `if: ${{ !cancelled() }}`: Der Abgleich läuft auch dann, wenn ein Schritt davor
+      # gescheitert ist. Gerade die Abweichung soll ja gemeldet werden, nicht hinter einem
+      # anderen roten Schritt verschwinden.
+      - name: Abgleich mit der Live-Spezifikation
+        if: ${{ !cancelled() }}
+        run: pnpm check-spec-drift

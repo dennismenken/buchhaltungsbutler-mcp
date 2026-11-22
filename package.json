@@ -49,6 +49,7 @@
     "measure-tokens": "node scripts/measure-tokens.ts",
     "check-size": "node scripts/check-size.ts",
     "contract:read": "node scripts/contract-read.ts",
+    "check-spec-drift": "node scripts/check-spec-drift.ts",
     "build-mcpb": "node scripts/build-mcpb.ts",
     "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build"
   },
