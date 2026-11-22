@@ -50,7 +50,7 @@ export interface ToolEntry {
   timeoutTier: "short" | "normal" | "long"; // Zeitlimitstufe
   verifyWith?: VerifySpec; // Pflicht bei toolClass !== "R"
   duplicateCheck?: DuplicateSpec; // nur bei anlegenden Werkzeugen mit tragfähigem Schlüssel
-  crossChecks: CrossCheckId[]; // Q1 bis Q9
+  crossChecks: CrossCheckId[]; // Q1 bis Q10
   invalidatesCache: string[]; // Werkzeugnamen, deren Cachestand dieser Aufruf verwirft
   verified?: boolean; // false: Aufrufform abgeleitet, nicht gemessen
 }
@@ -120,7 +120,7 @@ export interface DuplicateSpec {
   perBatch: true; // bei Stapelwerkzeugen genau ein Aufruf für den ganzen Stapel
 }
 
-export type CrossCheckId = "Q1" | "Q2" | "Q3" | "Q4" | "Q5" | "Q6" | "Q7" | "Q8" | "Q9";
+export type CrossCheckId = "Q1" | "Q2" | "Q3" | "Q4" | "Q5" | "Q6" | "Q7" | "Q8" | "Q9" | "Q10";
 
 /** Ein Zod-Schema für genau ein Feld, aus den Bausteinen in src/schema/*. Der Typ
  *  ist absichtlich weit: src/schema/build.ts setzt die Fragmente zum Objektschema zusammen

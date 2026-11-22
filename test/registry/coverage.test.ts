@@ -32,9 +32,9 @@ import {
 // Die Zahlen zählen das **Register**, also die 61 Endpunktwerkzeuge dieses Pakets.
 // Die Spezifikation führt inzwischen 61 Pfade; alle sind abgedeckt.
 const PATH_COUNT = 61;
-const PARAMETERS_TOTAL = 389;
+const PARAMETERS_TOTAL = 398;
 const PARAMETER_API_KEY = 61;
-const PARAMETERS_DOMAIN = 328;
+const PARAMETERS_DOMAIN = 337;
 
 /** Die vier Endpunkte mit Pfadvorlage. `id_by_customer` ist dort ein Platzhalter. */
 const PLACEHOLDER_PATHS: readonly string[] = [
@@ -81,14 +81,14 @@ const SECOND_TIER_ROWS = [
     parameter: "receipts",
     container: "ReceiptsPostings",
     element: "ReceiptPostings",
-    properties: 9,
+    properties: 12,
   },
   {
     path: "/postings/add-batch/transactions",
     parameter: "transactions",
     container: "TransactionsPostings",
     element: "TransactionPostings",
-    properties: 8,
+    properties: 11,
   },
   {
     path: "/settings/add-batch/debtors",
@@ -109,7 +109,7 @@ const SECOND_TIER_ROWS = [
     parameter: "free_postings",
     container: "PostingsFree",
     element: undefined,
-    properties: 8,
+    properties: 11,
   },
 ] as const;
 
@@ -387,7 +387,7 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
     expectNoIssues(problems);
   });
 
-  it("ergibt 389 Zuordnungen: 61 in omitted, 328 über die apiNames der fields", () => {
+  it("ergibt 398 Zuordnungen: 61 in omitted, 337 über die apiNames der fields", () => {
     const omittedTotal = REGISTRY.reduce((sum, tool) => sum + tool.omitted.length, 0);
     const fieldsTotal = REGISTRY.reduce((sum, tool) => sum + topLevelApiNames(tool).length, 0);
 

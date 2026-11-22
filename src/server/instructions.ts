@@ -436,7 +436,7 @@ function resourcesBlock(active: ReadonlySet<ToolGroup>): string {
     lines.push("bb://guide/postings   der Wegweiser oben, zum Nachlesen");
   }
   lines.push(
-    "bb://vat-keys         die 23 Steuerschlüssel mit ihren deutschen Bezeichnungen",
+    "bb://vat-keys         die 29 Steuerschlüssel mit ihren deutschen Bezeichnungen",
     "bb://postingaccounts  der Kontenrahmen des Mandanten, nur bei eingeschaltetem",
     "                      Stammdatenspeicher; sonst nennt sie das Werkzeug dafür",
   );

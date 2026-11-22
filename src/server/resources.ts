@@ -137,16 +137,16 @@ im Werkzeugschema payment_account_number beziehungsweise postingaccount_filter u
 account.`;
 
 // ---------------------------------------------------------------------------------------
-// bb://vat-keys — die 23 Steuerschlüssel mit deutschen Bezeichnungen
+// bb://vat-keys — die 29 Steuerschlüssel mit deutschen Bezeichnungen
 // ---------------------------------------------------------------------------------------
 
 /**
- * Die deutschen Bezeichnungen der 23 Steuerschlüssel, wörtlich aus der Spezifikation
+ * Die deutschen Bezeichnungen der 29 Steuerschlüssel, wörtlich aus der Spezifikation
  * (Beschreibungstext von `vat` an `/postings/add/free`, gleichlautend an den beiden anderen
  * Buchungsendpunkten; `docs/api/buchungen.md` 4.1).
  *
  * Die Schlüssel selbst kommen aus {@link VAT_KEYS} und werden hier nicht wiederholt: Das
- * `satisfies` erzwingt, dass diese Tabelle genau die 23 Werte trägt, die das Eingabeschema
+ * `satisfies` erzwingt, dass diese Tabelle genau die 29 Werte trägt, die das Eingabeschema
  * zulässt. Fällt in `vocab.ts` einer weg oder kommt einer hinzu, bricht die Typprüfung hier
  * und nicht erst der Agent an einer Liste, die nichts mehr mit dem Schema zu tun hat.
  *
@@ -177,6 +177,12 @@ const VAT_KEY_LABELS = {
   "19_both_app_511": "§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)",
   "19_both_app_2": "i.g.E. 19/16% USt./Aufz. VSt.",
   "7_both_app": "i.g.E. 7/5% USt./Aufz. VSt.",
+  vat_oss_deli_deeu: "OSS - Lieferung D -> EU",
+  vat_oss_deli_eueu: "OSS - Lieferung EU -> EU",
+  vat_oss_serv_deeu: "OSS - Leistung D -> EU",
+  vat_oss_serv_eueu: "OSS - Leistung EU -> EU",
+  vat_oss_deli_eude: "OSS - Lieferung EU -> D",
+  vat_oss_deli_eude_19: "OSS - Lieferung EU -> D 19%",
 } as const satisfies Record<(typeof VAT_KEYS)[number], string>;
 
 /** Die längste Schlüsselbreite, damit die Tabelle in einer Spalte steht. */
@@ -184,7 +190,7 @@ const VAT_KEY_WIDTH = Math.max(...VAT_KEYS.map((key) => key.length));
 
 /** Der Text der Resource `bb://vat-keys`. Einmal beim Laden gebaut, danach unveränderlich. */
 const VAT_KEYS_GUIDE = [
-  "DIE 23 STEUERSCHLÜSSEL DER EINGABESEITE",
+  "DIE 29 STEUERSCHLÜSSEL DER EINGABESEITE",
   "",
   "Wert für die Felder vat beziehungsweise vats an den Buchungswerkzeugen. Die Liste ist an",
   "allen drei Buchungsendpunkten wortgleich hinterlegt; die Bezeichnungen stammen wörtlich",
@@ -200,6 +206,15 @@ const VAT_KEYS_GUIDE = [
   "  _app   'Aufz.' in der Bezeichnung: aufzuteilende Vorsteuer, also nur teilweise abziehbar",
   "  _no_pre und die 65xx-Schlüssel: Umsatzsteuer wird geschuldet, der Vorsteuerabzug",
   "         unterbleibt; so lesen sich die Zusätze 'ohne VSt.' in den Bezeichnungen oben",
+  "",
+  "DIE SECHS OSS-SCHLÜSSEL",
+  "Die sechs Schlüssel mit 'oss_' im Namen gehören zum One-Stop-Shop-Verfahren. Sie sind nur",
+  "belegt, wenn das Verfahren im Mandanten aktiviert ist; sonst lehnt die API den Aufruf ab.",
+  "Jeder von ihnen verlangt oss_origin_country und oss_destination_country als Ländercode nach",
+  "ISO 3166-1 alpha-2, XI steht für Nordirland. Der Satz der Buchung wird über oss_vat_rate",
+  "übergeben. Einzige Ausnahme ist vat_oss_deli_eude_19: Dort ist der Satz fest 19 Prozent, und",
+  "ein gesendeter Satz wird verworfen. Neben einem Schlüssel ohne 'oss_' im Namen verwirft die",
+  "API jeden OSS-Wert ohne Meldung.",
   "",
   "WAS DIESE LISTE NICHT SAGT",
   "Welcher Schlüssel im Einzelfall zulässig ist, hängt vom Sachkonto, vom Buchungsdatum und",
@@ -416,9 +431,9 @@ export function registerResources(
     {
       name: "bb-vat-keys",
       uri: RESOURCE_URIS.vatKeys,
-      title: "Steuerschlüssel",
+      title: "Steuerschlüssel (29 Werte)",
       description:
-        "Die 23 zulässigen Werte der Felder vat und vats mit ihren deutschen Bezeichnungen.",
+        "Die 29 zulässigen Werte der Felder vat und vats mit ihren deutschen Bezeichnungen.",
       read: () => VAT_KEYS_GUIDE,
     },
     {

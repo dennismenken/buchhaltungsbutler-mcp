@@ -18,7 +18,14 @@ import { z } from "zod";
 
 import { getConfig } from "../config/resolve.js";
 import { amountValue, boundedText, markSchemaKind, strictObject } from "./primitives.js";
-import { costLocation, idByCustomer, postingAccountNumber, vatKey } from "./vocab.js";
+import {
+  costLocation,
+  idByCustomer,
+  ossCountry,
+  ossVatRate,
+  postingAccountNumber,
+  vatKey,
+} from "./vocab.js";
 
 // --- Mengengrenze --------------------------------------------------------------------
 
@@ -68,10 +75,15 @@ export interface ParallelArrayColumn {
 export type ParallelArrayMapping = readonly ParallelArrayColumn[];
 
 /**
- * Die sechs Spalten der Buchungspositionen von `/postings/add/receipt` (Werkzeug 23).
+ * Die neun Spalten der Buchungspositionen von `/postings/add/receipt` (Werkzeug 23).
  *
  * Die Feldnamen des Positionsobjekts sind die Einzahlformen des Musterschemas; die
  * `apiName`-Spalte trägt die Mehrzahlformen der Spezifikation.
+ *
+ * Die drei letzten Spalten sind die One-Stop-Shop-Werte. Sie sind **optional**: Die
+ * Spezifikation führt `oss_origin_countries`, `oss_destination_countries` und `oss_vat_rates`
+ * als `required: false`. Fehlende Werte gehen als `null` hinaus (die vorhandene Abbildung
+ * weiter unten); neben einem Nicht-OSS-Schlüssel verwirft die API ohnehin jeden Wert.
  */
 export const POSTINGS_RECEIPT_COLUMNS: ParallelArrayMapping = Object.freeze([
   { field: "postingaccount", apiName: "postingaccounts", required: true },
@@ -80,10 +92,13 @@ export const POSTINGS_RECEIPT_COLUMNS: ParallelArrayMapping = Object.freeze([
   { field: "cost_location", apiName: "cost_locations", required: false },
   { field: "cost_location_two", apiName: "cost_locations_two", required: false },
   { field: "amount", apiName: "amounts", required: true },
+  { field: "oss_origin_country", apiName: "oss_origin_countries", required: false },
+  { field: "oss_destination_country", apiName: "oss_destination_countries", required: false },
+  { field: "oss_vat_rate", apiName: "oss_vat_rates", required: false },
 ]);
 
 /**
- * Die sieben Spalten von `/postings/add/transaction` (Werkzeug 25): dieselben sechs plus
+ * Die zehn Spalten von `/postings/add/transaction` (Werkzeug 25): dieselben neun plus
  * die Zuordnung offener Posten je Position.
  */
 export const POSTINGS_TRANSACTION_COLUMNS: ParallelArrayMapping = Object.freeze([
@@ -96,7 +111,7 @@ export const POSTINGS_TRANSACTION_COLUMNS: ParallelArrayMapping = Object.freeze(
 ]);
 
 /**
- * Die sechs Spalten **innerhalb** eines Stapelelements von `/postings/add-batch/receipts`
+ * Die neun Spalten **innerhalb** eines Stapelelements von `/postings/add-batch/receipts`
  * (Werkzeug 24, Definition `ReceiptPostings`).
  *
  * Der einzige Unterschied zu {@link POSTINGS_RECEIPT_COLUMNS} ist die Schreibweise
@@ -112,7 +127,7 @@ export const POSTINGS_RECEIPT_BATCH_COLUMNS: ParallelArrayMapping = Object.freez
 );
 
 /**
- * Die sieben Spalten innerhalb eines Stapelelements von
+ * Die zehn Spalten innerhalb eines Stapelelements von
  * `/postings/add-batch/transactions` (Werkzeug 26, Definition `TransactionPostings`).
  * Dort heißt das Feld wieder `postingtexts`, also wie am Einzelendpunkt.
  */
@@ -240,6 +255,9 @@ export function postingPositionItem(withOpenItem: boolean) {
     ),
     cost_location: costLocation().optional(),
     cost_location_two: costLocation().optional(),
+    oss_origin_country: ossCountry().optional(),
+    oss_destination_country: ossCountry().optional(),
+    oss_vat_rate: ossVatRate().optional(),
   };
   if (!withOpenItem) {
     return strictObject(base);

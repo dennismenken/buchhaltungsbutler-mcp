@@ -12,11 +12,13 @@ import {
   applyCrossChecks,
   type CrossCheckTool,
 } from "../../src/schema/cross-checks.js";
+import { buildToolSchema } from "../../src/schema/build.js";
 import { boundedText, strictObject } from "../../src/schema/primitives.js";
 import { limit, offset } from "../../src/schema/pagination.js";
 import { receiptsOrder, postingsOrder } from "../../src/schema/order.js";
 import { date } from "../../src/schema/vocab.js";
 import type { CrossCheckId } from "../../src/registry/types.js";
+import { entryByName } from "../helpers/registry-fixtures.js";
 
 function tool(toolName: string, specPath: string, maxItems = 50): CrossCheckTool {
   return { toolName, specPath, maxItems };
@@ -349,8 +351,245 @@ describe("Q9 genau eine der beiden Kennungen von /comments/add", () => {
   });
 });
 
+describe("Q10 die OSS-Felder passen zum Steuerschlüssel", () => {
+  const schema = applyCrossChecks(
+    strictObject({
+      vat: z.string().optional(),
+      oss_origin_country: z.string().optional(),
+      oss_destination_country: z.string().optional(),
+      oss_vat_rate: z.string().optional(),
+      positions: z
+        .array(
+          strictObject({
+            vat: z.string().optional(),
+            oss_origin_country: z.string().optional(),
+            oss_destination_country: z.string().optional(),
+            oss_vat_rate: z.string().optional(),
+          }),
+        )
+        .optional(),
+    }),
+    ["Q10"],
+    tool("bb_postings_create_for_receipt", "/postings/add/receipt"),
+  );
+
+  it("nimmt einen Nicht-OSS-Schlüssel ohne OSS-Felder an", () => {
+    expect(schema.safeParse({ vat: "19_vat" }).success).toBe(true);
+  });
+
+  it("nimmt einen OSS-Schlüssel mit beiden Ländern und dem Satz an", () => {
+    expect(
+      schema.safeParse({
+        vat: "vat_oss_deli_deeu",
+        oss_origin_country: "DE",
+        oss_destination_country: "FR",
+        oss_vat_rate: "20.00",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("verlangt bei einem OSS-Schlüssel beide Länder", () => {
+    const result = schema.safeParse({
+      vat: "vat_oss_deli_deeu",
+      oss_destination_country: "FR",
+      oss_vat_rate: "20.00",
+    });
+    expect(result.success).toBe(false);
+    expect(messagesOf(result).join(" ")).toContain("oss_origin_country");
+  });
+
+  it("verlangt bei einem OSS-Schlüssel den Satz", () => {
+    const result = schema.safeParse({
+      vat: "vat_oss_deli_deeu",
+      oss_origin_country: "DE",
+      oss_destination_country: "FR",
+    });
+    expect(result.success).toBe(false);
+    expect(messagesOf(result).join(" ")).toContain("oss_vat_rate");
+  });
+
+  it("verlangt beim Schlüssel mit festem Satz keinen gesendeten Satz", () => {
+    expect(
+      schema.safeParse({
+        vat: "vat_oss_deli_eude_19",
+        oss_origin_country: "FR",
+        oss_destination_country: "DE",
+      }).success,
+    ).toBe(true);
+    const result = schema.safeParse({
+      vat: "vat_oss_deli_eude_19",
+      oss_origin_country: "FR",
+      oss_destination_country: "DE",
+      oss_vat_rate: "19.00",
+    });
+    expect(result.success).toBe(false);
+    expect(messagesOf(result).join(" ")).toContain("festen Satz von 19 Prozent");
+  });
+
+  it("lehnt OSS-Werte neben einem Nicht-OSS-Schlüssel ab und nennt das Verwerfen", () => {
+    const result = schema.safeParse({ vat: "19_vat", oss_origin_country: "DE" });
+    expect(result.success).toBe(false);
+    const text = messagesOf(result).join(" ");
+    expect(text).toContain("19_vat");
+    expect(text).toContain("verwirft diese Werte stillschweigend");
+  });
+
+  it("prüft auch die Positionen einer Buchung positionsgenau", () => {
+    const result = schema.safeParse({
+      positions: [{ vat: "19_vat" }, { vat: "vat_oss_serv_deeu", oss_origin_country: "DE" }],
+    });
+    expect(result.success).toBe(false);
+    expect(messagesOf(result).join(" ")).toContain("oss_destination_country");
+  });
+
+  it("nennt in jeder Meldung, dass an die API nichts hinausgegangen ist", () => {
+    const result = schema.safeParse({ vat: "vat_oss_serv_deeu" });
+    expect(result.success).toBe(false);
+    expect(messagesOf(result).join(" ")).toContain("an die API ist nichts hinausgegangen");
+  });
+});
+
+/**
+ * Q10 an den sechs echten Werkzeugen, nicht an einem Schlumpfschema.
+ *
+ * Die Prüfung hängt an zwei Ebenen: an der einzelnen freien Buchung und an jeder Position der
+ * Beleg- und Zahlungsbuchung. Nur am ausgelieferten Schema lässt sich sehen, ob die Ebene
+ * wirklich stimmt und ob die Felder dort überhaupt ankommen.
+ */
+describe("Q10 an den sechs Buchungswerkzeugen", () => {
+  const RECEIPT_BASE = {
+    receipt_id_by_customer: 142,
+    creditor: "70001",
+    debtor: "10001",
+  } as const;
+
+  const RECEIPT_POSITION = {
+    postingaccount: "4980",
+    postingtext: "Bürobedarf",
+    vat: "19_vat",
+    amount: "100.00",
+  } as const;
+
+  const FREE_BASE = {
+    date: "2026-04-26",
+    postingtext: "Umbuchung",
+    amount: "100.00",
+    postingaccount_debit: "4980",
+    postingaccount_credit: "1600",
+  } as const;
+
+  const FREE_ITEM = {
+    date: "2026-04-26",
+    postingtext: "Umbuchung",
+    amount: "100.00",
+    postingaccount_debit: "4980",
+    postingaccount_credit: "1600",
+    vat: "19_vat",
+  } as const;
+
+  function schemaOf(toolName: string): z.ZodType {
+    const entry = entryByName(toolName);
+    if (entry === undefined) {
+      throw new Error(`${toolName}: kein Registereintrag.`);
+    }
+    return buildToolSchema(entry, { maxItems: 50 }).zod;
+  }
+
+  it("nimmt an der Belegbuchung eine Position ohne OSS an", () => {
+    const schema = schemaOf("bb_postings_create_for_receipt");
+    expect(
+      schema.safeParse({ ...RECEIPT_BASE, positions: [{ ...RECEIPT_POSITION }] }).success,
+    ).toBe(true);
+  });
+
+  it("nimmt an der Belegbuchung eine vollständige OSS-Position an", () => {
+    const schema = schemaOf("bb_postings_create_for_receipt");
+    expect(
+      schema.safeParse({
+        ...RECEIPT_BASE,
+        positions: [
+          {
+            ...RECEIPT_POSITION,
+            vat: "vat_oss_deli_deeu",
+            oss_origin_country: "DE",
+            oss_destination_country: "FR",
+            oss_vat_rate: "20.00",
+          },
+        ],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("lehnt an der Belegbuchung eine OSS-Position ohne Länder ab", () => {
+    const schema = schemaOf("bb_postings_create_for_receipt");
+    expect(
+      schema.safeParse({
+        ...RECEIPT_BASE,
+        positions: [{ ...RECEIPT_POSITION, vat: "vat_oss_deli_deeu" }],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("lehnt an der Belegbuchung OSS-Werte neben einem Nicht-OSS-Schlüssel ab", () => {
+    const schema = schemaOf("bb_postings_create_for_receipt");
+    expect(
+      schema.safeParse({
+        ...RECEIPT_BASE,
+        positions: [{ ...RECEIPT_POSITION, oss_origin_country: "DE" }],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("prüft an der freien Buchung auf oberster Ebene", () => {
+    const schema = schemaOf("bb_postings_create_free");
+    expect(schema.safeParse({ ...FREE_BASE, vat: "19_vat" }).success).toBe(true);
+    expect(schema.safeParse({ ...FREE_BASE, vat: "vat_oss_serv_deeu" }).success).toBe(false);
+    expect(schema.safeParse({ ...FREE_BASE, vat: "19_vat", oss_vat_rate: "20.00" }).success).toBe(
+      false,
+    );
+  });
+
+  it("prüft im Stapel der freien Buchungen je Eintrag", () => {
+    const schema = schemaOf("bb_postings_create_free_batch");
+    expect(schema.safeParse({ free_postings: [{ ...FREE_ITEM }] }).success).toBe(true);
+    expect(
+      schema.safeParse({ free_postings: [{ ...FREE_ITEM, vat: "vat_oss_deli_eueu" }] }).success,
+    ).toBe(false);
+    expect(
+      schema.safeParse({
+        free_postings: [{ ...FREE_ITEM, oss_destination_country: "FR" }],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("prüft an den beiden Zahlungswerkzeugen je Position", () => {
+    for (const toolName of [
+      "bb_postings_create_for_transaction",
+      "bb_postings_create_for_transaction_batch",
+    ]) {
+      const schema = schemaOf(toolName);
+      const position = {
+        postingaccount: "4980",
+        postingtext: "Ausgleich",
+        vat: "19_vat",
+        amount: "100.00",
+        open_item_receipt_id_by_customer: null,
+      };
+      const base =
+        toolName === "bb_postings_create_for_transaction"
+          ? { transaction_id_by_customer: 77 }
+          : { transactions: [{ transaction_id_by_customer: 77, positions: [position] }] };
+      const withPositions =
+        toolName === "bb_postings_create_for_transaction"
+          ? { ...base, positions: [position] }
+          : base;
+      expect(schema.safeParse(withPositions).success, toolName).toBe(true);
+    }
+  });
+});
+
 describe("Vollständigkeit und Verdrahtung", () => {
-  it("führt genau Q1 bis Q9 und keine gestrichene Prüfung", () => {
+  it("führt genau Q1 bis Q10 und keine gestrichene Prüfung", () => {
     expect(Object.keys(CROSS_CHECKS)).toEqual([
       "Q1",
       "Q2",
@@ -361,6 +600,7 @@ describe("Vollständigkeit und Verdrahtung", () => {
       "Q7",
       "Q8",
       "Q9",
+      "Q10",
     ]);
     for (const [id, check] of Object.entries(CROSS_CHECKS)) {
       expect(check.id).toBe(id);

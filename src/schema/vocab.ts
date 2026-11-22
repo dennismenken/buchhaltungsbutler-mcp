@@ -130,11 +130,16 @@ export function idByCustomer(entity: string, lookupTool: string): z.ZodNumber {
 // --- Umsatzsteuerschlüssel -----------------------------------------------------------
 
 /**
- * Die 23 Steuerschlüssel der Eingabeseite, in der Reihenfolge der Spezifikation.
+ * Die 29 Steuerschlüssel der Eingabeseite, in der Reihenfolge der Spezifikation.
  *
  * Belegstelle: Beschreibungstext von `vat` an `/postings/add/free` sowie `vats` an
  * `/postings/add/receipt` und `/postings/add/transaction`; die drei Listen sind wortgleich
  * (maschinell geprüft am 2026-09-12, `docs/api/buchungen.md` 4.1).
+ *
+ * **Die sechs OSS-Schlüssel am Ende stammen aus demselben Beschreibungstext, Stand
+ * 2026-11-22.** Die Batch-Definitionen `ReceiptPostings` und `TransactionPostings` führen
+ * bei `vats` dagegen **keinen** Beschreibungstext; dass dort dieselben Schlüssel gelten, ist
+ * eine Annahme und steht deshalb hier ausdrücklich.
  *
  * Die deutschen Bezeichnungen stehen **nicht** hier, sondern einmal in der Resource
  * `bb://vat-keys` und in den `instructions`. Mit Labels kosten sie rund 1.100 Zeichen und
@@ -164,18 +169,80 @@ export const VAT_KEYS = [
   "19_both_app_511",
   "19_both_app_2",
   "7_both_app",
+  "vat_oss_deli_deeu",
+  "vat_oss_deli_eueu",
+  "vat_oss_serv_deeu",
+  "vat_oss_serv_eueu",
+  "vat_oss_deli_eude",
+  "vat_oss_deli_eude_19",
 ] as const;
 
-/** Steuerschlüssel als Enum über die 23 belegten Werte. */
+/** Steuerschlüssel als Enum über die 29 belegten Werte. */
 export function vatKey() {
   return z
     .enum(VAT_KEYS)
     .describe(
       "Steuerschlüssel der Buchungszeile. '_pre' steht für Vorsteuer (Eingangsumsätze), " +
         "'_vat' für Umsatzsteuer (Ausgangsumsätze), '_both' für Fälle mit beidem, etwa " +
-        "Reverse Charge nach §13b. Welcher Schlüssel zulässig ist, hängt vom Konto, vom " +
-        "Buchungsdatum und von den Mandanteneinstellungen ab. Die deutschen Bezeichnungen " +
-        "aller 23 Schlüssel stehen in der Resource bb://vat-keys.",
+        "Reverse Charge nach §13b. Die sechs Schlüssel mit 'oss_' im Namen verlangen die " +
+        "OSS-Felder und gelten nur, wenn das One-Stop-Shop-Verfahren im Mandanten aktiviert " +
+        "ist. Welcher Schlüssel zulässig ist, hängt vom Konto, vom Buchungsdatum und von den " +
+        "Mandanteneinstellungen ab. Die deutschen Bezeichnungen aller 29 Schlüssel stehen in " +
+        "der Resource bb://vat-keys.",
+    );
+}
+
+// --- One-Stop-Shop (OSS) ---------------------------------------------------------------
+
+/**
+ * Der Satz, mit dem die sechs Buchungswerkzeuge auf die OSS-Felder hinweisen.
+ *
+ * Er steht als Baustein hier und nicht sechsmal in den Werkzeugbeschreibungen: Der Hinweis
+ * ist derselbe, und das Zeilenbudget der Stufe 1 (900 Zeichen) lässt an zwei der sechs
+ * Werkzeuge nur knapp Platz.
+ */
+export const OSS_SENTENCE =
+  "Bei einem Steuerschlüssel, der mit vat_oss_ beginnt, sind zusätzlich die drei OSS-Felder " +
+  "zu setzen; die OSS-Schlüssel stehen in bb://vat-keys.";
+
+/**
+ * Das Land eines OSS-Vorgangs als ISO-3166-1-alpha-2-Code.
+ *
+ * Die Spezifikation lässt neben den ISO-Codes ausdrücklich `XI` für Nordirland zu. Der
+ * Code ist deshalb zwei Großbuchstaben, ohne Länderliste: Eine erfundene Liste würde
+ * gültige Werte abweisen, und `XI` ist in keiner Länderliste enthalten.
+ */
+export function ossCountry(): z.ZodString {
+  return z
+    .string()
+    .regex(/^[A-Z]{2}$/, {
+      error: "erwartet wird ein ISO-3166-1-alpha-2-Code in Großbuchstaben, zum Beispiel DE",
+    })
+    .describe(
+      "Land des OSS-Vorgangs als ISO-3166-1-alpha-2-Code, zum Beispiel DE; XI steht für " +
+        "Nordirland. Pflicht bei einem Schlüssel mit oss_.",
+    );
+}
+
+/**
+ * Der Umsatzsteuersatz eines OSS-Vorgangs als Prozentsatz in Textform.
+ *
+ * Das Format ist das der vorhandenen Prozentsätze: Die Spezifikation führt das Beispiel
+ * '20.00', also zwei Nachkommastellen. Es wird deshalb kein neues Format erfunden, sondern
+ * das Muster der bestehenden Prozentsatzfelder übernommen.
+ */
+export function ossVatRate(): z.ZodString {
+  return z
+    .string()
+    .regex(/^\d+(?:\.\d{1,2})?$/, {
+      error: "erwartet wird ein Satz zwischen 0 und 100, zum Beispiel 20.00",
+    })
+    .refine((raw) => Number.parseFloat(raw) <= 100, {
+      error: "die Spezifikation erlaubt nur Sätze zwischen 0 und 100",
+    })
+    .describe(
+      "Umsatzsteuersatz des OSS-Vorgangs in Prozent, zum Beispiel 20.00. Pflicht bei einem " +
+        "Schlüssel mit oss_; bei vat_oss_deli_eude_19 ist er fest 19 Prozent.",
     );
 }
 

@@ -143,16 +143,35 @@ describe("Die drei festen Resources", () => {
     expect(text).toContain("bb_postings_create_for_receipt");
   });
 
-  it("liefert alle 23 Steuerschlüssel mit deutscher Bezeichnung", () => {
+  it("liefert alle 29 Steuerschlüssel mit deutscher Bezeichnung", () => {
     const text = textOf(
       register(createMasterDataStore({ ttlMs: 0 })).get(RESOURCE_URIS.vatKeys) as Registered,
     );
 
-    expect(VAT_KEYS).toHaveLength(23);
+    expect(VAT_KEYS).toHaveLength(29);
     for (const key of VAT_KEYS) {
       expect(text).toContain(key);
     }
     expect(text).toContain("§19 UStG");
+  });
+
+  it("nennt die sechs OSS-Schlüssel mit ihrer Bezeichnung und erklärt das Verfahren", () => {
+    const text = textOf(
+      register(createMasterDataStore({ ttlMs: 0 })).get(RESOURCE_URIS.vatKeys) as Registered,
+    );
+
+    expect(text).toContain("OSS - Lieferung D -> EU");
+    expect(text).toContain("OSS - Lieferung EU -> EU");
+    expect(text).toContain("OSS - Leistung D -> EU");
+    expect(text).toContain("OSS - Leistung EU -> EU");
+    expect(text).toContain("OSS - Lieferung EU -> D");
+    expect(text).toContain("OSS - Lieferung EU -> D 19%");
+    expect(text).toContain("DIE 29 STEUERSCHLÜSSEL DER EINGABESEITE");
+    expect(text).toContain("oss_origin_country");
+    expect(text).toContain("oss_destination_country");
+    expect(text).toContain("oss_vat_rate");
+    expect(text).toContain("XI");
+    expect(text).toContain("19 Prozent");
   });
 });
 

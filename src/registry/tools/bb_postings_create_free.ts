@@ -24,7 +24,15 @@
 // überschrieben. Die Warnung läuft über U3 und den `title`.
 
 import { amountValue, boundedText, unwrapSchema } from "../../schema/primitives.js";
-import { costLocation, date, postingAccountNumber, vatKey } from "../../schema/vocab.js";
+import {
+  costLocation,
+  date,
+  OSS_SENTENCE,
+  ossCountry,
+  ossVatRate,
+  postingAccountNumber,
+  vatKey,
+} from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Ein Feld aus einem Schemabaustein; die Beschreibung kommt aus dem Baustein, wenn der
@@ -81,14 +89,13 @@ export const bb_postings_create_free: ToolEntry = {
   toolClass: "B",
   tier: 1,
   description:
-    "Legt in BuchhaltungsButler eine freie Buchung an, also einen vollständigen Buchungssatz " +
-    "ohne Beleg- und Zahlungsbezug, etwa eine Umbuchung zwischen zwei Sachkonten. Zu nehmen, " +
-    "wenn weder ein Beleg noch eine Zahlung vorliegt; liegt ein Beleg vor, ist " +
-    "bb_postings_create_for_receipt richtig, liegt eine Zahlung vor, " +
-    "bb_postings_create_for_transaction. Der Aufruf erzeugt genau eine Buchungszeile; eine " +
-    "Splitbuchung über mehrere Zeilen nehmen die beiden genannten Werkzeuge über ihre " +
-    "Positionsliste entgegen. Soll- und Habenkonto werden hier ausdrücklich angegeben. Die " +
-    "Antwort nennt die erzeugte id_by_customer nicht. Schreibt in die echten " +
+    "Legt eine freie Buchung an, also einen vollständigen Buchungssatz ohne Beleg- und " +
+    "Zahlungsbezug, etwa eine Umbuchung zwischen zwei Sachkonten. Zu nehmen, wenn weder ein " +
+    "Beleg noch eine Zahlung vorliegt; für einen Beleg bb_postings_create_for_receipt, für eine " +
+    "Zahlung bb_postings_create_for_transaction. Der Aufruf erzeugt genau eine Buchungszeile; eine " +
+    "Splitbuchung nehmen die beiden genannten Werkzeuge über ihre Positionsliste entgegen. " +
+    "Soll- und Habenkonto werden hier ausdrücklich angegeben. Die Antwort nennt die erzeugte " +
+    `id_by_customer nicht. ${OSS_SENTENCE} Schreibt in die echten ` +
     "Buchhaltungsdaten von BuchhaltungsButler. Eine festgeschriebene Buchung lässt sich nicht " +
     "löschen, sondern nur mit bb_postings_cancel stornieren; der Storno bleibt dauerhaft " +
     "sichtbar.",
@@ -129,6 +136,9 @@ export const bb_postings_create_free: ToolEntry = {
         "bb_cost_locations_search. Höchstens 10 Zeichen.",
       schema: costLocation(),
     }),
+    field({ name: "oss_origin_country", schema: ossCountry() }),
+    field({ name: "oss_destination_country", schema: ossCountry() }),
+    field({ name: "oss_vat_rate", schema: ossVatRate() }),
   ],
   serverOnlyFields: [],
   omitted: [
@@ -157,6 +167,6 @@ export const bb_postings_create_free: ToolEntry = {
   // zwar bilden, aber bb_postings_search nimmt keines dieser Felder als Filter an, und die
   // Nachschlage-Abfrage übergibt nur Felder, die das lesende Werkzeug führt. Ein Schlüssel,
   // der sich nicht abfragen lässt, wäre keiner (Guard 6).
-  crossChecks: ["Q3"],
+  crossChecks: ["Q3", "Q10"],
   invalidatesCache: [],
 };

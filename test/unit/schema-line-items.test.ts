@@ -31,7 +31,7 @@ function jsonOf(schema: z.ZodType): Record<string, unknown> {
 }
 
 describe("Spaltenlisten", () => {
-  it("führt die sechs Spalten von /postings/add/receipt", () => {
+  it("führt die neun Spalten von /postings/add/receipt", () => {
     expect(POSTINGS_RECEIPT_COLUMNS.map((column) => column.apiName)).toEqual([
       "postingaccounts",
       "postingtexts",
@@ -39,13 +39,28 @@ describe("Spaltenlisten", () => {
       "cost_locations",
       "cost_locations_two",
       "amounts",
+      "oss_origin_countries",
+      "oss_destination_countries",
+      "oss_vat_rates",
     ]);
   });
 
-  it("führt an /postings/add/transaction eine siebte Spalte", () => {
-    expect(POSTINGS_TRANSACTION_COLUMNS).toHaveLength(7);
-    expect(POSTINGS_TRANSACTION_COLUMNS[6]?.apiName).toBe("oi_receipts_ids_by_customer");
-    expect(POSTINGS_TRANSACTION_COLUMNS[6]?.field).toBe("open_item_receipt_id_by_customer");
+  it("führt an /postings/add/transaction eine zehnte Spalte", () => {
+    expect(POSTINGS_TRANSACTION_COLUMNS).toHaveLength(10);
+    expect(POSTINGS_TRANSACTION_COLUMNS[9]?.apiName).toBe("oi_receipts_ids_by_customer");
+    expect(POSTINGS_TRANSACTION_COLUMNS[9]?.field).toBe("open_item_receipt_id_by_customer");
+  });
+
+  it("führt die drei OSS-Spalten, und sie sind optional", () => {
+    const oss = POSTINGS_RECEIPT_COLUMNS.filter((column) => column.field.startsWith("oss_"));
+    expect(oss.map((column) => column.field)).toEqual([
+      "oss_origin_country",
+      "oss_destination_country",
+      "oss_vat_rate",
+    ]);
+    for (const column of oss) {
+      expect(column.required, column.field).toBe(false);
+    }
   });
 
   it("trägt im Stapelelement von Werkzeug 24 die Schreibweise postingstexts", () => {
@@ -219,6 +234,32 @@ describe("Umformung in parallele Arrays", () => {
       POSTINGS_TRANSACTION_COLUMNS,
     );
     expect(body["oi_receipts_ids_by_customer"]).toEqual([8801, null]);
+  });
+
+  it("bildet die OSS-Felder auf die drei API-Arrays ab und setzt null ohne OSS", () => {
+    const body = toParallelArrays(
+      [
+        {
+          ...POSITION,
+          vat: "vat_oss_deli_deeu",
+          oss_origin_country: "DE",
+          oss_destination_country: "FR",
+          oss_vat_rate: "20.00",
+        },
+        { ...POSITION },
+      ],
+      POSTINGS_RECEIPT_COLUMNS,
+    );
+    expect(body["oss_origin_countries"]).toEqual(["DE", null]);
+    expect(body["oss_destination_countries"]).toEqual(["FR", null]);
+    expect(body["oss_vat_rates"]).toEqual(["20.00", null]);
+  });
+
+  it("lässt die drei OSS-Arrays ganz weg, solange keine Position sie setzt", () => {
+    const body = toParallelArrays([{ ...POSITION }], POSTINGS_RECEIPT_COLUMNS);
+    expect(body).not.toHaveProperty("oss_origin_countries");
+    expect(body).not.toHaveProperty("oss_destination_countries");
+    expect(body).not.toHaveProperty("oss_vat_rates");
   });
 
   it("benutzt im Stapelelement von Werkzeug 24 den Namen postingstexts", () => {

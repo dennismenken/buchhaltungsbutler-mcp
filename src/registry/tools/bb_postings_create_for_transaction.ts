@@ -28,7 +28,7 @@ import {
   postingPositions,
 } from "../../schema/line-items.js";
 import { unwrapSchema } from "../../schema/primitives.js";
-import { ID_STRING_SENTENCE, idByCustomer } from "../../schema/vocab.js";
+import { ID_STRING_SENTENCE, idByCustomer, OSS_SENTENCE } from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Mengengrenze der Positionsliste; Begründung wie in bb_postings_create_for_receipt. */
@@ -105,12 +105,13 @@ export const bb_postings_create_for_transaction: ToolEntry = {
   toolClass: "B",
   tier: 1,
   description:
-    "Legt die Buchungssätze zu einer bereits vorhandenen Zahlung in BuchhaltungsButler an. Zu " +
+    "Legt die Buchungssätze zu einer vorhandenen Zahlung in BuchhaltungsButler an. Zu " +
     "nehmen, wenn die id_by_customer einer Zahlung vorliegt und diese gebucht werden soll; " +
     "bb_postings_create_for_receipt, wenn stattdessen ein Beleg der Ausgangspunkt ist, und " +
     "bb_postings_create_free, wenn weder Beleg noch Zahlung vorliegt. Je Position lässt sich " +
     "ein offener Posten ausgleichen. Buchungsdatum, Gegenkonto und Buchungsrichtung kommen " +
-    "von der Zahlung und sind keine Argumente. Die Antwort nennt die erzeugten Buchungen " +
+    "von der Zahlung, nicht als Argumente. " +
+    `${OSS_SENTENCE} Die Antwort nennt die erzeugten Buchungen ` +
     "nicht; nachsehen mit bb_postings_search. Schreibt in die echten Buchhaltungsdaten von " +
     "BuchhaltungsButler. Eine festgeschriebene Buchung lässt sich nicht löschen, sondern nur " +
     "mit bb_postings_cancel stornieren; der Storno bleibt dauerhaft sichtbar.",
@@ -133,6 +134,9 @@ export const bb_postings_create_for_transaction: ToolEntry = {
         "cost_locations_two",
         "amounts",
         "oi_receipts_ids_by_customer",
+        "oss_origin_countries",
+        "oss_destination_countries",
+        "oss_vat_rates",
       ],
       source: "body",
       required: true,
@@ -183,6 +187,23 @@ export const bb_postings_create_for_transaction: ToolEntry = {
           required: true,
           schema: positionSchema("open_item_receipt_id_by_customer"),
         }),
+        // Die drei OSS-Spalten sind optional: Die Spezifikation führt die Arrays als
+        // `required: false`. Zeilen ohne OSS tragen im umgeformten Array `null`.
+        field({
+          name: "oss_origin_country",
+          apiName: "oss_origin_countries",
+          schema: positionSchema("oss_origin_country"),
+        }),
+        field({
+          name: "oss_destination_country",
+          apiName: "oss_destination_countries",
+          schema: positionSchema("oss_destination_country"),
+        }),
+        field({
+          name: "oss_vat_rate",
+          apiName: "oss_vat_rates",
+          schema: positionSchema("oss_vat_rate"),
+        }),
       ],
     },
   ],
@@ -214,6 +235,6 @@ export const bb_postings_create_for_transaction: ToolEntry = {
   },
   // Kein duplicateCheck: bb_postings_search nimmt transaction_id_by_customer nicht als Filter
   // an und verlangt einen Zeitraum, den dieser Aufruf nicht trägt.
-  crossChecks: ["Q3", "Q4"],
+  crossChecks: ["Q3", "Q4", "Q10"],
   invalidatesCache: [],
 };

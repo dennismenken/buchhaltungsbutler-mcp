@@ -23,6 +23,8 @@ import {
   dateTime,
   iban,
   idByCustomer,
+  ossCountry,
+  ossVatRate,
   paymentAccountNumber,
   postingAccountNumber,
   responseFormat,
@@ -89,6 +91,8 @@ const ALL_DESCRIPTIONS: string[] = [
   costLocation().description ?? "",
   iban().description ?? "",
   bic().description ?? "",
+  ossCountry().description ?? "",
+  ossVatRate().description ?? "",
   currencyReceipts().description ?? "",
   currencyTransactions().description ?? "",
   currencyUpload().description ?? "",
@@ -150,11 +154,22 @@ describe("Beschreibungsmuster", () => {
 // --- Umsatzsteuerschlüssel -----------------------------------------------------------
 
 describe("vatKey", () => {
-  it("führt genau die 23 belegten Schlüssel", () => {
-    expect(VAT_KEYS).toHaveLength(23);
-    expect(new Set(VAT_KEYS).size).toBe(23);
+  it("führt genau die 29 belegten Schlüssel", () => {
+    expect(VAT_KEYS).toHaveLength(29);
+    expect(new Set(VAT_KEYS).size).toBe(29);
     const json = property(jsonOf(strictObject({ vat: vatKey() })), "vat");
     expect(json["enum"]).toEqual([...VAT_KEYS]);
+  });
+
+  it("führt die sechs OSS-Schlüssel am Ende in der Reihenfolge der Spezifikation", () => {
+    expect(VAT_KEYS.slice(23)).toEqual([
+      "vat_oss_deli_deeu",
+      "vat_oss_deli_eueu",
+      "vat_oss_serv_deeu",
+      "vat_oss_serv_eueu",
+      "vat_oss_deli_eude",
+      "vat_oss_deli_eude_19",
+    ]);
   });
 
   it("verweist für die deutschen Bezeichnungen auf die Resource statt sie mitzuliefern", () => {
@@ -166,6 +181,50 @@ describe("vatKey", () => {
   it("lehnt einen erfundenen Schlüssel ab", () => {
     expect(vatKey().safeParse("19_ust").success).toBe(false);
     expect(vatKey().safeParse("19_pre").success).toBe(true);
+  });
+});
+
+// --- One-Stop-Shop -------------------------------------------------------------------
+
+describe("ossCountry", () => {
+  it("nimmt einen ISO-3166-1-alpha-2-Code in Großbuchstaben", () => {
+    expect(ossCountry().safeParse("DE").success).toBe(true);
+    expect(ossCountry().safeParse("FR").success).toBe(true);
+  });
+
+  it("lässt XI für Nordirland zu", () => {
+    expect(ossCountry().safeParse("XI").success).toBe(true);
+  });
+
+  it("lehnt Kleinschreibung, längere Codes und Zahlen ab", () => {
+    expect(ossCountry().safeParse("de").success).toBe(false);
+    expect(ossCountry().safeParse("DEU").success).toBe(false);
+    expect(ossCountry().safeParse("12").success).toBe(false);
+  });
+
+  it("nennt den Zweck in der Beschreibung", () => {
+    const text = ossCountry().description ?? "";
+    expect(text).toContain("ISO-3166-1-alpha-2");
+    expect(text).toContain("XI");
+  });
+});
+
+describe("ossVatRate", () => {
+  it("nimmt einen Satz in der Schreibweise der Spezifikation", () => {
+    expect(ossVatRate().safeParse("20.00").success).toBe(true);
+    expect(ossVatRate().safeParse("19").success).toBe(true);
+  });
+
+  it("lehnt einen Satz über 100 und eine unzulässige Form ab", () => {
+    expect(ossVatRate().safeParse("101").success).toBe(false);
+    expect(ossVatRate().safeParse("20,00").success).toBe(false);
+    expect(ossVatRate().safeParse("-5").success).toBe(false);
+  });
+
+  it("nennt den festen Satz des Schlüssels vat_oss_deli_eude_19", () => {
+    const text = ossVatRate().description ?? "";
+    expect(text).toContain("vat_oss_deli_eude_19");
+    expect(text).toContain("19");
   });
 });
 

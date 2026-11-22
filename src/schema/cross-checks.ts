@@ -1,4 +1,4 @@
-// Die Querprüfungen Q1 bis Q9 als superRefine-Bausteine.
+// Die Querprüfungen Q1 bis Q10 als superRefine-Bausteine.
 //
 // Sie laufen am Schema und damit **vor** jedem Request (Guard 4). Jede fängt
 // einen Fehler ab, der sonst als falscher Datensatz in der Buchhaltung landet. Welche
@@ -479,9 +479,128 @@ const Q9: CrossCheck = {
   },
 };
 
+/**
+ * Q10: die One-Stop-Shop-Felder passen zum Steuerschlüssel.
+ *
+ * Die Spezifikation verlangt für jeden Schlüssel mit `oss_` im Namen zwei Länderangaben und
+ * (mit einer Ausnahme) den Satz der Buchung. Verlangt sie das nicht, verwirft die API den
+ * Wert **ohne Fehlermeldung**: Die OSS-Felder neben einem Nicht-OSS-Schlüssel werden
+ * stillschweigend verworfen, und beim Schlüssel `vat_oss_deli_eude_19` wird ein gesendeter
+ * Satz verworfen, weil der Satz dort fest 19 Prozent ist.
+ *
+ * Ohne diese Prüfung entstünde also ein **Buchungssatz, der nicht dem entspricht, was
+ * gesendet wurde**: Bei einem OSS-Schlüssel ohne Länderangabe bucht die API mit dem
+ * falschen Steuersatz, und bei einem Nicht-OSS-Schlüssel mit OSS-Feldern hält der Aufrufer
+ * die Werte für gebucht, die nie angekommen sind.
+ *
+ * **Geprüft wird nicht**, ob Herkunft und Ziel verschieden sind oder ob beide Länder in der
+ * EU liegen. Die API prüft beides selbst und meldet es mit den eigenen Fehlercodes 50 und
+ * 51; eine eigene Schranke hier würde gültige Aufrufe abweisen.
+ */
+const Q10: CrossCheck = {
+  id: "Q10",
+  summary: "die OSS-Felder passen zum Steuerschlüssel",
+  run(args, ctx) {
+    for (const unit of vatCarriers(args, [])) {
+      checkOssFields(unit.values, unit.path, ctx);
+    }
+  },
+};
+
+/** Der Schlüssel mit festem Satz: Bei ihm wird ein gesendeter Satz verworfen. */
+const OSS_FIXED_RATE_KEY = "vat_oss_deli_eude_19";
+
+/** Die drei OSS-Felder, in der Reihenfolge, in der die Meldung sie nennt. */
+const OSS_FIELDS = ["oss_origin_country", "oss_destination_country", "oss_vat_rate"] as const;
+
+/**
+ * Die Objekte eines Aufrufs, die einen Steuerschlüssel `vat` tragen, mit ihrem Pfad.
+ *
+ * Gesucht wird rekursiv, weil dieselbe Regel an zwei Ebenen hängt: an der einzelnen
+ * freien Buchung von `/postings/add/free` und an jeder Position der Beleg- und
+ * Zahlungsbuchung. Der Stapelweg führt eine Ebene tiefer, und dieselbe Suche findet
+ * dort jede Position.
+ */
+function vatCarriers(
+  args: Args,
+  path: (string | number)[],
+): { values: Args; path: (string | number)[] }[] {
+  const found: { values: Args; path: (string | number)[] }[] = [];
+  if (typeof args["vat"] === "string") {
+    found.push({ values: args, path });
+  }
+  for (const [key, value] of Object.entries(args)) {
+    if (Array.isArray(value)) {
+      value.forEach((entry, index) => {
+        if (isRecord(entry)) {
+          found.push(...vatCarriers(entry, [...path, key, index]));
+        }
+      });
+      continue;
+    }
+    if (isRecord(value)) {
+      found.push(...vatCarriers(value, [...path, key]));
+    }
+  }
+  return found;
+}
+
+/** Prüft die drei OSS-Felder eines Objekts mit Steuerschlüssel. */
+function checkOssFields(values: Args, path: (string | number)[], ctx: Ctx): void {
+  const vat = values["vat"];
+  const isOss = typeof vat === "string" && vat.startsWith("vat_oss_");
+  const setFields = OSS_FIELDS.filter((name) => values[name] !== undefined);
+
+  if (!isOss) {
+    if (setFields.length > 0) {
+      addIssue(
+        ctx,
+        [...path, setFields[0] ?? "oss_origin_country"],
+        `Steuerschlüssel ${render(vat)} ist kein OSS-Schlüssel, aber ${setFields.join(", ")} ` +
+          "wurden gesendet. Die API verwirft diese Werte stillschweigend; der Aufruf ist vor " +
+          "dem Request abgelehnt worden, an die API ist nichts hinausgegangen.",
+      );
+    }
+    return;
+  }
+
+  const missing: string[] = [];
+  if (values["oss_origin_country"] === undefined) {
+    missing.push("oss_origin_country");
+  }
+  if (values["oss_destination_country"] === undefined) {
+    missing.push("oss_destination_country");
+  }
+  if (vat !== OSS_FIXED_RATE_KEY && values["oss_vat_rate"] === undefined) {
+    missing.push("oss_vat_rate");
+  }
+  if (missing.length > 0) {
+    addIssue(
+      ctx,
+      [...path, missing[0] ?? "oss_origin_country"],
+      `Steuerschlüssel ${render(vat)} verlangt ${missing.join(", ")}. ` +
+        (vat === OSS_FIXED_RATE_KEY
+          ? `Bei ${OSS_FIXED_RATE_KEY} ist der Satz fest 19 Prozent und wird nicht gesendet. `
+          : "Der Satz der Buchung wird über oss_vat_rate übergeben. ") +
+        "Der Aufruf ist vor dem Request abgelehnt worden, an die API ist nichts hinausgegangen.",
+    );
+    return;
+  }
+
+  if (vat === OSS_FIXED_RATE_KEY && values["oss_vat_rate"] !== undefined) {
+    addIssue(
+      ctx,
+      [...path, "oss_vat_rate"],
+      `Steuerschlüssel ${OSS_FIXED_RATE_KEY} hat einen festen Satz von 19 Prozent. Der ` +
+        "gesendete Satz wird stillschweigend verworfen; der Aufruf ist vor dem Request " +
+        "abgelehnt worden, an die API ist nichts hinausgegangen.",
+    );
+  }
+}
+
 // --- Registrierung -------------------------------------------------------------------
 
-/** Die neun Querprüfungen, geschlüsselt nach ihrer Kennung. */
+/** Die zehn Querprüfungen, geschlüsselt nach ihrer Kennung. */
 export const CROSS_CHECKS: Readonly<Record<CrossCheckId, CrossCheck>> = Object.freeze({
   Q1,
   Q2,
@@ -492,6 +611,7 @@ export const CROSS_CHECKS: Readonly<Record<CrossCheckId, CrossCheck>> = Object.f
   Q7,
   Q8,
   Q9,
+  Q10,
 });
 
 /**

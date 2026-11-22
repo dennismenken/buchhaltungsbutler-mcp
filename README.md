@@ -703,11 +703,11 @@ fünf Bündelwerkzeuge stehen nicht darin, sondern in [11.1](#111-die-fünf-bün
 | --- | --- | --- |
 | `bb_postings_assign_receipt` | ändernd | Bindet in BuchhaltungsButler einen vorhandenen Beleg an eine vorhandene freie Buchung. |
 | `bb_postings_cancel` | löschend | Storniert in BuchhaltungsButler eine einzelne Buchungszeile. |
-| `bb_postings_create_for_receipt` | anlegend | Legt die Buchungssätze zu einem bereits vorhandenen Beleg in BuchhaltungsButler an. |
+| `bb_postings_create_for_receipt` | anlegend | Legt die Buchungssätze zu einem vorhandenen Beleg an. |
 | `bb_postings_create_for_receipt_batch` | anlegend | Legt die Buchungssätze zu mehreren vorhandenen Belegen in BuchhaltungsButler in einem Aufruf an. |
-| `bb_postings_create_for_transaction` | anlegend | Legt die Buchungssätze zu einer bereits vorhandenen Zahlung in BuchhaltungsButler an. |
+| `bb_postings_create_for_transaction` | anlegend | Legt die Buchungssätze zu einer vorhandenen Zahlung in BuchhaltungsButler an. |
 | `bb_postings_create_for_transaction_batch` | anlegend | Legt die Buchungssätze zu mehreren vorhandenen Zahlungen in BuchhaltungsButler in einem Aufruf an. |
-| `bb_postings_create_free` | anlegend | Legt in BuchhaltungsButler eine freie Buchung an, also einen vollständigen Buchungssatz ohne Beleg- und Zahlungsbezug, etwa eine Umbuchung zwischen zwei Sachkonten. |
+| `bb_postings_create_free` | anlegend | Legt eine freie Buchung an, also einen vollständigen Buchungssatz ohne Beleg- und Zahlungsbezug, etwa eine Umbuchung zwischen zwei Sachkonten. |
 | `bb_postings_create_free_batch` | anlegend | Legt in BuchhaltungsButler mehrere freie Buchungen in einem Aufruf an, also vollständige Buchungssätze ohne Beleg- und Zahlungsbezug. |
 | `bb_postings_search` | lesend | Liest die Buchungssätze eines Zeitraums aus der Buchhaltung von BuchhaltungsButler. |
 | `bb_postings_unconfirm_for_receipt` | löschend | Hebt in BuchhaltungsButler die Bestätigung der Buchungen eines Belegs auf und entfernt sie damit. |

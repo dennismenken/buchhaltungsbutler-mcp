@@ -190,7 +190,7 @@ Beobachtung auf einem Datensatz, keine dokumentierte Regel.
 
 Alle drei Schreib-Endpunkte erwarten einen Steuerschlüssel als Zeichenkette aus einer festen Liste.
 Die Liste ist in `/postings/add/receipt`, `/postings/add/transaction` und `/postings/add/free`
-wortgleich hinterlegt und umfasst 23 Einträge.
+wortgleich hinterlegt und umfasst 29 Einträge.
 
 | Wert | Bedeutung laut Spezifikation |
 | --- | --- |
@@ -217,6 +217,12 @@ wortgleich hinterlegt und umfasst 23 Einträge.
 | `19_both_app_511` | §13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1) |
 | `19_both_app_2` | i.g.E. 19/16% USt./Aufz. VSt. |
 | `7_both_app` | i.g.E. 7/5% USt./Aufz. VSt. |
+| `vat_oss_deli_deeu` | OSS - Lieferung D -> EU |
+| `vat_oss_deli_eueu` | OSS - Lieferung EU -> EU |
+| `vat_oss_serv_deeu` | OSS - Leistung D -> EU |
+| `vat_oss_serv_eueu` | OSS - Leistung EU -> EU |
+| `vat_oss_deli_eude` | OSS - Lieferung EU -> D |
+| `vat_oss_deli_eude_19` | OSS - Lieferung EU -> D 19% |
 
 Lesehilfe für die Namensbestandteile, hergeleitet aus den Klartexten der Spezifikation:
 
@@ -263,6 +269,82 @@ ist damit nicht ohne Weiteres möglich.
 Kein Schreib-Endpunkt nimmt `tax_key` als Parameter entgegen, obwohl mehrere Endpunkte
 `error_code` "invalid tax key specified" definieren (27 bei receipt, 18 bei transaction, 32 bei free).
 Der Steuerschlüssel wird also serverseitig aus Konto, Gegenkonto und `vat`-Option abgeleitet.
+
+### 4.3 One-Stop-Shop (OSS)
+
+**Alle Angaben dieses Abschnitts stammen aus der Spezifikation (Version 1.9.1). Kein einziger
+Aufruf wurde live gegen die API ausgeführt.** Das Verfahren ist schreibend, und der Server
+prüft die Voraussetzungen selbst; ein Test gegen echte Buchhaltungsdaten wäre ein Eingriff in
+die Buchhaltung eines Mandanten.
+
+#### 4.3.1 Die sechs OSS-Schlüssel
+
+| Schlüssel | Bezeichnung laut Spezifikation | Bedeutung |
+| --- | --- | --- |
+| `vat_oss_deli_deeu` | OSS - Lieferung D -> EU | Lieferung aus Deutschland in die EU |
+| `vat_oss_deli_eueu` | OSS - Lieferung EU -> EU | Lieferung aus einem EU-Land in ein anderes EU-Land |
+| `vat_oss_serv_deeu` | OSS - Leistung D -> EU | Leistung aus Deutschland in die EU |
+| `vat_oss_serv_eueu` | OSS - Leistung EU -> EU | Leistung aus einem EU-Land in ein anderes EU-Land |
+| `vat_oss_deli_eude` | OSS - Lieferung EU -> D | Lieferung aus der EU nach Deutschland |
+| `vat_oss_deli_eude_19` | OSS - Lieferung EU -> D 19% | wie oben, mit festem Satz von 19 Prozent |
+
+Die sechs Schlüssel stehen am Ende der Liste aus 4.1. Sie sind nur belegt, wenn das
+One-Stop-Shop-Verfahren **im Mandanten aktiviert** ist; sonst weist die API jeden Aufruf mit
+`error_code` 52 ab.
+
+#### 4.3.2 Die drei OSS-Felder
+
+| Endpunkt | Feldnamen | Typ |
+| --- | --- | --- |
+| `/postings/add/free` | `oss_origin_country`, `oss_destination_country`, `oss_vat_rate` | Einzelwerte (`string`) |
+| `/postings/add/receipt` | `oss_origin_countries`, `oss_destination_countries`, `oss_vat_rates` | Arrays, ein Eintrag je Buchungszeile |
+| `/postings/add/transaction` | dieselben drei Arrays | Arrays, ein Eintrag je Buchungszeile |
+| `/postings/add-batch/receipts` | dieselben drei Arrays, **innerhalb** von `ReceiptPostings` | Arrays je Stapelelement |
+| `/postings/add-batch/transactions` | dieselben drei Arrays, **innerhalb** von `TransactionPostings` | Arrays je Stapelelement |
+| `/postings/add-batch/free` | dieselben drei Felder im Singular, **innerhalb** von `PostingsFree.items` | Einzelwerte je Stapelelement |
+
+Alle drei Felder sind `required: false`. Für Zeilen ohne OSS sendet die Spezifikation `null` oder
+einen leeren String; leer ist hier nicht zulässig, weil ein leerer String bei dieser API ein
+Validierungsfehler ist.
+
+Die Länder sind Codes nach ISO 3166-1 alpha-2 in Großbuchstaben, dazu `XI` für Nordirland. Der
+Satz wird als Text übergeben, das Beispiel der Spezifikation ist `20.00`.
+
+#### 4.3.3 Die Regeln
+
+- Ein Schlüssel mit `oss_` im Namen verlangt **beide** Länder: `oss_origin_country` und
+  `oss_destination_country`.
+- Ein Schlüssel mit `oss_` im Namen verlangt außerdem den Satz der Buchung über `oss_vat_rate`.
+- **Einzige Ausnahme**: `vat_oss_deli_eude_19` trägt einen festen Satz von 19 Prozent. Ein
+  gesendeter Satz wird verworfen.
+- Neben einem Schlüssel **ohne** `oss_` im Namen werden die OSS-Werte stillschweigend verworfen.
+- Nicht geprüft wird, ob Herkunft und Ziel verschieden sind oder ob beide Länder in der EU liegen.
+  Das macht die API selbst, mit den Fehlercodes 50 und 51.
+
+#### 4.3.4 Die Fehlercodes 47 bis 55
+
+Die neun Codes sind bei `/postings/add/receipt`, `/postings/add/transaction` und
+`/postings/add/free` wortgleich. Sie stehen in den Abschnitten 10.4, 12.4 und 14.4 mit ihrem
+Wortlaut aus der Spezifikation.
+
+| `error_code` | Bedeutung | Gegenmaßnahme |
+| --- | --- | --- |
+| 47 | für den gewählten Schlüssel wird ein Satz gebraucht | `oss_vat_rates` je Zeile senden |
+| 48 | der Satz existiert im Zielland am Leistungstag nicht | Satz oder Zielland ändern |
+| 49 | Herkunfts- und Zielland sind nötig | beide Länder je Zeile senden |
+| 50 | Herkunft und Ziel sind gleich | anderes Ziel wählen |
+| 51 | das Land liegt außerhalb der EU | EU-Land wählen |
+| 52 | OSS ist für den Mandanten nicht aktiviert | Einstellung im Portal aktivieren |
+| 53 | für das Ursprungsland fehlt eine USt-IdNr. | USt-IdNr. im Portal hinterlegen |
+| 54 | das Ursprungsland ist nicht als Versandland konfiguriert | Versandland einrichten |
+| 55 | das Zielland ist nicht als Zielland konfiguriert | Zielland einrichten |
+
+#### 4.3.5 Eine Annahme, die kenntlich bleiben muss
+
+Die Batch-Definitionen `ReceiptPostings` und `TransactionPostings` führen bei `vats` **keinen
+Beschreibungstext**. Dass dort dieselben 29 Schlüssel gelten, ist deshalb eine Annahme. Belegt
+sind die Schlüssel allein durch den Beschreibungstext von `vat` an `/postings/add/free` und durch
+den gleichlautenden Text von `vats` an `/postings/add/receipt` und `/postings/add/transaction`.
 
 ---
 
@@ -631,7 +713,7 @@ Legt eine oder mehrere Buchungszeilen zu einem vorhandenen Beleg an.
 
 Voraussetzung laut Beschreibung: Kreditoren- oder Debitorenbuchung muss im Mandanten aktiviert sein.
 
-### 10.1 Parameter (10 von 10)
+### 10.1 Parameter (13 von 13)
 
 | Feld | Typ | Pflicht | Default | Beschreibung | Erlaubte Werte / Format |
 | --- | --- | --- | --- | --- | --- |
@@ -639,10 +721,13 @@ Voraussetzung laut Beschreibung: Kreditoren- oder Debitorenbuchung muss im Manda
 | `receipt_id_by_customer` | integer | ja | – | Belegnummer des zu bebuchenden Belegs | ganzzahlig, aus `/receipts/get` |
 | `postingaccounts` | array | ja | – | Buchungskonten, ein Eintrag je Buchungszeile | Kontonummern aus `/settings/get/postingaccounts`; Elementtyp in der Spezifikation nicht deklariert, die Batch-Definition nennt `integer` |
 | `postingtexts` | array | ja | – | Buchungstexte, ein Eintrag je Zeile | je Eintrag höchstens 128 Zeichen |
-| `vats` | array | ja | – | Steuerschlüssel, ein Eintrag je Zeile | einer der 23 Werte aus Abschnitt 4.1 |
+| `vats` | array | ja | – | Steuerschlüssel, ein Eintrag je Zeile | einer der 29 Werte aus Abschnitt 4.1 |
 | `cost_locations` | array | nein | keine Kostenstelle | Kostenstellen Ebene 1, ein Eintrag je Zeile | höchstens 10 Zeichen, alphanumerisch oder Zahl größer 0 |
 | `cost_locations_two` | array | nein | keine Kostenstelle | Kostenstellen Ebene 2, ein Eintrag je Zeile | wie oben |
 | `amounts` | array | ja | – | Beträge, ein Eintrag je Zeile | Format `0000.00`; Summe muss dem Belegbetrag entsprechen |
+| `oss_origin_countries` | array | nein | – | Ursprungsländer der OSS-Buchung, ein Eintrag je Zeile | ISO-3166-1-alpha-2, `XI` für Nordirland; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
+| `oss_destination_countries` | array | nein | – | Zielländer der OSS-Buchung, ein Eintrag je Zeile | wie oben |
+| `oss_vat_rates` | array | nein | – | Umsatzsteuersätze der OSS-Buchung, ein Eintrag je Zeile | Satz in Textform, zum Beispiel `20.00`; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
 | `creditor` | integer | ja laut `required`, faktisch bedingt | – | Kreditorennummer als Gegenkonto | nur bei Eingangsrechnung und aktivierter Kreditorenbuchung |
 | `debtor` | integer | ja laut `required`, faktisch bedingt | – | Debitorennummer als Gegenkonto | nur bei Ausgangsrechnung und aktivierter Debitorenbuchung |
 
@@ -669,7 +754,7 @@ Kein `data`, kein `rows`, keine Rückgabe der erzeugten `id_by_customer`. Wer di
 braucht, muss sie anschließend über `/postings/get` suchen, sinnvollerweise mit
 `date_last_action_from` auf das heutige Datum.
 
-### 10.4 Fehlerfälle (43 von 43)
+### 10.4 Fehlerfälle (52 von 52)
 
 | HTTP | `error_code` | `message` | Bedeutung | Gegenmaßnahme |
 | --- | --- | --- | --- | --- |
@@ -714,6 +799,15 @@ braucht, muss sie anschließend über `/postings/get` suchen, sinnvollerweise mi
 | 400 | 44 | the cost location two is longer than 10 characters | zweite Kostenstelle zu lang | kürzen |
 | 400 | 45 | the cost location two must consist of alphanumeric characters or be a number greater than 0 | formal ungültig | Format korrigieren |
 | 400 | 46 | invalid or not existing parameters | unbekanntes Feld im Body | Body auf die dokumentierten Felder beschränken |
+| 400 | 47 | a vat rate is required for the specified vat option | bei einem `vat_oss_`-Schlüssel fehlt `oss_vat_rates` | Satz je Zeile senden; Ausnahme `vat_oss_deli_eude_19` |
+| 400 | 48 | the specified vat rate does not exist in the destination country on the delivery date | Satz gilt im Zielland am Leistungstag nicht | Satz prüfen oder Zielland ändern |
+| 400 | 49 | country of origin and country of destination are required for the specified vat option | bei einem `vat_oss_`-Schlüssel fehlt eines der beiden Länder | beide Länder je Zeile senden |
+| 400 | 50 | country of origin and country of destination are identical ("%country%"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop | Herkunft und Ziel sind gleich | anderes Ziel wählen |
+| 400 | 51 | the country "%country%" is outside the EU and is not permitted for an OSS posting | Land liegt außerhalb der EU | EU-Land wählen |
+| 400 | 52 | the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured | OSS im Mandanten nicht aktiviert | Einstellung im Portal aktivieren, per API nicht möglich |
+| 400 | 53 | no vat identification number and no tax number are configured for the country of dispatch ("%country%"), so the posting could not be reported | für das Ursprungsland fehlt eine USt-IdNr. | USt-IdNr. im Portal hinterlegen |
+| 400 | 54 | the country "%country%" is not configured as a country of dispatch | Ursprungsland ist nicht als Versandland konfiguriert | Versandland einrichten |
+| 400 | 55 | the country "%country%" is not configured as a destination country | Zielland ist nicht als Zielland konfiguriert | Zielland einrichten |
 | 500 | 0 | error while processing the request | serverseitiger Fehler | wiederholen |
 | 504 | 30 | a timeout occurred while processing the request | Zeitüberschreitung | weniger Zeilen pro Request |
 
@@ -792,6 +886,9 @@ Der Parameter `receipts` trägt in der Datei `"type": null` und verweist über `
 | `amounts` | array of number | ja | `[12.87]` | im Einzelendpunkt Format `0000.00` als Zeichenkette |
 | `creditor` | integer | ja | 70000 | |
 | `debtor` | integer | ja | 10000 | |
+| `oss_origin_countries` | array of string | nein | `["DE"]` | ISO-3166-1-alpha-2, `XI` für Nordirland; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
+| `oss_destination_countries` | array of string | nein | `["FR"]` | wie oben |
+| `oss_vat_rates` | array of string | nein | `["20.00"]` | Satz in Textform; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
 
 ### 11.3 Erfolgsantwort
 
@@ -900,7 +997,7 @@ Legt eine oder mehrere Buchungszeilen zu einer vorhandenen Transaktion an.
 
 **Einordnung: SCHREIBEND.**
 
-### 12.1 Parameter (9 von 9)
+### 12.1 Parameter (12 von 12)
 
 | Feld | Typ | Pflicht | Default | Beschreibung | Erlaubte Werte / Format |
 | --- | --- | --- | --- | --- | --- |
@@ -908,11 +1005,14 @@ Legt eine oder mehrere Buchungszeilen zu einer vorhandenen Transaktion an.
 | `transaction_id_by_customer` | integer | ja | – | Transaktionsnummer | ganzzahlig, aus `/transactions/get` |
 | `postingaccounts` | array | ja | – | Buchungskonten, ein Eintrag je Zeile | Kontonummern aus `/settings/get/postingaccounts` |
 | `postingtexts` | array | ja | – | Buchungstexte, ein Eintrag je Zeile | höchstens 128 Zeichen je Eintrag |
-| `vats` | array | ja | – | Steuerschlüssel, ein Eintrag je Zeile | einer der 23 Werte aus Abschnitt 4.1 |
+| `vats` | array | ja | – | Steuerschlüssel, ein Eintrag je Zeile | einer der 29 Werte aus Abschnitt 4.1 |
 | `cost_locations` | array | nein | keine Kostenstelle | Kostenstellen Ebene 1 | höchstens 10 Zeichen, alphanumerisch oder Zahl größer 0 |
 | `cost_locations_two` | array | nein | keine Kostenstelle | Kostenstellen Ebene 2 | wie oben |
 | `amounts` | array | ja | – | Beträge, ein Eintrag je Zeile | Format `0000.00`; Summe muss dem Transaktionsbetrag entsprechen |
 | `oi_receipts_ids_by_customer` | array | ja laut `required`, faktisch bedingt | – | Belegnummern der auszugleichenden offenen Posten, ein Eintrag je Zeile; `null` bedeutet ausdrücklich "kein Beleg" | ganzzahlige Belegnummern oder `null`; laut Beschreibung nur Pflicht, wenn OP-Buchung im Mandanten aktiv ist |
+| `oss_origin_countries` | array | nein | – | Ursprungsländer der OSS-Buchung, ein Eintrag je Zeile | ISO-3166-1-alpha-2, `XI` für Nordirland; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
+| `oss_destination_countries` | array | nein | – | Zielländer der OSS-Buchung, ein Eintrag je Zeile | wie oben |
+| `oss_vat_rates` | array | nein | – | Umsatzsteuersätze der OSS-Buchung, ein Eintrag je Zeile | Satz in Textform, zum Beispiel `20.00`; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
 
 ### 12.2 Verschachtelte Struktur
 
@@ -931,7 +1031,7 @@ receipt to the partial posting in that position." Das Array muss also genauso la
 
 Wie bei der Belegbuchung ohne Rückgabe der erzeugten Buchungen.
 
-### 12.4 Fehlerfälle (31 von 31)
+### 12.4 Fehlerfälle (40 von 40)
 
 | HTTP | `error_code` | `message` | Bedeutung | Gegenmaßnahme |
 | --- | --- | --- | --- | --- |
@@ -964,6 +1064,15 @@ Wie bei der Belegbuchung ohne Rückgabe der erzeugten Buchungen.
 | 400 | 32 | the cost location two must consist of alphanumeric characters or be a number greater than 0 | formal ungültig | Format korrigieren |
 | 400 | 34 | for each partial posting, one or no receipt has to be specified explicitly via oi_receipts_ids_by_customer | Array hat nicht dieselbe Länge wie die Buchungszeilen | für jede Zeile einen Wert oder `null` senden |
 | 400 | 46 | invalid or not existing parameters | unbekanntes Feld im Body | Body bereinigen |
+| 400 | 47 | a vat rate is required for the specified vat option | bei einem `vat_oss_`-Schlüssel fehlt `oss_vat_rates` | Satz je Zeile senden; Ausnahme `vat_oss_deli_eude_19` |
+| 400 | 48 | the specified vat rate does not exist in the destination country on the delivery date | Satz gilt im Zielland am Leistungstag nicht | Satz prüfen oder Zielland ändern |
+| 400 | 49 | country of origin and country of destination are required for the specified vat option | bei einem `vat_oss_`-Schlüssel fehlt eines der beiden Länder | beide Länder je Zeile senden |
+| 400 | 50 | country of origin and country of destination are identical ("%country%"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop | Herkunft und Ziel sind gleich | anderes Ziel wählen |
+| 400 | 51 | the country "%country%" is outside the EU and is not permitted for an OSS posting | Land liegt außerhalb der EU | EU-Land wählen |
+| 400 | 52 | the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured | OSS im Mandanten nicht aktiviert | Einstellung im Portal aktivieren, per API nicht möglich |
+| 400 | 53 | no vat identification number and no tax number are configured for the country of dispatch ("%country%"), so the posting could not be reported | für das Ursprungsland fehlt eine USt-IdNr. | USt-IdNr. im Portal hinterlegen |
+| 400 | 54 | the country "%country%" is not configured as a country of dispatch | Ursprungsland ist nicht als Versandland konfiguriert | Versandland einrichten |
+| 400 | 55 | the country "%country%" is not configured as a destination country | Zielland ist nicht als Zielland konfiguriert | Zielland einrichten |
 | 500 | 0 | error while processing the request | serverseitiger Fehler | wiederholen |
 | 504 | 30 | a timeout occurred while processing the request | Zeitüberschreitung | weniger Zeilen |
 
@@ -1036,6 +1145,9 @@ Legt Transaktionsbuchungen für mehrere Transaktionen in einem Request an.
 | `cost_locations_two` | array of string | nein | `["cost location two"]` |
 | `amounts` | array of number | ja | `[12.87]` |
 | `oi_receipts_ids_by_customer` | array of integer | ja | `[17]` |
+| `oss_origin_countries` | array of string | nein | `["DE"]` | ISO-3166-1-alpha-2, `XI` für Nordirland; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
+| `oss_destination_countries` | array of string | nein | `["FR"]` | wie oben |
+| `oss_vat_rates` | array of string | nein | `["20.00"]` | Satz in Textform; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
 
 Der Elementtyp von `oi_receipts_ids_by_customer` ist hier als `integer` deklariert. Das schließt
 `null` formal aus, obwohl der Einzelendpunkt `null` ausdrücklich verlangt. Ein weiterer Widerspruch.
@@ -1117,7 +1229,7 @@ Legt eine freie Buchung an, also einen vollständigen Buchungssatz ohne Beleg- o
 
 **Einordnung: SCHREIBEND.**
 
-### 14.1 Parameter (9 von 9)
+### 14.1 Parameter (12 von 12)
 
 | Feld | Typ | Pflicht | Default | Beschreibung | Erlaubte Werte / Format |
 | --- | --- | --- | --- | --- | --- |
@@ -1127,9 +1239,12 @@ Legt eine freie Buchung an, also einen vollständigen Buchungssatz ohne Beleg- o
 | `amount` | string | ja | – | Buchungsbetrag | positiv, kein Minuszeichen; Format analog `0000.00` (**Annahme**, der Endpunkt nennt kein Format) |
 | `postingaccount_debit` | integer | ja | – | Sollkonto | Kontonummer aus `/settings/get/postingaccounts` |
 | `postingaccount_credit` | integer | ja | – | Habenkonto | wie oben, muss sich vom Sollkonto unterscheiden |
-| `vat` | string | ja | – | Steuerschlüssel | einer der 23 Werte aus Abschnitt 4.1 |
+| `vat` | string | ja | – | Steuerschlüssel | einer der 29 Werte aus Abschnitt 4.1 |
 | `cost_location` | string | nein | keine Kostenstelle | Kostenstelle Ebene 1 | höchstens 10 Zeichen, alphanumerisch oder Zahl größer 0 |
 | `cost_location_two` | string | nein | keine Kostenstelle | Kostenstelle Ebene 2 | wie oben |
+| `oss_origin_country` | string | nein | – | Ursprungsland der OSS-Buchung | ISO-3166-1-alpha-2, `XI` für Nordirland; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
+| `oss_destination_country` | string | nein | – | Zielland der OSS-Buchung | wie oben |
+| `oss_vat_rate` | string | nein | – | Umsatzsteuersatz der OSS-Buchung | Satz in Textform, zum Beispiel `20.00`; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
 
 Anders als bei Beleg- und Transaktionsbuchung sind hier alle Felder Einzelwerte, keine Arrays. Die
 Namen stehen konsequent im Singular: `postingtext` statt `postingtexts`, `amount` statt `amounts`,
@@ -1150,7 +1265,7 @@ Ohne Rückgabe der erzeugten `id_by_customer`. Um die Buchung anschließend etwa
 wiederfinden, zum Beispiel mit `account: "free booking"` und `date_last_action_from` auf dem heutigen
 Datum.
 
-### 14.4 Fehlerfälle (34 von 34)
+### 14.4 Fehlerfälle (43 von 43)
 
 | HTTP | `error_code` | `message` | Bedeutung | Gegenmaßnahme |
 | --- | --- | --- | --- | --- |
@@ -1169,7 +1284,7 @@ Datum.
 | 400 | 16 | the cost location is longer than 10 characters | Kostenstelle zu lang | kürzen |
 | 400 | 17 | the cost location must consist of alphanumeric characters or be a number greater than 0 | formal ungültig | Format korrigieren |
 | 400 | 18 | no vat specified | `vat` fehlt | Steuerschlüssel senden |
-| 400 | 19 | invalid vat specified | Wert nicht in der Liste der 23 Schlüssel | gültigen Schlüssel verwenden |
+| 400 | 19 | invalid vat specified | Wert nicht in der Liste der 29 Schlüssel | gültigen Schlüssel verwenden |
 | 400 | 20 | No amount specified | `amount` fehlt | Betrag senden |
 | 400 | 21 | invalid amount specified | Betrag formal ungültig | Punkt als Dezimaltrenner, keine Tausendertrenner |
 | 400 | 22 | there are no negative amounts allowed | negativer Betrag gesendet | Betrag positiv senden und stattdessen Soll- und Habenkonto tauschen |
@@ -1186,6 +1301,15 @@ Datum.
 | 400 | 34 | vat option unavailable with 'not liable to sales tax' setting | Kleinunternehmerregelung | `0_none` verwenden |
 | 400 | 36 | the cost location two is longer than 10 characters | zweite Kostenstelle zu lang | kürzen |
 | 400 | 37 | the cost location two must consist of alphanumeric characters or be a number greater than 0 | formal ungültig | Format korrigieren |
+| 400 | 47 | a vat rate is required for the specified vat option | bei einem `vat_oss_`-Schlüssel fehlt `oss_vat_rate` | Satz senden; Ausnahme `vat_oss_deli_eude_19` |
+| 400 | 48 | the specified vat rate does not exist in the destination country on the delivery date | Satz gilt im Zielland am Leistungstag nicht | Satz prüfen oder Zielland ändern |
+| 400 | 49 | country of origin and country of destination are required for the specified vat option | bei einem `vat_oss_`-Schlüssel fehlt eines der beiden Länder | beide Länder senden |
+| 400 | 50 | country of origin and country of destination are identical ("%country%"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop | Herkunft und Ziel sind gleich | anderes Ziel wählen |
+| 400 | 51 | the country "%country%" is outside the EU and is not permitted for an OSS posting | Land liegt außerhalb der EU | EU-Land wählen |
+| 400 | 52 | the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured | OSS im Mandanten nicht aktiviert | Einstellung im Portal aktivieren, per API nicht möglich |
+| 400 | 53 | no vat identification number and no tax number are configured for the country of dispatch ("%country%"), so the posting could not be reported | für das Ursprungsland fehlt eine USt-IdNr. | USt-IdNr. im Portal hinterlegen |
+| 400 | 54 | the country "%country%" is not configured as a country of dispatch | Ursprungsland ist nicht als Versandland konfiguriert | Versandland einrichten |
+| 400 | 55 | the country "%country%" is not configured as a destination country | Zielland ist nicht als Zielland konfiguriert | Zielland einrichten |
 | 500 | 0 | error while processing the request | serverseitiger Fehler | wiederholen |
 | 504 | 30 | a timeout occurred while processing the request | Zeitüberschreitung | erneut versuchen |
 
@@ -1259,6 +1383,9 @@ Legt mehrere freie Buchungen in einem Request an.
 | `vat` | string | ja | `19_vat` |
 | `cost_location` | string | nein | `cost location` |
 | `cost_location_two` | string | nein | `cost location two` |
+| `oss_origin_country` | string | nein | `DE` | ISO-3166-1-alpha-2, `XI` für Nordirland; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
+| `oss_destination_country` | string | nein | `FR` | wie oben |
+| `oss_vat_rate` | string | nein | `20.00` | Satz in Textform; nur neben einem `vat_oss_`-Schlüssel ausgewertet |
 
 Hinweis zu `amount`: Die `required`-Liste der Definition lautet
 `["date", "postingtext", "vat", "amounts", "postingaccount_debit", "postingaccount_credit"]`. Sie
@@ -1823,7 +1950,7 @@ eine Enum-Deklaration oder einen vorgeschalteten Lookup.
 
 | Parameter | Warum schwer | Empfehlung |
 | --- | --- | --- |
-| `vat` / `vats` | 23 kryptische Schlüssel, deren Namen nicht selbsterklärend sind; Gültigkeit hängt vom Konto, vom Datum und von den Mandanteneinstellungen ab | als Enum mit allen 23 Werten und deutschem Klartext deklarieren; in der Beschreibung ausdrücklich sagen, dass `_pre` für Eingangs- und `_vat` für Ausgangsumsätze steht |
+| `vat` / `vats` | 29 kryptische Schlüssel, deren Namen nicht selbsterklärend sind; Gültigkeit hängt vom Konto, vom Datum und von den Mandanteneinstellungen ab | als Enum mit allen 29 Werten und deutschem Klartext deklarieren; in der Beschreibung ausdrücklich sagen, dass `_pre` für Eingangs- und `_vat` für Ausgangsumsätze steht |
 | `postingaccounts` / `postingaccount_debit` / `postingaccount_credit` | mandantenspezifischer Kontenrahmen; nicht jedes Konto ist manuell bebuchbar | ein eigenes Lookup-Tool auf `/settings/get/postingaccounts` anbieten und in der Beschreibung darauf verweisen |
 | `creditor` / `debtor` | die Wahl hängt an der Belegrichtung, nicht an einer freien Entscheidung; beide sind formal Pflicht | in der Beschreibung die Regel nennen: Eingangsrechnung braucht `creditor`, Ausgangsrechnung braucht `debtor`, niemals beides |
 | `oi_receipts_ids_by_customer` | Bedeutung nur mit Kenntnis der OP-Buchhaltung verständlich; `null` ist ein bedeutungstragender Wert | Beschreibung muss erklären, dass die Länge des Arrays der Zeilenzahl entsprechen muss und `null` "kein Beleg" bedeutet |

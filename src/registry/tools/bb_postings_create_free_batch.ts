@@ -22,7 +22,15 @@ import { isConfigLoaded } from "../../config/resolve.js";
 import { batchContainer } from "../../schema/batch.js";
 import { API_MAX_BATCH, batchLimit } from "../../schema/line-items.js";
 import { amountValue, boundedText, strictObject, unwrapSchema } from "../../schema/primitives.js";
-import { costLocation, date, postingAccountNumber, vatKey } from "../../schema/vocab.js";
+import {
+  costLocation,
+  date,
+  OSS_SENTENCE,
+  ossCountry,
+  ossVatRate,
+  postingAccountNumber,
+  vatKey,
+} from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Mengengrenze des Stapels: `min(50, BB_MCP_MAX_BATCH)`, sobald die Konfiguration aufgelöst
@@ -78,7 +86,7 @@ const COST_LOCATION_TWO_DESCRIPTION =
   "Kostenstelle der zweiten Ebene, mandantenbezogen, nachschlagen mit " +
   "bb_cost_locations_search. Höchstens 10 Zeichen.";
 
-/** Ein Stapelelement, genau nach den acht Eigenschaften von `PostingsFree.items`. */
+/** Ein Stapelelement, genau nach den elf Eigenschaften von `PostingsFree.items`. */
 const FREE_POSTING_ITEM = strictObject({
   date: DATE_SCHEMA.describe(DATE_DESCRIPTION),
   postingtext: POSTINGTEXT_SCHEMA,
@@ -88,6 +96,9 @@ const FREE_POSTING_ITEM = strictObject({
   vat: vatKey(),
   cost_location: COST_LOCATION_SCHEMA.optional(),
   cost_location_two: costLocation().describe(COST_LOCATION_TWO_DESCRIPTION).optional(),
+  oss_origin_country: ossCountry().optional(),
+  oss_destination_country: ossCountry().optional(),
+  oss_vat_rate: ossVatRate().optional(),
 });
 
 const FREE_POSTINGS_PURPOSE =
@@ -113,7 +124,8 @@ export const bb_postings_create_free_batch: ToolEntry = {
     "Buchungssätze ohne Beleg- und Zahlungsbezug. Zu nehmen, wenn viele Umbuchungen auf " +
     "einmal anfallen, etwa Abgrenzungen zum Jahreswechsel; für eine einzelne " +
     "bb_postings_create_free. Jeder Eintrag erzeugt genau eine Buchungszeile, eine Klammer " +
-    "über mehrere Zeilen gibt es nicht. Der Stapel ist nicht transaktional: success auf " +
+    "über mehrere Zeilen gibt es nicht. " +
+    `${OSS_SENTENCE} Der Stapel ist nicht transaktional: success auf ` +
     "oberster Ebene sagt nichts über die einzelnen Einträge, das Array errors der Antwort " +
     "nennt die gescheiterten. Schreibt in die echten Buchhaltungsdaten von " +
     "BuchhaltungsButler. Eine festgeschriebene Buchung lässt sich nicht löschen, sondern nur " +
@@ -158,6 +170,9 @@ export const bb_postings_create_free_batch: ToolEntry = {
           description: COST_LOCATION_TWO_DESCRIPTION,
           schema: costLocation(),
         }),
+        field({ name: "oss_origin_country", schema: ossCountry() }),
+        field({ name: "oss_destination_country", schema: ossCountry() }),
+        field({ name: "oss_vat_rate", schema: ossVatRate() }),
       ],
     },
   ],
@@ -191,6 +206,6 @@ export const bb_postings_create_free_batch: ToolEntry = {
   },
   // Kein duplicateCheck: bb_postings_search nimmt weder postingtext noch amount als Filter an
   // und verlangt einen Zeitraum, den dieser Aufruf nicht auf oberster Ebene trägt.
-  crossChecks: ["Q3", "Q4"],
+  crossChecks: ["Q3", "Q4", "Q10"],
   invalidatesCache: [],
 };

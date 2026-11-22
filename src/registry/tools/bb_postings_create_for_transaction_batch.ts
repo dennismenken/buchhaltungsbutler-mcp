@@ -31,7 +31,7 @@ import {
   postingPositions,
 } from "../../schema/line-items.js";
 import { strictObject, unwrapSchema } from "../../schema/primitives.js";
-import { ID_STRING_SENTENCE, idByCustomer } from "../../schema/vocab.js";
+import { ID_STRING_SENTENCE, idByCustomer, OSS_SENTENCE } from "../../schema/vocab.js";
 import type { FieldSpec, ToolEntry } from "../types.js";
 
 /** Mengengrenze beider Ebenen, getrennt geprüft und nie aufsummiert. */
@@ -134,7 +134,8 @@ export const bb_postings_create_for_transaction_batch: ToolEntry = {
   description:
     "Legt die Buchungssätze zu mehreren vorhandenen Zahlungen in BuchhaltungsButler in einem " +
     "Aufruf an. Zu nehmen, wenn ein ganzer Kontoauszug zu buchen ist; für eine einzelne " +
-    "Zahlung bb_postings_create_for_transaction. Der Stapel ist nicht transaktional: success " +
+    "Zahlung bb_postings_create_for_transaction. " +
+    `${OSS_SENTENCE} Der Stapel ist nicht transaktional: success ` +
     "auf oberster Ebene sagt nichts über die einzelnen Einträge, das Array errors der Antwort " +
     "nennt die gescheiterten. Die Antwort nennt die erzeugten Buchungen nicht; nachsehen mit " +
     "bb_postings_search. Schreibt in die echten Buchhaltungsdaten von BuchhaltungsButler. " +
@@ -168,6 +169,9 @@ export const bb_postings_create_for_transaction_batch: ToolEntry = {
             "cost_locations_two",
             "amounts",
             "oi_receipts_ids_by_customer",
+            "oss_origin_countries",
+            "oss_destination_countries",
+            "oss_vat_rates",
           ],
           source: "body",
           required: true,
@@ -212,6 +216,23 @@ export const bb_postings_create_for_transaction_batch: ToolEntry = {
               required: true,
               schema: positionSchema("open_item_receipt_id_by_customer"),
             }),
+            // Die drei OSS-Spalten sind optional: Die Spezifikation führt die Arrays als
+            // `required: false`. Zeilen ohne OSS tragen im umgeformten Array `null`.
+            field({
+              name: "oss_origin_country",
+              apiName: "oss_origin_countries",
+              schema: positionSchema("oss_origin_country"),
+            }),
+            field({
+              name: "oss_destination_country",
+              apiName: "oss_destination_countries",
+              schema: positionSchema("oss_destination_country"),
+            }),
+            field({
+              name: "oss_vat_rate",
+              apiName: "oss_vat_rates",
+              schema: positionSchema("oss_vat_rate"),
+            }),
           ],
         },
       ],
@@ -244,6 +265,6 @@ export const bb_postings_create_for_transaction_batch: ToolEntry = {
   },
   // Kein duplicateCheck: bb_postings_search nimmt transaction_id_by_customer nicht als Filter
   // an und verlangt einen Zeitraum, den dieser Aufruf nicht trägt.
-  crossChecks: ["Q3", "Q4"],
+  crossChecks: ["Q3", "Q4", "Q10"],
   invalidatesCache: [],
 };

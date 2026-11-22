@@ -94,6 +94,7 @@ const CROSS_CHECKS: readonly CrossCheckId[] = [
   "Q7",
   "Q8",
   "Q9",
+  "Q10",
 ];
 
 /**
@@ -264,13 +265,13 @@ describe("P10 Mengengrenzen", () => {
     expectNoIssues(problems);
   });
 
-  it("kennt nur die neun Querprüfungen Q1 bis Q9", () => {
+  it("kennt nur die zehn Querprüfungen Q1 bis Q10", () => {
     const problems: string[] = [];
 
     for (const tool of REGISTRY) {
       for (const id of tool.crossChecks) {
         if (!CROSS_CHECKS.includes(id)) {
-          problems.push(`${tool.name}: crossChecks nennt ${id}; es gibt nur Q1 bis Q9.`);
+          problems.push(`${tool.name}: crossChecks nennt ${id}; es gibt nur Q1 bis Q10.`);
         }
       }
       const duplicateIds = tool.crossChecks.filter(
