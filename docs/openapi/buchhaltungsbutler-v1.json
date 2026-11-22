@@ -88,10 +88,15 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": ["ASC", "DESC"]
+                  "enum": [
+                    "ASC",
+                    "DESC"
+                  ]
                 }
               },
-              "required": ["field"]
+              "required": [
+                "field"
+              ]
             },
             "required": false
           },
@@ -631,13 +636,13 @@
           "401 (3)": {
             "description": "API credentials unknown or invalid",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode3"
+              "$ref": "#/definitions/Request_ErrorCode3"
             }
           },
           "401 (4)": {
             "description": "customer not found or insufficient privileges",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode4"
+              "$ref": "#/definitions/Request_ErrorCode4"
             }
           },
           "400 (5)": {
@@ -667,7 +672,7 @@
           "500 (0)": {
             "description": "internal error",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode0"
+              "$ref": "#/definitions/Request_ErrorCode0"
             }
           },
           "504 (30)": {
@@ -1817,13 +1822,13 @@
           "401 (3)": {
             "description": "API credentials unknown or invalid",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode3"
+              "$ref": "#/definitions/Request_ErrorCode3"
             }
           },
           "401 (4)": {
             "description": "customer not found or insufficient privileges",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode4"
+              "$ref": "#/definitions/Request_ErrorCode4"
             }
           },
           "400 (5)": {
@@ -1847,7 +1852,7 @@
           "500 (0)": {
             "description": "internal error",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode0"
+              "$ref": "#/definitions/Request_ErrorCode0"
             }
           },
           "504 (30)": {
@@ -2106,13 +2111,13 @@
           "401 (3)": {
             "description": "API credentials unknown or invalid",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode3"
+              "$ref": "#/definitions/Request_ErrorCode3"
             }
           },
           "401 (4)": {
             "description": "customer not found or insufficient privileges",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode4"
+              "$ref": "#/definitions/Request_ErrorCode4"
             }
           },
           "400 (10)": {
@@ -2148,7 +2153,7 @@
           "500 (0)": {
             "description": "internal error",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode0"
+              "$ref": "#/definitions/Request_ErrorCode0"
             }
           },
           "504 (30)": {
@@ -2232,6 +2237,105 @@
             "description": "invalid confirmed_only specified",
             "schema": {
               "$ref": "#/definitions/TransactionsAssignedReceiptsGet_ErrorCode7"
+            }
+          },
+          "500 (0)": {
+            "description": "internal error",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode0"
+            }
+          },
+          "504 (30)": {
+            "description": "timeout",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode30"
+            }
+          }
+        }
+      }
+    },
+    "/transactions/delete": {
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "delete a transaction",
+        "description": "Delete a transaction for a specified customer account by id_by_customer. You can get the <i>&ldquo;id_by_customer&rdquo;</i> by using the <i>&ldquo;/transactions/get method&rdquo;</i> first.<br/><br/>Please note: for transactions in a revision safe account the transaction is not deleted, but a cancelation transaction (STORNO) is created instead. Transactions with fixed postings can not be deleted.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "api_key",
+            "description": "The api key registered for the customer to manage.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "transaction_id_by_customer",
+            "description": "The id_by_customer of the transaction to delete.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deletion successful",
+            "schema": {
+              "$ref": "#/definitions/TransactionsDelete_Success"
+            }
+          },
+          "401 (3)": {
+            "description": "API credentials unknown or invalid",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode3"
+            }
+          },
+          "401 (4)": {
+            "description": "customer not found or insufficient privileges",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode4"
+            }
+          },
+          "403 (11)": {
+            "description": "customer has no active status",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode11"
+            }
+          },
+          "400 (5)": {
+            "description": "invalid transaction_id_by_customer specified",
+            "schema": {
+              "$ref": "#/definitions/TransactionsDelete_ErrorCode5"
+            }
+          },
+          "400 (6)": {
+            "description": "transaction not found",
+            "schema": {
+              "$ref": "#/definitions/TransactionsDelete_ErrorCode6"
+            }
+          },
+          "400 (7)": {
+            "description": "account of the transaction not found",
+            "schema": {
+              "$ref": "#/definitions/TransactionsDelete_ErrorCode7"
+            }
+          },
+          "400 (8)": {
+            "description": "type of the transaction does not allow deletion",
+            "schema": {
+              "$ref": "#/definitions/TransactionsDelete_ErrorCode8"
+            }
+          },
+          "400 (9)": {
+            "description": "transaction can not be deleted, because fixed postings exist",
+            "schema": {
+              "$ref": "#/definitions/TransactionsDelete_ErrorCode9"
+            }
+          },
+          "400 (10)": {
+            "description": "transaction is already canceled or is a cancelation",
+            "schema": {
+              "$ref": "#/definitions/TransactionsDelete_ErrorCode10"
             }
           },
           "500 (0)": {
@@ -3644,6 +3748,130 @@
         }
       }
     },
+    "/invoices/invoice_correction/create": {
+      "post": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "create invoice correction",
+        "description": "Create an invoice correction (<i>&ldquo;Rechnungskorrektur&rdquo;</i>) for an already existing outbound invoice of the specified customer. You can get the <i>&ldquo;id_by_customer&rdquo;</i> of the original invoice by using the <i>&ldquo;/receipts/get&rdquo;</i> method first.<br/><br/>The correction is created as a new outbound invoice that takes over all data of the original invoice, but with negated item prices and item names prefixed with <i>&ldquo;Gutschrift&rdquo;</i>. Its invoice number is generated from the customer's invoice number settings unless an <i>&ldquo;invoicenumber&rdquo;</i> is specified, its date is the current date and its correspondence text references the original invoice.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "api_key",
+            "description": "The api key registered for the customer to manage.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "receipt_id_by_customer",
+            "description": "The id_by_customer of the outbound invoice to correct.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "invoicenumber",
+            "description": "The invoicenumber for the invoice correction. If not specified, the default BHB number will be created.<br/><br/>If specified, the field will be validated.",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "adding successful",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_Success"
+            }
+          },
+          "401 (3)": {
+            "description": "API credentials unknown or invalid",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode3"
+            }
+          },
+          "401 (4)": {
+            "description": "customer not found or insufficient privileges",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode4"
+            }
+          },
+          "403 (11)": {
+            "description": "customer has no active status",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode11"
+            }
+          },
+          "403 (12)": {
+            "description": "customer has reached the upload limit",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_ErrorCode12"
+            }
+          },
+          "400 (5)": {
+            "description": "invalid receipt_id_by_customer specified",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_ErrorCode5"
+            }
+          },
+          "400 (6)": {
+            "description": "no receipt found",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_ErrorCode6"
+            }
+          },
+          "400 (7)": {
+            "description": "receipt is not an outbound invoice",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_ErrorCode7"
+            }
+          },
+          "400 (8)": {
+            "description": "receipt is deleted",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_ErrorCode8"
+            }
+          },
+          "400 (9)": {
+            "description": "no invoice data found for the receipt",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_ErrorCode9"
+            }
+          },
+          "400 (10)": {
+            "description": "no invoice data items found for the receipt",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_ErrorCode10"
+            }
+          },
+          "400 (13)": {
+            "description": "invoice correction data is invalid",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_ErrorCode13"
+            }
+          },
+          "400 (14)": {
+            "description": "invalid invoicenumber specified",
+            "schema": {
+              "$ref": "#/definitions/InvoicesInvoiceCorrectionCreate_ErrorCode14"
+            }
+          },
+          "500 (0)": {
+            "description": "internal error",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode0"
+            }
+          },
+          "504 (30)": {
+            "description": "timeout",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode30"
+            }
+          }
+        }
+      }
+    },
     "/postings/get": {
       "post": {
         "tags": [
@@ -3882,7 +4110,7 @@
           {
             "in": "body",
             "name": "vats",
-            "description": "An array of vats.<br/><br/>Usage:<br/>\"vats\" : ['vat of posting 1', 'vat of posting 2'].<br /><br />Possible vats:<br />- 0_none ('keine Ust.')<br />- 19_vat ('19% Ust.')<br />- 7_vat ('7% Ust.')<br />- 19_pre ('19% Vst.')<br />- 7_pre ('7% Vst.')<br />- 19_both_1 ('§13b 19% USt./VSt.')<br />- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')<br />- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')<br />- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')<br />- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')<br />- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')<br />- 19_both_2 ('I.g.E. 19% USt./VSt.')<br />- 7_both ('I.g.E. 7% USt./VSt.')<br />- 19_both_1_no_pre ('§13b 19/16% USt.')<br />- 19_both_2_no_pre ('i.g.E. 19/16% USt.')<br />- 7_both_no_pre ('i.g.E. 7/5% USt.')<br />- 19_pre_app ('19/16% Aufz. VSt.')<br />- 7_pre_app ('7/5% Aufz. VSt.') <br />- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.') <br />- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)') <br />- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)') <br />- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')  <br />- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')",
+            "description": "An array of vats.<br/><br/>Usage:<br/>\"vats\" : ['vat of posting 1', 'vat of posting 2'].<br /><br />Possible vats:<br />- 0_none ('keine Ust.')<br />- 19_vat ('19% Ust.')<br />- 7_vat ('7% Ust.')<br />- 19_pre ('19% Vst.')<br />- 7_pre ('7% Vst.')<br />- 19_both_1 ('§13b 19% USt./VSt.')<br />- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')<br />- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')<br />- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')<br />- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')<br />- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')<br />- 19_both_2 ('I.g.E. 19% USt./VSt.')<br />- 7_both ('I.g.E. 7% USt./VSt.')<br />- 19_both_1_no_pre ('§13b 19/16% USt.')<br />- 19_both_2_no_pre ('i.g.E. 19/16% USt.')<br />- 7_both_no_pre ('i.g.E. 7/5% USt.')<br />- 19_pre_app ('19/16% Aufz. VSt.')<br />- 7_pre_app ('7/5% Aufz. VSt.') <br />- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.') <br />- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)') <br />- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)') <br />- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')  <br />- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')<br />- vat_oss_deli_deeu ('OSS - Lieferung D -> EU')<br />- vat_oss_deli_eueu ('OSS - Lieferung EU -> EU')<br />- vat_oss_serv_deeu ('OSS - Leistung D -> EU')<br />- vat_oss_serv_eueu ('OSS - Leistung EU -> EU')<br />- vat_oss_deli_eude ('OSS - Lieferung EU -> D')<br />- vat_oss_deli_eude_19 ('OSS - Lieferung EU -> D 19%')<br /><br />The OSS options are only available once OSS is activated for the customer. Each of them expects the OSS parameters of this endpoint: oss_origin_countries and oss_destination_countries are required, and oss_vat_rates carries the rate the posting was made at. The single exception is vat_oss_deli_eude_19, which carries a fixed rate of 19% and disregards a supplied one.",
             "required": true,
             "type": "array"
           },
@@ -3920,6 +4148,27 @@
             "description": "The number of the debtor.<br/><br/>IMPORTANT: The field is only required, if you are posting to an outgoing invoice and if debtor posting is activated.<br/><br/>If specified, the field will be validated.",
             "required": true,
             "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "oss_origin_countries",
+            "description": "An array of the OSS countries of origin, as ISO 3166-1 alpha-2 codes, plus XI for Northern Ireland.<br/><br/>Usage:<br/>\"oss_origin_countries\" : ['DE', null].<br /><br />Only evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "in": "body",
+            "name": "oss_destination_countries",
+            "description": "An array of the OSS countries of destination, as ISO 3166-1 alpha-2 codes, plus XI for Northern Ireland.<br/><br/>Usage:<br/>\"oss_destination_countries\" : ['FR', null].<br /><br />Only evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "in": "body",
+            "name": "oss_vat_rates",
+            "description": "An array of the vat rates the postings were made at.<br/><br/>Usage:<br/>\"oss_vat_rates\" : ['20.00', null].<br /><br />Only evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+            "required": false,
+            "type": "array"
           }
         ],
         "responses": {
@@ -4186,6 +4435,60 @@
             "schema": {
               "$ref": "#/definitions/PostingsAddReceipt_ErrorCode30"
             }
+          },
+          "400 (47)": {
+            "description": "a vat rate is required for the specified vat option",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddReceipt_ErrorCode47"
+            }
+          },
+          "400 (48)": {
+            "description": "the specified vat rate does not exist in the destination country on the delivery date",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddReceipt_ErrorCode48"
+            }
+          },
+          "400 (49)": {
+            "description": "country of origin and country of destination are required for the specified vat option",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddReceipt_ErrorCode49"
+            }
+          },
+          "400 (50)": {
+            "description": "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddReceipt_ErrorCode50"
+            }
+          },
+          "400 (51)": {
+            "description": "the country \"%country%\" is outside the EU and is not permitted for an OSS posting",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddReceipt_ErrorCode51"
+            }
+          },
+          "400 (52)": {
+            "description": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddReceipt_ErrorCode52"
+            }
+          },
+          "400 (53)": {
+            "description": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddReceipt_ErrorCode53"
+            }
+          },
+          "400 (54)": {
+            "description": "the country \"%country%\" is not configured as a country of dispatch",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddReceipt_ErrorCode54"
+            }
+          },
+          "400 (55)": {
+            "description": "the country \"%country%\" is not configured as a destination country",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddReceipt_ErrorCode55"
+            }
           }
         }
       }
@@ -4225,13 +4528,13 @@
           "401 (3)": {
             "description": "API credentials unknown or invalid",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode3"
+              "$ref": "#/definitions/Request_ErrorCode3"
             }
           },
           "401 (4)": {
             "description": "customer not found or insufficient privileges",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode4"
+              "$ref": "#/definitions/Request_ErrorCode4"
             }
           },
           "403 (11)": {
@@ -4249,7 +4552,7 @@
           "500 (0)": {
             "description": "internal error",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode0"
+              "$ref": "#/definitions/Request_ErrorCode0"
             }
           },
           "504 (30)": {
@@ -4300,7 +4603,7 @@
           {
             "in": "body",
             "name": "vats",
-            "description": "An array of vats.<br/><br/>Usage:<br/>\"vats\" : ['vat of posting 1', 'vat of posting 2'].<br /><br />Possible vats:<br />- 0_none ('keine Ust.')<br />- 19_vat ('19% Ust.')<br />- 7_vat ('7% Ust.')<br />- 19_pre ('19% Vst.')<br />- 7_pre ('7% Vst.')<br />- 19_both_1 ('§13b 19% USt./VSt.')<br />- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')<br />- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')<br />- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')<br />- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')<br />- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')<br />- 19_both_2 ('I.g.E. 19% USt./VSt.')<br />- 7_both ('I.g.E. 7% USt./VSt.')<br />- 19_both_1_no_pre ('§13b 19/16% USt.')<br />- 19_both_2_no_pre ('i.g.E. 19/16% USt.')<br />- 7_both_no_pre ('i.g.E. 7/5% USt.')<br />- 19_pre_app ('19/16% Aufz. VSt.')<br />- 7_pre_app ('7/5% Aufz. VSt.') <br />- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.') <br />- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)') <br />- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)') <br />- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')  <br />- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')",
+            "description": "An array of vats.<br/><br/>Usage:<br/>\"vats\" : ['vat of posting 1', 'vat of posting 2'].<br /><br />Possible vats:<br />- 0_none ('keine Ust.')<br />- 19_vat ('19% Ust.')<br />- 7_vat ('7% Ust.')<br />- 19_pre ('19% Vst.')<br />- 7_pre ('7% Vst.')<br />- 19_both_1 ('§13b 19% USt./VSt.')<br />- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')<br />- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')<br />- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')<br />- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')<br />- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')<br />- 19_both_2 ('I.g.E. 19% USt./VSt.')<br />- 7_both ('I.g.E. 7% USt./VSt.')<br />- 19_both_1_no_pre ('§13b 19/16% USt.')<br />- 19_both_2_no_pre ('i.g.E. 19/16% USt.')<br />- 7_both_no_pre ('i.g.E. 7/5% USt.')<br />- 19_pre_app ('19/16% Aufz. VSt.')<br />- 7_pre_app ('7/5% Aufz. VSt.') <br />- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.') <br />- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)') <br />- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)') <br />- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')  <br />- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')<br />- vat_oss_deli_deeu ('OSS - Lieferung D -> EU')<br />- vat_oss_deli_eueu ('OSS - Lieferung EU -> EU')<br />- vat_oss_serv_deeu ('OSS - Leistung D -> EU')<br />- vat_oss_serv_eueu ('OSS - Leistung EU -> EU')<br />- vat_oss_deli_eude ('OSS - Lieferung EU -> D')<br />- vat_oss_deli_eude_19 ('OSS - Lieferung EU -> D 19%')<br /><br />The OSS options are only available once OSS is activated for the customer. Each of them expects the OSS parameters of this endpoint: oss_origin_countries and oss_destination_countries are required, and oss_vat_rates carries the rate the posting was made at. The single exception is vat_oss_deli_eude_19, which carries a fixed rate of 19% and disregards a supplied one.",
             "required": true,
             "type": "array"
           },
@@ -4330,6 +4633,27 @@
             "name": "oi_receipts_ids_by_customer",
             "description": "An array of \"open item\" receipts ids_by_customer .<br/><br/>Usage:<br/>\"oi_receipts_ids_by_customer\" : ['id_by_customer of the receipt for posting 1', null ]<br /><br />The receipts specified will be assigned directly to the respective postings. A null value within the array means explicitly assigning no receipt to the partial posting in that position.<br /><br />IMPORTANT: The field is only required, if OI postings are activated in customers account.",
             "required": true,
+            "type": "array"
+          },
+          {
+            "in": "body",
+            "name": "oss_origin_countries",
+            "description": "An array of the OSS countries of origin, as ISO 3166-1 alpha-2 codes, plus XI for Northern Ireland.<br/><br/>Usage:<br/>\"oss_origin_countries\" : ['DE', null].<br /><br />Only evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "in": "body",
+            "name": "oss_destination_countries",
+            "description": "An array of the OSS countries of destination, as ISO 3166-1 alpha-2 codes, plus XI for Northern Ireland.<br/><br/>Usage:<br/>\"oss_destination_countries\" : ['FR', null].<br /><br />Only evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "in": "body",
+            "name": "oss_vat_rates",
+            "description": "An array of the vat rates the postings were made at.<br/><br/>Usage:<br/>\"oss_vat_rates\" : ['20.00', null].<br /><br />Only evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+            "required": false,
             "type": "array"
           }
         ],
@@ -4525,6 +4849,60 @@
             "schema": {
               "$ref": "#/definitions/PostingsAddReceipt_ErrorCode30"
             }
+          },
+          "400 (47)": {
+            "description": "a vat rate is required for the specified vat option",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddTransaction_ErrorCode47"
+            }
+          },
+          "400 (48)": {
+            "description": "the specified vat rate does not exist in the destination country on the delivery date",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddTransaction_ErrorCode48"
+            }
+          },
+          "400 (49)": {
+            "description": "country of origin and country of destination are required for the specified vat option",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddTransaction_ErrorCode49"
+            }
+          },
+          "400 (50)": {
+            "description": "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddTransaction_ErrorCode50"
+            }
+          },
+          "400 (51)": {
+            "description": "the country \"%country%\" is outside the EU and is not permitted for an OSS posting",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddTransaction_ErrorCode51"
+            }
+          },
+          "400 (52)": {
+            "description": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddTransaction_ErrorCode52"
+            }
+          },
+          "400 (53)": {
+            "description": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddTransaction_ErrorCode53"
+            }
+          },
+          "400 (54)": {
+            "description": "the country \"%country%\" is not configured as a country of dispatch",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddTransaction_ErrorCode54"
+            }
+          },
+          "400 (55)": {
+            "description": "the country \"%country%\" is not configured as a destination country",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddTransaction_ErrorCode55"
+            }
           }
         }
       }
@@ -4564,13 +4942,13 @@
           "401 (3)": {
             "description": "API credentials unknown or invalid",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode3"
+              "$ref": "#/definitions/Request_ErrorCode3"
             }
           },
           "401 (4)": {
             "description": "customer not found or insufficient privileges",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode4"
+              "$ref": "#/definitions/Request_ErrorCode4"
             }
           },
           "403 (11)": {
@@ -4588,7 +4966,7 @@
           "500 (0)": {
             "description": "internal error",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode0"
+              "$ref": "#/definitions/Request_ErrorCode0"
             }
           },
           "504 (30)": {
@@ -4653,7 +5031,7 @@
           {
             "in": "body",
             "name": "vat",
-            "description": "The vat rate of the posting.<br /><br />Possible vats:<br />- 0_none ('keine Ust.')<br />- 19_vat ('19% Ust.')<br />- 7_vat ('7% Ust.')<br />- 19_pre ('19% Vst.')<br />- 7_pre ('7% Vst.')<br />- 19_both_1 ('§13b 19% USt./VSt.')<br />- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')<br />- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')<br />- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')<br />- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')<br />- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')<br />- 19_both_2 ('I.g.E. 19% USt./VSt.')<br />- 7_both ('I.g.E. 7% USt./VSt.')<br />- 19_both_1_no_pre ('§13b 19/16% USt.')<br />- 19_both_2_no_pre ('i.g.E. 19/16% USt.')<br />- 7_both_no_pre ('i.g.E. 7/5% USt.')<br />- 19_pre_app ('19/16% Aufz. VSt.')<br />- 7_pre_app ('7/5% Aufz. VSt.') <br />- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.') <br />- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)') <br />- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)') <br />- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')  <br />- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')",
+            "description": "The vat rate of the posting.<br /><br />Possible vats:<br />- 0_none ('keine Ust.')<br />- 19_vat ('19% Ust.')<br />- 7_vat ('7% Ust.')<br />- 19_pre ('19% Vst.')<br />- 7_pre ('7% Vst.')<br />- 19_both_1 ('§13b 19% USt./VSt.')<br />- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')<br />- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')<br />- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')<br />- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')<br />- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')<br />- 19_both_2 ('I.g.E. 19% USt./VSt.')<br />- 7_both ('I.g.E. 7% USt./VSt.')<br />- 19_both_1_no_pre ('§13b 19/16% USt.')<br />- 19_both_2_no_pre ('i.g.E. 19/16% USt.')<br />- 7_both_no_pre ('i.g.E. 7/5% USt.')<br />- 19_pre_app ('19/16% Aufz. VSt.')<br />- 7_pre_app ('7/5% Aufz. VSt.') <br />- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.') <br />- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)') <br />- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)') <br />- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')  <br />- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')<br />- vat_oss_deli_deeu ('OSS - Lieferung D -> EU')<br />- vat_oss_deli_eueu ('OSS - Lieferung EU -> EU')<br />- vat_oss_serv_deeu ('OSS - Leistung D -> EU')<br />- vat_oss_serv_eueu ('OSS - Leistung EU -> EU')<br />- vat_oss_deli_eude ('OSS - Lieferung EU -> D')<br />- vat_oss_deli_eude_19 ('OSS - Lieferung EU -> D 19%')<br /><br />The OSS options are only available once OSS is activated for the customer. Each of them expects the OSS parameters of this endpoint: oss_origin_country and oss_destination_country are required, and oss_vat_rate carries the rate the posting was made at. The single exception is vat_oss_deli_eude_19, which carries a fixed rate of 19% and disregards a supplied one.",
             "required": true,
             "type": "string"
           },
@@ -4668,6 +5046,27 @@
             "in": "body",
             "name": "cost_location_two",
             "description": "The cost location two number.<br /><br />If specified, field will be validated.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "oss_origin_country",
+            "description": "The OSS country of origin, as an ISO 3166-1 alpha-2 code, or XI for Northern Ireland. Only evaluated for OSS vat options.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "oss_destination_country",
+            "description": "The OSS country of destination, as an ISO 3166-1 alpha-2 code, or XI for Northern Ireland. Only evaluated for OSS vat options.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "oss_vat_rate",
+            "description": "The vat rate the posting was made at. Only evaluated for OSS vat options.",
             "required": false,
             "type": "string"
           }
@@ -4882,6 +5281,60 @@
             "schema": {
               "$ref": "#/definitions/PostingsAddFree_ErrorCode30"
             }
+          },
+          "400 (47)": {
+            "description": "a vat rate is required for the specified vat option",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddFree_ErrorCode47"
+            }
+          },
+          "400 (48)": {
+            "description": "the specified vat rate does not exist in the destination country on the delivery date",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddFree_ErrorCode48"
+            }
+          },
+          "400 (49)": {
+            "description": "country of origin and country of destination are required for the specified vat option",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddFree_ErrorCode49"
+            }
+          },
+          "400 (50)": {
+            "description": "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddFree_ErrorCode50"
+            }
+          },
+          "400 (51)": {
+            "description": "the country \"%country%\" is outside the EU and is not permitted for an OSS posting",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddFree_ErrorCode51"
+            }
+          },
+          "400 (52)": {
+            "description": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddFree_ErrorCode52"
+            }
+          },
+          "400 (53)": {
+            "description": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddFree_ErrorCode53"
+            }
+          },
+          "400 (54)": {
+            "description": "the country \"%country%\" is not configured as a country of dispatch",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddFree_ErrorCode54"
+            }
+          },
+          "400 (55)": {
+            "description": "the country \"%country%\" is not configured as a destination country",
+            "schema": {
+              "$ref": "#/definitions/PostingsAddFree_ErrorCode55"
+            }
           }
         }
       }
@@ -4921,13 +5374,13 @@
           "401 (3)": {
             "description": "API credentials unknown or invalid",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode3"
+              "$ref": "#/definitions/Request_ErrorCode3"
             }
           },
           "401 (4)": {
             "description": "customer not found or insufficient privileges",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode4"
+              "$ref": "#/definitions/Request_ErrorCode4"
             }
           },
           "403 (11)": {
@@ -4945,7 +5398,7 @@
           "500 (0)": {
             "description": "internal error",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode0"
+              "$ref": "#/definitions/Request_ErrorCode0"
             }
           },
           "504 (30)": {
@@ -5737,13 +6190,13 @@
           "401 (3)": {
             "description": "API credentials unknown or invalid",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode3"
+              "$ref": "#/definitions/Request_ErrorCode3"
             }
           },
           "401 (4)": {
             "description": "customer not found or insufficient privileges",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode4"
+              "$ref": "#/definitions/Request_ErrorCode4"
             }
           },
           "403 (11)": {
@@ -5761,7 +6214,7 @@
           "500 (0)": {
             "description": "internal error",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode0"
+              "$ref": "#/definitions/Request_ErrorCode0"
             }
           },
           "504 (30)": {
@@ -6045,13 +6498,13 @@
           "401 (3)": {
             "description": "API credentials unknown or invalid",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode3"
+              "$ref": "#/definitions/Request_ErrorCode3"
             }
           },
           "401 (4)": {
             "description": "customer not found or insufficient privileges",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode4"
+              "$ref": "#/definitions/Request_ErrorCode4"
             }
           },
           "403 (11)": {
@@ -6069,7 +6522,7 @@
           "500 (0)": {
             "description": "internal error",
             "schema": {
-              "$ref":  "#/definitions/Request_ErrorCode0"
+              "$ref": "#/definitions/Request_ErrorCode0"
             }
           },
           "504 (30)": {
@@ -6117,7 +6570,6 @@
             "required": true,
             "type": "integer"
           }
-
         ],
         "responses": {
           "200": {
@@ -7056,7 +7508,6 @@
             "required": true,
             "type": "integer"
           }
-
         ],
         "responses": {
           "200": {
@@ -7129,6 +7580,297 @@
             "description": "timeout",
             "schema": {
               "$ref": "#/definitions/SettingsUpdatePostingaccount_ErrorCode30"
+            }
+          }
+        }
+      }
+    },
+    "/settings/delete/debtor": {
+      "post": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "delete debtor",
+        "description": "Delete a debtor account.<br /><br />The debtor account can only be deleted if no postings exist for it.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "api_key",
+            "description": "The api key registered for the customer to manage",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "postingaccount_number",
+            "description": "The postingaccount_number of the debtor account to delete",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deleted successful",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_Success"
+            }
+          },
+          "401 (3)": {
+            "description": "API credentials unknown or invalid",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_ErrorCode3"
+            }
+          },
+          "401 (4)": {
+            "description": "customer not found or insufficient privileges",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_ErrorCode4"
+            }
+          },
+          "403 (11)": {
+            "description": "customer has no active status",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_ErrorCode11"
+            }
+          },
+          "400 (5)": {
+            "description": "invalid settings type specified",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_ErrorCode5"
+            }
+          },
+          "400 (6)": {
+            "description": "wrong debtor account postingaccount_number specified",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_ErrorCode6"
+            }
+          },
+          "400 (7)": {
+            "description": "no debtor found for specified postingaccount_number",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_ErrorCode7"
+            }
+          },
+          "400 (8)": {
+            "description": "debtor may not be deleted because postings exist",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_ErrorCode8"
+            }
+          },
+          "500 (0)": {
+            "description": "internal error",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_ErrorCode0"
+            }
+          },
+          "504 (30)": {
+            "description": "timeout",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteDebtor_ErrorCode30"
+            }
+          }
+        }
+      }
+    },
+    "/settings/delete/creditor": {
+      "post": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "delete creditor",
+        "description": "Delete a creditor account.<br /><br />The creditor account can only be deleted if no postings exist for it.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "api_key",
+            "description": "The api key registered for the customer to manage",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "postingaccount_number",
+            "description": "The postingaccount_number of the creditor account to delete",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deleted successful",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_Success"
+            }
+          },
+          "401 (3)": {
+            "description": "API credentials unknown or invalid",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_ErrorCode3"
+            }
+          },
+          "401 (4)": {
+            "description": "customer not found or insufficient privileges",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_ErrorCode4"
+            }
+          },
+          "403 (11)": {
+            "description": "customer has no active status",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_ErrorCode11"
+            }
+          },
+          "400 (5)": {
+            "description": "invalid settings type specified",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_ErrorCode5"
+            }
+          },
+          "400 (6)": {
+            "description": "wrong creditor account postingaccount_number specified",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_ErrorCode6"
+            }
+          },
+          "400 (7)": {
+            "description": "no creditor found for specified postingaccount_number",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_ErrorCode7"
+            }
+          },
+          "400 (8)": {
+            "description": "creditor may not be deleted because postings exist",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_ErrorCode8"
+            }
+          },
+          "500 (0)": {
+            "description": "internal error",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_ErrorCode0"
+            }
+          },
+          "504 (30)": {
+            "description": "timeout",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeleteCreditor_ErrorCode30"
+            }
+          }
+        }
+      }
+    },
+    "/settings/delete/postingaccount": {
+      "post": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "delete postingaccount",
+        "description": "Delete a postingaccount. Only postingaccounts that were added or edited manually can be deleted, and only if there are no postings and no assets on them. If the postingaccount is a manually edited standard postingaccount, only its name is reset to the default value.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "api_key",
+            "description": "The api key registered for the customer to manage.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "postingaccount_number",
+            "description": "The postingaccount_number of the postingaccount to delete.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "query successful",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeletePostingaccount_Success"
+            }
+          },
+          "401 (3)": {
+            "description": "API credentials unknown or invalid",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode3"
+            }
+          },
+          "401 (4)": {
+            "description": "customer not found or insufficient privileges",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode4"
+            }
+          },
+          "403 (11)": {
+            "description": "customer has no active status",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode11"
+            }
+          },
+          "400 (5)": {
+            "description": "invalid settings type specified",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeletePostingaccount_ErrorCode5"
+            }
+          },
+          "400 (6)": {
+            "description": "no postingaccount_number specified",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeletePostingaccount_ErrorCode6"
+            }
+          },
+          "400 (7)": {
+            "description": "invalid postingaccount_number specified",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeletePostingaccount_ErrorCode7"
+            }
+          },
+          "400 (8)": {
+            "description": "postingaccount was not found",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeletePostingaccount_ErrorCode8"
+            }
+          },
+          "400 (9)": {
+            "description": "postingaccount may not be deleted because it is a standard postingaccount",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeletePostingaccount_ErrorCode9"
+            }
+          },
+          "400 (10)": {
+            "description": "postingaccount may not be deleted because postings exist",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeletePostingaccount_ErrorCode10"
+            }
+          },
+          "400 (12)": {
+            "description": "postingaccount may not be deleted because assets exist",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeletePostingaccount_ErrorCode12"
+            }
+          },
+          "400 (13)": {
+            "description": "postingaccount may not be deleted",
+            "schema": {
+              "$ref": "#/definitions/SettingsDeletePostingaccount_ErrorCode13"
+            }
+          },
+          "400 (23)": {
+            "description": "no post and files content received or declined",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode23"
+            }
+          },
+          "500 (0)": {
+            "description": "internal error",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode0"
+            }
+          },
+          "504 (30)": {
+            "description": "timeout",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode30"
             }
           }
         }
@@ -7356,6 +8098,267 @@
             "description": "invalid is_revision_safe specified",
             "schema": {
               "$ref": "#/definitions/AccountsAdd_ErrorCode19"
+            }
+          }
+        }
+      }
+    },
+    "/accounts/delete": {
+      "post": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "delete a basic account",
+        "description": "Delete a basic account. The account can only be deleted if it does not contain confirmed postings and no revision safe transactions.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "api_key",
+            "description": "The api key registered for the customer to manage.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "postingaccount_number",
+            "description": "The postingaccount_number of the basic account to delete.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "query successful",
+            "schema": {
+              "$ref": "#/definitions/AccountsDelete_Success"
+            }
+          },
+          "401 (3)": {
+            "description": "API credentials unknown or invalid",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode3"
+            }
+          },
+          "401 (4)": {
+            "description": "customer not found or insufficient privileges",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode4"
+            }
+          },
+          "403 (11)": {
+            "description": "customer has no active status",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode11"
+            }
+          },
+          "400 (5)": {
+            "description": "no postingaccount_number specified",
+            "schema": {
+              "$ref": "#/definitions/AccountsDelete_ErrorCode5"
+            }
+          },
+          "400 (6)": {
+            "description": "invalid postingaccount_number specified",
+            "schema": {
+              "$ref": "#/definitions/AccountsDelete_ErrorCode6"
+            }
+          },
+          "400 (7)": {
+            "description": "account was not found",
+            "schema": {
+              "$ref": "#/definitions/AccountsDelete_ErrorCode7"
+            }
+          },
+          "400 (8)": {
+            "description": "account may not be deleted because confirmed postings exist",
+            "schema": {
+              "$ref": "#/definitions/AccountsDelete_ErrorCode8"
+            }
+          },
+          "400 (9)": {
+            "description": "account may not be deleted because revision safe transactions exist",
+            "schema": {
+              "$ref": "#/definitions/AccountsDelete_ErrorCode9"
+            }
+          },
+          "400 (10)": {
+            "description": "account may not be deleted",
+            "schema": {
+              "$ref": "#/definitions/AccountsDelete_ErrorCode10"
+            }
+          },
+          "400 (23)": {
+            "description": "no post and files content received or declined",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode23"
+            }
+          },
+          "500 (0)": {
+            "description": "internal error",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode0"
+            }
+          },
+          "504 (30)": {
+            "description": "timeout",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode30"
+            }
+          }
+        }
+      }
+    },
+    "/accounts/update": {
+      "post": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "update a basic account",
+        "description": "Update a basic account. The account is identified by its postingaccount_number, which itself can not be changed.<br /><br />All other parameters are optional: fields which are not submitted keep their current value.<br /><br />NOTE: is_revision_safe can not be changed via the api.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "api_key",
+            "description": "The api key registered for the customer to manage.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "postingaccount_number",
+            "description": "The postingaccount_number of the basic account to update. The postingaccount_number itself can not be changed.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "name",
+            "description": "The new name of the basic account. </br></br> If specified, the field will be validated.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "receipt_creates_transaction",
+            "description": "If a receipt assigned to this basic account should automatically create a transaction, this parameter should be true. NOTE: This will only work for manual accounts! </br></br> If specified, the field will be validated.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "body",
+            "name": "is_disabled_in_select",
+            "description": "If the basic account should be hidden in the dropdown of the basic accounts, this parameter should be true. </br></br> If specified, the field will be validated.",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "query successful",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_Success"
+            }
+          },
+          "401 (3)": {
+            "description": "API credentials unknown or invalid",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode3"
+            }
+          },
+          "401 (4)": {
+            "description": "customer not found or insufficient privileges",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode4"
+            }
+          },
+          "403 (11)": {
+            "description": "customer has no active status",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode11"
+            }
+          },
+          "400 (5)": {
+            "description": "no postingaccount_number specified",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode5"
+            }
+          },
+          "400 (6)": {
+            "description": "invalid postingaccount_number specified",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode6"
+            }
+          },
+          "400 (7)": {
+            "description": "account was not found",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode7"
+            }
+          },
+          "400 (8)": {
+            "description": "the account name must be 2 to 120 characters long",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode8"
+            }
+          },
+          "400 (9)": {
+            "description": "the specified name already exists",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode9"
+            }
+          },
+          "400 (10)": {
+            "description": "the account name may not be changed because the dropbox folder of the account is not empty",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode10"
+            }
+          },
+          "400 (12)": {
+            "description": "invalid name specified",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode12"
+            }
+          },
+          "400 (13)": {
+            "description": "invalid receipt_creates_transaction specified",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode13"
+            }
+          },
+          "400 (14)": {
+            "description": "receipt_creates_transaction is only allowed for manual accounts",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode14"
+            }
+          },
+          "400 (16)": {
+            "description": "invalid is_disabled_in_select specified",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode16"
+            }
+          },
+          "400 (17)": {
+            "description": "the account could not be validated",
+            "schema": {
+              "$ref": "#/definitions/AccountsUpdate_ErrorCode17"
+            }
+          },
+          "400 (23)": {
+            "description": "no post and files content received or declined",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode23"
+            }
+          },
+          "500 (0)": {
+            "description": "internal error",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode0"
+            }
+          },
+          "504 (30)": {
+            "description": "timeout",
+            "schema": {
+              "$ref": "#/definitions/Request_ErrorCode30"
             }
           }
         }
@@ -8688,7 +9691,9 @@
         "currency": {
           "type": "string",
           "description": "The transaction currency.<br/><br/>Currently we support the following currencies: AED, AUD, BGN, BRL, CAD, CHF, CNY, COP, CYP, CZK, DKK, EUR, GBP, HKD, HRK, HUF, IDR, ILS, INR, ISK, JPY, KRW, LTL, LVL, MTL, MXN, MYR, NOK, NZD, PEN, PHP, PLN, QAR, ROL, RON, RSD, RUB, SEK, SGD, SIT, SKK, THB, TRL, TRY, UAH, USD, VND, ZAR<br/><br/>If specified, the field will be validated.<br>An empty string is not considered a valid type.",
-          "enum": ["EUR"]
+          "enum": [
+            "EUR"
+          ]
         },
         "vat_rate": {
           "type": "number",
@@ -8720,7 +9725,14 @@
           "description": "If set, both receipts will be assigned to a transaction if one of them is assigned manually."
         }
       },
-      "required": ["type", "counterparty", "invoice_number", "date", "amount", "currency"],
+      "required": [
+        "type",
+        "counterparty",
+        "invoice_number",
+        "date",
+        "amount",
+        "currency"
+      ],
       "example": {
         "type": "invoice inbound",
         "counterparty": "Test GmBh",
@@ -8728,7 +9740,7 @@
         "date": "2022-01-01",
         "amount": 123.99,
         "currency": "EUR",
-        "vat_rate": 19.00,
+        "vat_rate": 19.0,
         "account": 1200,
         "creditor_debtor": 70001,
         "date_delivery": "2022-01-01",
@@ -9400,7 +10412,9 @@
             "e_invoice_type": {
               "type": "string",
               "enum": [
-                "0", "1", "2"
+                "0",
+                "1",
+                "2"
               ]
             },
             "list_direction": {
@@ -9424,7 +10438,8 @@
             "file_type": {
               "type": "string",
               "enum": [
-                "pdf", "xml"
+                "pdf",
+                "xml"
               ]
             },
             "date_delivery": {
@@ -10208,7 +11223,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "message": {
                 "type": "string"
@@ -11913,10 +12930,17 @@
         "currency": {
           "type": "string",
           "description": "The transaction currency.<br/><br/>Currently we support the following currencies: AED, AUD, BGN, BRL, CAD, CHF, CNY, COP, CYP, CZK, DKK, EUR, GBP, HKD, HRK, HUF, IDR, ILS, INR, ISK, JPY, KRW, LTL, LVL, MTL, MXN, MYR, NOK, NZD, PEN, PHP, PLN, QAR, ROL, RON, RSD, RUB, SEK, SGD, SIT, SKK, THB, TRL, TRY, UAH, USD, VND, ZAR<br/><br/>If specified, the field will be validated.<br>An empty string is not considered a valid type.",
-          "enum": ["EUR"]
+          "enum": [
+            "EUR"
+          ]
         }
       },
-      "required": ["account", "to_from", "amount", "booking_date"],
+      "required": [
+        "account",
+        "to_from",
+        "amount",
+        "booking_date"
+      ],
       "example": {
         "account": 1200,
         "to_from": "Name of payer/payee",
@@ -11926,7 +12950,7 @@
         "account_number": "DE1234567890",
         "bank_code": "DEUTDEFFXXX",
         "bank_name": "Deutsche Bank AG",
-        "purpose":"",
+        "purpose": "",
         "type": "direct debit",
         "booking_text": "booking text",
         "payment_reference": "rn_123",
@@ -11951,7 +12975,10 @@
           "description": "id_by_customer of the transaction."
         }
       },
-      "required": ["receipt_id_by_customer", "transaction_id_by_customer"],
+      "required": [
+        "receipt_id_by_customer",
+        "transaction_id_by_customer"
+      ],
       "example": {
         "transaction_id_by_customer": 1,
         "receipt_id_by_customer": 1
@@ -13229,7 +14256,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "message": {
                 "type": "string"
@@ -13734,7 +14763,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "message": {
                 "type": "string"
@@ -13957,6 +14988,170 @@
           "type": "string",
           "enum": [
             "invalid confirmed_only specified"
+          ]
+        }
+      }
+    },
+    "TransactionsDelete_Success": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Success boolean",
+          "enum": [
+            true
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "blank",
+          "enum": [
+            ""
+          ]
+        },
+        "id_by_customer": {
+          "type": "string",
+          "description": "blank",
+          "enum": [
+            "123"
+          ]
+        }
+      }
+    },
+    "TransactionsDelete_ErrorCode5": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            5
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid transaction_id_by_customer specified"
+          ]
+        }
+      }
+    },
+    "TransactionsDelete_ErrorCode6": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            6
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no transaction found"
+          ]
+        }
+      }
+    },
+    "TransactionsDelete_ErrorCode7": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            7
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no account found for transaction"
+          ]
+        }
+      }
+    },
+    "TransactionsDelete_ErrorCode8": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            8
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "transaction can´t be deleted - type of transaction does not allow deletion"
+          ]
+        }
+      }
+    },
+    "TransactionsDelete_ErrorCode9": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            9
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "transaction can´t be deleted - fixed postings exist"
+          ]
+        }
+      }
+    },
+    "TransactionsDelete_ErrorCode10": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            10
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "transaction can´t be deleted - transaction is already canceled or is a cancelation"
           ]
         }
       }
@@ -16544,6 +17739,253 @@
         }
       }
     },
+    "InvoicesInvoiceCorrectionCreate_Success": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Success boolean",
+          "enum": [
+            true
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "blank",
+          "enum": [
+            ""
+          ]
+        },
+        "id_by_customer": {
+          "type": "string",
+          "description": "The id_by_customer of the created invoice correction",
+          "enum": [
+            "123"
+          ]
+        },
+        "invoicenumber": {
+          "type": "string",
+          "description": "The invoice number of the created invoice correction",
+          "enum": [
+            "123"
+          ]
+        },
+        "filename": {
+          "type": "string",
+          "description": "Filename of the created invoice correction",
+          "enum": [
+            "file123"
+          ]
+        }
+      }
+    },
+    "InvoicesInvoiceCorrectionCreate_ErrorCode5": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            5
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid receipt_id_by_customer specified"
+          ]
+        }
+      }
+    },
+    "InvoicesInvoiceCorrectionCreate_ErrorCode6": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            6
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no receipt found"
+          ]
+        }
+      }
+    },
+    "InvoicesInvoiceCorrectionCreate_ErrorCode7": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            7
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "receipt is not an outbound invoice"
+          ]
+        }
+      }
+    },
+    "InvoicesInvoiceCorrectionCreate_ErrorCode8": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            8
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "receipt is deleted"
+          ]
+        }
+      }
+    },
+    "InvoicesInvoiceCorrectionCreate_ErrorCode9": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            9
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no invoice data found for the receipt"
+          ]
+        }
+      }
+    },
+    "InvoicesInvoiceCorrectionCreate_ErrorCode10": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            10
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no invoice data items found for the receipt"
+          ]
+        }
+      }
+    },
+    "InvoicesInvoiceCorrectionCreate_ErrorCode12": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            12
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "customer has reached the upload limit"
+          ]
+        }
+      }
+    },
+    "InvoicesInvoiceCorrectionCreate_ErrorCode13": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            13
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invoice correction data is invalid"
+          ]
+        }
+      }
+    },
+    "InvoicesInvoiceCorrectionCreate_ErrorCode14": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            14
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid invoicenumber specified"
+          ]
+        }
+      }
+    },
     "PostingsGet_Success": {
       "type": "object",
       "properties": {
@@ -16752,6 +18194,30 @@
                 "type": "string",
                 "enum": [
                   "654"
+                ]
+              },
+              "oss_country_origin": {
+                "type": "string",
+                "enum": [
+                  "FR"
+                ]
+              },
+              "oss_country_destination": {
+                "type": "string",
+                "enum": [
+                  "AT"
+                ]
+              },
+              "oss_revenue_type": {
+                "type": "string",
+                "enum": [
+                  "delivery"
+                ]
+              },
+              "oss_vat_rate_type": {
+                "type": "string",
+                "enum": [
+                  "standard"
                 ]
               }
             }
@@ -17189,9 +18655,37 @@
         "debtor": {
           "type": "integer",
           "example": 10000
+        },
+        "oss_origin_countries": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "DE"
+          }
+        },
+        "oss_destination_countries": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "FR"
+          }
+        },
+        "oss_vat_rates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "20.00"
+          }
         }
       },
-      "required": ["receipt_id_by_customer", "postingaccounts", "vats", "amounts", "creditor", "debtor"]
+      "required": [
+        "receipt_id_by_customer",
+        "postingaccounts",
+        "vats",
+        "amounts",
+        "creditor",
+        "debtor"
+      ]
     },
     "PostingsAddReceipt_Success": {
       "type": "object",
@@ -18218,7 +19712,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "message": {
                 "type": "string"
@@ -18315,9 +19811,37 @@
             "type": "integer",
             "example": 17
           }
+        },
+        "oss_origin_countries": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "DE"
+          }
+        },
+        "oss_destination_countries": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "FR"
+          }
+        },
+        "oss_vat_rates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "20.00"
+          }
         }
       },
-      "required": ["transaction_id_by_customer", "postingaccounts", "postingtexts", "vats", "amounts", "oi_receipts_ids_by_customer"]
+      "required": [
+        "transaction_id_by_customer",
+        "postingaccounts",
+        "postingtexts",
+        "vats",
+        "amounts",
+        "oi_receipts_ids_by_customer"
+      ]
     },
     "PostingsAddTransaction_Success": {
       "type": "object",
@@ -19884,7 +21408,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "message": {
                 "type": "string"
@@ -19956,9 +21482,28 @@
           "cost_location_two": {
             "type": "string",
             "example": "cost location two"
+          },
+          "oss_origin_country": {
+            "type": "string",
+            "example": "DE"
+          },
+          "oss_destination_country": {
+            "type": "string",
+            "example": "FR"
+          },
+          "oss_vat_rate": {
+            "type": "string",
+            "example": "20.00"
           }
         },
-        "required": ["date", "postingtext", "vat", "amounts", "postingaccount_debit", "postingaccount_credit"]
+        "required": [
+          "date",
+          "postingtext",
+          "vat",
+          "amounts",
+          "postingaccount_debit",
+          "postingaccount_credit"
+        ]
       }
     },
     "PostingsAddFree_Success": {
@@ -20779,7 +22324,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "message": {
                 "type": "string"
@@ -22299,7 +23846,7 @@
           "type": "string",
           "description": "The zip of your new debtor account.<br /><br />If specified, the field will be validated."
         },
-        "city":{
+        "city": {
           "type": "string",
           "description": "The city of your new debtor account.<br /><br />If specified, the field will be validated."
         },
@@ -22320,7 +23867,9 @@
           "description": "The bic of your new debtor account.<br /><br />If specified, the field will be validated."
         }
       },
-      "required": ["name"]
+      "required": [
+        "name"
+      ]
     },
     "SettingsAddDebitor_Success": {
       "type": "object",
@@ -22825,7 +24374,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "postingaccount_number": {
                 "type": "string"
@@ -22897,7 +24448,7 @@
           "type": "string",
           "description": "The zip of your new creditor account.<br /><br />If specified, the field will be validated."
         },
-        "city":{
+        "city": {
           "type": "string",
           "description": "The city of your new creditor account.<br /><br />If specified, the field will be validated."
         },
@@ -22922,7 +24473,9 @@
           "description": "The due in days of your new creditor account.<br /><br />If specified, the field will be validated."
         }
       },
-      "required": ["name"]
+      "required": [
+        "name"
+      ]
     },
     "SettingsAddCreditor_Success": {
       "type": "object",
@@ -23427,7 +24980,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "postingaccount_number": {
                 "type": "string"
@@ -24810,6 +26365,668 @@
         }
       }
     },
+    "SettingsDeleteDebtor_Success": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Success boolean",
+          "enum": [
+            true
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "blank",
+          "enum": [
+            ""
+          ]
+        }
+      }
+    },
+    "SettingsDeleteDebtor_ErrorCode0": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            0
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "error while processing the request"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteDebtor_ErrorCode3": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            3
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "API credentials unknown or invalid"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteDebtor_ErrorCode4": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            4
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "customer not found or insufficient privileges"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteDebtor_ErrorCode5": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            5
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid settings type specified"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteDebtor_ErrorCode6": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            6
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "wrong debtor account postingaccount_number specified"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteDebtor_ErrorCode7": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            7
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no debtor found for specified postingaccount_number"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteDebtor_ErrorCode8": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            8
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "debtor may not be deleted because postings exist"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteDebtor_ErrorCode11": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            11
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "customer has no active status"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteDebtor_ErrorCode30": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            30
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "a timeout occurred while processing the request"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_Success": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Success boolean",
+          "enum": [
+            true
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "blank",
+          "enum": [
+            ""
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_ErrorCode0": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            0
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "error while processing the request"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_ErrorCode3": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            3
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "API credentials unknown or invalid"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_ErrorCode4": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            4
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "customer not found or insufficient privileges"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_ErrorCode5": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            5
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid settings type specified"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_ErrorCode6": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            6
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "wrong creditor account postingaccount_number specified"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_ErrorCode7": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            7
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no creditor found for specified postingaccount_number"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_ErrorCode8": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            8
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "creditor may not be deleted because postings exist"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_ErrorCode11": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            11
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "customer has no active status"
+          ]
+        }
+      }
+    },
+    "SettingsDeleteCreditor_ErrorCode30": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            30
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "a timeout occurred while processing the request"
+          ]
+        }
+      }
+    },
+    "SettingsDeletePostingaccount_Success": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Success boolean",
+          "enum": [
+            true
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "blank",
+          "enum": [
+            ""
+          ]
+        },
+        "postingaccount_number": {
+          "type": "string",
+          "description": "The postingaccount_number of the deleted postingaccount",
+          "enum": [
+            "7001"
+          ]
+        }
+      }
+    },
+    "SettingsDeletePostingaccount_ErrorCode5": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            5
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid settings type specified"
+          ]
+        }
+      }
+    },
+    "SettingsDeletePostingaccount_ErrorCode6": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            6
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no postingaccount_number specified"
+          ]
+        }
+      }
+    },
+    "SettingsDeletePostingaccount_ErrorCode7": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            7
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid postingaccount_number specified"
+          ]
+        }
+      }
+    },
+    "SettingsDeletePostingaccount_ErrorCode8": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            8
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "postingaccount was not found"
+          ]
+        }
+      }
+    },
+    "SettingsDeletePostingaccount_ErrorCode9": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            9
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "postingaccount may not be deleted because it is a standard postingaccount"
+          ]
+        }
+      }
+    },
+    "SettingsDeletePostingaccount_ErrorCode10": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            10
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "postingaccount may not be deleted because postings exist"
+          ]
+        }
+      }
+    },
+    "SettingsDeletePostingaccount_ErrorCode12": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            12
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "postingaccount may not be deleted because assets exist"
+          ]
+        }
+      }
+    },
+    "SettingsDeletePostingaccount_ErrorCode13": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            13
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "postingaccount may not be deleted"
+          ]
+        }
+      }
+    },
     "SettingsAddPostingaccount_Success": {
       "type": "object",
       "properties": {
@@ -25764,6 +27981,12 @@
                 "enum": [
                   "My parent postingaccount"
                 ]
+              },
+              "standard_chart": {
+                "type": "string",
+                "enum": [
+                  "The standard chart"
+                ]
               }
             }
           }
@@ -26667,6 +28890,449 @@
           "type": "string",
           "enum": [
             "invalid is_revision_safe specified"
+          ]
+        }
+      }
+    },
+    "AccountsDelete_Success": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Success boolean",
+          "enum": [
+            true
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "blank",
+          "enum": [
+            ""
+          ]
+        },
+        "postingaccount_number": {
+          "type": "string",
+          "description": "The postingaccount_number of the deleted account",
+          "enum": [
+            "1200"
+          ]
+        }
+      }
+    },
+    "AccountsDelete_ErrorCode5": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            5
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no postingaccount_number specified"
+          ]
+        }
+      }
+    },
+    "AccountsDelete_ErrorCode6": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            6
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid postingaccount_number specified"
+          ]
+        }
+      }
+    },
+    "AccountsDelete_ErrorCode7": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            7
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "account was not found"
+          ]
+        }
+      }
+    },
+    "AccountsDelete_ErrorCode8": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            8
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "account may not be deleted because confirmed postings exist"
+          ]
+        }
+      }
+    },
+    "AccountsDelete_ErrorCode9": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            9
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "account may not be deleted because revision safe transactions exist"
+          ]
+        }
+      }
+    },
+    "AccountsDelete_ErrorCode10": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            10
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "account may not be deleted"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_Success": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Success boolean",
+          "enum": [
+            true
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "blank",
+          "enum": [
+            ""
+          ]
+        },
+        "postingaccount_number": {
+          "type": "string",
+          "description": "The postingaccount_number of the updated account",
+          "enum": [
+            "1200"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode5": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            5
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no postingaccount_number specified"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode6": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            6
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid postingaccount_number specified"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode7": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            7
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "account was not found"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode8": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            8
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the account name must be 2 to 120 characters long"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode9": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            9
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the specified name already exists"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode10": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            10
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the account name may not be changed because the dropbox folder of the account is not empty"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode12": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            12
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid name specified"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode13": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            13
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid receipt_creates_transaction specified"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode14": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            14
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "receipt_creates_transaction is only allowed for manual accounts"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode16": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            16
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "invalid is_disabled_in_select specified"
+          ]
+        }
+      }
+    },
+    "AccountsUpdate_ErrorCode17": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            17
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the account could not be validated"
           ]
         }
       }
@@ -28007,6 +30673,627 @@
           "type": "string",
           "enum": [
             "postingaccount was not found"
+          ]
+        }
+      }
+    },
+    "PostingsAddReceipt_ErrorCode47": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            47
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "a vat rate is required for the specified vat option"
+          ]
+        }
+      }
+    },
+    "PostingsAddReceipt_ErrorCode48": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            48
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the specified vat rate does not exist in the destination country on the delivery date"
+          ]
+        }
+      }
+    },
+    "PostingsAddReceipt_ErrorCode49": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            49
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "country of origin and country of destination are required for the specified vat option"
+          ]
+        }
+      }
+    },
+    "PostingsAddReceipt_ErrorCode50": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            50
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop"
+          ]
+        }
+      }
+    },
+    "PostingsAddReceipt_ErrorCode51": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            51
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the country \"%country%\" is outside the EU and is not permitted for an OSS posting"
+          ]
+        }
+      }
+    },
+    "PostingsAddTransaction_ErrorCode47": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            47
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "a vat rate is required for the specified vat option"
+          ]
+        }
+      }
+    },
+    "PostingsAddTransaction_ErrorCode48": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            48
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the specified vat rate does not exist in the destination country on the delivery date"
+          ]
+        }
+      }
+    },
+    "PostingsAddTransaction_ErrorCode49": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            49
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "country of origin and country of destination are required for the specified vat option"
+          ]
+        }
+      }
+    },
+    "PostingsAddTransaction_ErrorCode50": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            50
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop"
+          ]
+        }
+      }
+    },
+    "PostingsAddTransaction_ErrorCode51": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            51
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the country \"%country%\" is outside the EU and is not permitted for an OSS posting"
+          ]
+        }
+      }
+    },
+    "PostingsAddFree_ErrorCode47": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            47
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "a vat rate is required for the specified vat option"
+          ]
+        }
+      }
+    },
+    "PostingsAddFree_ErrorCode48": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            48
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the specified vat rate does not exist in the destination country on the delivery date"
+          ]
+        }
+      }
+    },
+    "PostingsAddFree_ErrorCode49": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            49
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "country of origin and country of destination are required for the specified vat option"
+          ]
+        }
+      }
+    },
+    "PostingsAddFree_ErrorCode50": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            50
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop"
+          ]
+        }
+      }
+    },
+    "PostingsAddFree_ErrorCode51": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            51
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the country \"%country%\" is outside the EU and is not permitted for an OSS posting"
+          ]
+        }
+      }
+    },
+    "PostingsAddReceipt_ErrorCode52": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            52
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured"
+          ]
+        }
+      }
+    },
+    "PostingsAddTransaction_ErrorCode52": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            52
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured"
+          ]
+        }
+      }
+    },
+    "PostingsAddFree_ErrorCode52": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            52
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured"
+          ]
+        }
+      }
+    },
+    "PostingsAddReceipt_ErrorCode53": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            53
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported"
+          ]
+        }
+      }
+    },
+    "PostingsAddTransaction_ErrorCode53": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            53
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported"
+          ]
+        }
+      }
+    },
+    "PostingsAddFree_ErrorCode53": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            53
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported"
+          ]
+        }
+      }
+    },
+    "PostingsAddReceipt_ErrorCode54": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            54
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the country \"%country%\" is not configured as a country of dispatch"
+          ]
+        }
+      }
+    },
+    "PostingsAddReceipt_ErrorCode55": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            55
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the country \"%country%\" is not configured as a destination country"
+          ]
+        }
+      }
+    },
+    "PostingsAddTransaction_ErrorCode54": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            54
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the country \"%country%\" is not configured as a country of dispatch"
+          ]
+        }
+      }
+    },
+    "PostingsAddTransaction_ErrorCode55": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            55
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the country \"%country%\" is not configured as a destination country"
+          ]
+        }
+      }
+    },
+    "PostingsAddFree_ErrorCode54": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            54
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the country \"%country%\" is not configured as a country of dispatch"
+          ]
+        }
+      }
+    },
+    "PostingsAddFree_ErrorCode55": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error_code": {
+          "type": "integer",
+          "enum": [
+            55
+          ]
+        },
+        "message": {
+          "type": "string",
+          "enum": [
+            "the country \"%country%\" is not configured as a destination country"
           ]
         }
       }

@@ -4,12 +4,12 @@
 //
 // Quelle: BuchhaltungsButler API, info.version 1.9.1.
 //
-// Diese Datei ist die maschinelle Wahrheit über den UMFANG der API: 54 Pfade mit
-// zusammen 371 Body-Parametern. Sie ist ausdrücklich KEIN Auslieferungsschema. Die
+// Diese Datei ist die maschinelle Wahrheit über den UMFANG der API: 61 Pfade mit
+// zusammen 398 Body-Parametern. Sie ist ausdrücklich KEIN Auslieferungsschema. Die
 // Spezifikation ist handgepflegt und nachweislich fehlerhaft; ihre Fehler sind hier sichtbar
 // gemacht statt geglättet:
 //
-//   - itemsMissing: 32 Array-Parameter führen kein `items`, darunter alle parallelen Arrays.
+//   - itemsMissing: 38 Array-Parameter führen kein `items`, darunter alle parallelen Arrays.
 //   - schema:      9 Parameter führen `schema` statt `type`; ihr Elementaufbau ist hier aufgelöst.
 //   - valuesFromText: aus dem Fließtext gelesener VORSCHLAG. Die Spezifikation führt keinen
 //     einzigen Parameter-`enum`; ein zu enges Enum lehnt gültige Vorgänge vor dem Netzaufruf ab.
@@ -2029,6 +2029,48 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
     ]
   },
   {
+    "path": "/transactions/delete",
+    "summary": "delete a transaction",
+    "description": "Delete a transaction for a specified customer account by id_by_customer. You can get the “id_by_customer” by using the “/transactions/get method” first.\n\nPlease note: for transactions in a revision safe account the transaction is not deleted, but a cancelation transaction (STORNO) is created instead. Transactions with fixed postings can not be deleted.",
+    "parameters": [
+      {
+        "name": "api_key",
+        "specType": "string",
+        "required": true,
+        "description": "The api key registered for the customer to manage.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "transaction_id_by_customer",
+        "specType": "integer",
+        "required": true,
+        "description": "The id_by_customer of the transaction to delete.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      }
+    ],
+    "successDefinition": "TransactionsDelete_Success",
+    "successShape": "ack",
+    "successFields": [
+      {
+        "name": "success",
+        "specType": "boolean",
+        "container": "envelope"
+      },
+      {
+        "name": "message",
+        "specType": "string",
+        "container": "envelope"
+      },
+      {
+        "name": "id_by_customer",
+        "specType": "string",
+        "container": "envelope"
+      }
+    ]
+  },
+  {
     "path": "/invoices/create",
     "summary": "create invoice",
     "description": "Add an invoice for the specified customer.",
@@ -2982,6 +3024,66 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
     ]
   },
   {
+    "path": "/invoices/invoice_correction/create",
+    "summary": "create invoice correction",
+    "description": "Create an invoice correction (“Rechnungskorrektur”) for an already existing outbound invoice of the specified customer. You can get the “id_by_customer” of the original invoice by using the “/receipts/get” method first.\n\nThe correction is created as a new outbound invoice that takes over all data of the original invoice, but with negated item prices and item names prefixed with “Gutschrift”. Its invoice number is generated from the customer's invoice number settings unless an “invoicenumber” is specified, its date is the current date and its correspondence text references the original invoice.",
+    "parameters": [
+      {
+        "name": "api_key",
+        "specType": "string",
+        "required": true,
+        "description": "The api key registered for the customer to manage.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "receipt_id_by_customer",
+        "specType": "integer",
+        "required": true,
+        "description": "The id_by_customer of the outbound invoice to correct.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "invoicenumber",
+        "specType": "string",
+        "required": false,
+        "description": "The invoicenumber for the invoice correction. If not specified, the default BHB number will be created.\n\nIf specified, the field will be validated.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      }
+    ],
+    "successDefinition": "InvoicesInvoiceCorrectionCreate_Success",
+    "successShape": "ack",
+    "successFields": [
+      {
+        "name": "success",
+        "specType": "boolean",
+        "container": "envelope"
+      },
+      {
+        "name": "message",
+        "specType": "string",
+        "container": "envelope"
+      },
+      {
+        "name": "id_by_customer",
+        "specType": "string",
+        "container": "envelope"
+      },
+      {
+        "name": "invoicenumber",
+        "specType": "string",
+        "container": "envelope"
+      },
+      {
+        "name": "filename",
+        "specType": "string",
+        "container": "envelope"
+      }
+    ]
+  },
+  {
     "path": "/postings/get",
     "summary": "get postings",
     "description": "Get postings for a specified customer account. The response includes the number of returned rows and an array of postings data. NOTE: Each request is limited to 1000 postings!",
@@ -3263,6 +3365,26 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
         "name": "transaction_id_by_customer",
         "specType": "string",
         "container": "data"
+      },
+      {
+        "name": "oss_country_origin",
+        "specType": "string",
+        "container": "data"
+      },
+      {
+        "name": "oss_country_destination",
+        "specType": "string",
+        "container": "data"
+      },
+      {
+        "name": "oss_revenue_type",
+        "specType": "string",
+        "container": "data"
+      },
+      {
+        "name": "oss_vat_rate_type",
+        "specType": "string",
+        "container": "data"
       }
     ]
   },
@@ -3307,7 +3429,7 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
         "name": "vats",
         "specType": "array",
         "required": true,
-        "description": "An array of vats.\n\nUsage:\n\"vats\" : ['vat of posting 1', 'vat of posting 2'].\n\nPossible vats:\n- 0_none ('keine Ust.')\n- 19_vat ('19% Ust.')\n- 7_vat ('7% Ust.')\n- 19_pre ('19% Vst.')\n- 7_pre ('7% Vst.')\n- 19_both_1 ('§13b 19% USt./VSt.')\n- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')\n- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')\n- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')\n- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')\n- 19_both_2 ('I.g.E. 19% USt./VSt.')\n- 7_both ('I.g.E. 7% USt./VSt.')\n- 19_both_1_no_pre ('§13b 19/16% USt.')\n- 19_both_2_no_pre ('i.g.E. 19/16% USt.')\n- 7_both_no_pre ('i.g.E. 7/5% USt.')\n- 19_pre_app ('19/16% Aufz. VSt.')\n- 7_pre_app ('7/5% Aufz. VSt.')\n- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.')\n- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)')\n- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')\n- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')",
+        "description": "An array of vats.\n\nUsage:\n\"vats\" : ['vat of posting 1', 'vat of posting 2'].\n\nPossible vats:\n- 0_none ('keine Ust.')\n- 19_vat ('19% Ust.')\n- 7_vat ('7% Ust.')\n- 19_pre ('19% Vst.')\n- 7_pre ('7% Vst.')\n- 19_both_1 ('§13b 19% USt./VSt.')\n- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')\n- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')\n- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')\n- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')\n- 19_both_2 ('I.g.E. 19% USt./VSt.')\n- 7_both ('I.g.E. 7% USt./VSt.')\n- 19_both_1_no_pre ('§13b 19/16% USt.')\n- 19_both_2_no_pre ('i.g.E. 19/16% USt.')\n- 7_both_no_pre ('i.g.E. 7/5% USt.')\n- 19_pre_app ('19/16% Aufz. VSt.')\n- 7_pre_app ('7/5% Aufz. VSt.')\n- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.')\n- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)')\n- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')\n- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')\n- vat_oss_deli_deeu ('OSS - Lieferung D -> EU')\n- vat_oss_deli_eueu ('OSS - Lieferung EU -> EU')\n- vat_oss_serv_deeu ('OSS - Leistung D -> EU')\n- vat_oss_serv_eueu ('OSS - Leistung EU -> EU')\n- vat_oss_deli_eude ('OSS - Lieferung EU -> D')\n- vat_oss_deli_eude_19 ('OSS - Lieferung EU -> D 19%')\n\nThe OSS options are only available once OSS is activated for the customer. Each of them expects the OSS parameters of this endpoint: oss_origin_countries and oss_destination_countries are required, and oss_vat_rates carries the rate the posting was made at. The single exception is vat_oss_deli_eude_19, which carries a fixed rate of 19% and disregards a supplied one.",
         "valuesFromText": [
           "0_none",
           "19_vat",
@@ -3331,7 +3453,13 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
           "19_both_app_506",
           "19_both_app_511",
           "19_both_app_2",
-          "7_both_app"
+          "7_both_app",
+          "vat_oss_deli_deeu",
+          "vat_oss_deli_eueu",
+          "vat_oss_serv_deeu",
+          "vat_oss_serv_eueu",
+          "vat_oss_deli_eude",
+          "vat_oss_deli_eude_19"
         ],
         "itemsMissing": true
       },
@@ -3374,6 +3502,30 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
         "description": "The number of the debtor.\n\nIMPORTANT: The field is only required, if you are posting to an outgoing invoice and if debtor posting is activated.\n\nIf specified, the field will be validated.",
         "valuesFromText": [],
         "itemsMissing": false
+      },
+      {
+        "name": "oss_origin_countries",
+        "specType": "array",
+        "required": false,
+        "description": "An array of the OSS countries of origin, as ISO 3166-1 alpha-2 codes, plus XI for Northern Ireland.\n\nUsage:\n\"oss_origin_countries\" : ['DE', null].\n\nOnly evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+        "valuesFromText": [],
+        "itemsMissing": true
+      },
+      {
+        "name": "oss_destination_countries",
+        "specType": "array",
+        "required": false,
+        "description": "An array of the OSS countries of destination, as ISO 3166-1 alpha-2 codes, plus XI for Northern Ireland.\n\nUsage:\n\"oss_destination_countries\" : ['FR', null].\n\nOnly evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+        "valuesFromText": [],
+        "itemsMissing": true
+      },
+      {
+        "name": "oss_vat_rates",
+        "specType": "array",
+        "required": false,
+        "description": "An array of the vat rates the postings were made at.\n\nUsage:\n\"oss_vat_rates\" : ['20.00', null].\n\nOnly evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+        "valuesFromText": [],
+        "itemsMissing": true
       }
     ],
     "successDefinition": "PostingsAddReceipt_Success",
@@ -3496,6 +3648,30 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
               "description": "",
               "itemsMissing": false,
               "valuesFromText": []
+            },
+            {
+              "name": "oss_origin_countries",
+              "specType": "array",
+              "required": false,
+              "description": "",
+              "itemsMissing": false,
+              "valuesFromText": []
+            },
+            {
+              "name": "oss_destination_countries",
+              "specType": "array",
+              "required": false,
+              "description": "",
+              "itemsMissing": false,
+              "valuesFromText": []
+            },
+            {
+              "name": "oss_vat_rates",
+              "specType": "array",
+              "required": false,
+              "description": "",
+              "itemsMissing": false,
+              "valuesFromText": []
             }
           ],
           "requiredWithoutProperty": []
@@ -3563,7 +3739,7 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
         "name": "vats",
         "specType": "array",
         "required": true,
-        "description": "An array of vats.\n\nUsage:\n\"vats\" : ['vat of posting 1', 'vat of posting 2'].\n\nPossible vats:\n- 0_none ('keine Ust.')\n- 19_vat ('19% Ust.')\n- 7_vat ('7% Ust.')\n- 19_pre ('19% Vst.')\n- 7_pre ('7% Vst.')\n- 19_both_1 ('§13b 19% USt./VSt.')\n- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')\n- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')\n- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')\n- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')\n- 19_both_2 ('I.g.E. 19% USt./VSt.')\n- 7_both ('I.g.E. 7% USt./VSt.')\n- 19_both_1_no_pre ('§13b 19/16% USt.')\n- 19_both_2_no_pre ('i.g.E. 19/16% USt.')\n- 7_both_no_pre ('i.g.E. 7/5% USt.')\n- 19_pre_app ('19/16% Aufz. VSt.')\n- 7_pre_app ('7/5% Aufz. VSt.')\n- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.')\n- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)')\n- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')\n- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')",
+        "description": "An array of vats.\n\nUsage:\n\"vats\" : ['vat of posting 1', 'vat of posting 2'].\n\nPossible vats:\n- 0_none ('keine Ust.')\n- 19_vat ('19% Ust.')\n- 7_vat ('7% Ust.')\n- 19_pre ('19% Vst.')\n- 7_pre ('7% Vst.')\n- 19_both_1 ('§13b 19% USt./VSt.')\n- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')\n- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')\n- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')\n- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')\n- 19_both_2 ('I.g.E. 19% USt./VSt.')\n- 7_both ('I.g.E. 7% USt./VSt.')\n- 19_both_1_no_pre ('§13b 19/16% USt.')\n- 19_both_2_no_pre ('i.g.E. 19/16% USt.')\n- 7_both_no_pre ('i.g.E. 7/5% USt.')\n- 19_pre_app ('19/16% Aufz. VSt.')\n- 7_pre_app ('7/5% Aufz. VSt.')\n- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.')\n- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)')\n- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')\n- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')\n- vat_oss_deli_deeu ('OSS - Lieferung D -> EU')\n- vat_oss_deli_eueu ('OSS - Lieferung EU -> EU')\n- vat_oss_serv_deeu ('OSS - Leistung D -> EU')\n- vat_oss_serv_eueu ('OSS - Leistung EU -> EU')\n- vat_oss_deli_eude ('OSS - Lieferung EU -> D')\n- vat_oss_deli_eude_19 ('OSS - Lieferung EU -> D 19%')\n\nThe OSS options are only available once OSS is activated for the customer. Each of them expects the OSS parameters of this endpoint: oss_origin_countries and oss_destination_countries are required, and oss_vat_rates carries the rate the posting was made at. The single exception is vat_oss_deli_eude_19, which carries a fixed rate of 19% and disregards a supplied one.",
         "valuesFromText": [
           "0_none",
           "19_vat",
@@ -3587,7 +3763,13 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
           "19_both_app_506",
           "19_both_app_511",
           "19_both_app_2",
-          "7_both_app"
+          "7_both_app",
+          "vat_oss_deli_deeu",
+          "vat_oss_deli_eueu",
+          "vat_oss_serv_deeu",
+          "vat_oss_serv_eueu",
+          "vat_oss_deli_eude",
+          "vat_oss_deli_eude_19"
         ],
         "itemsMissing": true
       },
@@ -3620,6 +3802,30 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
         "specType": "array",
         "required": true,
         "description": "An array of \"open item\" receipts ids_by_customer .\n\nUsage:\n\"oi_receipts_ids_by_customer\" : ['id_by_customer of the receipt for posting 1', null ]\n\nThe receipts specified will be assigned directly to the respective postings. A null value within the array means explicitly assigning no receipt to the partial posting in that position.\n\nIMPORTANT: The field is only required, if OI postings are activated in customers account.",
+        "valuesFromText": [],
+        "itemsMissing": true
+      },
+      {
+        "name": "oss_origin_countries",
+        "specType": "array",
+        "required": false,
+        "description": "An array of the OSS countries of origin, as ISO 3166-1 alpha-2 codes, plus XI for Northern Ireland.\n\nUsage:\n\"oss_origin_countries\" : ['DE', null].\n\nOnly evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+        "valuesFromText": [],
+        "itemsMissing": true
+      },
+      {
+        "name": "oss_destination_countries",
+        "specType": "array",
+        "required": false,
+        "description": "An array of the OSS countries of destination, as ISO 3166-1 alpha-2 codes, plus XI for Northern Ireland.\n\nUsage:\n\"oss_destination_countries\" : ['FR', null].\n\nOnly evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
+        "valuesFromText": [],
+        "itemsMissing": true
+      },
+      {
+        "name": "oss_vat_rates",
+        "specType": "array",
+        "required": false,
+        "description": "An array of the vat rates the postings were made at.\n\nUsage:\n\"oss_vat_rates\" : ['20.00', null].\n\nOnly evaluated for OSS vat options; a value beside any other vat option is discarded. Send null or an empty string for every posting line that is not an OSS case.",
         "valuesFromText": [],
         "itemsMissing": true
       }
@@ -3736,6 +3942,30 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
               "description": "",
               "itemsMissing": false,
               "valuesFromText": []
+            },
+            {
+              "name": "oss_origin_countries",
+              "specType": "array",
+              "required": false,
+              "description": "",
+              "itemsMissing": false,
+              "valuesFromText": []
+            },
+            {
+              "name": "oss_destination_countries",
+              "specType": "array",
+              "required": false,
+              "description": "",
+              "itemsMissing": false,
+              "valuesFromText": []
+            },
+            {
+              "name": "oss_vat_rates",
+              "specType": "array",
+              "required": false,
+              "description": "",
+              "itemsMissing": false,
+              "valuesFromText": []
             }
           ],
           "requiredWithoutProperty": []
@@ -3819,7 +4049,7 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
         "name": "vat",
         "specType": "string",
         "required": true,
-        "description": "The vat rate of the posting.\n\nPossible vats:\n- 0_none ('keine Ust.')\n- 19_vat ('19% Ust.')\n- 7_vat ('7% Ust.')\n- 19_pre ('19% Vst.')\n- 7_pre ('7% Vst.')\n- 19_both_1 ('§13b 19% USt./VSt.')\n- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')\n- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')\n- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')\n- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')\n- 19_both_2 ('I.g.E. 19% USt./VSt.')\n- 7_both ('I.g.E. 7% USt./VSt.')\n- 19_both_1_no_pre ('§13b 19/16% USt.')\n- 19_both_2_no_pre ('i.g.E. 19/16% USt.')\n- 7_both_no_pre ('i.g.E. 7/5% USt.')\n- 19_pre_app ('19/16% Aufz. VSt.')\n- 7_pre_app ('7/5% Aufz. VSt.')\n- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.')\n- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)')\n- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')\n- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')",
+        "description": "The vat rate of the posting.\n\nPossible vats:\n- 0_none ('keine Ust.')\n- 19_vat ('19% Ust.')\n- 7_vat ('7% Ust.')\n- 19_pre ('19% Vst.')\n- 7_pre ('7% Vst.')\n- 19_both_1 ('§13b 19% USt./VSt.')\n- 19_both_506 ('§13b 19% USt./VSt. (EU §13b Abs. 1)')\n- 19_both_6506 ('§13b 19% USt. (EU §13b Abs. 1, ohne VSt.)')\n- 19_both_511 ('§13b 19% USt./VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_6511 ('§13b 19% USt. (Drittland §13b Abs. 2 Nr. 1, ohne VSt.)')\n- 19_both_6501 ('§13b 19/16% USt. (ohne VSt.)')\n- 19_both_2 ('I.g.E. 19% USt./VSt.')\n- 7_both ('I.g.E. 7% USt./VSt.')\n- 19_both_1_no_pre ('§13b 19/16% USt.')\n- 19_both_2_no_pre ('i.g.E. 19/16% USt.')\n- 7_both_no_pre ('i.g.E. 7/5% USt.')\n- 19_pre_app ('19/16% Aufz. VSt.')\n- 7_pre_app ('7/5% Aufz. VSt.')\n- 19_both_app_1 ('§13b 19/16% USt./Aufz. VSt.')\n- 19_both_app_506 ('§13b 19/16% USt./Aufz. VSt. (EU §13b Abs. 1)')\n- 19_both_app_511 ('§13b 19/16% USt./Aufz. VSt. (Drittland §13b Abs. 2 Nr. 1)')\n- 19_both_app_2 ('i.g.E. 19/16% USt./Aufz. VSt.')\n- 7_both_app ('i.g.E. 7/5% USt./Aufz. VSt.')\n- vat_oss_deli_deeu ('OSS - Lieferung D -> EU')\n- vat_oss_deli_eueu ('OSS - Lieferung EU -> EU')\n- vat_oss_serv_deeu ('OSS - Leistung D -> EU')\n- vat_oss_serv_eueu ('OSS - Leistung EU -> EU')\n- vat_oss_deli_eude ('OSS - Lieferung EU -> D')\n- vat_oss_deli_eude_19 ('OSS - Lieferung EU -> D 19%')\n\nThe OSS options are only available once OSS is activated for the customer. Each of them expects the OSS parameters of this endpoint: oss_origin_country and oss_destination_country are required, and oss_vat_rate carries the rate the posting was made at. The single exception is vat_oss_deli_eude_19, which carries a fixed rate of 19% and disregards a supplied one.",
         "valuesFromText": [
           "0_none",
           "19_vat",
@@ -3843,7 +4073,13 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
           "19_both_app_506",
           "19_both_app_511",
           "19_both_app_2",
-          "7_both_app"
+          "7_both_app",
+          "vat_oss_deli_deeu",
+          "vat_oss_deli_eueu",
+          "vat_oss_serv_deeu",
+          "vat_oss_serv_eueu",
+          "vat_oss_deli_eude",
+          "vat_oss_deli_eude_19"
         ],
         "itemsMissing": false
       },
@@ -3860,6 +4096,30 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
         "specType": "string",
         "required": false,
         "description": "The cost location two number.\n\nIf specified, field will be validated.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "oss_origin_country",
+        "specType": "string",
+        "required": false,
+        "description": "The OSS country of origin, as an ISO 3166-1 alpha-2 code, or XI for Northern Ireland. Only evaluated for OSS vat options.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "oss_destination_country",
+        "specType": "string",
+        "required": false,
+        "description": "The OSS country of destination, as an ISO 3166-1 alpha-2 code, or XI for Northern Ireland. Only evaluated for OSS vat options.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "oss_vat_rate",
+        "specType": "string",
+        "required": false,
+        "description": "The vat rate the posting was made at. Only evaluated for OSS vat options.",
         "valuesFromText": [],
         "itemsMissing": false
       }
@@ -3970,6 +4230,30 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
             },
             {
               "name": "cost_location_two",
+              "specType": "string",
+              "required": false,
+              "description": "",
+              "itemsMissing": false,
+              "valuesFromText": []
+            },
+            {
+              "name": "oss_origin_country",
+              "specType": "string",
+              "required": false,
+              "description": "",
+              "itemsMissing": false,
+              "valuesFromText": []
+            },
+            {
+              "name": "oss_destination_country",
+              "specType": "string",
+              "required": false,
+              "description": "",
+              "itemsMissing": false,
+              "valuesFromText": []
+            },
+            {
+              "name": "oss_vat_rate",
               "specType": "string",
               "required": false,
               "description": "",
@@ -5228,6 +5512,11 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
         "name": "parent_name",
         "specType": "string",
         "container": "data"
+      },
+      {
+        "name": "standard_chart",
+        "specType": "string",
+        "container": "data"
       }
     ]
   },
@@ -5708,6 +5997,122 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
     ]
   },
   {
+    "path": "/settings/delete/debtor",
+    "summary": "delete debtor",
+    "description": "Delete a debtor account.\n\nThe debtor account can only be deleted if no postings exist for it.",
+    "parameters": [
+      {
+        "name": "api_key",
+        "specType": "string",
+        "required": true,
+        "description": "The api key registered for the customer to manage",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "postingaccount_number",
+        "specType": "integer",
+        "required": true,
+        "description": "The postingaccount_number of the debtor account to delete",
+        "valuesFromText": [],
+        "itemsMissing": false
+      }
+    ],
+    "successDefinition": "SettingsDeleteDebtor_Success",
+    "successShape": "ack",
+    "successFields": [
+      {
+        "name": "success",
+        "specType": "boolean",
+        "container": "envelope"
+      },
+      {
+        "name": "message",
+        "specType": "string",
+        "container": "envelope"
+      }
+    ]
+  },
+  {
+    "path": "/settings/delete/creditor",
+    "summary": "delete creditor",
+    "description": "Delete a creditor account.\n\nThe creditor account can only be deleted if no postings exist for it.",
+    "parameters": [
+      {
+        "name": "api_key",
+        "specType": "string",
+        "required": true,
+        "description": "The api key registered for the customer to manage",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "postingaccount_number",
+        "specType": "integer",
+        "required": true,
+        "description": "The postingaccount_number of the creditor account to delete",
+        "valuesFromText": [],
+        "itemsMissing": false
+      }
+    ],
+    "successDefinition": "SettingsDeleteCreditor_Success",
+    "successShape": "ack",
+    "successFields": [
+      {
+        "name": "success",
+        "specType": "boolean",
+        "container": "envelope"
+      },
+      {
+        "name": "message",
+        "specType": "string",
+        "container": "envelope"
+      }
+    ]
+  },
+  {
+    "path": "/settings/delete/postingaccount",
+    "summary": "delete postingaccount",
+    "description": "Delete a postingaccount. Only postingaccounts that were added or edited manually can be deleted, and only if there are no postings and no assets on them. If the postingaccount is a manually edited standard postingaccount, only its name is reset to the default value.",
+    "parameters": [
+      {
+        "name": "api_key",
+        "specType": "string",
+        "required": true,
+        "description": "The api key registered for the customer to manage.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "postingaccount_number",
+        "specType": "integer",
+        "required": true,
+        "description": "The postingaccount_number of the postingaccount to delete.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      }
+    ],
+    "successDefinition": "SettingsDeletePostingaccount_Success",
+    "successShape": "ack",
+    "successFields": [
+      {
+        "name": "success",
+        "specType": "boolean",
+        "container": "envelope"
+      },
+      {
+        "name": "message",
+        "specType": "string",
+        "container": "envelope"
+      },
+      {
+        "name": "postingaccount_number",
+        "specType": "string",
+        "container": "envelope"
+      }
+    ]
+  },
+  {
     "path": "/accounts/get",
     "summary": "get all the accounts",
     "description": "Get all the accounts",
@@ -5817,6 +6222,114 @@ export const ENDPOINTS: readonly GeneratedEndpoint[] = [
       }
     ],
     "successDefinition": "AccountsAdd_Success",
+    "successShape": "ack",
+    "successFields": [
+      {
+        "name": "success",
+        "specType": "boolean",
+        "container": "envelope"
+      },
+      {
+        "name": "message",
+        "specType": "string",
+        "container": "envelope"
+      },
+      {
+        "name": "postingaccount_number",
+        "specType": "string",
+        "container": "envelope"
+      }
+    ]
+  },
+  {
+    "path": "/accounts/delete",
+    "summary": "delete a basic account",
+    "description": "Delete a basic account. The account can only be deleted if it does not contain confirmed postings and no revision safe transactions.",
+    "parameters": [
+      {
+        "name": "api_key",
+        "specType": "string",
+        "required": true,
+        "description": "The api key registered for the customer to manage.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "postingaccount_number",
+        "specType": "integer",
+        "required": true,
+        "description": "The postingaccount_number of the basic account to delete.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      }
+    ],
+    "successDefinition": "AccountsDelete_Success",
+    "successShape": "ack",
+    "successFields": [
+      {
+        "name": "success",
+        "specType": "boolean",
+        "container": "envelope"
+      },
+      {
+        "name": "message",
+        "specType": "string",
+        "container": "envelope"
+      },
+      {
+        "name": "postingaccount_number",
+        "specType": "string",
+        "container": "envelope"
+      }
+    ]
+  },
+  {
+    "path": "/accounts/update",
+    "summary": "update a basic account",
+    "description": "Update a basic account. The account is identified by its postingaccount_number, which itself can not be changed.\n\nAll other parameters are optional: fields which are not submitted keep their current value.\n\nNOTE: is_revision_safe can not be changed via the api.",
+    "parameters": [
+      {
+        "name": "api_key",
+        "specType": "string",
+        "required": true,
+        "description": "The api key registered for the customer to manage.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "postingaccount_number",
+        "specType": "integer",
+        "required": true,
+        "description": "The postingaccount_number of the basic account to update. The postingaccount_number itself can not be changed.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "name",
+        "specType": "string",
+        "required": false,
+        "description": "The new name of the basic account.\n\nIf specified, the field will be validated.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "receipt_creates_transaction",
+        "specType": "boolean",
+        "required": false,
+        "description": "If a receipt assigned to this basic account should automatically create a transaction, this parameter should be true. NOTE: This will only work for manual accounts!\n\nIf specified, the field will be validated.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      },
+      {
+        "name": "is_disabled_in_select",
+        "specType": "boolean",
+        "required": false,
+        "description": "If the basic account should be hidden in the dropdown of the basic accounts, this parameter should be true.\n\nIf specified, the field will be validated.",
+        "valuesFromText": [],
+        "itemsMissing": false
+      }
+    ],
+    "successDefinition": "AccountsUpdate_Success",
     "successShape": "ack",
     "successFields": [
       {

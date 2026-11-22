@@ -4,11 +4,11 @@
 //
 // Quelle: BuchhaltungsButler API, info.version 1.9.1.
 //
-// 786 Paare (Pfad, error_code) über 54 Pfade. Bei 179 Paaren weichen
+// 899 Paare (Pfad, error_code) über 61 Pfade. Bei 203 Paaren weichen
 // `message` und `summary` voneinander ab; die Zahl ist ein Driftanzeiger und wird von
 // test/unit/generated.test.ts festgehalten.
 //
-// Verteilung der Klassen: config 168, input 397, transient 118, final 95, special 8.
+// Verteilung der Klassen: config 189, input 447, transient 132, final 123, special 8.
 //
 // ZWEI REGELN FÜR JEDEN, DER DIESEN KATALOG LIEST:
 //   1. Kein Text aus dieser Datei wird als Wortlaut der API ausgegeben. Zitiert wird das
@@ -1410,6 +1410,75 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "cls": "transient"
     }
   },
+  "/transactions/delete": {
+    "0": {
+      "status": 500,
+      "message": "error while processing the request",
+      "summary": "internal error",
+      "cls": "transient"
+    },
+    "3": {
+      "status": 401,
+      "message": "API credentials unknown or invalid",
+      "summary": "API credentials unknown or invalid",
+      "cls": "config"
+    },
+    "4": {
+      "status": 401,
+      "message": "customer not found or invalid api client for customer or insufficient privileges",
+      "summary": "customer not found or insufficient privileges",
+      "cls": "config"
+    },
+    "5": {
+      "status": 400,
+      "message": "invalid transaction_id_by_customer specified",
+      "summary": "invalid transaction_id_by_customer specified",
+      "cls": "input",
+      "field": "transaction_id_by_customer"
+    },
+    "6": {
+      "status": 400,
+      "message": "no transaction found",
+      "summary": "transaction not found",
+      "cls": "input"
+    },
+    "7": {
+      "status": 400,
+      "message": "no account found for transaction",
+      "summary": "account of the transaction not found",
+      "cls": "input"
+    },
+    "8": {
+      "status": 400,
+      "message": "transaction can´t be deleted - type of transaction does not allow deletion",
+      "summary": "type of the transaction does not allow deletion",
+      "cls": "final"
+    },
+    "9": {
+      "status": 400,
+      "message": "transaction can´t be deleted - fixed postings exist",
+      "summary": "transaction can not be deleted, because fixed postings exist",
+      "cls": "final"
+    },
+    "10": {
+      "status": 400,
+      "message": "transaction can´t be deleted - transaction is already canceled or is a cancelation",
+      "summary": "transaction is already canceled or is a cancelation",
+      "cls": "final"
+    },
+    "11": {
+      "status": 403,
+      "message": "customer has no active status",
+      "summary": "customer has no active status",
+      "cls": "config"
+    },
+    "30": {
+      "status": 504,
+      "message": "a timeout occurred while processing the request",
+      "summary": "timeout",
+      "cls": "transient"
+    }
+  },
   "/invoices/create": {
     "0": {
       "status": 500,
@@ -2141,6 +2210,94 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "field": "language"
     }
   },
+  "/invoices/invoice_correction/create": {
+    "0": {
+      "status": 500,
+      "message": "error while processing the request",
+      "summary": "internal error",
+      "cls": "transient"
+    },
+    "3": {
+      "status": 401,
+      "message": "API credentials unknown or invalid",
+      "summary": "API credentials unknown or invalid",
+      "cls": "config"
+    },
+    "4": {
+      "status": 401,
+      "message": "customer not found or invalid api client for customer or insufficient privileges",
+      "summary": "customer not found or insufficient privileges",
+      "cls": "config"
+    },
+    "5": {
+      "status": 400,
+      "message": "invalid receipt_id_by_customer specified",
+      "summary": "invalid receipt_id_by_customer specified",
+      "cls": "input",
+      "field": "receipt_id_by_customer"
+    },
+    "6": {
+      "status": 400,
+      "message": "no receipt found",
+      "summary": "no receipt found",
+      "cls": "input"
+    },
+    "7": {
+      "status": 400,
+      "message": "receipt is not an outbound invoice",
+      "summary": "receipt is not an outbound invoice",
+      "cls": "input"
+    },
+    "8": {
+      "status": 400,
+      "message": "receipt is deleted",
+      "summary": "receipt is deleted",
+      "cls": "final"
+    },
+    "9": {
+      "status": 400,
+      "message": "no invoice data found for the receipt",
+      "summary": "no invoice data found for the receipt",
+      "cls": "input"
+    },
+    "10": {
+      "status": 400,
+      "message": "no invoice data items found for the receipt",
+      "summary": "no invoice data items found for the receipt",
+      "cls": "input"
+    },
+    "11": {
+      "status": 403,
+      "message": "customer has no active status",
+      "summary": "customer has no active status",
+      "cls": "config"
+    },
+    "12": {
+      "status": 403,
+      "message": "customer has reached the upload limit",
+      "summary": "customer has reached the upload limit",
+      "cls": "final"
+    },
+    "13": {
+      "status": 400,
+      "message": "invoice correction data is invalid",
+      "summary": "invoice correction data is invalid",
+      "cls": "input"
+    },
+    "14": {
+      "status": 400,
+      "message": "invalid invoicenumber specified",
+      "summary": "invalid invoicenumber specified",
+      "cls": "input",
+      "field": "invoicenumber"
+    },
+    "30": {
+      "status": 504,
+      "message": "a timeout occurred while processing the request",
+      "summary": "timeout",
+      "cls": "transient"
+    }
+  },
   "/postings/get": {
     "0": {
       "status": 500,
@@ -2507,6 +2664,60 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "message": "invalid or not existing parameters",
       "summary": "invalid or not existing parameters",
       "cls": "input"
+    },
+    "47": {
+      "status": 400,
+      "message": "a vat rate is required for the specified vat option",
+      "summary": "a vat rate is required for the specified vat option",
+      "cls": "input"
+    },
+    "48": {
+      "status": 400,
+      "message": "the specified vat rate does not exist in the destination country on the delivery date",
+      "summary": "the specified vat rate does not exist in the destination country on the delivery date",
+      "cls": "final"
+    },
+    "49": {
+      "status": 400,
+      "message": "country of origin and country of destination are required for the specified vat option",
+      "summary": "country of origin and country of destination are required for the specified vat option",
+      "cls": "input"
+    },
+    "50": {
+      "status": 400,
+      "message": "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop",
+      "summary": "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop",
+      "cls": "input"
+    },
+    "51": {
+      "status": 400,
+      "message": "the country \"%country%\" is outside the EU and is not permitted for an OSS posting",
+      "summary": "the country \"%country%\" is outside the EU and is not permitted for an OSS posting",
+      "cls": "input"
+    },
+    "52": {
+      "status": 400,
+      "message": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+      "summary": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+      "cls": "final"
+    },
+    "53": {
+      "status": 400,
+      "message": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
+      "summary": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
+      "cls": "final"
+    },
+    "54": {
+      "status": 400,
+      "message": "the country \"%country%\" is not configured as a country of dispatch",
+      "summary": "the country \"%country%\" is not configured as a country of dispatch",
+      "cls": "input"
+    },
+    "55": {
+      "status": 400,
+      "message": "the country \"%country%\" is not configured as a destination country",
+      "summary": "the country \"%country%\" is not configured as a destination country",
+      "cls": "input"
     }
   },
   "/postings/add-batch/receipts": {
@@ -2732,6 +2943,60 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "status": 400,
       "message": "invalid or not existing parameters",
       "summary": "invalid or not existing parameters",
+      "cls": "input"
+    },
+    "47": {
+      "status": 400,
+      "message": "a vat rate is required for the specified vat option",
+      "summary": "a vat rate is required for the specified vat option",
+      "cls": "input"
+    },
+    "48": {
+      "status": 400,
+      "message": "the specified vat rate does not exist in the destination country on the delivery date",
+      "summary": "the specified vat rate does not exist in the destination country on the delivery date",
+      "cls": "final"
+    },
+    "49": {
+      "status": 400,
+      "message": "country of origin and country of destination are required for the specified vat option",
+      "summary": "country of origin and country of destination are required for the specified vat option",
+      "cls": "input"
+    },
+    "50": {
+      "status": 400,
+      "message": "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop",
+      "summary": "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop",
+      "cls": "input"
+    },
+    "51": {
+      "status": 400,
+      "message": "the country \"%country%\" is outside the EU and is not permitted for an OSS posting",
+      "summary": "the country \"%country%\" is outside the EU and is not permitted for an OSS posting",
+      "cls": "input"
+    },
+    "52": {
+      "status": 400,
+      "message": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+      "summary": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+      "cls": "final"
+    },
+    "53": {
+      "status": 400,
+      "message": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
+      "summary": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
+      "cls": "final"
+    },
+    "54": {
+      "status": 400,
+      "message": "the country \"%country%\" is not configured as a country of dispatch",
+      "summary": "the country \"%country%\" is not configured as a country of dispatch",
+      "cls": "input"
+    },
+    "55": {
+      "status": 400,
+      "message": "the country \"%country%\" is not configured as a destination country",
+      "summary": "the country \"%country%\" is not configured as a destination country",
       "cls": "input"
     }
   },
@@ -2986,6 +3251,60 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "status": 400,
       "message": "the cost location two must consist of alphanumeric characters or be a number greater than 0",
       "summary": "the cost location two must consist of alphanumeric characters or be a number greater than 0",
+      "cls": "input"
+    },
+    "47": {
+      "status": 400,
+      "message": "a vat rate is required for the specified vat option",
+      "summary": "a vat rate is required for the specified vat option",
+      "cls": "input"
+    },
+    "48": {
+      "status": 400,
+      "message": "the specified vat rate does not exist in the destination country on the delivery date",
+      "summary": "the specified vat rate does not exist in the destination country on the delivery date",
+      "cls": "final"
+    },
+    "49": {
+      "status": 400,
+      "message": "country of origin and country of destination are required for the specified vat option",
+      "summary": "country of origin and country of destination are required for the specified vat option",
+      "cls": "input"
+    },
+    "50": {
+      "status": 400,
+      "message": "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop",
+      "summary": "country of origin and country of destination are identical (\"%country%\"); a sale within the country of dispatch is taxable there and is not reported via the One-Stop-Shop",
+      "cls": "input"
+    },
+    "51": {
+      "status": 400,
+      "message": "the country \"%country%\" is outside the EU and is not permitted for an OSS posting",
+      "summary": "the country \"%country%\" is outside the EU and is not permitted for an OSS posting",
+      "cls": "input"
+    },
+    "52": {
+      "status": 400,
+      "message": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+      "summary": "the One-Stop-Shop is not available for this customer; it has to be activated in the tax settings, with a vat identity configured",
+      "cls": "final"
+    },
+    "53": {
+      "status": 400,
+      "message": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
+      "summary": "no vat identification number and no tax number are configured for the country of dispatch (\"%country%\"), so the posting could not be reported",
+      "cls": "final"
+    },
+    "54": {
+      "status": 400,
+      "message": "the country \"%country%\" is not configured as a country of dispatch",
+      "summary": "the country \"%country%\" is not configured as a country of dispatch",
+      "cls": "input"
+    },
+    "55": {
+      "status": 400,
+      "message": "the country \"%country%\" is not configured as a destination country",
+      "summary": "the country \"%country%\" is not configured as a destination country",
       "cls": "input"
     }
   },
@@ -4340,6 +4659,206 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "cls": "transient"
     }
   },
+  "/settings/delete/debtor": {
+    "0": {
+      "status": 500,
+      "message": "error while processing the request",
+      "summary": "internal error",
+      "cls": "transient"
+    },
+    "3": {
+      "status": 401,
+      "message": "API credentials unknown or invalid",
+      "summary": "API credentials unknown or invalid",
+      "cls": "config"
+    },
+    "4": {
+      "status": 401,
+      "message": "customer not found or insufficient privileges",
+      "summary": "customer not found or insufficient privileges",
+      "cls": "config"
+    },
+    "5": {
+      "status": 400,
+      "message": "invalid settings type specified",
+      "summary": "invalid settings type specified",
+      "cls": "input"
+    },
+    "6": {
+      "status": 400,
+      "message": "wrong debtor account postingaccount_number specified",
+      "summary": "wrong debtor account postingaccount_number specified",
+      "cls": "input"
+    },
+    "7": {
+      "status": 400,
+      "message": "no debtor found for specified postingaccount_number",
+      "summary": "no debtor found for specified postingaccount_number",
+      "cls": "input"
+    },
+    "8": {
+      "status": 400,
+      "message": "debtor may not be deleted because postings exist",
+      "summary": "debtor may not be deleted because postings exist",
+      "cls": "final"
+    },
+    "11": {
+      "status": 403,
+      "message": "customer has no active status",
+      "summary": "customer has no active status",
+      "cls": "config"
+    },
+    "30": {
+      "status": 504,
+      "message": "a timeout occurred while processing the request",
+      "summary": "timeout",
+      "cls": "transient"
+    }
+  },
+  "/settings/delete/creditor": {
+    "0": {
+      "status": 500,
+      "message": "error while processing the request",
+      "summary": "internal error",
+      "cls": "transient"
+    },
+    "3": {
+      "status": 401,
+      "message": "API credentials unknown or invalid",
+      "summary": "API credentials unknown or invalid",
+      "cls": "config"
+    },
+    "4": {
+      "status": 401,
+      "message": "customer not found or insufficient privileges",
+      "summary": "customer not found or insufficient privileges",
+      "cls": "config"
+    },
+    "5": {
+      "status": 400,
+      "message": "invalid settings type specified",
+      "summary": "invalid settings type specified",
+      "cls": "input"
+    },
+    "6": {
+      "status": 400,
+      "message": "wrong creditor account postingaccount_number specified",
+      "summary": "wrong creditor account postingaccount_number specified",
+      "cls": "input"
+    },
+    "7": {
+      "status": 400,
+      "message": "no creditor found for specified postingaccount_number",
+      "summary": "no creditor found for specified postingaccount_number",
+      "cls": "input"
+    },
+    "8": {
+      "status": 400,
+      "message": "creditor may not be deleted because postings exist",
+      "summary": "creditor may not be deleted because postings exist",
+      "cls": "final"
+    },
+    "11": {
+      "status": 403,
+      "message": "customer has no active status",
+      "summary": "customer has no active status",
+      "cls": "config"
+    },
+    "30": {
+      "status": 504,
+      "message": "a timeout occurred while processing the request",
+      "summary": "timeout",
+      "cls": "transient"
+    }
+  },
+  "/settings/delete/postingaccount": {
+    "0": {
+      "status": 500,
+      "message": "error while processing the request",
+      "summary": "internal error",
+      "cls": "transient"
+    },
+    "3": {
+      "status": 401,
+      "message": "API credentials unknown or invalid",
+      "summary": "API credentials unknown or invalid",
+      "cls": "config"
+    },
+    "4": {
+      "status": 401,
+      "message": "customer not found or invalid api client for customer or insufficient privileges",
+      "summary": "customer not found or insufficient privileges",
+      "cls": "config"
+    },
+    "5": {
+      "status": 400,
+      "message": "invalid settings type specified",
+      "summary": "invalid settings type specified",
+      "cls": "input"
+    },
+    "6": {
+      "status": 400,
+      "message": "no postingaccount_number specified",
+      "summary": "no postingaccount_number specified",
+      "cls": "input",
+      "field": "postingaccount_number"
+    },
+    "7": {
+      "status": 400,
+      "message": "invalid postingaccount_number specified",
+      "summary": "invalid postingaccount_number specified",
+      "cls": "input",
+      "field": "postingaccount_number"
+    },
+    "8": {
+      "status": 400,
+      "message": "postingaccount was not found",
+      "summary": "postingaccount was not found",
+      "cls": "final"
+    },
+    "9": {
+      "status": 400,
+      "message": "postingaccount may not be deleted because it is a standard postingaccount",
+      "summary": "postingaccount may not be deleted because it is a standard postingaccount",
+      "cls": "final"
+    },
+    "10": {
+      "status": 400,
+      "message": "postingaccount may not be deleted because postings exist",
+      "summary": "postingaccount may not be deleted because postings exist",
+      "cls": "final"
+    },
+    "11": {
+      "status": 403,
+      "message": "customer has no active status",
+      "summary": "customer has no active status",
+      "cls": "config"
+    },
+    "12": {
+      "status": 400,
+      "message": "postingaccount may not be deleted because assets exist",
+      "summary": "postingaccount may not be deleted because assets exist",
+      "cls": "final"
+    },
+    "13": {
+      "status": 400,
+      "message": "postingaccount may not be deleted",
+      "summary": "postingaccount may not be deleted",
+      "cls": "final"
+    },
+    "23": {
+      "status": 400,
+      "message": "no post and files content received or declined",
+      "summary": "no post and files content received or declined",
+      "cls": "input"
+    },
+    "30": {
+      "status": 504,
+      "message": "a timeout occurred while processing the request",
+      "summary": "timeout",
+      "cls": "transient"
+    }
+  },
   "/accounts/get": {
     "0": {
       "status": 500,
@@ -4482,6 +5001,191 @@ export const ERRORS: Record<string, Record<number, ErrorEntry>> = {
       "summary": "invalid is_revision_safe specified",
       "cls": "input",
       "field": "is_revision_safe"
+    },
+    "30": {
+      "status": 504,
+      "message": "a timeout occurred while processing the request",
+      "summary": "timeout",
+      "cls": "transient"
+    }
+  },
+  "/accounts/delete": {
+    "0": {
+      "status": 500,
+      "message": "error while processing the request",
+      "summary": "internal error",
+      "cls": "transient"
+    },
+    "3": {
+      "status": 401,
+      "message": "API credentials unknown or invalid",
+      "summary": "API credentials unknown or invalid",
+      "cls": "config"
+    },
+    "4": {
+      "status": 401,
+      "message": "customer not found or invalid api client for customer or insufficient privileges",
+      "summary": "customer not found or insufficient privileges",
+      "cls": "config"
+    },
+    "5": {
+      "status": 400,
+      "message": "no postingaccount_number specified",
+      "summary": "no postingaccount_number specified",
+      "cls": "input",
+      "field": "postingaccount_number"
+    },
+    "6": {
+      "status": 400,
+      "message": "invalid postingaccount_number specified",
+      "summary": "invalid postingaccount_number specified",
+      "cls": "input",
+      "field": "postingaccount_number"
+    },
+    "7": {
+      "status": 400,
+      "message": "account was not found",
+      "summary": "account was not found",
+      "cls": "final"
+    },
+    "8": {
+      "status": 400,
+      "message": "account may not be deleted because confirmed postings exist",
+      "summary": "account may not be deleted because confirmed postings exist",
+      "cls": "final"
+    },
+    "9": {
+      "status": 400,
+      "message": "account may not be deleted because revision safe transactions exist",
+      "summary": "account may not be deleted because revision safe transactions exist",
+      "cls": "final"
+    },
+    "10": {
+      "status": 400,
+      "message": "account may not be deleted",
+      "summary": "account may not be deleted",
+      "cls": "final"
+    },
+    "11": {
+      "status": 403,
+      "message": "customer has no active status",
+      "summary": "customer has no active status",
+      "cls": "config"
+    },
+    "23": {
+      "status": 400,
+      "message": "no post and files content received or declined",
+      "summary": "no post and files content received or declined",
+      "cls": "input"
+    },
+    "30": {
+      "status": 504,
+      "message": "a timeout occurred while processing the request",
+      "summary": "timeout",
+      "cls": "transient"
+    }
+  },
+  "/accounts/update": {
+    "0": {
+      "status": 500,
+      "message": "error while processing the request",
+      "summary": "internal error",
+      "cls": "transient"
+    },
+    "3": {
+      "status": 401,
+      "message": "API credentials unknown or invalid",
+      "summary": "API credentials unknown or invalid",
+      "cls": "config"
+    },
+    "4": {
+      "status": 401,
+      "message": "customer not found or invalid api client for customer or insufficient privileges",
+      "summary": "customer not found or insufficient privileges",
+      "cls": "config"
+    },
+    "5": {
+      "status": 400,
+      "message": "no postingaccount_number specified",
+      "summary": "no postingaccount_number specified",
+      "cls": "input",
+      "field": "postingaccount_number"
+    },
+    "6": {
+      "status": 400,
+      "message": "invalid postingaccount_number specified",
+      "summary": "invalid postingaccount_number specified",
+      "cls": "input",
+      "field": "postingaccount_number"
+    },
+    "7": {
+      "status": 400,
+      "message": "account was not found",
+      "summary": "account was not found",
+      "cls": "final"
+    },
+    "8": {
+      "status": 400,
+      "message": "the account name must be 2 to 120 characters long",
+      "summary": "the account name must be 2 to 120 characters long",
+      "cls": "input"
+    },
+    "9": {
+      "status": 400,
+      "message": "the specified name already exists",
+      "summary": "the specified name already exists",
+      "cls": "final"
+    },
+    "10": {
+      "status": 400,
+      "message": "the account name may not be changed because the dropbox folder of the account is not empty",
+      "summary": "the account name may not be changed because the dropbox folder of the account is not empty",
+      "cls": "input"
+    },
+    "11": {
+      "status": 403,
+      "message": "customer has no active status",
+      "summary": "customer has no active status",
+      "cls": "config"
+    },
+    "12": {
+      "status": 400,
+      "message": "invalid name specified",
+      "summary": "invalid name specified",
+      "cls": "input",
+      "field": "name"
+    },
+    "13": {
+      "status": 400,
+      "message": "invalid receipt_creates_transaction specified",
+      "summary": "invalid receipt_creates_transaction specified",
+      "cls": "input",
+      "field": "receipt_creates_transaction"
+    },
+    "14": {
+      "status": 400,
+      "message": "receipt_creates_transaction is only allowed for manual accounts",
+      "summary": "receipt_creates_transaction is only allowed for manual accounts",
+      "cls": "input"
+    },
+    "16": {
+      "status": 400,
+      "message": "invalid is_disabled_in_select specified",
+      "summary": "invalid is_disabled_in_select specified",
+      "cls": "input",
+      "field": "is_disabled_in_select"
+    },
+    "17": {
+      "status": 400,
+      "message": "the account could not be validated",
+      "summary": "the account could not be validated",
+      "cls": "final"
+    },
+    "23": {
+      "status": 400,
+      "message": "no post and files content received or declined",
+      "summary": "no post and files content received or declined",
+      "cls": "input"
     },
     "30": {
       "status": 504,

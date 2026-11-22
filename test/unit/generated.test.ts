@@ -7,16 +7,16 @@ import { ENDPOINTS, ENDPOINTS_BY_PATH } from "../../src/generated/endpoints.js";
 import { ERRORS } from "../../src/generated/errors.js";
 import { PACKAGE_NAME, SERVER_INFO, VERSION } from "../../src/generated/version.js";
 
-// Prüfgrößen, keine Zierde. Jede dieser Zahlen ist am 2026-09-12 maschinell
+// Prüfgrößen, keine Zierde. Jede dieser Zahlen ist am 2026-11-22 maschinell
 // gegen docs/openapi/buchhaltungsbutler-v1.json ausgezählt. Ändert sich eine, hat sich die
 // Spezifikationsdatei geändert — und dann ist das eine Entscheidung und kein Nebenbefund:
 // Der Test schlägt fehl, die Zahl wird bewusst nachgezogen, und die Änderung steht im Diff.
-const PATH_COUNT = 54;
-const PARAMETER_COUNT = 371;
-const ARRAYS_WITHOUT_ITEMS = 32;
+const PATH_COUNT = 61;
+const PARAMETER_COUNT = 398;
+const ARRAYS_WITHOUT_ITEMS = 38;
 const PARAMETERS_WITH_SCHEMA = 9;
-const ERROR_PAIR_COUNT = 786;
-const MISMATCHED_MESSAGE_PAIRS = 179;
+const ERROR_PAIR_COUNT = 899;
+const MISMATCHED_MESSAGE_PAIRS = 203;
 
 // Die vier Pfade mit dem Platzhaltersegment id_by_customer. Sie stehen im Generat und im
 // Fehlerkatalog UNVERÄNDERT; der Pfadbau geschieht erst zur Laufzeit.
@@ -28,18 +28,18 @@ const PLACEHOLDER_PATHS = [
 ];
 
 describe("src/generated/endpoints.ts", () => {
-  it("führt genau 54 Pfade, jeden genau einmal", () => {
+  it("führt genau 61 Pfade, jeden genau einmal", () => {
     expect(ENDPOINTS).toHaveLength(PATH_COUNT);
     expect(new Set(ENDPOINTS.map((endpoint) => endpoint.path)).size).toBe(PATH_COUNT);
     expect(ENDPOINTS_BY_PATH.size).toBe(PATH_COUNT);
   });
 
-  it("führt genau 371 Body-Parameter, davon 54 mal api_key", () => {
+  it("führt genau 398 Body-Parameter, davon 61 mal api_key", () => {
     const allParams = ENDPOINTS.flatMap((endpoint) => endpoint.parameters);
     expect(allParams).toHaveLength(PARAMETER_COUNT);
     expect(allParams.filter((parameter) => parameter.name === "api_key")).toHaveLength(PATH_COUNT);
-    // 371 minus 54 sind die 317 fachlichen Parameter.
-    expect(allParams.length - PATH_COUNT).toBe(317);
+    // 398 minus 61 sind die 337 fachlichen Parameter.
+    expect(allParams.length - PATH_COUNT).toBe(337);
   });
 
   it("nennt keinen Parameter eines Pfades zweimal", () => {
@@ -49,7 +49,7 @@ describe("src/generated/endpoints.ts", () => {
     }
   });
 
-  it("markiert die 32 Array-Parameter ohne items", () => {
+  it("markiert die 38 Array-Parameter ohne items", () => {
     const flagged = ENDPOINTS.flatMap((endpoint) =>
       endpoint.parameters.filter((parameter) => parameter.itemsMissing),
     );
@@ -118,7 +118,7 @@ describe("src/generated/errors.ts", () => {
     Object.entries(entriesByCode).map(([code, entry]) => ({ path, code: Number(code), entry })),
   );
 
-  it("führt genau 786 Paare (Pfad, error_code) über 54 Pfade", () => {
+  it("führt genau 899 Paare (Pfad, error_code) über 61 Pfade", () => {
     expect(Object.keys(ERRORS)).toHaveLength(PATH_COUNT);
     expect(pairs).toHaveLength(ERROR_PAIR_COUNT);
   });
@@ -140,7 +140,7 @@ describe("src/generated/errors.ts", () => {
     }
   });
 
-  it("hält die Zahl der abweichenden Meldungspaare auf 179", () => {
+  it("hält die Zahl der abweichenden Meldungspaare auf 203", () => {
     // message stammt aus properties.message.enum[0], summary aus responses[…].description.
     // Keiner der beiden Texte ist aus dem anderen abgeleitet; weicht die Zahl ab, hat sich
     // die Spezifikationsdatei geändert.
