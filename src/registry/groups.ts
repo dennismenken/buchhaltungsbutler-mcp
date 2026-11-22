@@ -52,57 +52,57 @@ export const TOOL_GROUPS = {
   postings: {
     label: "Buchungen",
     withoutIt: "Buchungen suchen, anlegen, stornieren und Belege an Buchungen binden",
-    measuredTokens: 12_213,
+    measuredTokens: 12_092,
   },
   receipts: {
     label: "Belege",
     withoutIt: "Belege suchen, hochladen, anlegen, löschen und wiederherstellen",
-    measuredTokens: 8_529,
+    measuredTokens: 8_474,
   },
   transactions: {
     label: "Zahlungen",
     withoutIt: "Zahlungen suchen und anlegen sowie Belege an Zahlungen binden",
-    measuredTokens: 6_661,
+    measuredTokens: 6_606,
   },
   invoices: {
     label: "Ausgangsrechnungen",
     withoutIt: "Ausgangsrechnungen, Entwürfe und E-Rechnungen schreiben",
-    measuredTokens: 5_766,
+    measuredTokens: 5_733,
   },
   creditors: {
     label: "Kreditoren",
     withoutIt: "Lieferanten nachschlagen, anlegen und ändern",
-    measuredTokens: 3_341,
+    measuredTokens: 3_161,
   },
   reports: {
     label: "Berichte",
     withoutIt: "BWA, Summen- und Saldenliste und Kontenblatt erzeugen und abholen",
-    measuredTokens: 3_799,
+    measuredTokens: 3_777,
   },
   debtors: {
     label: "Debitoren",
     withoutIt: "Kunden nachschlagen, anlegen und ändern",
-    measuredTokens: 3_198,
+    measuredTokens: 3_018,
   },
   postingaccounts: {
     label: "Sachkonten",
     withoutIt: "Sachkonten des Kontenrahmens nachschlagen, anlegen und ändern",
-    measuredTokens: 1_877,
+    measuredTokens: 1_825,
   },
   cost_locations: {
     label: "Kostenstellen",
     withoutIt: "Kostenstellen nachschlagen, anlegen, ändern und löschen",
-    measuredTokens: 1_839,
+    measuredTokens: 1_806,
   },
   payment_accounts: {
     label: "Zahlungskonten",
     withoutIt: "Zahlungskonten auflisten und anlegen",
-    measuredTokens: 1_142,
+    measuredTokens: 1_131,
   },
   comments: {
     label: "Kommentare",
     withoutIt: "einen Kommentar an einen Beleg oder eine Zahlung hängen",
-    measuredTokens: 599,
+    measuredTokens: 588,
   },
   bundles: {
     label: "Bündelwerkzeuge",

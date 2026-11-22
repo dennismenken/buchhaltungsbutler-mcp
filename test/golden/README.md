@@ -83,6 +83,9 @@ auch im Betrieb, und nur er beantwortet die Frage, die der Test stellen will.
 | `receipts-add-ack.json` | Schreibantwort mit `id_by_customer` **auf oberster Ebene** (`container: "none"`) |
 | `invoices-create-success.json` | Schreibantwort mit drei Feldern auf oberster Ebene; kein Weg zurück |
 | `reports-create-bwa-ack.json` | Anschlusshinweis aus 7.6, erste Zeile |
+| `debtors-update-success.json` | Schreibantwort der Form `object`: Datensatz unter `data` in der API-Antwort, unter `changed` in der Antwort dieses Servers; das `outputSchema` verlangt `data` nicht |
+| `creditors-update-success.json` | dasselbe beim Kreditor |
+| `postingaccounts-update-success.json` | dasselbe beim Sachkonto |
 | `reports-get-bwa-with-files.json` | Base64 in `files.pdf` und `files.csv` → nie im Textblock |
 | `receipts-get-error-400-15-catalog.json` | 400/15 mit dem Katalogtext `invalid sort field specified` |
 | `receipts-get-error-400-15-live.json` | 400/15 mit dem live gemessenen Text `invalid field specified` (Befund L6 in `docs/api/live-befunde.md`) |

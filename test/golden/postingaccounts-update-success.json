@@ -1,0 +1,16 @@
+{
+  "_herkunft": "Endpunkt /settings/update/postingaccount | dokumentiert | Quelle: Spezifikation SettingsUpdatePostingaccount_Success (success, message, data mit name und postingaccount_number) | Struktur dokumentiert, Geschäftsdaten erfunden",
+  "_zweck": "die Schreibantwort der Form object beim Sachkonto: Datensatz unter changed, kein Pflichtfeld data im outputSchema",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "data": {
+      "name": "Erfundenes Sachkonto",
+      "postingaccount_number": "4999"
+    }
+  }
+}

@@ -37,7 +37,12 @@ import { mapResponse } from "../../src/mapping/response.js";
 import { TOOL_BY_NAME } from "../../src/registry/index.generated.js";
 import type { ToolEntry } from "../../src/registry/types.js";
 import { buildToolResponse } from "../../src/response/build.js";
-import { buildOutputSchema } from "../../src/response/output-schema.js";
+import {
+  buildOutputSchema,
+  LIST_CONTAINER,
+  OBJECT_CONTAINER,
+  writeRecordKey,
+} from "../../src/response/output-schema.js";
 import { specPathOf } from "../../src/schema/build.js";
 import { installTestConfig, resetTestConfig } from "../helpers/mock-api.js";
 import { goldenNames, loadGolden } from "../golden/index.js";
@@ -256,6 +261,21 @@ const SUCCESS_CASES: Readonly<Record<string, SuccessCase>> = {
     tool: "bb_reports_create_bwa",
     args: { date_from: "2026-01-01", date_to: "2026-01-31" },
   },
+  // Die drei Schreibwerkzeuge der Form `object`. Ihre API-Antwort trägt `data`, die Antwort
+  // dieses Servers nicht: Bis 0.1.2 verlangte das Ausgabeschema `data` trotzdem, und jeder
+  // validierende Client verwarf die erfolgreiche Änderung als Fehler.
+  "debtors-update-success": {
+    tool: "bb_debtors_update",
+    args: { postingaccount_number: 10001, name: "Erfundene Kundin GmbH", city: "Musterstadt" },
+  },
+  "creditors-update-success": {
+    tool: "bb_creditors_update",
+    args: { postingaccount_number: 70001, name: "Erfundene Lieferantin GmbH" },
+  },
+  "postingaccounts-update-success": {
+    tool: "bb_postingaccounts_update",
+    args: { postingaccount_number: "4999", name: "Erfundenes Sachkonto" },
+  },
 };
 
 const ERROR_CASES: Readonly<Record<string, ErrorCase>> = {
@@ -353,7 +373,13 @@ describe("structuredContent gegen das outputSchema", () => {
       // Datenbehälter heißt so, wie das Schema ihn ankündigt.
       expect(schema.additionalProperties).toBe(true);
       expect(structured.success).toBe(true);
-      if (entry.shape === "list") {
+      if (entry.effect !== "read") {
+        // Eine Schreibantwort trägt den aufgelösten Datensatz unter dem Schlüssel ihrer
+        // Wirkung und keinen Datenbehälter, auch nicht bei der Form `object`.
+        expect(structured[writeRecordKey(entry.effect)]).toBeTypeOf("object");
+        expect(schema.required).not.toContain(OBJECT_CONTAINER);
+        expect(schema.required).not.toContain(LIST_CONTAINER);
+      } else if (entry.shape === "list") {
         expect(Array.isArray(structured.items)).toBe(true);
       } else if (entry.shape === "object") {
         expect(structured.data).toBeTypeOf("object");

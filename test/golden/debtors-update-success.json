@@ -1,0 +1,28 @@
+{
+  "_herkunft": "Endpunkt /settings/update/debtor | dokumentiert | Quelle: Spezifikation SettingsUpdateDebitor_Success (success, message, data als Objekt mit 14 Feldern) | Struktur dokumentiert, Geschäftsdaten erfunden",
+  "_zweck": "die Schreibantwort der Form object: Die API liefert den geänderten Datensatz unter data, dieser Server legt ihn unter changed ab; das outputSchema darf data deshalb nicht verlangen",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "data": {
+      "type": "debitor",
+      "name": "Erfundene Kundin GmbH",
+      "contact_person_name": "",
+      "street": "Musterstraße 1",
+      "additional_addressline": "",
+      "zip": "10000",
+      "city": "Musterstadt",
+      "country": "DE",
+      "sales_tax_id_eu": "",
+      "email": "rechnung@example.invalid",
+      "uid_ch": "",
+      "iban": "",
+      "bic": "",
+      "postingaccount_number": "10001"
+    }
+  }
+}

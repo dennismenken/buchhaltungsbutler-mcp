@@ -116,23 +116,23 @@ export const EXPECTED_GROUP_COUNTS = {
 } as const satisfies Partial<Record<ToolGroup, number>>;
 
 /**
- * Die gemessene Tokenlast je Gruppe, Stand 2026-09-14, von Hand aus derselben Tabelle
- * abgeschrieben. Summe 48.964, also die gemessene Gesamtzahl der 54 Definitionen.
+ * Die gemessene Tokenlast je Gruppe, Stand 2026-11-22, von Hand aus derselben Tabelle
+ * abgeschrieben. Summe 48.211, also die gemessene Gesamtzahl der 54 Definitionen.
  *
  * Sie steht hier ein zweites Mal, weil die Zahlen in `src/registry/groups.ts` in Startmeldung,
  * `doctor` und `print-config` als Tatsache ausgegeben werden. Eine ausgegebene Zahl, die nur
  * gegen sich selbst geprüft wird, ist keine Messung.
  */
 export const EXPECTED_GROUP_TOKENS = {
-  postings: 12_213,
-  receipts: 8_529,
-  transactions: 6_661,
-  invoices: 5_766,
-  creditors: 3_341,
-  reports: 3_799,
-  debtors: 3_198,
-  postingaccounts: 1_877,
-  cost_locations: 1_839,
-  payment_accounts: 1_142,
-  comments: 599,
+  postings: 12_092,
+  receipts: 8_474,
+  transactions: 6_606,
+  invoices: 5_733,
+  creditors: 3_161,
+  reports: 3_777,
+  debtors: 3_018,
+  postingaccounts: 1_825,
+  cost_locations: 1_806,
+  payment_accounts: 1_131,
+  comments: 588,
 } as const satisfies Partial<Record<ToolGroup, number>>;

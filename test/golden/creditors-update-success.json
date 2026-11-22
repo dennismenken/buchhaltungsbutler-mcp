@@ -1,0 +1,28 @@
+{
+  "_herkunft": "Endpunkt /settings/update/creditor | dokumentiert | Quelle: Spezifikation SettingsUpdateCreditor_Success (success, message, data als Objekt mit 14 Feldern) | Struktur dokumentiert, Geschäftsdaten erfunden",
+  "_zweck": "die Schreibantwort der Form object beim Kreditor: Datensatz unter changed, kein Pflichtfeld data im outputSchema",
+  "http": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  "body": {
+    "success": true,
+    "message": "",
+    "data": {
+      "type": "creditor",
+      "name": "Erfundene Lieferantin GmbH",
+      "contact_person_name": "",
+      "street": "Lieferweg 2",
+      "additional_addressline": "",
+      "zip": "20000",
+      "city": "Beispielstadt",
+      "country": "DE",
+      "sales_tax_id_eu": "",
+      "email": "buchhaltung@example.invalid",
+      "uid_ch": "",
+      "iban": "",
+      "bic": "",
+      "postingaccount_number": "70001"
+    }
+  }
+}

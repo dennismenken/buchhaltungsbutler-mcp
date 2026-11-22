@@ -8,6 +8,25 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
 
 ## [Unveröffentlicht]
 
+### Behoben
+
+- **`bb_debtors_update`, `bb_creditors_update` und `bb_postingaccounts_update` meldeten eine
+  erfolgreiche Änderung als Fehler.** Das Ausgabeschema der drei Werkzeuge verlangte das Feld
+  `data`, weil ihr Eintrag die Form `object` hat. Die Antwort dieses Servers legt den
+  geänderten Datensatz bei Schreibwerkzeugen aber unter `changed` ab und nie unter `data`. Ein
+  Client, der `structuredContent` gegen das Ausgabeschema prüft, verwarf deshalb jede
+  erfolgreiche Antwort mit „Structured content does not match the tool's output schema: data
+  must have required property 'data'“, obwohl die Änderung in BuchhaltungsButler gespeichert
+  war. Das Ausgabeschema eines Schreibwerkzeugs verlangt jetzt `success` und den aufgelösten
+  Datensatz (`created`, `changed` oder `removed`) und keinen Datenbehälter mehr. Drei neue
+  Golden-Dateien aus der Spezifikation prüfen die drei Werkzeuge im Vertragstest.
+
+### Geändert
+
+- Die 54 Endpunktwerkzeuge wiegen jetzt **48.211 Token** (vorher 48.964) bei einer Grenze von
+  49.000. Die Ersparnis stammt aus den Ausgabeschemata der Schreibwerkzeuge, die kein
+  ungenutztes Feld `data` mehr ankündigen.
+
 ## [0.1.2] - 2026-09-15
 
 ### Behoben

@@ -595,8 +595,8 @@ describe("Das offene outputSchema passt auf die erzeugte Antwort", () => {
     expect(properties.deleted.type).toEqual(["boolean", "null"]);
   });
 
-  it("verlangt bei einer Quittung nur success", () => {
-    expect(buildOutputSchema(POSTINGS_CREATE_FREE).required).toEqual(["success"]);
+  it("verlangt bei einer Quittung success und den aufgelösten Datensatz, keinen Datenbehälter", () => {
+    expect(buildOutputSchema(POSTINGS_CREATE_FREE).required).toEqual(["success", "created"]);
   });
 });
 

@@ -2,7 +2,8 @@
 //
 // **Gesetzt bei allen 54 Werkzeugen, aber niemals geschlossen.** Jedes Ausgabeschema trägt
 // `additionalProperties: true`, und die Pflichtfelder beschränken sich auf `success` und den
-// Datenbehälter. Diese Zusicherung ist hier begründet; andere Stellen verweisen auf sie.
+// Datenbehälter, bei einer Schreibantwort auf `success` und den aufgelösten Datensatz. Diese
+// Zusicherung ist hier begründet; andere Stellen verweisen auf sie.
 //
 // Die Begründung ist gemessen: `/receipts/get` liefert `amount_paid` und
 // `amount_paid_fixed`, die in der Spezifikation nicht stehen. Ein geschlossenes Ausgabeschema
@@ -103,43 +104,50 @@ export function buildOutputSchema(entry: ToolEntry): Record<string, unknown> {
     additionalProperties: true,
   };
 
-  switch (entry.shape) {
-    case "list": {
-      properties.rows_returned = { type: "integer" };
-      properties.limit_used = { type: ["integer", "null"] };
-      properties.offset_used = { type: "integer" };
-      // „wahrscheinlich mehr", niemals eine Gesamttrefferzahl.
-      properties.more_possible = { type: "boolean" };
-      properties[LIST_CONTAINER] = { type: "array", items: record };
-      required.push(LIST_CONTAINER);
-      break;
-    }
-    case "object": {
-      properties[OBJECT_CONTAINER] = record;
-      required.push(OBJECT_CONTAINER);
-      break;
-    }
-    case "ack": {
-      if (entry.responseContract.reportRows !== undefined) {
-        // Ein Bericht, flach gelegt: Zeilen wie bei einer Liste, dazu die Kopfangaben. Nicht
-        // Pflicht, weil ein Bericht unerwarteter Form unverändert hinausgeht.
+  if (entry.effect === "read") {
+    switch (entry.shape) {
+      case "list": {
         properties.rows_returned = { type: "integer" };
+        properties.limit_used = { type: ["integer", "null"] };
+        properties.offset_used = { type: "integer" };
+        // „wahrscheinlich mehr", niemals eine Gesamttrefferzahl.
+        properties.more_possible = { type: "boolean" };
         properties[LIST_CONTAINER] = { type: "array", items: record };
-        properties.summary = { type: "object", additionalProperties: true };
+        required.push(LIST_CONTAINER);
         break;
       }
-      // Eine Quittung trägt keine Nutzdaten; kommt doch etwas, steht es unter data und ist
-      // durch additionalProperties gedeckt.
-      properties[OBJECT_CONTAINER] = { type: ["object", "array", "string", "null"] };
-      break;
+      case "object": {
+        properties[OBJECT_CONTAINER] = record;
+        required.push(OBJECT_CONTAINER);
+        break;
+      }
+      case "ack": {
+        if (entry.responseContract.reportRows !== undefined) {
+          // Ein Bericht, flach gelegt: Zeilen wie bei einer Liste, dazu die Kopfangaben.
+          // Nicht Pflicht, weil ein Bericht unerwarteter Form unverändert hinausgeht.
+          properties.rows_returned = { type: "integer" };
+          properties[LIST_CONTAINER] = { type: "array", items: record };
+          properties.summary = { type: "object", additionalProperties: true };
+          break;
+        }
+        // Eine Quittung trägt keine Nutzdaten; kommt doch etwas, steht es unter data und ist
+        // durch additionalProperties gedeckt.
+        properties[OBJECT_CONTAINER] = { type: ["object", "array", "string", "null"] };
+        break;
+      }
     }
-  }
-
-  if (entry.effect !== "read") {
-    // Der aufgelöste Datensatz und der Weg zurück (Zeile „Schreiben").
-    properties[writeRecordKey(entry.effect)] = { type: "object", additionalProperties: true };
+  } else {
+    // Eine Schreibantwort trägt **keinen** Datenbehälter, gleich welche Form der Eintrag hat:
+    // `response/build.ts` legt den aufgelösten Datensatz unter den Schlüssel der Wirkung
+    // (`created`, `changed`, `removed`) und nie unter `data` oder `items`. Das gilt auch für
+    // die Form `object` der drei Update-Werkzeuge, deren API-Antwort den Datensatz unter
+    // `data` liefert. Ein Pflichtfeld `data` ließe dort jede erfolgreiche Änderung an einem
+    // validierenden Client scheitern, obwohl sie gespeichert ist.
+    const recordKey = writeRecordKey(entry.effect);
+    properties[recordKey] = { type: "object", additionalProperties: true };
     properties.reversal = { type: ["object", "null"], additionalProperties: true };
     properties.fields_not_returned = { type: "array", items: { type: "string" } };
+    required.push(recordKey);
   }
 
   return { type: "object", properties, required, additionalProperties: true };
