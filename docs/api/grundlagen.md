@@ -13,6 +13,12 @@ sind am **2026-09-13** eigenständig nachgemessen worden; das Protokoll steht in
 Abschnitt 2.5, und es benennt zugleich, welche der vier Angaben **nicht** aus einer Messung
 stammt.
 
+Die Mengenangaben zur Spezifikation wurden am **2026-11-22** neu gezählt, weil die
+Spezifikationsdatei an diesem Tag auf den Live-Stand gebracht wurde. Betroffen sind alle
+Formulierungen, die Pfade, Parameter, Definitionen oder Antwortschlüssel zählen; die
+Messungen an der Live-API und ihre Protokolle bleiben Beobachtungen vom 2026-09-12 und
+2026-09-13.
+
 | Kürzel | Quelle | Art |
 | --- | --- | --- |
 | SPEC | `docs/openapi/buchhaltungsbutler-v1.json` (Swagger 2.0, `info.version` = 1.9.1, heruntergeladen von `https://app.buchhaltungsbutler.de/docs/api/v1.de.json`) | Offizielle Maschinenbeschreibung |
@@ -235,10 +241,11 @@ drei Quellen sagt dazu etwas.
 | 401 | 4 | `customer not found or invalid api client for customer or insufficient privileges` | `api_key` falsch, oder der Client darf diesen Mandanten nicht bedienen |
 | 403 | 11 | `customer has no active status` | Mandantenkonto inaktiv, etwa gekündigt oder gesperrt |
 
-Diese drei Antworten sind bei **allen 54** Endpunkten definiert (SPEC: `401 (3)`,
-`401 (4)` und `403 (11)` kommen je 54-mal vor). Ein Client sollte sie zentral behandeln
-und deutlich von fachlichen Validierungsfehlern unterscheiden: 3 und 4 sind
-Konfigurationsfehler, ein Retry ist sinnlos.
+Diese drei Antworten sind bei **allen 61** Endpunkten definiert (SPEC: `401 (3)`,
+`401 (4)` und `403 (11)` kommen je 61-mal vor; Zählung vom 2026-11-22, bis
+2026-09-12: 54 Endpunkte). Ein Client sollte sie zentral behandeln und deutlich von
+fachlichen Validierungsfehlern unterscheiden: 3 und 4 sind Konfigurationsfehler, ein Retry
+ist sinnlos.
 
 ### 2.5 Nachmessung der Rahmenangaben am 2026-09-13
 
@@ -317,10 +324,12 @@ ist in der SPEC nicht beschrieben und damit **nicht verifiziert**. Ein Client mu
 Code als temporäre Drosselung behandeln und mit Wartezeit erneut versuchen.
 
 Ebenfalls mengenbezogen, aber inhaltlich anders: HTTP 403 mit Fehlercode 12 bei
-`/receipts/upload` (`customer has reached the upload limit`) und Fehlercode 33 bei
+`/receipts/upload` und `/invoices/invoice_correction/create`
+(`customer has reached the upload limit`) und Fehlercode 33 bei
 `/invoices/create` und `/invoices/create/e-invoice` (ebenfalls `customer has reached the
 upload limit`). Das ist ein Tarif- oder Kontingentlimit, kein Rate Limit im engeren Sinn.
-Ein Retry hilft hier nicht.
+Ein Retry hilft hier nicht. (Zählung vom 2026-11-22; bis 2026-09-12 trug Fehlercode 12
+nur `/receipts/upload`.)
 
 ### 3.3 Live-Befund: es gibt keine Rate-Limit-Header
 
@@ -436,12 +445,13 @@ lieferte HTTP 400 und exakt diesen Body. Der Fehlerumschlag enthält **kein** `r
 | `message` | string | englischer Klartext, nicht lokalisiert |
 
 **Zentrale Warnung: `error_code` ist nicht global eindeutig.** Derselbe Code bedeutet je
-nach Endpunkt etwas völlig anderes. Auswertung der SPEC über alle Definitionen:
-Code 7 hat 32 verschiedene Meldungstexte, Code 6 hat 29, Code 5 hat 21, Code 9 und 8
-haben je 25. Beispiel: Bei `/receipts/get` heißt Code 7 `invalid date_from specified`,
-bei `PostingsReservationsGet` heißt Code 7 `invalid limit specified`. Ein Client darf
-`error_code` daher **niemals** ohne den zugehörigen Endpunkt interpretieren. Der Schlüssel
-für eine Fehlertabelle ist das Paar (Pfad, error_code).
+nach Endpunkt etwas völlig anderes. Auswertung der SPEC über alle Definitionen
+(Zählung vom 2026-11-22): Code 7 hat 37 verschiedene Meldungstexte, Code 6 hat 33,
+Code 8 hat 31, Code 9 hat 29, Code 5 hat 21. Beispiel: Bei `/receipts/get` heißt Code 7
+`invalid date_from specified`, bei `PostingsReservationsGet` heißt Code 7
+`invalid limit specified`. Ein Client darf `error_code` daher **niemals** ohne den
+zugehörigen Endpunkt interpretieren. Der Schlüssel für eine Fehlertabelle ist das Paar
+(Pfad, error_code).
 
 Ausnahme sind die wenigen Codes, die die SPEC in den generischen `Request_*`-Definitionen
 führt. Diese sind endpunktübergreifend konsistent:
@@ -466,17 +476,20 @@ also entweder veraltet oder nur informativ.
 
 ### 4.3 Vorkommende HTTP-Statuscodes
 
-Auszählung über alle `responses`-Schlüssel der SPEC:
+Auszählung über alle `responses`-Schlüssel der SPEC, gezählt am 2026-11-22 (bis
+2026-09-12: 200 = 54, 400 = 501, 401 = 108, 403 = 67, 500 = 54, 504 = 54):
 
 | Status | Häufigkeit | Bedeutung |
 | --- | --- | --- |
-| 200 | 54 | Erfolg, einmal je Endpunkt |
-| 400 | 501 | Validierungsfehler des Bodys |
-| 401 | 108 | Authentifizierung, Codes 3 und 4, je 54 |
-| 403 | 67 | Kontostatus (11), Drosselung (15), Kontingent (12, 33) |
+| 200 | 61 | Erfolg, einmal je Endpunkt |
+| 400 | 578 | Validierungsfehler des Bodys |
+| 401 | 122 | Authentifizierung, Codes 3 und 4, je 61 |
+| 403 | 75 | Kontostatus (11), Drosselung (15), Kontingent (12, 33) |
 | 422 | 2 | nur `/receipts/upload`: Beleg nicht verarbeitbar (31), OCR gescheitert (32) |
-| 500 | 54 | interner Fehler, Code 0, einmal je Endpunkt |
-| 504 | 54 | Timeout, Code 30, einmal je Endpunkt |
+| 500 | 61 | interner Fehler, Code 0, einmal je Endpunkt |
+| 504 | 61 | Timeout, Code 30, einmal je Endpunkt |
+
+Das sind zusammen 960 `responses`-Schlüssel, davon 899 Fehlerpaare und 61 Erfolgsantworten.
 
 HTTP 429 kommt in der Spezifikation nicht vor. Ebensowenig 3xx.
 
@@ -545,15 +558,18 @@ ein String, `e_invoice_type` dagegen eine Zahl.
 
 ## 5. Querschnittliche Parameterkonventionen
 
-Quelle: SPEC (alle 371 Parameter über 54 Endpunkte), ergänzt durch LIVE.
+Quelle: SPEC (alle 398 Parameter über 61 Endpunkte, gezählt am 2026-11-22), ergänzt
+durch LIVE.
 
 ### 5.1 Die Struktur der Parameterliste in der Spezifikation
 
-Alle 371 Parameter tragen `"in": "body"`. Es gibt keine Query-, Path-, Header- oder
-FormData-Parameter. 362 davon tragen ein eigenes `type`-Feld, obwohl Swagger 2.0 für
+Alle 398 Parameter tragen `"in": "body"`. Es gibt keine Query-, Path-, Header- oder
+FormData-Parameter. 389 davon tragen ein eigenes `type`-Feld, obwohl Swagger 2.0 für
 Body-Parameter ein `schema` verlangt. Neun Parameter tragen stattdessen ein `schema`:
 das `order`-Objekt bei `/receipts/get` sowie die acht Batch-Arrays, die per `$ref` auf
 eine Definition zeigen. Kein Parameter trägt beides.
+
+Bis 2026-09-12 waren es 371 Parameter über 54 Endpunkte, davon 362 mit `type`-Feld.
 
 Fachlich sind alle Body-Parameter eines Endpunkts Felder **eines** JSON-Objekts. Die Liste
 ist also kein Alternativenkatalog, sondern eine flache Feldliste. Generatoren dürfen die
@@ -709,17 +725,22 @@ und der dort berechnete Betrag verwendet werden, bevor Buchungen angelegt werden
 ### 5.7 Booleans
 
 Boolesche Parameter sind in der SPEC als `"type": "boolean"` deklariert, ihre Defaults
-sind jedoch uneinheitlich notiert. Zwölf Parameter tragen den **String** `"false"` als
-Default, vier tragen den echten Booleschen Wert `false`:
+sind jedoch uneinheitlich notiert. Sechzehn Parameter tragen den **String** `"false"` als
+Default, sechs tragen den echten Booleschen Wert `false` (Zählung vom 2026-11-22; bis
+2026-09-12: zwölf und vier):
 
 | Default als String `"false"` | Default als Boolean `false` |
 | --- | --- |
 | `/receipts/get`: `include_offers`, `deleted` | `/settings/get/postingaccounts`: `exclude_postingaccounts`, `exclude_accounts`, `exclude_creditors`, `exclude_debtors` |
 | `/receipts/get/id_by_customer`: `get_file` | `/accounts/add`: `receipt_creates_transaction`, `is_revision_safe` |
 | `/receipts/assigned-transactions/get`: `confirmed_only` | |
+| `/transactions/assigned-receipts/get`: `confirmed_only` | |
 | `/invoices/create`: `show_bankdata`, `show_contactdata` | |
+| `/invoices/create/draft`: `show_bankdata`, `show_contactdata` | |
+| `/invoices/create/e-invoice`: `show_bankdata`, `show_contactdata` | |
 | `/reports/create/sums`: `file_pdf`, `file_csv`, `archive_export` | |
 | `/reports/get/bwa`: `get_files` | |
+| `/reports/get/sums`: `get_files` | |
 
 Das ist ein Dokumentationsfehler, kein Verhaltensunterschied: In allen Fällen ist der
 Default fachlich "aus". Ob der Server beim Senden auch die Strings `"true"` und `"false"`
@@ -982,7 +1003,7 @@ falschen oder versehentlichen Aufruf.
 | Endpunkt | Wirkung | Risiko für einen Agenten |
 | --- | --- | --- |
 | `/invoices/create` | anlegend | Sehr hoch. Erzeugt eine echte, nummerierte Ausgangsrechnung. Es gibt keinen Storno- und keinen Löschendpunkt für Rechnungen in dieser API. Verbraucht Kontingent (403/33). |
-| `/invoices/create/e-invoice` | anlegend | Sehr hoch. Wie oben, zusätzlich mit den strengeren Formatvorgaben der E-Rechnung. Hat mit 44 definierten Fehlercodes die größte Fehleroberfläche der gesamten API. |
+| `/invoices/create/e-invoice` | anlegend | Sehr hoch. Wie oben, zusätzlich mit den strengeren Formatvorgaben der E-Rechnung. Hat mit 40 definierten Fehlercodes eine große Fehleroberfläche (Zählung vom 2026-11-22; bis 2026-09-12: 44). Die größte Fehleroberfläche der gesamten API hat inzwischen `/postings/add/receipt` mit 52 Fehlercodes, `/postings/add/free` folgt mit 43. |
 | `/invoices/create/draft` | anlegend | Hoch. Erzeugt einen Entwurf statt einer finalen Rechnung, also der am wenigsten riskante der drei. Trotzdem ein sichtbares Objekt in der Anwendung. |
 | `/invoices/invoice_correction/create` | anlegend | Sehr hoch. Erzeugt eine Rechnungskorrektur als **neue** Ausgangsrechnung mit negierten Positionspreisen. Die Ursprungsrechnung bleibt unverändert bestehen, beide laufen nebeneinander. Nicht rückgängig zu machen; korrigiert wird über eine weitere Korrektur. |
 
@@ -1093,7 +1114,7 @@ einem hypothetischen zukünftigen `/something/get`, das schreibt.
 
 ## 8. Bekannte Eigenheiten und Stolperfallen
 
-1. **Die Spezifikation ist kein gültiges Swagger 2.0.** Alle 371 Body-Parameter stehen als
+1. **Die Spezifikation ist kein gültiges Swagger 2.0.** Alle 398 Body-Parameter stehen als
    Einzeleinträge mit `"in": "body"` und eigenem `type`, statt gebündelt in einem
    gemeinsamen `schema`. Fachlich sind es Felder eines JSON-Objekts. Kein
    Standardgenerator verarbeitet das korrekt. Jeder Eintrag muss einzeln gelesen werden.
@@ -1208,8 +1229,8 @@ einem hypothetischen zukünftigen `/something/get`, das schreibt.
     `exchangerate`. Der frühere Vorbehalt beruhte auf vier Aufrufen in der falschen Form.
     Siehe Punkt 29 und Abschnitt 5.6.
 
-29. **Bei vier der 54 dokumentierten Endpunkte ist `id_by_customer` im Pfad ein Platzhalter
-    für den Wert, kein literales Segment.**
+29. **Bei vier der 61 dokumentierten Endpunkte ist `id_by_customer` im Pfad ein Platzhalter
+    für den Wert, kein literales Segment.** (Bis 2026-09-12: vier der 54.)
 
     > **Nachgezogen am 2026-09-13 nach eigenen lesenden Messungen vom 2026-09-12.** Dieser Punkt
     > hieß zuvor „Zwei der 54 dokumentierten Endpunkte waren live nicht benutzbar". Das trifft
@@ -1248,15 +1269,17 @@ einem hypothetischen zukünftigen `/something/get`, das schreibt.
 
 ## 9. Undokumentierte Spuren
 
-Die Spezifikation enthält 790 Definitionen, aber nur 54 Pfade. Ein Teil der Definitionen
-gehört zu keinem Pfad.
+Die Spezifikation enthält 882 Definitionen, aber nur 61 Pfade (Zählung vom 2026-11-22; bis
+2026-09-12: 790 Definitionen über 54 Pfade). Ein Teil der Definitionen gehört zu keinem
+Pfad.
 
 ### 9.1 Systematische Auswertung
 
 Methode: Aus jedem Definitionsnamen wurde der Präfix vor `_Success` oder `_ErrorCode<N>`
-gelöst und mit den aus den 54 Pfaden abgeleiteten Präfixen verglichen (Segmente in
-CamelCase, Trennzeichen entfernt). Ergebnis: 58 Definitionspräfixe, davon **neun ohne
-zugehörigen Pfad**. Die Zählung ist mit den Kommandos im Anhang nachrechenbar.
+gelöst und mit den aus den 61 Pfaden abgeleiteten Präfixen verglichen (Segmente in
+CamelCase, Trennzeichen entfernt). Ergebnis: 65 Definitionspräfixe, davon **neun ohne
+zugehörigen Pfad** (bis 2026-09-12: 58 Präfixe, ebenfalls neun ohne Pfad). Die Zählung ist
+mit den Kommandos im Anhang nachrechenbar.
 
 | Präfix ohne Pfad | Einordnung |
 | --- | --- |
@@ -1318,14 +1341,15 @@ Ein Get erwartet also eine Beleg-ID als Eingabe. `ErrorCode7` und `ErrorCode8` s
 Endpunkt.
 
 `PostingsReservationsAdd` besitzt mit 26 Fehlercodes eine Fehleroberfläche in der
-Größenordnung von `/postings/add/free` (dort 34). `PostingsReservationsAdd_Success` und
+Größenordnung von `/postings/add/free` (dort 43 eigene `_ErrorCode`-Definitionen; bis
+2026-09-12: 34). `PostingsReservationsAdd_Success` und
 `PostingsReservationsDelete_Success` enthalten nur `success` und `message`, liefern also
 keine Daten zurück.
 
 **Nebenbefund zu den fünf generischen Codes.** Hier sind Antwortebene und
 Definitionsebene strikt zu trennen.
 
-*Antwortebene.* Alle 54 Pfade der Spezifikation führen in ihren `responses` die fünf
+*Antwortebene.* Alle 61 Pfade der Spezifikation führen in ihren `responses` die fünf
 generischen Codes `401 (3)`, `401 (4)`, `403 (11)`, `500 (0)` und `504 (30)`. Das ist
 mechanisch bestätigt, es gibt keine Ausnahme. `PostingsReservations` fällt aus dieser
 Aussage heraus, weil die Gruppe mangels Pfad überhaupt keine `responses` besitzt, nicht
@@ -1333,20 +1357,20 @@ weil ihr dort etwas fehlt, was andere Pfade hätten.
 
 *Definitionsebene.* Eine **eigene** `_ErrorCode0`-, `_ErrorCode3`-, `_ErrorCode4`-,
 `_ErrorCode11`- und `_ErrorCode30`-Definition ist dagegen keineswegs die Regel.
-Von den 58 Definitionspräfixen (gebildet aus allen Definitionen mit `_Success`- oder
-`_ErrorCode<N>`-Suffix) besitzen **22 keine einzige** dieser fünf Definitionen. Drei davon
-sind die pfadlosen Reservations-Präfixe selbst, die übrigen 19 gehören zu echten
-Endpunkten:
+Von den 65 Definitionspräfixen (gebildet aus allen Definitionen mit `_Success`- oder
+`_ErrorCode<N>`-Suffix) besitzen **27 keine einzige** dieser fünf Definitionen (bis
+2026-09-12: 22 von 58). Drei davon sind die pfadlosen Reservations-Präfixe selbst, die
+übrigen 24 gehören zu echten Endpunkten:
 
 | Gruppe | Präfixe |
 | --- | --- |
-| 14 Präfixe mit eigenen, aber anderen Fehlerdefinitionen | `ReceiptsAddBatch`, `TransactionsAddBatch`, `TransactionsUnassignReceipt`, `TransactionsAssignBatchReceipt`, `TransactionsAssignedReceiptsGet`, `CostLocationsGet`, `CostLocationsAdd`, `CostLocationsUpdate`, `CostLocationsDelete`, `ReportsCreateBwa`, `ReportsCreateSums`, `ReportsGetBwa`, `ReportsGetSums`, `ReportsGetSumsLedger` |
+| 19 Präfixe mit eigenen, aber anderen Fehlerdefinitionen | `ReceiptsAddBatch`, `TransactionsAddBatch`, `TransactionsUnassignReceipt`, `TransactionsAssignBatchReceipt`, `TransactionsAssignedReceiptsGet`, `CostLocationsGet`, `CostLocationsAdd`, `CostLocationsUpdate`, `CostLocationsDelete`, `ReportsCreateBwa`, `ReportsCreateSums`, `ReportsGetBwa`, `ReportsGetSums`, `ReportsGetSumsLedger`, `AccountsDelete`, `AccountsUpdate`, `InvoicesInvoiceCorrectionCreate`, `SettingsDeletePostingaccount`, `TransactionsDelete` |
 | 5 Präfixe der `add-batch`-Familie ohne jede eigene `_ErrorCode`-Definition | `PostingsAddBatchFree`, `PostingsAddBatchReceipts`, `PostingsAddBatchTransactions`, `SettingsAddBatchCreditors`, `SettingsAddBatchDebtors` |
 
-Alle 19 zugehörigen Pfade binden die fünf Codes stattdessen über die generische Familie
+Alle 24 zugehörigen Pfade binden die fünf Codes stattdessen über die generische Familie
 `Request_ErrorCode0`, `Request_ErrorCode3`, `Request_ErrorCode4`, `Request_ErrorCode11`
 und `Request_ErrorCode30` ein. Auf Definitionsebene ist `PostingsReservations` also
-**nicht** einzigartig, sondern verhält sich wie diese 19 Gruppen. Einzigartig ist allein,
+**nicht** einzigartig, sondern verhält sich wie diese 24 Gruppen. Einzigartig ist allein,
 dass zu ihr kein Pfad existiert.
 
 Prüfkommandos gegen `docs/openapi/buchhaltungsbutler-v1.json`:
@@ -1359,16 +1383,19 @@ jq -r '.paths | to_entries[] | .key as $p
        | ([.value.post.responses | keys[]] | map(capture("\\((?<c>[0-9]+)\\)").c | tonumber)) as $codes
        | select(([0,3,4,11,30] | map(. as $c | ($codes | index($c)) != null) | all) | not) | $p' "$SPEC"
 
-# Definitionsebene: Präfixe ohne jede eigene Definition der fünf Codes (Ergebnis: 22)
+# Definitionsebene: Präfixe ohne jede eigene Definition der fünf Codes (Ergebnis: 27)
 jq -r '[.definitions | keys[]] as $defs
        | ($defs | map(select(test("_(Success|ErrorCode[0-9]+)$")) | sub("_(Success|ErrorCode[0-9]+)$";"")) | unique)
        | map(select(. as $p | ([0,3,4,11,30]
            | map(($p + "_ErrorCode" + tostring) as $d | ($defs | index($d)) != null) | any | not)))[]' "$SPEC"
 
-# Pfade, die stattdessen Request_ErrorCode0 referenzieren (Ergebnis: 19)
+# Pfade, die stattdessen Request_ErrorCode0 referenzieren (Ergebnis: 24)
 jq -r '.paths | to_entries[] | .key as $p | .value.post.responses | to_entries[]
        | select(.value.schema."$ref" == "#/definitions/Request_ErrorCode0") | $p' "$SPEC"
 ```
+
+Die Ergebnisse dieser drei Kommandos sind am 2026-11-22 gezählt; bis 2026-09-12 lauteten
+sie leer, 22 und 19.
 
 Ob die Gruppe deshalb zu einer anderen Zeit oder in einem anderen Pflegezustand entstanden
 ist als der Rest, lässt sich aus der Spezifikation nicht ableiten. Eine solche Aussage
@@ -1540,7 +1567,7 @@ jq -r '.definitions | keys[]
   | sort | uniq -c | sort -rn
 
 #    Zahl der Präfixe insgesamt (nur Definitionen mit Suffix, also ohne die 15
-#    Hilfsdefinitionen aus 9.4). Belegt: 58.
+#    Hilfsdefinitionen aus 9.4). Belegt: 65.
 jq -r '.definitions | keys[]
        | select(test("_(Success|ErrorCode[0-9]+)$")) | sub("_(Success|ErrorCode[0-9]+)$"; "")' \
   "$SPEC" | sort -u | wc -l
