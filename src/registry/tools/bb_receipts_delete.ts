@@ -1,4 +1,4 @@
-// Werkzeug 7 von 59: `/receipts/delete/id_by_customer`, Beleg als gelöscht markieren.
+// Werkzeug 7 von 61: `/receipts/delete/id_by_customer`, Beleg als gelöscht markieren.
 //
 // **Pfadvorlage statt literalem Pfad.** Das Segment `id_by_customer` ist ein
 // Platzhalter für den Wert; der Eintrag trägt `template`, `params` und `specPath` mit dem

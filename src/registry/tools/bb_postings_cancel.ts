@@ -1,4 +1,4 @@
-// Werkzeug 32, `/postings/cancel`: storniert eine einzelne Buchungszeile.
+// Werkzeug 33 von 61, `/postings/cancel`: storniert eine einzelne Buchungszeile.
 //
 // **Zwei völlig verschiedene Wirkungen hinter einem Aufruf**, gesteuert allein durch `fixed`:
 // War die Buchung festgeschrieben, entsteht eine dauerhaft sichtbare Stornobuchung; war sie es
@@ -48,7 +48,7 @@ const POSTING_ID_DESCRIPTION =
   "bb_postings_search. Das Feld fixed derselben Zeile sagt vorher, welche der beiden Wirkungen " +
   `eintritt: Storno bei '1', ersatzloses Entfernen bei '0'. ${ID_STRING_SENTENCE}`;
 
-/** Werkzeug 31: `/postings/cancel`. */
+/** Werkzeug 33: `/postings/cancel`. */
 export const bb_postings_cancel: ToolEntry = {
   name: "bb_postings_cancel",
   title: "Buchung stornieren",

@@ -1,4 +1,4 @@
-// Werkzeug 28, `/postings/unconfirm/receipt`: hebt die Bestätigung der Buchungen eines Belegs
+// Werkzeug 29 von 61, `/postings/unconfirm/receipt`: hebt die Bestätigung der Buchungen eines Belegs
 // auf und entfernt sie damit.
 //
 // Klasse D: `destructiveHint: true`, `idempotentHint: false`. Dass eine Wiederholung
@@ -45,7 +45,7 @@ const RECEIPT_ID_DESCRIPTION =
   "Die mandantenbezogene Nummer des Belegs, dessen Buchungen entfernt werden, zu finden über " +
   "bb_receipts_search. Adressiert wird der Beleg, nicht die einzelne Buchungszeile.";
 
-/** Werkzeug 27: `/postings/unconfirm/receipt`. */
+/** Werkzeug 29: `/postings/unconfirm/receipt`. */
 export const bb_postings_unconfirm_for_receipt: ToolEntry = {
   name: "bb_postings_unconfirm_for_receipt",
   title: "Buchungen eines Belegs entfernen",

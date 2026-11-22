@@ -1,4 +1,4 @@
-// Werkzeug 11, `/transactions/assigned-receipts/get`: die Belege einer Zahlung.
+// Werkzeug 11 von 61, `/transactions/assigned-receipts/get`: die Belege einer Zahlung.
 //
 // Der Endpunkt liefert je zugeordnetem Beleg nur `id_by_customer` und `filename` und keine
 // Beträge. Der Antwortvertrag ist deshalb `dokumentiert` und nicht `gemessen`: Er ist aus der

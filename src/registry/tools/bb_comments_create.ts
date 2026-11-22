@@ -1,4 +1,4 @@
-// Werkzeug 50 von 59: `/comments/add`.
+// Werkzeug 52 von 61: `/comments/add`.
 //
 // **Einer von vier Endpunkten ohne lesendes Gegenstück**. `verifyWith` trägt
 // deshalb `{ kind: "none", … }`: Die API kennt keinen Endpunkt, der Kommentare liest, ändert

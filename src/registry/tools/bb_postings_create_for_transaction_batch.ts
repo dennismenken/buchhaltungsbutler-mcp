@@ -1,4 +1,4 @@
-// Werkzeug 25, `/postings/add-batch/transactions`: Zahlungsbuchungen für mehrere Zahlungen in
+// Werkzeug 26 von 61, `/postings/add-batch/transactions`: Zahlungsbuchungen für mehrere Zahlungen in
 // einem Aufruf. Mit 40 Zeichen der längste Werkzeugname des Satzes.
 //
 // **Auf oberster Ebene findet keine Umformung statt.** Der Endpunkt führt genau einen
@@ -122,7 +122,7 @@ const TRANSACTIONS_CONTAINER = batchContainer(
   { description: TRANSACTIONS_PURPOSE, maxItems: ITEM_LIMIT },
 );
 
-/** Werkzeug 24: `/postings/add-batch/transactions`. */
+/** Werkzeug 26: `/postings/add-batch/transactions`. */
 export const bb_postings_create_for_transaction_batch: ToolEntry = {
   name: "bb_postings_create_for_transaction_batch",
   title: "Buchungen zu Zahlungen anlegen",
@@ -225,7 +225,7 @@ export const bb_postings_create_for_transaction_batch: ToolEntry = {
     },
   ],
   // Erfolgsantwort mit den Arrays `transactions` und `errors` und ohne `message`
-  // (buchungen.md 13.3). Begründung des leeren Vertrags wie bei Werkzeug 22.
+  // (buchungen.md 13.3). Begründung des leeren Vertrags wie bei Werkzeug 24.
   responseContract: { container: "none", fields: {}, source: "dokumentiert" },
   shape: "ack",
   concise: [],

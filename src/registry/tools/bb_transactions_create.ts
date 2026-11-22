@@ -1,4 +1,4 @@
-// Werkzeug 12, `/transactions/add`: eine Zahlung auf einem echten Zahlungskonto anlegen.
+// Werkzeug 12 von 61, `/transactions/add`: eine Zahlung auf einem echten Zahlungskonto anlegen.
 // Klasse A, Wirkung anlegend, Pflichtsatz U4.
 //
 // Drei Festlegungen stehen hier als Code:

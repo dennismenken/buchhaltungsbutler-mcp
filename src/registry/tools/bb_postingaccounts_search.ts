@@ -1,4 +1,4 @@
-// Werkzeug 43 von 59: `/settings/get/postingaccounts`.
+// Werkzeug 44 von 61: `/settings/get/postingaccounts`.
 //
 // Stufe 1 des Beschreibungsbudgets, weil dies der gefährlichste Verwechslungsfall der ganzen
 // API ist: Die Liste ist eine **Vereinigung** aus Sachkonten, Zahlungskonten,

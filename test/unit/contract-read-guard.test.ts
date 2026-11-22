@@ -10,7 +10,7 @@
 //
 //   1. Die Erlaubnisliste entsteht AUS DEM REGISTER (`toolClass === "R"`) und deckt sich
 //      Eintrag für Eintrag mit den lesenden Werkzeugen. Sie ist nirgends abgeschrieben.
-//   2. Der Wächter wirft bei JEDEM der 39 schreibenden Pfade — nicht nur bei einem
+//   2. Der Wächter wirft bei JEDEM der 41 schreibenden Pfade — nicht nur bei einem
 //      Beispiel. Ein Test mit einem einzigen Beispiel bewiese nur, dass dieser eine Pfad
 //      bekannt ist.
 //   3. Er wirft, BEVOR etwas hinausgeht. Der Nachweis ist zweiteilig: eine Attrappe, die
@@ -71,12 +71,12 @@ describe("Erlaubnisliste des Vertragslaufs", () => {
     for (const entry of WRITING_TOOLS) {
       expect(ALLOW_LIST.has(specPathOf(entry))).toBe(false);
     }
-    expect(WRITING_TOOLS).toHaveLength(44);
+    expect(WRITING_TOOLS).toHaveLength(46);
   });
 });
 
 describe("Der Wächter wirft bei einem schreibenden Pfad", () => {
-  it("lehnt jeden der 39 schreibenden Endpunkte ab", () => {
+  it("lehnt jeden der 41 schreibenden Endpunkte ab", () => {
     for (const entry of WRITING_TOOLS) {
       expect(() =>
         assertAllowedCall(ALLOW_LIST, {
@@ -89,7 +89,7 @@ describe("Der Wächter wirft bei einem schreibenden Pfad", () => {
   });
 
   it("nennt in der Meldung den abgelehnten Pfad und das Werkzeug", () => {
-    // `/receipts/delete/id_by_customer` ist der gefährlichste der 39: Er trägt dieselbe
+    // `/receipts/delete/id_by_customer` ist der gefährlichste der 41: Er trägt dieselbe
     // Pfadvorlage wie der erlaubte Einzelabruf `/receipts/get/id_by_customer` und
     // unterscheidet sich nur in einem Segment (Live-Befunde Befund 1).
     let caughtError: unknown;

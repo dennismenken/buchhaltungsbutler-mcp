@@ -1,4 +1,4 @@
-// Werkzeug 29, `/postings/unconfirm/transaction`: hebt die Bestätigung der Buchungen einer
+// Werkzeug 30 von 61, `/postings/unconfirm/transaction`: hebt die Bestätigung der Buchungen einer
 // Zahlung auf und entfernt sie damit.
 //
 // Klasse D: `destructiveHint: true`, `idempotentHint: false`. Eine wirkungslose Wiederholung
@@ -43,7 +43,7 @@ const TRANSACTION_ID_DESCRIPTION =
   "Die mandantenbezogene Nummer der Zahlung, deren Buchungen entfernt werden, zu finden über " +
   `bb_transactions_search. Adressiert wird die Zahlung, nicht die einzelne Buchungszeile. ${ID_STRING_SENTENCE}`;
 
-/** Werkzeug 28: `/postings/unconfirm/transaction`. */
+/** Werkzeug 30: `/postings/unconfirm/transaction`. */
 export const bb_postings_unconfirm_for_transaction: ToolEntry = {
   name: "bb_postings_unconfirm_for_transaction",
   title: "Buchungen einer Zahlung entfernen",

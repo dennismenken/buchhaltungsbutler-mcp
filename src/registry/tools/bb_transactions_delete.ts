@@ -1,4 +1,4 @@
-// Werkzeug 17 von 59: `/transactions/delete`.
+// Werkzeug 17 von 61: `/transactions/delete`.
 //
 // Klasse D, also `destructiveHint: true` und `idempotentHint: false` (die Begründung steht
 // bei `TOOL_CLASSES` in src/registry/classes.ts). Eine Wiederholung wäre plausibel

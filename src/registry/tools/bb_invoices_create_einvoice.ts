@@ -1,4 +1,4 @@
-// Werkzeug 20: `/invoices/create/e-invoice`, die E-Rechnung.
+// Werkzeug 20 von 61: `/invoices/create/e-invoice`, die E-Rechnung.
 //
 // Strengste Feldprüfung der API (rechnungen.md 1.1 und 4.1): Gegenüber
 // `/invoices/create` sind `street`, `zip`, `city`, `country` und `email` des Empfängers
@@ -82,7 +82,7 @@ const RECURRING_DATE_DESCRIPTION =
 const address = contactAddressBlock();
 const item = einvoiceItemItem().shape;
 
-/** Werkzeug 19: `/invoices/create/e-invoice`. */
+/** Werkzeug 20: `/invoices/create/e-invoice`. */
 export const bb_invoices_create_einvoice: ToolEntry = {
   name: "bb_invoices_create_einvoice",
   title: "E-Rechnung erzeugen",

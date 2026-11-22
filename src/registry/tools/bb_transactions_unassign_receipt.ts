@@ -1,4 +1,4 @@
-// Werkzeug 16, `/transactions/unassign/receipt`: die Zuordnung eines Belegs zu einer Zahlung
+// Werkzeug 16 von 61, `/transactions/unassign/receipt`: die Zuordnung eines Belegs zu einer Zahlung
 // lösen. Wirkung löschend, Klasse D, Pflichtsatz U1.
 //
 // Der Name trägt das Verb `unassign` und nicht `delete`: `bb_transactions_delete_receipt` läse

@@ -1,4 +1,4 @@
-// Werkzeug 47 von 59: `/accounts/get`.
+// Werkzeug 48 von 61: `/accounts/get`.
 //
 // Stufe 1 des Beschreibungsbudgets, weil hier die Namensentscheidung trägt:
 // Die API nennt diese Objekte „accounts", gemeint sind **Zahlungskonten** (Kassen, Bank- und

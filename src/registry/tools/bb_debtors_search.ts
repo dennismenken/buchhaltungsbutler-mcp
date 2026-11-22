@@ -1,4 +1,4 @@
-// Werkzeug 33 von 59: `/settings/get/debtors`.
+// Werkzeug 34 von 61: `/settings/get/debtors`.
 //
 // Debitoren sind die Kundenkonten des Mandanten. Der Endpunkt führt außer dem Zugangsdatum
 // nur `limit` und `offset`: Es gibt keinen Namens- und keinen Nummernfilter, gesucht wird in

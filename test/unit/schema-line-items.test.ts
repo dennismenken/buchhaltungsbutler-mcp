@@ -48,7 +48,7 @@ describe("Spaltenlisten", () => {
     expect(POSTINGS_TRANSACTION_COLUMNS[6]?.field).toBe("open_item_receipt_id_by_customer");
   });
 
-  it("trägt im Stapelelement von Werkzeug 22 die Schreibweise postingstexts", () => {
+  it("trägt im Stapelelement von Werkzeug 24 die Schreibweise postingstexts", () => {
     const batch = POSTINGS_RECEIPT_BATCH_COLUMNS.find((column) => column.field === "postingtext");
     const single = POSTINGS_RECEIPT_COLUMNS.find((column) => column.field === "postingtext");
     expect(single?.apiName).toBe("postingtexts");
@@ -221,7 +221,7 @@ describe("Umformung in parallele Arrays", () => {
     expect(body["oi_receipts_ids_by_customer"]).toEqual([8801, null]);
   });
 
-  it("benutzt im Stapelelement von Werkzeug 22 den Namen postingstexts", () => {
+  it("benutzt im Stapelelement von Werkzeug 24 den Namen postingstexts", () => {
     const body = toParallelArrays([{ ...POSITION }], POSTINGS_RECEIPT_BATCH_COLUMNS);
     expect(body).toHaveProperty("postingstexts");
     expect(body).not.toHaveProperty("postingtexts");

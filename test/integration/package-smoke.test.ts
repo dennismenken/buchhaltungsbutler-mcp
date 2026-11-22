@@ -265,7 +265,7 @@ function textOf(result: Record<string, unknown>): string {
 // --- Die Schritte -------------------------------------------------------------------------
 
 /**
- * Die Zahl der Werkzeuge, die dieser Server anmeldet: die 54 Endpunktwerkzeuge und zusätzlich
+ * Die Zahl der Werkzeuge, die dieser Server anmeldet: die 61 Endpunktwerkzeuge und zusätzlich
  * die Bündelwerkzeuge der Gruppe `bundles`.
  *
  * Gerechnet und nicht geschrieben: Eine feste Zahl an dieser Stelle wäre beim nächsten Eintrag
@@ -329,7 +329,7 @@ describe("Paketprobelauf", () => {
     expect(output).not.toContain("probelauf-secret");
   });
 
-  it("Schritt 4b: bbutler-mcp ohne Zugangsdaten startet, meldet 54 Werkzeuge und sagt bei jedem Aufruf ab", {
+  it("Schritt 4b: bbutler-mcp ohne Zugangsdaten startet, meldet 66 Werkzeuge und sagt bei jedem Aufruf ab", {
     timeout: STEP_TIMEOUT_MS,
   }, async () => {
     const session = openSession(binary, [], cleanEnv());

@@ -1,4 +1,4 @@
-// Werkzeug 51 von 59: `/cost-locations/get`.
+// Werkzeug 53 von 61: `/cost-locations/get`.
 //
 // **Dieses Werkzeug trägt Q2, die drei `settings`-Listen nicht**: Für
 // `/cost-locations/get` nennt die Spezifikation die Obergrenze 1000 ausdrücklich („NOTE: the

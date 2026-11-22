@@ -37,7 +37,7 @@ export interface ToolClassDefinition {
  *   (grundlagen.md 7.3). Ein zu strenger Hint kostet eine Rückfrage, ein zu milder einen
  *   unbemerkten Stammdatenverlust.
  * - Klasse B trägt destructiveHint: false, obwohl sie die folgenreichste Klasse ist. Ihre
- *   zehn Werkzeuge legen neue Buchungszeilen, Rechnungen oder Belegbindungen an; sie
+ *   elf Werkzeuge legen neue Buchungszeilen, Rechnungen oder Belegbindungen an; sie
  *   überschreiben nichts und löschen nichts. Unumkehrbarkeit und Destruktivität fallen hier
  *   auseinander. Die Warnung läuft über die Pflichtsätze U3 und U4 und den title.
  *
@@ -90,7 +90,7 @@ export const TOOL_CLASSES = {
       idempotentHint: true,
       openWorldHint: true,
     },
-    count: 4,
+    count: 5,
   },
   D: {
     meaning: "löscht, storniert, hebt Bestätigung oder Zuordnung auf",
@@ -110,7 +110,7 @@ export const TOOL_CLASSES = {
       idempotentHint: false,
       openWorldHint: true,
     },
-    count: 10,
+    count: 11,
   },
 } as const satisfies Record<ToolClass, ToolClassDefinition>;
 
@@ -133,7 +133,7 @@ export interface ToolEffectDefinition {
  */
 export const TOOL_EFFECTS = {
   read: { german: "lesend", count: 15 },
-  create: { german: "anlegend", count: 24 },
-  modify: { german: "ändernd", count: 8 },
+  create: { german: "anlegend", count: 25 },
+  modify: { german: "ändernd", count: 9 },
   delete: { german: "löschend", count: 12 },
 } as const satisfies Record<ToolEffect, ToolEffectDefinition>;

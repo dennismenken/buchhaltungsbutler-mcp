@@ -5,7 +5,7 @@
 //
 //   Mengengrenze  jedes Feld mit `itemFields` — die Behälter der acht Stapelendpunkte und die
 //                 Positionslisten `positions` und `items` — und zusätzlich jede geschachtelte
-//                 Positionsliste innerhalb eines Stapelelements (Werkzeuge 22 und 24). Beide
+//                 Positionsliste innerhalb eines Stapelelements (Werkzeuge 24 und 26). Beide
 //                 Ebenen werden getrennt geprüft, es wird nichts aufsummiert.
 //   Betragsgrenze jedes Feld, dessen Schemabaustein die Markierung `amount` trägt, die
 //                 `vocab.ts#amountIn()` setzt (`schema/primitives.ts`). Skalar wie

@@ -1,4 +1,4 @@
-// Werkzeug 15, `/transactions/assign-batch/receipt`: bis zu 50 Zuordnungen in einem Aufruf.
+// Werkzeug 15 von 61, `/transactions/assign-batch/receipt`: bis zu 50 Zuordnungen in einem Aufruf.
 // Wirkung ändernd, Klasse A, Pflichtsatz U1.
 //
 // **Reine Umbenennung, keine Umformung**. Der Endpunkt führt genau einen

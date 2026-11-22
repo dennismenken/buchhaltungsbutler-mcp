@@ -1,4 +1,4 @@
-// Werkzeug 44 von 59: `/settings/add/postingaccount`.
+// Werkzeug 45 von 61: `/settings/add/postingaccount`.
 //
 // Drei Pflichtfelder, alle drei laut Spezifikation `required: true`; verschärft wird hier
 // nichts. `postingaccount_number` und `parent_postingaccount_number` sind an

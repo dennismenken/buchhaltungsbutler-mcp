@@ -1,4 +1,4 @@
-// Werkzeug 14, `/transactions/assign/receipt`: einen Beleg einer Zahlung zuordnen.
+// Werkzeug 14 von 61, `/transactions/assign/receipt`: einen Beleg einer Zahlung zuordnen.
 // Wirkung ändernd, Klasse A, Pflichtsatz U1.
 //
 // Klasse A und nicht D oder B: Die Zuordnung ist eine Verbindung, die dieselbe API wieder

@@ -27,7 +27,7 @@ import { installTestConfig, mockApi, resetTestConfig, type ApiMock } from "../he
 
 // --- Fixtures -------------------------------------------------------------------------
 //
-// Ein Eintrag nach dem Muster der Werkzeuge 22 und 24: ein Stapelbehälter, dessen Elemente
+// Ein Eintrag nach dem Muster der Werkzeuge 24 und 26: ein Stapelbehälter, dessen Elemente
 // selbst eine Positionsliste tragen. Beide Ebenen führen ein Betragsfeld.
 //
 // Die Schemata bekommen `maxItems` ausdrücklich mit, damit sie ohne aufgelöste Konfiguration

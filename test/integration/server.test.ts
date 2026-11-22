@@ -181,7 +181,7 @@ describe("der gebaute Server über einen echten MCP-Client", () => {
     },
   ] as const;
 
-  it("beantwortet initialize, meldet die 54 Endpunktwerkzeuge samt Bündeln mit vier Hints und führt je Klasse einen Aufruf aus", {
+  it("beantwortet initialize, meldet die 61 Endpunktwerkzeuge samt Bündeln mit vier Hints und führt je Klasse einen Aufruf aus", {
     timeout: 60_000,
   }, async () => {
     const api = await startApiStandIn();
@@ -203,7 +203,7 @@ describe("der gebaute Server über einen echten MCP-Client", () => {
 
       const listed = await client.listTools();
 
-      // Die 54 Endpunktwerkzeuge und zusätzlich die Bündelwerkzeuge.
+      // Die 61 Endpunktwerkzeuge und zusätzlich die Bündelwerkzeuge.
       expect(listed.tools).toHaveLength(TOOL_ENTRIES.length + BUNDLE_ENTRIES.length);
       expect(listed.tools.map((tool) => tool.name).sort()).toEqual(
         [...TOOL_ENTRIES, ...BUNDLE_ENTRIES].map((entry) => entry.name).sort(),

@@ -1,7 +1,7 @@
 # Stammdaten: Debitoren, Kreditoren, Sachkonten, Konten, Kostenstellen, Kommentare
 
 Nachschlagewerk für die Implementierung eines inoffiziellen MCP-Servers für die
-BuchhaltungsButler-API. Dokumentiert sind 18 Endpunkte aus den Gruppen Settings,
+BuchhaltungsButler-API. Dokumentiert sind 19 Endpunkte aus den Gruppen Settings,
 Accounts, Cost-Locations und Comments.
 
 ## Quellen und Stand
@@ -1895,8 +1895,9 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/accounts/get" \
 - Die Einträge sind identisch mit den `type == "account"`-Einträgen aus
   `/settings/get/postingaccounts`. Live verifiziert: dieselben fünf Nummern in beiden
   Antworten.
-- Es gibt keinen Endpunkt zum Aktualisieren eines Basiskontos. Ein Löschendpunkt ist seit
-  Spezifikation 1.9.1 vorhanden: `/accounts/delete`.
+- Es gibt seit der Spezifikation 1.9.1 einen Endpunkt zum Aktualisieren eines Basiskontos
+  (`/accounts/update`, siehe unten) und einen Endpunkt zum Löschen eines Basiskontos
+  (`/accounts/delete`, siehe unten).
 
 ## `/accounts/add`
 
@@ -2012,14 +2013,16 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/accounts/add" \
 - Revisionssicherheit ist eine Einbahnstraße mit steuerlichen Folgen: gespeicherte
   Zahlungen können danach nur noch per Stornobuchung entfernt werden. Ein MCP-Tool sollte
   das nie ohne ausdrückliche Nutzerbestätigung setzen. Ob sich die Eigenschaft nachträglich
-  abschalten lässt, ist über die API nicht möglich, da es keinen Update-Endpunkt gibt.
+  abschalten lässt, ist über die API nicht möglich, da auch `/accounts/update` die Eigenschaft
+  nicht ändert.
 - `receipt_creates_transaction` hat eine fachliche Nebenwirkung: laut Wissensdatenbank
   können Belege auf einem Konto mit aktiver Logik "Beleg erzeugt Zahlung" **nicht**
   debitorisch oder kreditorisch gebucht werden, weil sie nie einen offenen Posten erzeugen.
   Wer Debitoren- und Kreditorenbuchhaltung nutzt, sollte das Flag bewusst wählen.
 - Die Nummer muss zum Kontotyp passen. Es gibt keinen API-Endpunkt, der die zulässigen
   Bereiche ausliest. Der Server liefert im Fehlerfall 14 eine genauere Meldung.
-- Kein Update-Endpunkt. Es gibt aber einen Löschendpunkt, `/accounts/delete`.
+- Es gibt seit der Spezifikation 1.9.1 einen Löschendpunkt, `/accounts/delete`, und einen
+  Update-Endpunkt, `/accounts/update`, siehe unten.
 
 ## `/accounts/delete`
 
@@ -2087,10 +2090,116 @@ curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/accounts/delete" \
   Transaktionen enthält. Beide Bedingungen prüft die API, nicht der Client.
 - `is_revision_safe` ist beim Anlegen dauerhaft gesetzt worden. Ein revisionssicheres Konto
   lässt sich deshalb unter Umständen gar nicht mehr löschen; die Eigenschaft selbst ist
-  über die API nicht abschaltbar, weil es keinen Update-Endpunkt für Basiskonten gibt.
+  über die API nicht abschaltbar, weil auch `/accounts/update` sie nicht ändert.
 - `postingaccount_number` ist hier `integer`, beim Anlegen `string`.
 - Die Kontoeigenschaften des gelöschten Kontos sind über die API **nicht wiederherstellbar**.
 - Ein MCP-Tool sollte den Aufruf nur mit ausdrücklicher Bestätigung ausführen.
+
+---
+
+## `/accounts/update`
+
+Ändert die Stammdaten eines bestehenden Basiskontos.
+
+**Einordnung: SCHREIBEND.** Nicht live verifiziert.
+
+Quelle: `docs/openapi/buchhaltungsbutler-v1.json`, `.paths["/accounts/update"]`, Abrufdatum
+2026-11-22.
+
+**Die Kontonummer selbst lässt sich nicht ändern.** Sie ist der Identifikator des Kontos, und
+einen Parameter für eine neue Nummer gibt es nicht.
+
+**Felder, die nicht gesendet werden, behalten laut Spezifikation ihren Wert.** Die
+Spezifikation schreibt ausdrücklich: „All other parameters are optional: fields which are not
+submitted keep their current value." Das ist ein **dokumentiertes** Verhalten und keine
+Annahme; ein Update ist deshalb eine echte Teilaktualisierung.
+
+### Parameter
+
+Vollständig, 5 Parameter laut
+`jq '.paths["/accounts/update"].post.parameters | length'`.
+
+| Feld | Typ | Pflicht | Default | Beschreibung | Werte und Format |
+| --- | --- | --- | --- | --- | --- |
+| `api_key` | string | ja | kein | API-Schlüssel des Mandanten | siehe Grundlagen |
+| `postingaccount_number` | integer | ja | kein | Buchungskontonummer des zu ändernden Basiskontos. Sie selbst lässt sich nicht ändern | Ganzzahl. Die Nummern der bestehenden Konten zeigt `/accounts/get` |
+| `name` | string | nein | – | Neuer Name des Basiskontos. Wird validiert | Länge mandantenabhängig, siehe Fehlercode 8 |
+| `receipt_creates_transaction` | boolean | nein | – | Wenn `true`, erzeugt ein diesem Konto zugewiesener Beleg automatisch eine Zahlung auf diesem Konto. Laut Spezifikation wirkt die Angabe **nur bei manuell geführten Konten** | `true` oder `false` |
+| `is_disabled_in_select` | boolean | nein | – | Wenn `true`, wird das Basiskonto in der Auswahlliste der Basiskonten ausgeblendet | `true` oder `false` |
+
+Verschachtelte Objekt- oder Array-Parameter: keine.
+
+**`is_revision_safe` fehlt in diesem Endpunkt.** Die Spezifikation schreibt ausdrücklich: „NOTE:
+is_revision_safe can not be changed via the api." Die Revisionssicherheit eines Kontos bleibt
+also, wie sie ist; sie lässt sich weder setzen noch abschalten.
+
+### Erfolgsantwort
+
+```json
+{
+  "success": true,
+  "message": "",
+  "postingaccount_number": "1200"
+}
+```
+
+Kein `data`-Feld. Der Beispielwert `"1200"` stammt aus der Spezifikation.
+
+### Fehlerfälle
+
+| HTTP-Status | error_code | message | Bedeutung | Abhilfe |
+| --- | --- | --- | --- | --- |
+| 401 | 3 | `API credentials unknown or invalid` | Basic-Auth falsch | Zugangsdaten prüfen |
+| 401 | 4 | `customer not found or insufficient privileges` | `api_key` falsch | `api_key` prüfen |
+| 403 | 11 | `customer has no active status` | Mandant inaktiv | Vertragsstatus klären |
+| 400 | 5 | `no postingaccount_number specified` | Pflichtfeld fehlt | `postingaccount_number` setzen |
+| 400 | 6 | `invalid postingaccount_number specified` | Nummer formal ungültig | Ganzzahl senden |
+| 400 | 7 | `account was not found` | Kein Basiskonto mit dieser Nummer | Nummern über `/accounts/get` prüfen |
+| 400 | 8 | `the account name must be 2 to 120 characters long` | Name zu kurz oder zu lang | Länge anpassen |
+| 400 | 9 | `the specified name already exists` | Ein anderes Basiskonto trägt diesen Namen | Eindeutigen Namen wählen |
+| 400 | 10 | `the account name may not be changed because the dropbox folder of the account is not empty` | Der Ordner des Kontos ist nicht leer | Umbenennen nicht möglich |
+| 400 | 12 | `invalid name specified` | Name formal ungültig | Namen bereinigen |
+| 400 | 13 | `invalid receipt_creates_transaction specified` | Kein gültiger Boolean | `true` oder `false` senden |
+| 400 | 14 | `receipt_creates_transaction is only allowed for manual accounts` | Das Flag wirkt nur bei manuell geführten Konten | Flag weglassen |
+| 400 | 16 | `invalid is_disabled_in_select specified` | Kein gültiger Boolean | `true` oder `false` senden |
+| 400 | 17 | `the account could not be validated` | Das Konto ließ sich nicht validieren | Meldung dem Nutzer weitergeben |
+| 400 | 23 | `no post and files content received or declined` | Kein verwertbarer Request-Body | Content-Type und JSON prüfen |
+| 500 | 0 | `error while processing the request` | Interner Fehler | Zustand prüfen, dann wiederholen |
+| 504 | 30 | `a timeout occurred while processing the request` | Zeitüberschreitung | Zustand prüfen, dann wiederholen |
+
+### curl-Beispiel
+
+```bash
+curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/accounts/update" \
+  -u "<API_CLIENT>:<API_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "api_key": "<API_KEY>",
+        "postingaccount_number": 1200,
+        "name": "Geschäftskonto Hauptbank"
+      }'
+```
+
+### Fallstricke
+
+- **Teilaktualisierung, nicht Überschreiben.** Nicht gesendete Felder behalten ihren Wert.
+  Wer das nicht weiß, sendet gewohnheitsgemäß nur das eine Feld und überschreibt dabei
+  unbemerkt ein anderes.
+- **Die Kontonummer ist nicht änderbar.** Sie identifiziert das Konto, und ein Versuch,
+  sie zu ändern, ist nicht vorgesehen.
+- **`is_revision_safe` ist nicht änderbar.** Auch nicht abschaltbar. Die Eigenschaft bleibt
+  ein Leben lang stehen.
+- **`receipt_creates_transaction` wirkt nur bei manuell geführten Konten.** Fehlercode 14
+  nennt das ausdrücklich.
+- **Fehlercode 10 verhindert das Umbenennen**, wenn der Dropbox-Ordner des Kontos nicht leer
+  ist. Das ist eine der wenigen Stellen, an denen die API eine fachliche Grenze zieht, statt
+  nur Formalien zu prüfen.
+- **Der Vorzustand ist über die API nicht abrufbar.** Es gibt keinen Endpunkt, der den
+  vorherigen Stand eines Basiskontos liefert. Vorher lesen über `/accounts/get` ist deshalb
+  der einzige Weg, eine Änderung später nachzuvollziehen.
+- **`is_disabled_in_select` blendet das Konto nur in der Auswahlliste aus.** Das Konto selbst
+  bleibt bestehen und kann weiterhin ausgewählt und verwendet werden; die API beschreibt
+  keine Löschwirkung.
 
 ---
 
@@ -2670,7 +2779,8 @@ Diese Felder brauchen in der Tool-Beschreibung ausführliche, beispielhafte Erkl
 | `order` bei `/settings/get/postingaccounts` | Zusammengesetzter String aus Feld und Richtung | Die sechs erlaubten Werte als Enum abbilden statt als Freitext |
 | `exclude_*`-Flags | Vier Negativ-Flags, deren Kombination das Ergebnis stark verändert | Nicht direkt exponieren, sondern über einen positiven `kind`-Parameter kapseln |
 | `due_in_days` | Schreibbar, nicht lesbar | Ausdrücklich vermerken, dass der aktuelle Wert nicht abfragbar ist |
-| `is_revision_safe` | Wirkt nur bei Kassenkonten und hat steuerliche Folgen, nicht zurücknehmbar | Warnung und Nutzerbestätigung |
+| `is_revision_safe` | Wirkt nur bei Kassenkonten und hat steuerliche Folgen, nicht zurücknehmbar. Über `/accounts/update` ist die Eigenschaft nicht änderbar | Warnung und Nutzerbestätigung |
+| `is_disabled_in_select` | Blendet ein Basiskonto nur in der Auswahlliste aus, nicht aus dem Bestand | Nebenwirkung nennen: Das Konto bleibt bestehen und weiterhin verwendbar |
 | `receipt_creates_transaction` | Schließt debitorische und kreditorische Buchung dieser Belege aus | Nebenwirkung nennen |
 | `code` bei Kostenstellen | Maximal 10 Zeichen, unveränderlich, zugleich Schlüssel | Längengrenze und Unveränderlichkeit nennen |
 | `transaction_id_by_customer` und `receipt_id_by_customer` | Exklusiv, beide formal optional, mandantenbezogene laufende Nummern | Als Enum plus ID modellieren. Klarstellen, dass es nicht die technische ID ist |
@@ -2679,12 +2789,13 @@ Diese Felder brauchen in der Tool-Beschreibung ausführliche, beispielhafte Erkl
 
 ## Absicherung schreibender Tools
 
-Von den 23 dokumentierten Endpunkten sind 18 schreibend:
+Von den 24 dokumentierten Endpunkten sind 19 schreibend:
 `/settings/add/debtor`, `/settings/add-batch/debtors`, `/settings/update/debtor`,
 `/settings/delete/debtor`, `/settings/add/creditor`, `/settings/add-batch/creditors`,
 `/settings/update/creditor`, `/settings/delete/creditor`, `/settings/add/postingaccount`,
 `/settings/update/postingaccount`, `/settings/delete/postingaccount`, `/accounts/add`,
-`/accounts/delete`, `/cost-locations/add`, `/cost-locations/update`, `/cost-locations/delete`,
+`/accounts/delete`, `/accounts/update`, `/cost-locations/add`, `/cost-locations/update`,
+`/cost-locations/delete`,
 `/comments/add`.
 
 Fünf sind lesend: `/settings/get/debtors`, `/settings/get/creditors`,
@@ -2789,12 +2900,13 @@ Endpunkts sind im Dokument in einer Tabelle aufgeführt.
 | `/settings/update/postingaccount` | 3 | 3 |
 | `/accounts/get` | 1 | 1 |
 | `/accounts/add` | 6 | 6 |
+| `/accounts/update` | 5 | 5 |
 | `/cost-locations/get` | 4 | 4 |
 | `/cost-locations/add` | 3 | 3 |
 | `/cost-locations/update` | 3 | 3 |
 | `/cost-locations/delete` | 2 | 2 |
 | `/comments/add` | 4 | 4 |
-| **Summe** | **104** | **104** |
+| **Summe** | **109** | **109** |
 
 # Anhang D: Live-Testprotokoll
 

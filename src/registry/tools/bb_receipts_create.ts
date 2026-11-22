@@ -1,4 +1,4 @@
-// Werkzeug 4 von 59: `/receipts/add`, Beleg ohne Datei anlegen.
+// Werkzeug 4 von 61: `/receipts/add`, Beleg ohne Datei anlegen.
 //
 // **Währung, Regel R-A.** `currency` trägt hier und an `bb_receipts_create_batch`
 // denselben Wertevorrat, dieselbe Pflichtigkeit und wortgleich dieselbe Beschreibung: freier

@@ -68,7 +68,7 @@ export interface ParallelArrayColumn {
 export type ParallelArrayMapping = readonly ParallelArrayColumn[];
 
 /**
- * Die sechs Spalten der Buchungspositionen von `/postings/add/receipt` (Werkzeug 21).
+ * Die sechs Spalten der Buchungspositionen von `/postings/add/receipt` (Werkzeug 23).
  *
  * Die Feldnamen des Positionsobjekts sind die Einzahlformen des Musterschemas; die
  * `apiName`-Spalte trägt die Mehrzahlformen der Spezifikation.
@@ -83,7 +83,7 @@ export const POSTINGS_RECEIPT_COLUMNS: ParallelArrayMapping = Object.freeze([
 ]);
 
 /**
- * Die sieben Spalten von `/postings/add/transaction` (Werkzeug 23): dieselben sechs plus
+ * Die sieben Spalten von `/postings/add/transaction` (Werkzeug 25): dieselben sechs plus
  * die Zuordnung offener Posten je Position.
  */
 export const POSTINGS_TRANSACTION_COLUMNS: ParallelArrayMapping = Object.freeze([
@@ -97,7 +97,7 @@ export const POSTINGS_TRANSACTION_COLUMNS: ParallelArrayMapping = Object.freeze(
 
 /**
  * Die sechs Spalten **innerhalb** eines Stapelelements von `/postings/add-batch/receipts`
- * (Werkzeug 22, Definition `ReceiptPostings`).
+ * (Werkzeug 24, Definition `ReceiptPostings`).
  *
  * Der einzige Unterschied zu {@link POSTINGS_RECEIPT_COLUMNS} ist die Schreibweise
  * `postingstexts` mit eingeschobenem `s`. Das ist ein benannter Spezifikationsfehler: Die
@@ -113,7 +113,7 @@ export const POSTINGS_RECEIPT_BATCH_COLUMNS: ParallelArrayMapping = Object.freez
 
 /**
  * Die sieben Spalten innerhalb eines Stapelelements von
- * `/postings/add-batch/transactions` (Werkzeug 24, Definition `TransactionPostings`).
+ * `/postings/add-batch/transactions` (Werkzeug 26, Definition `TransactionPostings`).
  * Dort heißt das Feld wieder `postingtexts`, also wie am Einzelendpunkt.
  */
 export const POSTINGS_TRANSACTION_BATCH_COLUMNS: ParallelArrayMapping =
@@ -138,7 +138,7 @@ export const INVOICE_ITEM_COLUMNS: ParallelArrayMapping = Object.freeze([
 ]);
 
 /**
- * Die sieben Spalten der Positionen von `/invoices/create/e-invoice` (Werkzeug 19):
+ * Die sieben Spalten der Positionen von `/invoices/create/e-invoice` (Werkzeug 20):
  * `item_tax_type` und `item_tax_amount` statt `item_vat`.
  *
  * `item_tax_amount` steht hier mit `required: true`, obwohl das Feld im Positionsobjekt

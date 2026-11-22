@@ -1,5 +1,5 @@
 // Vertragstest: **kein automatischer Wiederholungsversuch bei schreibenden
-// Werkzeugen.** Für jedes der 44 schreibenden Werkzeuge liefert die HTTP-Nachbildung einmal
+// Werkzeugen.** Für jedes der 46 schreibenden Werkzeuge liefert die HTTP-Nachbildung einmal
 // HTTP 504. Erwartet wird genau **ein** Request, kein zweiter, und eine Meldung, die den
 // Prüfweg aus `verifyWith` nennt und den Zustandssatz 3 trägt.
 //
@@ -14,7 +14,7 @@
 // einen zweiten Versuch gar nicht beantworten könnte — der Test würde nichts belegen.
 //
 // Dieser Lauf belegt zugleich die zweite Hälfte von `read-only.test.ts`: Er läuft **ohne**
-// `BB_MCP_READ_ONLY`, und alle 44 schreibenden Werkzeuge kommen dabei bis zur HTTP-Schicht.
+// `BB_MCP_READ_ONLY`, und alle 46 schreibenden Werkzeuge kommen dabei bis zur HTTP-Schicht.
 
 import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport } from "@modelcontextprotocol/server";
@@ -33,7 +33,7 @@ import { installTestConfig, mockApi, resetTestConfig, type ApiMock } from "../he
 // Minimalargumente aus dem Eingabeschema
 // ---------------------------------------------------------------------------------------
 //
-// Die Argumente werden **aus dem erzeugten JSON Schema abgeleitet** und nicht 44-mal von Hand
+// Die Argumente werden **aus dem erzeugten JSON Schema abgeleitet** und nicht 46-mal von Hand
 // geschrieben. Das hat einen inhaltlichen Grund und nicht nur einen der Bequemlichkeit: Eine
 // Handtabelle veraltet still, sobald ein Pflichtfeld hinzukommt — der Aufruf scheiterte dann
 // an Guard 3, es ginge kein Request hinaus, und „genau ein Request" wäre grün, ohne dass der
@@ -289,8 +289,8 @@ function textOf(result: { content?: unknown }): string {
 // ---------------------------------------------------------------------------------------
 
 describe("HTTP 504 an einem schreibenden Werkzeug", () => {
-  it("die Menge stimmt: 44 schreibende, 15 lesende Einträge", () => {
-    expect(WRITE_ENTRIES).toHaveLength(44);
+  it("die Menge stimmt: 46 schreibende, 15 lesende Einträge", () => {
+    expect(WRITE_ENTRIES).toHaveLength(46);
     expect(READ_ENTRIES).toHaveLength(15);
   });
 

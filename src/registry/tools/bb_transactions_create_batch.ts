@@ -1,4 +1,4 @@
-// Werkzeug 13, `/transactions/addBatch`: bis zu 50 Zahlungen in einem Aufruf anlegen.
+// Werkzeug 13 von 61, `/transactions/addBatch`: bis zu 50 Zahlungen in einem Aufruf anlegen.
 // Klasse A, Wirkung anlegend, Pflichtsatz U4.
 //
 // **Keine Umformung.** Der Endpunkt führt genau einen Parameter `transactions`, Definition

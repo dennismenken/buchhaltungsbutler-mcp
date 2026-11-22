@@ -1,4 +1,4 @@
-// Werkzeug 48 von 59: `/accounts/add`.
+// Werkzeug 49 von 61: `/accounts/add`.
 //
 // **Umbenennung nach Anhang A:** Der Parameter `type` heißt im Werkzeugschema
 // `payment_account_type`. `type` ist in der Spezifikation siebenfach mit unterschiedlicher

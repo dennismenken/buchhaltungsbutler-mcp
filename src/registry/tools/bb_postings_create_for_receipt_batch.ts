@@ -1,4 +1,4 @@
-// Werkzeug 23, `/postings/add-batch/receipts`: Belegbuchungen für mehrere Belege in einem
+// Werkzeug 24 von 61, `/postings/add-batch/receipts`: Belegbuchungen für mehrere Belege in einem
 // Aufruf.
 //
 // **Auf oberster Ebene findet hier KEINE Umformung statt.** Der Endpunkt führt genau einen
@@ -123,7 +123,7 @@ const RECEIPTS_CONTAINER = batchContainer(
   },
 );
 
-/** Werkzeug 22: `/postings/add-batch/receipts`. */
+/** Werkzeug 24: `/postings/add-batch/receipts`. */
 export const bb_postings_create_for_receipt_batch: ToolEntry = {
   name: "bb_postings_create_for_receipt_batch",
   title: "Buchungen zu Belegen anlegen",

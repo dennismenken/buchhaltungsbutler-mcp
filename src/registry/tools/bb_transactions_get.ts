@@ -1,4 +1,4 @@
-// Werkzeug 10, `/transactions/get/id_by_customer`: eine einzelne Zahlung holen.
+// Werkzeug 10 von 61, `/transactions/get/id_by_customer`: eine einzelne Zahlung holen.
 //
 // Dieser Eintrag ist einer der vier mit Pfadvorlage. Das Segment `id_by_customer` im
 // Pfad der Spezifikation ist ein PLATZHALTER für den Wert und kein literales Segment; live

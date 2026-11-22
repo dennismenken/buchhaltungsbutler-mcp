@@ -1,4 +1,4 @@
-// Werkzeug 58: `/reports/create/bwa`, Erzeugung der BWA anstoßen.
+// Werkzeug 60 von 61: `/reports/create/bwa`, Erzeugung der BWA anstoßen.
 //
 // Klasse AR: `destructiveHint: true`, weil ein neu erzeugter Bericht den
 // vorherigen desselben Typs **ersetzt** — dass er jederzeit neu berechenbar ist, ändert
@@ -32,7 +32,7 @@ const DATE_TO_DESCRIPTION =
   `${EMPTY_STRING_SENTENCE} Der Zeitraum schließt diesen Tag ein; für ein vollständiges ` +
   "erstes Quartal also 2026-03-31 und nicht 2026-04-01.";
 
-/** Werkzeug 53: `/reports/create/bwa`. */
+/** Werkzeug 60: `/reports/create/bwa`. */
 export const bb_reports_create_bwa: ToolEntry = {
   name: "bb_reports_create_bwa",
   title: "BWA anfordern",

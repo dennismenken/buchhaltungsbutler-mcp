@@ -1,4 +1,4 @@
-// Werkzeug 37 von 59: `/settings/delete/debtor`.
+// Werkzeug 38 von 61: `/settings/delete/debtor`.
 //
 // Klasse D, also `destructiveHint: true` und `idempotentHint: false` (die Begründung steht
 // bei `TOOL_CLASSES` in src/registry/classes.ts). Eine Wiederholung wäre plausibel

@@ -110,7 +110,7 @@ describe("die zwölf Werkzeuggruppen", () => {
 });
 
 describe("die Gruppe jedes Registereintrags", () => {
-  it("trägt bei allen 59 Werkzeugen eine der zwölf Gruppen", () => {
+  it("trägt bei allen 61 Werkzeugen eine der zwölf Gruppen", () => {
     const problems: string[] = [];
     for (const entry of REGISTRY) {
       // Der Zwischenschritt über `string` ist Absicht: Ohne ihn engte TypeScript den Wert im
@@ -124,7 +124,7 @@ describe("die Gruppe jedes Registereintrags", () => {
     expect(REGISTRY).toHaveLength(EXPECTED_TOOL_NAMES.length);
   });
 
-  it("stimmt bei allen 59 Werkzeugen mit der zweiten, unabhängig gepflegten Liste überein", () => {
+  it("stimmt bei allen 61 Werkzeugen mit der zweiten, unabhängig gepflegten Liste überein", () => {
     const expected: Record<string, ToolGroup> = EXPECTED_TOOL_GROUPS;
     const problems: string[] = [];
     for (const entry of REGISTRY) {
@@ -149,7 +149,7 @@ describe("die Gruppe jedes Registereintrags", () => {
     expectNoIssues(problems);
   });
 
-  it("verteilt die 59 Werkzeuge genau nach der Quersumme der Gruppentabelle", () => {
+  it("verteilt die 61 Werkzeuge genau nach der Quersumme der Gruppentabelle", () => {
     const problems: string[] = [];
     let total = 0;
     for (const [group, wanted] of Object.entries(EXPECTED_GROUP_COUNTS)) {
@@ -162,11 +162,11 @@ describe("die Gruppe jedes Registereintrags", () => {
       }
     }
     expectNoIssues(problems);
-    expect(total).toBe(59);
+    expect(total).toBe(61);
   });
 
   it("hält die Gruppe bundles frei von Endpunktwerkzeugen", () => {
-    // Ein Endpunktwerkzeug in `bundles` hebelte die Zusicherung aus, dass die 59
+    // Ein Endpunktwerkzeug in `bundles` hebelte die Zusicherung aus, dass die 61
     // Endpunktwerkzeuge neben den Bündeln unverändert bestehen bleiben: Es verschwände,
     // sobald jemand die Bündelgruppe abschaltet.
     const inBundles = entriesOf(BUNDLE_TOOL_GROUP).map((entry) => entry.name);

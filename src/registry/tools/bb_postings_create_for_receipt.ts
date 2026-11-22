@@ -1,4 +1,4 @@
-// Werkzeug 22, `/postings/add/receipt`: Buchungssätze zu einem vorhandenen Beleg.
+// Werkzeug 23 von 61, `/postings/add/receipt`: Buchungssätze zu einem vorhandenen Beleg.
 //
 // Einer der **fünf** Endpunkte mit parallelen Arrays auf oberster Ebene. Das
 // Werkzeug nimmt stattdessen eine Positionsliste `positions` mit sechs `apiNames`; die
@@ -83,7 +83,7 @@ const CONDITIONAL_PERSON_ACCOUNT_SENTENCE =
 
 const position = postingPositionItem(false).shape;
 
-/** Werkzeug 21: `/postings/add/receipt`. */
+/** Werkzeug 23: `/postings/add/receipt`. */
 export const bb_postings_create_for_receipt: ToolEntry = {
   name: "bb_postings_create_for_receipt",
   title: "Buchungen zu Beleg anlegen",

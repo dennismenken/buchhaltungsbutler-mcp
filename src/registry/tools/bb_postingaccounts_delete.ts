@@ -1,4 +1,4 @@
-// Werkzeug 46 von 59: `/settings/delete/postingaccount`.
+// Werkzeug 47 von 61: `/settings/delete/postingaccount`.
 //
 // Klasse D, also `destructiveHint: true` und `idempotentHint: false` (die Begründung steht
 // bei `TOOL_CLASSES` in src/registry/classes.ts). Eine Wiederholung wäre plausibel

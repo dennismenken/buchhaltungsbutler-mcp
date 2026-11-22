@@ -445,7 +445,7 @@ function convertPositions(
 /**
  * Eine Objektliste: die Behälter der acht Stapelendpunkte. Sie sind **bereits** Objektlisten,
  * hier findet keine Umformung statt — wohl aber die Umbenennung der Felder
- * **innerhalb** eines Elements und, an den Werkzeugen 22 und 24, die geschachtelte
+ * **innerhalb** eines Elements und, an den Werkzeugen 24 und 26, die geschachtelte
  * Positionsliste.
  */
 function mapObjectList(

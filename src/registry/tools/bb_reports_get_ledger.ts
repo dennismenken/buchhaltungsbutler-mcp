@@ -1,4 +1,4 @@
-// Werkzeug 57: `/reports/get/sums/ledger`, das Kontenblatt eines Sachkontos.
+// Werkzeug 59 von 61: `/reports/get/sums/ledger`, das Kontenblatt eines Sachkontos.
 //
 // Der Endpunkt liegt unterhalb von `/reports/get/sums/`, gehört aber **nicht** zum
 // zweistufigen Muster aus Erzeugen und Abholen: Die Spezifikation sagt ausdrücklich „the
@@ -42,7 +42,7 @@ const BASE_DESCRIPTION =
   "Leistungsdatum und ersatzweise Buchungsdatum. Ohne Angabe 'date'. Mit dem zweiten Wert " +
   "können Buchungen außerhalb des Rechnungsdatums erscheinen; nicht verifiziert.";
 
-/** Werkzeug 52: `/reports/get/sums/ledger`. */
+/** Werkzeug 59: `/reports/get/sums/ledger`. */
 export const bb_reports_get_ledger: ToolEntry = {
   name: "bb_reports_get_ledger",
   title: "Kontenblatt abrufen",

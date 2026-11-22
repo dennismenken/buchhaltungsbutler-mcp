@@ -1,4 +1,4 @@
-// Werkzeug 18: `/invoices/create`, die endgültige Ausgangsrechnung.
+// Werkzeug 18 von 61: `/invoices/create`, die endgültige Ausgangsrechnung.
 //
 // Klasse B: Das Werkzeug legt ein neues, nummeriertes Dokument an und
 // überschreibt nichts, trägt deshalb `destructiveHint: false` — die Warnung läuft über den
@@ -94,7 +94,7 @@ const RECURRING_DATE_DESCRIPTION =
 const address = contactAddressBlock();
 const item = invoiceItemItem().shape;
 
-/** Werkzeug 17: `/invoices/create`. */
+/** Werkzeug 18: `/invoices/create`. */
 export const bb_invoices_create: ToolEntry = {
   name: "bb_invoices_create",
   title: "Rechnung erzeugen",

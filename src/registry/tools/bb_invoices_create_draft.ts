@@ -1,4 +1,4 @@
-// Werkzeug 19: `/invoices/create/draft`, der Rechnungsentwurf.
+// Werkzeug 19 von 61: `/invoices/create/draft`, der Rechnungsentwurf.
 //
 // Der Endpunkt ist eine abgespeckte Fassung von `/invoices/create`: dieselben Pflichtfelder,
 // aber **keine** Nummernvergabe, **kein** PDF und drei Parameter weniger (`invoicenumber`,
@@ -79,7 +79,7 @@ const RECURRING_DATE_DESCRIPTION =
 const address = contactAddressBlock();
 const item = invoiceItemItem().shape;
 
-/** Werkzeug 18: `/invoices/create/draft`. */
+/** Werkzeug 19: `/invoices/create/draft`. */
 export const bb_invoices_create_draft: ToolEntry = {
   name: "bb_invoices_create_draft",
   title: "Rechnungsentwurf erzeugen",

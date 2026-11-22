@@ -141,9 +141,9 @@ export const DESCRIPTION_CHAR_BUDGET_BY_TIER = {
 } as const satisfies Record<DescriptionTier, number>;
 
 /**
- * Die namentliche Zuordnung aller 59 Werkzeuge zu ihrer Beschreibungsstufe.
+ * Die namentliche Zuordnung aller 61 Werkzeuge zu ihrer Beschreibungsstufe.
  * P8 prüft die Stufe jedes Registereintrags gegen diese drei Listen, P11 zusätzlich die
- * Prüfsumme 22 + 23 + 14 = 59.
+ * Prüfsumme 22 + 25 + 14 = 61.
  *
  * Die Listen stehen vollständig hier und nicht verteilt in den Registereinträgen, weil die
  * fünf Registerpakete parallel entstehen können: Jeder Bearbeiter muss die Stufe
@@ -154,7 +154,7 @@ export const DESCRIPTION_CHAR_BUDGET_BY_TIER = {
  */
 export const TOOL_NAMES_BY_TIER = {
   // Stufe 1, 22 Werkzeuge: die Verwechslungs- und Gefahrenzone. Das sind die zwölf
-  // bb_postings_* und die drei bb_invoices_* sowie die Werkzeuge 1, 6, 7, 9, 12, 40 und 43.
+  // bb_postings_* und die drei bb_invoices_* sowie die Werkzeuge 1, 6, 7, 9, 12, 44 und 48.
   1: [
     "bb_receipts_search",
     "bb_receipts_upload",
@@ -179,7 +179,7 @@ export const TOOL_NAMES_BY_TIER = {
     "bb_postingaccounts_search",
     "bb_payment_accounts_list",
   ],
-  // Stufe 2, 23 Werkzeuge: fachliche Tiefe, aber kein Verwechslungsrisiko. Kriterium: alle
+  // Stufe 2, 25 Werkzeuge: fachliche Tiefe, aber kein Verwechslungsrisiko. Kriterium: alle
   // schreibenden Einzelwerkzeuge außerhalb der Stufe 1, dazu der Belegeinzelabruf mit seinen
   // Fremdwährungsfeldern (Werkzeug 2).
   2: [
@@ -189,6 +189,7 @@ export const TOOL_NAMES_BY_TIER = {
     "bb_transactions_assign_receipt",
     "bb_transactions_unassign_receipt",
     "bb_transactions_delete",
+    "bb_invoices_create_correction",
     "bb_debtors_create",
     "bb_debtors_update",
     "bb_debtors_delete",
@@ -199,6 +200,7 @@ export const TOOL_NAMES_BY_TIER = {
     "bb_postingaccounts_update",
     "bb_postingaccounts_delete",
     "bb_payment_accounts_create",
+    "bb_payment_accounts_update",
     "bb_payment_accounts_delete",
     "bb_comments_create",
     "bb_cost_locations_create",

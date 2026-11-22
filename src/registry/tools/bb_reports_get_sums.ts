@@ -1,4 +1,4 @@
-// Werkzeug 56: `/reports/get/sums`, eine erzeugte Summen- und Saldenliste
+// Werkzeug 58 von 61: `/reports/get/sums`, eine erzeugte Summen- und Saldenliste
 // abholen.
 //
 // Lesend (Klasse R), deshalb kein Pflichtsatz und `response_format` als einziges
@@ -34,7 +34,7 @@ const GET_FILES_DESCRIPTION =
   "wird nur, was bb_reports_create_sums angefordert hat, alles andere ist null. Ohne Angabe " +
   "fehlt das Objekt files ganz.";
 
-/** Werkzeug 51: `/reports/get/sums`. */
+/** Werkzeug 58: `/reports/get/sums`. */
 export const bb_reports_get_sums: ToolEntry = {
   name: "bb_reports_get_sums",
   title: "Summen- und Saldenliste abholen",

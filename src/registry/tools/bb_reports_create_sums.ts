@@ -1,4 +1,4 @@
-// Werkzeug 59: `/reports/create/sums`, Erzeugung der Summen- und Saldenliste
+// Werkzeug 61 von 61: `/reports/create/sums`, Erzeugung der Summen- und Saldenliste
 // anstoßen.
 //
 // Klasse AR: `destructiveHint: true`, weil der neue Bericht den vorherigen
@@ -37,7 +37,7 @@ const BASE_DESCRIPTION =
   "Leistungsdatum und ersatzweise Buchungsdatum. Ohne Angabe 'date'. Die BWA der " +
   "Weboberfläche wertet nach dem Leistungsdatum aus; beim Vergleich bewusst setzen.";
 
-/** Werkzeug 54: `/reports/create/sums`. */
+/** Werkzeug 61: `/reports/create/sums`. */
 export const bb_reports_create_sums: ToolEntry = {
   name: "bb_reports_create_sums",
   title: "Summen- und Saldenliste anfordern",

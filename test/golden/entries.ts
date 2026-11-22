@@ -335,7 +335,7 @@ export const TRANSACTIONS_SEARCH: ToolEntry = entry({
   concise: ["id_by_customer", "to_from", "amount", "booking_date", "value_date", "purpose"],
 });
 
-/** Werkzeug 43, `/accounts/get`: ohne Paginierung, nie zwischengespeichert. */
+/** Werkzeug 48, `/accounts/get`: ohne Paginierung, nie zwischengespeichert. */
 export const PAYMENT_ACCOUNTS_LIST: ToolEntry = entry({
   name: "bb_payment_accounts_list",
   title: "Zahlungskonten auflisten",
@@ -352,7 +352,7 @@ export const PAYMENT_ACCOUNTS_LIST: ToolEntry = entry({
   concise: ["postingaccount_number", "name"],
 });
 
-/** Werkzeug 40, `/settings/get/postingaccounts`: speicherfähig. */
+/** Werkzeug 44, `/settings/get/postingaccounts`: speicherfähig. */
 export const POSTINGACCOUNTS_SEARCH: ToolEntry = entry({
   name: "bb_postingaccounts_search",
   title: "Konten suchen",
@@ -377,7 +377,7 @@ export const POSTINGACCOUNTS_SEARCH: ToolEntry = entry({
   invalidatesCache: [],
 });
 
-/** Werkzeug 20, `/postings/get`: trägt die beiden Filterumbenennungen aus Anhang A. */
+/** Werkzeug 22, `/postings/get`: trägt die beiden Filterumbenennungen aus Anhang A. */
 export const POSTINGS_SEARCH: ToolEntry = entry({
   name: "bb_postings_search",
   title: "Buchungen suchen",
@@ -424,7 +424,7 @@ export const POSTINGS_SEARCH: ToolEntry = entry({
   ],
 });
 
-/** Werkzeug 25, `/postings/add/free`: acht **skalare** Felder, keine Positionsliste. */
+/** Werkzeug 27, `/postings/add/free`: acht **skalare** Felder, keine Positionsliste. */
 export const POSTINGS_CREATE_FREE: ToolEntry = entry({
   name: "bb_postings_create_free",
   title: "Freie Buchung anlegen",
@@ -453,7 +453,7 @@ export const POSTINGS_CREATE_FREE: ToolEntry = entry({
   },
 });
 
-/** Werkzeug 21, `/postings/add/receipt`: Positionsliste auf oberster Ebene. */
+/** Werkzeug 23, `/postings/add/receipt`: Positionsliste auf oberster Ebene. */
 export const POSTINGS_CREATE_FOR_RECEIPT: ToolEntry = entry({
   name: "bb_postings_create_for_receipt",
   title: "Buchungen zu Beleg anlegen",
@@ -501,7 +501,7 @@ export const POSTINGS_CREATE_FOR_RECEIPT: ToolEntry = entry({
   },
 });
 
-/** Werkzeug 22, `/postings/add-batch/receipts`: Objektliste mit **geschachtelter** Positionsliste. */
+/** Werkzeug 24, `/postings/add-batch/receipts`: Objektliste mit **geschachtelter** Positionsliste. */
 export const POSTINGS_CREATE_FOR_RECEIPT_BATCH: ToolEntry = entry({
   name: "bb_postings_create_for_receipt_batch",
   title: "Buchungen zu Belegen anlegen",
@@ -566,7 +566,7 @@ export const POSTINGS_CREATE_FOR_RECEIPT_BATCH: ToolEntry = entry({
   verifyWith: { kind: "none", reason: "Die API bietet keinen Leseweg je Stapel." },
 });
 
-/** Werkzeug 23, `/postings/add/transaction`: sieben Spalten, `null` je Position erlaubt. */
+/** Werkzeug 25, `/postings/add/transaction`: sieben Spalten, `null` je Position erlaubt. */
 export const POSTINGS_CREATE_FOR_TRANSACTION: ToolEntry = entry({
   name: "bb_postings_create_for_transaction",
   title: "Buchungen zu Zahlung anlegen",
@@ -613,7 +613,7 @@ export const POSTINGS_CREATE_FOR_TRANSACTION: ToolEntry = entry({
   },
 });
 
-/** Werkzeug 17, `/invoices/create`: Positionsliste `items`, kein Weg zurück. */
+/** Werkzeug 18, `/invoices/create`: Positionsliste `items`, kein Weg zurück. */
 export const INVOICES_CREATE: ToolEntry = entry({
   name: "bb_invoices_create",
   title: "Rechnung erzeugen",
@@ -666,7 +666,7 @@ export const INVOICES_CREATE: ToolEntry = entry({
   },
 });
 
-/** Werkzeug 19, `/invoices/create/e-invoice`: sieben Spalten mit Steuerart. */
+/** Werkzeug 20, `/invoices/create/e-invoice`: sieben Spalten mit Steuerart. */
 export const INVOICES_CREATE_EINVOICE: ToolEntry = entry({
   name: "bb_invoices_create_einvoice",
   title: "E-Rechnung erzeugen",
@@ -803,7 +803,7 @@ export const RECEIPTS_CREATE: ToolEntry = entry({
   },
 });
 
-/** Werkzeug 53, `/reports/create/bwa`: der Anschlusshinweis. */
+/** Werkzeug 60, `/reports/create/bwa`: der Anschlusshinweis. */
 export const REPORTS_CREATE_BWA: ToolEntry = entry({
   name: "bb_reports_create_bwa",
   title: "BWA anfordern",
@@ -833,7 +833,7 @@ export const REPORTS_CREATE_BWA: ToolEntry = entry({
 });
 
 /**
- * Werkzeug 50, `/reports/get/bwa`: Bericht mit Dateien im Objekt `files`.
+ * Werkzeug 57, `/reports/get/bwa`: Bericht mit Dateien im Objekt `files`.
  *
  * `shape: "ack"` zusammen mit `container: "none"` ist hier kein Schreibfehler, sondern die
  * einzige Kombination, die die Antwort trifft: Die Nutzdaten stehen **auf oberster Ebene**

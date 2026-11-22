@@ -72,7 +72,7 @@ const RECREATE_NOTE =
   "Buchungsnummern und Zeitstempel sind danach andere.";
 
 /**
- * Der Weg zurück je schreibendem Werkzeug, vollständig für alle 44.
+ * Der Weg zurück je schreibendem Werkzeug, vollständig für alle 46.
  *
  * Lesende Werkzeuge stehen nicht in der Tabelle: Sie verändern nichts, und ein „Weg zurück"
  * wäre dort eine sinnlose Zeile.
@@ -173,6 +173,12 @@ export const REVERSAL_BY_TOOL: Readonly<Record<string, Reversal>> = Object.freez
     note:
       "Die API kennt keinen Storno für E-Rechnungen. Die erzeugte Rechnung ist nummeriert und " +
       "bleibt bestehen.",
+  },
+  bb_invoices_create_correction: {
+    kind: "none",
+    note:
+      "Die API kennt keinen Endpunkt, eine Rechnungskorrektur zurückzunehmen. Sie ist selbst " +
+      "eine neue Ausgangsrechnung; korrigiert wird über eine weitere Korrektur.",
   },
 
   // --- Buchungen ---------------------------------------------------------------------
@@ -312,6 +318,7 @@ export const REVERSAL_BY_TOOL: Readonly<Record<string, Reversal>> = Object.freez
     argFrom: { postingaccount_number: "postingaccount_number" },
     note: "legt ein Zahlungskonto wieder an. Die gelöschten Stammdaten stehen nur in der Weboberfläche.",
   },
+  bb_payment_accounts_update: { kind: "none", note: NO_PREVIOUS_STATE },
 
   // --- Kommentare und Kostenstellen --------------------------------------------------
   bb_comments_create: {

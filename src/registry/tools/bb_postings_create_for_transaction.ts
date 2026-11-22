@@ -1,4 +1,4 @@
-// Werkzeug 24, `/postings/add/transaction`: Buchungssätze zu einer vorhandenen Zahlung.
+// Werkzeug 25 von 61, `/postings/add/transaction`: Buchungssätze zu einer vorhandenen Zahlung.
 //
 // Der zweite der fünf Endpunkte mit parallelen Arrays auf oberster Ebene. Die Positionsliste
 // `positions` trägt hier **sieben** `apiNames`: dieselben sechs wie bei der Belegbuchung plus
@@ -95,7 +95,7 @@ function positionSchema(name: string): FieldSpec["schema"] {
   return schema;
 }
 
-/** Werkzeug 23: `/postings/add/transaction`. */
+/** Werkzeug 25: `/postings/add/transaction`. */
 export const bb_postings_create_for_transaction: ToolEntry = {
   name: "bb_postings_create_for_transaction",
   title: "Buchungen zu Zahlung anlegen",

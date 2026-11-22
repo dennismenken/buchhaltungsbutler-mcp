@@ -15,7 +15,7 @@
 
 import type { ToolGroup } from "../../src/registry/groups.js";
 
-/** Werkzeugname zu Werkzeuggruppe, alle 59 Endpunktwerkzeuge. */
+/** Werkzeugname zu Werkzeuggruppe, alle 61 Endpunktwerkzeuge. */
 export const EXPECTED_TOOL_GROUPS = {
   // Belege, Werkzeuge 1 bis 8
   bb_receipts_search: "receipts",
@@ -38,12 +38,13 @@ export const EXPECTED_TOOL_GROUPS = {
   bb_transactions_unassign_receipt: "transactions",
   bb_transactions_delete: "transactions",
 
-  // Rechnungen, Werkzeuge 18 bis 20
+  // Rechnungen, Werkzeuge 18 bis 21
   bb_invoices_create: "invoices",
   bb_invoices_create_draft: "invoices",
   bb_invoices_create_einvoice: "invoices",
+  bb_invoices_create_correction: "invoices",
 
-  // Buchungen, Werkzeuge 21 bis 32
+  // Buchungen, Werkzeuge 22 bis 33
   bb_postings_search: "postings",
   bb_postings_create_for_receipt: "postings",
   bb_postings_create_for_receipt_batch: "postings",
@@ -57,41 +58,42 @@ export const EXPECTED_TOOL_GROUPS = {
   bb_postings_assign_receipt: "postings",
   bb_postings_cancel: "postings",
 
-  // Debitoren, Werkzeuge 33 bis 37
+  // Debitoren, Werkzeuge 34 bis 38
   bb_debtors_search: "debtors",
   bb_debtors_create: "debtors",
   bb_debtors_create_batch: "debtors",
   bb_debtors_update: "debtors",
   bb_debtors_delete: "debtors",
 
-  // Kreditoren, Werkzeuge 38 bis 42
+  // Kreditoren, Werkzeuge 39 bis 43
   bb_creditors_search: "creditors",
   bb_creditors_create: "creditors",
   bb_creditors_create_batch: "creditors",
   bb_creditors_update: "creditors",
   bb_creditors_delete: "creditors",
 
-  // Sachkonten, Werkzeuge 43 bis 46
+  // Sachkonten, Werkzeuge 44 bis 47
   bb_postingaccounts_search: "postingaccounts",
   bb_postingaccounts_create: "postingaccounts",
   bb_postingaccounts_update: "postingaccounts",
   bb_postingaccounts_delete: "postingaccounts",
 
-  // Zahlungskonten, Werkzeuge 47 bis 49
+  // Zahlungskonten, Werkzeuge 48 bis 51
   bb_payment_accounts_list: "payment_accounts",
   bb_payment_accounts_create: "payment_accounts",
+  bb_payment_accounts_update: "payment_accounts",
   bb_payment_accounts_delete: "payment_accounts",
 
-  // Kommentare, Werkzeug 50
+  // Kommentare, Werkzeug 52
   bb_comments_create: "comments",
 
-  // Kostenstellen, Werkzeuge 51 bis 54
+  // Kostenstellen, Werkzeuge 53 bis 56
   bb_cost_locations_search: "cost_locations",
   bb_cost_locations_create: "cost_locations",
   bb_cost_locations_update: "cost_locations",
   bb_cost_locations_delete: "cost_locations",
 
-  // Berichte, Werkzeuge 55 bis 59
+  // Berichte, Werkzeuge 57 bis 61
   bb_reports_get_bwa: "reports",
   bb_reports_get_sums: "reports",
   bb_reports_get_ledger: "reports",
@@ -100,7 +102,7 @@ export const EXPECTED_TOOL_GROUPS = {
 } as const satisfies Record<string, ToolGroup>;
 
 /**
- * Die Anzahl je Gruppe, von Hand abgeschrieben. Summe 59. Sie ist die Quersumme zur Liste
+ * Die Anzahl je Gruppe, von Hand abgeschrieben. Summe 61. Sie ist die Quersumme zur Liste
  * oben: Ein Tippfehler dort, der ein Werkzeug verschiebt, fällt hier auf.
  *
  * `bundles` steht **nicht** in dieser Tabelle: Die Gruppe führt kein Endpunktwerkzeug, und ihre
@@ -110,13 +112,13 @@ export const EXPECTED_GROUP_COUNTS = {
   postings: 12,
   receipts: 8,
   transactions: 9,
-  invoices: 3,
+  invoices: 4,
   creditors: 5,
   reports: 5,
   debtors: 5,
   postingaccounts: 4,
   cost_locations: 4,
-  payment_accounts: 3,
+  payment_accounts: 4,
   comments: 1,
 } as const satisfies Partial<Record<ToolGroup, number>>;
 

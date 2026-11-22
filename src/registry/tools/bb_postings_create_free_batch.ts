@@ -1,4 +1,4 @@
-// Werkzeug 27, `/postings/add-batch/free`: mehrere freie Buchungen in einem Aufruf.
+// Werkzeug 28 von 61, `/postings/add-batch/free`: mehrere freie Buchungen in einem Aufruf.
 //
 // **Hier findet keinerlei Umformung statt.** Der Endpunkt führt genau einen Parameter
 // `free_postings`, und der ist laut Definition `PostingsFree` **bereits** eine Objektliste aus
@@ -99,7 +99,7 @@ const FREE_POSTINGS_CONTAINER = batchContainer("bb_postings_create_free_batch", 
   maxItems: ITEM_LIMIT,
 });
 
-/** Werkzeug 26: `/postings/add-batch/free`. */
+/** Werkzeug 28: `/postings/add-batch/free`. */
 export const bb_postings_create_free_batch: ToolEntry = {
   name: "bb_postings_create_free_batch",
   title: "Freie Buchungen anlegen",

@@ -23,7 +23,7 @@ import {
 } from "./class-list.js";
 
 /**
- * Die vier Endpunkte ohne lesendes Gegenstück. Für sie trägt `verifyWith` die
+ * Die fünf Endpunkte ohne lesendes Gegenstück. Für sie trägt `verifyWith` die
  * Form `{ kind: "none", reason: … }` und sagt ausdrücklich, dass die API keinen Leseweg
  * anbietet und in der Weboberfläche nachzusehen ist.
  */
@@ -32,6 +32,7 @@ const NO_READ_COUNTERPART_TOOLS: readonly string[] = [
   "bb_invoices_create",
   "bb_invoices_create_draft",
   "bb_invoices_create_einvoice",
+  "bb_invoices_create_correction",
 ];
 
 /** Die acht Stapelwerkzeuge. Ihr Eimer ist `batch`, ihre Zeitlimitstufe `long`. */
@@ -128,7 +129,7 @@ function expectedTimeoutTier(tool: ToolEntry): string {
 }
 
 describe("P10 Prüfweg nach einem Zeitlimit", () => {
-  it("stattet jedes der 39 schreibenden Werkzeuge mit verifyWith aus", () => {
+  it("stattet jedes der 46 schreibenden Werkzeuge mit verifyWith aus", () => {
     const problems: string[] = [];
 
     for (const name of EXPECTED_WRITING_TOOL_NAMES) {
@@ -147,7 +148,7 @@ describe("P10 Prüfweg nach einem Zeitlimit", () => {
     expectNoIssues(problems);
   });
 
-  it("trägt kind none genau bei den vier Endpunkten ohne lesendes Gegenstück", () => {
+  it("trägt kind none genau bei den fünf Endpunkten ohne lesendes Gegenstück", () => {
     const problems: string[] = [];
 
     for (const name of EXPECTED_WRITING_TOOL_NAMES) {

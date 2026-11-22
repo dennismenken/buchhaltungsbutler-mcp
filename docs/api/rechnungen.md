@@ -1,6 +1,6 @@
 # Rechnungen (Invoices)
 
-Referenzdokument für die drei Rechnungs-Endpunkte der BuchhaltungsButler-API v1.
+Referenzdokument für die vier Rechnungs-Endpunkte der BuchhaltungsButler-API v1.
 Zielgruppe: Implementierungs-Agenten des MCP-Servers.
 
 **Quellen dieses Dokuments**
@@ -14,9 +14,9 @@ Zielgruppe: Implementierungs-Agenten des MCP-Servers.
 | `https://kostenlose-erechnung.de/ratgeber/xrechnung-bt-felder-uebersicht/` | Sekundärquelle zu EN-16931-Pflichtfeldern (BT-Nummern) | 2026-09-12 |
 | Eigene Live-Aufrufe gegen `https://webapp.buchhaltungsbutler.de/api/v1` (nur lesende Endpunkte) | Verifikation des Antwortformats | 2026-09-12 |
 
-**Wichtige Einschränkung zur Verifikation:** Alle drei hier dokumentierten Endpunkte sind
+**Wichtige Einschränkung zur Verifikation:** Alle vier hier dokumentierten Endpunkte sind
 schreibend und erzeugen echte Buchhaltungsdaten. Sie wurden deshalb **nicht** live aufgerufen.
-Jede Aussage über das Laufzeitverhalten dieser drei Endpunkte stammt aus der Spezifikation
+Jede Aussage über das Laufzeitverhalten dieser vier Endpunkte stammt aus der Spezifikation
 oder aus dem Hilfecenter und ist als solche gekennzeichnet. Live verifiziert wurden nur
 lesende Nachbarendpunkte, die zeigen, wie eine erzeugte Rechnung anschließend sichtbar wird.
 
@@ -29,6 +29,7 @@ lesende Nachbarendpunkte, die zeigen, wie eine erzeugte Rechnung anschließend s
 | `/invoices/create` | Erzeugt ein finales Ausgangsdokument (Rechnung, Gutschrift oder Angebot) inklusive PDF und legt es als Ausgangsbeleg an | **SCHREIBEND** | 33 |
 | `/invoices/create/e-invoice` | Erzeugt dasselbe, zusätzlich als E-Rechnung nach EN 16931 mit strukturierten Steuerkategorien und Käuferreferenz | **SCHREIBEND** | 35 |
 | `/invoices/create/draft` | Legt einen Rechnungsentwurf an, der in der Oberfläche weiterbearbeitet und später finalisiert wird | **SCHREIBEND** | 30 |
+| `/invoices/invoice_correction/create` | Erzeugt eine Rechnungskorrektur zu einer bestehenden Ausgangsrechnung: eine neue Ausgangsrechnung mit negierten Positionspreisen | **SCHREIBEND** | 3 |
 
 Prüfkommando für die Parameteranzahl:
 
@@ -36,15 +37,23 @@ Prüfkommando für die Parameteranzahl:
 jq '.paths["/invoices/create"].post.parameters | length' docs/openapi/buchhaltungsbutler-v1.json
 jq '.paths["/invoices/create/e-invoice"].post.parameters | length' docs/openapi/buchhaltungsbutler-v1.json
 jq '.paths["/invoices/create/draft"].post.parameters | length' docs/openapi/buchhaltungsbutler-v1.json
+jq '.paths["/invoices/invoice_correction/create"].post.parameters | length' docs/openapi/buchhaltungsbutler-v1.json
 ```
 
-Alle drei Endpunkte sind irreversibel im Sinne der API: Die Spezifikation enthält **keinen**
+Alle vier Endpunkte sind irreversibel im Sinne der API: Die Spezifikation enthält **keinen**
 Endpunkt zum Lesen, Ändern, Stornieren oder Löschen von Rechnungen, Entwürfen oder Angeboten.
-Die vollständige Pfadliste enthält unter `/invoices/` ausschließlich die drei Create-Pfade.
-Eine über die API erzeugte Rechnung kann also nur noch über die Weboberfläche korrigiert oder
+Die vollständige Pfadliste enthält unter `/invoices/` ausschließlich die vier Create-Pfade.
+Eine über die API erzeugte Rechnung kann also nur noch über die Weboberfläche geändert oder
 storniert werden, oder indirekt über `/receipts/delete/id_by_customer`, sofern die
 zurückgelieferte `id_by_customer` verwendet wird (dieser Weg ist nicht verifiziert und löscht
 den Beleg, nicht das Rechnungsdokument).
+
+**Eine Ausnahme gibt es seit der Spezifikation 1.9.1: die Rechnungskorrektur.**
+`/invoices/invoice_correction/create` erzeugt zu einer bestehenden Ausgangsrechnung eine
+**neue** Ausgangsrechnung. Sie ist damit der einzige Weg, eine fehlerhafte Rechnung über die
+API zu korrigieren: Die Ursprungsrechnung bleibt unverändert bestehen, und die Korrektur läuft
+als eigener Vorgang daneben. Auch die Korrektur selbst ist nicht rückgängig zu machen; sie wird
+über eine weitere Korrektur korrigiert. Siehe Abschnitt 6.
 
 ### 1.1 Der Unterschied zwischen create, draft und e-invoice
 
@@ -75,7 +84,7 @@ Datum im Entwurf gespeichert, ignoriert oder erst beim Finalisieren überschrieb
 
 ---
 
-## 2. Gemeinsame Grundlagen aller drei Endpunkte
+## 2. Gemeinsame Grundlagen aller vier Endpunkte
 
 ### 2.1 Transport und Authentifizierung
 
@@ -198,7 +207,7 @@ Fehlermeldung.
 
 ### 2.6 Währung
 
-Die drei Rechnungs-Endpunkte haben **keinen** Währungsparameter. Zum Vergleich: `/receipts/add`
+Die vier Rechnungs-Endpunkte haben **keinen** Währungsparameter. Zum Vergleich: `/receipts/add`
 und `/transactions/add` besitzen jeweils ein `currency`-Feld, `/receipts/upload` verlangt dort
 `EUR`. Der einzige Währungshinweis in den Rechnungsparametern ist der zulässige Wert `EUR` bei
 `discount_type`.
@@ -766,8 +775,8 @@ nicht erforderlich wäre, hier trotzdem mit `0` gefüllt (siehe 4.2):
    der nicht dokumentiert ist. Welches Format erzeugt wird, ist dadurch nicht steuerbar.
 10. **Keine Felder für weitere EN-16931-Angaben** wie Leistungszeitraum als Von-Bis (BT-73/BT-74),
     Bestellreferenz (BT-13), Zahlungsmittelcode (BT-81) oder IBAN abweichend von den Stammdaten
-    (BT-84). Siehe die Gegenüberstellung in Abschnitt 6.3.
-11. **Der Versand erfolgt nicht automatisch.** Siehe Abschnitt 7.
+    (BT-84). Siehe die Gegenüberstellung in Abschnitt 7.3.
+11. **Der Versand erfolgt nicht automatisch.** Siehe Abschnitt 8.
 12. **`type: "offer"` als E-Rechnung** ist fachlich fragwürdig, weil EN 16931 Rechnungen und
     Gutschriften modelliert, keine Angebote. Die API erlaubt den Wert formal trotzdem.
     **Nicht verifiziert**, was dabei entsteht.
@@ -966,9 +975,129 @@ Nicht auf der Whitelist. **Nicht live aufgerufen**, weil der Endpunkt schreibend
 
 ---
 
-## 6. E-Rechnung: Formate, Norm und Rechtslage
+## 6. `/invoices/invoice_correction/create`
 
-### 6.1 Welches Format erzeugt BuchhaltungsButler
+**Fachliche Wirkung:** Erzeugt eine Rechnungskorrektur zu einer bestehenden Ausgangsrechnung.
+
+**Einordnung: SCHREIBEND.** Die Korrektur erzeugt echte Buchhaltungsdaten. Es gibt keinen
+API-Endpunkt, um eine Korrektur zu lesen, zu ändern oder zu löschen.
+
+Quelle: `docs/openapi/buchhaltungsbutler-v1.json`, `.paths["/invoices/invoice_correction/create"]`,
+Abrufdatum 2026-11-22.
+
+**Was eine Rechnungskorrektur fachlich ist:** Sie ist **keine Änderung** der Ursprungsrechnung
+und **kein Storno** von ihr, sondern eine **neue Ausgangsrechnung**. Die Spezifikation schreibt
+wörtlich: Die Korrektur entsteht als neue Ausgangsrechnung, die alle Daten der Ursprungsrechnung
+übernimmt, aber mit negierten Positionspreisen und mit dem Präfix „Gutschrift“ vor den
+Positionsnamen. Ihre Rechnungsnummer entsteht aus den Einstellungen des Nummernkreise des
+Mandanten, sofern keine eigene angegeben wird; ihr Datum ist das aktuelle Datum, und ihr
+Anschreiben verweist auf die Ursprungsrechnung.
+
+**Die Ursprungsrechnung bleibt unverändert bestehen.** Beide Rechnungen laufen nebeneinander in
+der Buchhaltung. Die Korrektur ist damit der einzige Weg, eine fehlerhafte Rechnung über die API
+zu korrigieren, aber sie ist selbst nicht rückgängig zu machen: Eine Korrektur wird über eine
+weitere Korrektur korrigiert.
+
+### 6.1 Parameter (3 von 3)
+
+| Feldname | Typ | Pflicht | Default | Beschreibung | Erlaubte Werte / Wertebereich | Format |
+| --- | --- | --- | --- | --- | --- | --- |
+| `api_key` | string | ja | – | API-Key des zu verwaltenden Mandanten | vom Mandanten vergeben | opaker String |
+| `receipt_id_by_customer` | integer | ja | – | `id_by_customer` der zu korrigierenden Ausgangsrechnung | mandantenbezogene Belegnummer | ganze Zahl |
+| `invoicenumber` | string | nein | – | Rechnungsnummer der Korrektur. Ohne Angabe vergibt BuchhaltungsButler die nächste aus den Einstellungen des Nummernkreises | Freitext | – |
+
+Verschachtelte Objekt- oder Array-Parameter: keine. Der Endpunkt hat keine Positionsparameter;
+die Positionen werden aus der Ursprungsrechnung übernommen.
+
+**`receipt_id_by_customer` ist eine Ganzzahl**, obwohl die `id_by_customer` in Suchergebnissen
+als String erscheint. Das ist dieselbe Eigenheit wie bei `bb_receipts_delete`: In Suchergebnissen
+erscheint sie als String, gesendet wird sie ohne Anführungszeichen.
+
+**Die Nummernkreiseinstellung selbst kennt die API nicht.** Welche Nummer als nächste vergeben
+wird, ist aus der API nicht abfragbar.
+
+### 6.2 Erfolgsantwort
+
+Schema `InvoicesInvoiceCorrectionCreate_Success`:
+
+| Feld | Typ | Bedeutung | Beispielwert |
+| --- | --- | --- | --- |
+| `success` | boolean | Erfolgskennzeichen | `true` |
+| `message` | string | leer im Erfolgsfall | `""` |
+| `id_by_customer` | string | `id_by_customer` der erzeugten Korrektur | `"123"` |
+| `invoicenumber` | string | Rechnungsnummer der erzeugten Korrektur | `"123"` |
+| `filename` | string | Dateiname der erzeugten Korrektur | `"file123"` |
+
+Die drei Felder stehen **auf oberster Ebene** des Umschlags, nicht unter `data`. Der Beispielwert
+`"123"` stammt aus der Spezifikation.
+
+**Abweichung von `/invoices/create`:** Das Feld heißt hier `filename`, bei `/invoices/create`
+dagegen `file_name`. Die Spezifikation führt es an beiden Pfaden verschieden; der Antwortvertrag
+gilt je Endpunkt, deshalb steht hier `filename`.
+
+### 6.3 Fehlerfälle
+
+| HTTP | error_code | message | Bedeutung | Was der Aufrufer tun kann |
+| --- | --- | --- | --- | --- |
+| 500 | 0 | `error while processing the request` | Interner Serverfehler | Nicht blind wiederholen; die Korrektur kann trotzdem entstanden sein |
+| 401 | 3 | `API credentials unknown or invalid` | Basic-Auth-Zugangsdaten falsch | Zugangsdaten prüfen |
+| 401 | 4 | `customer not found or insufficient privileges` | `api_key` unbekannt oder ohne Berechtigung | `api_key` prüfen |
+| 400 | 5 | `invalid receipt_id_by_customer specified` | Keine gültige Belegnummer | Ganzzahl senden, `id_by_customer` prüfen |
+| 400 | 6 | `no receipt found` | Zu der Nummer gibt es keinen Beleg | Belegnummer über `/receipts/search` prüfen |
+| 400 | 7 | `receipt is not an outbound invoice` | Der Beleg ist keine Ausgangsrechnung | Nur Ausgangsbelege korrigieren |
+| 400 | 8 | `receipt is deleted` | Der Beleg ist als gelöscht markiert | Beleg zuerst wiederherstellen |
+| 400 | 9 | `no invoice data found for the receipt` | Zum Beleg liegen keine Rechnungsdaten vor | Anderen Beleg wählen |
+| 400 | 10 | `no invoice data items found for the receipt` | Zum Beleg liegen keine Rechnungspositionen vor | Anderen Beleg wählen |
+| 403 | 11 | `customer has no active status` | Mandant nicht aktiv | Vertragsstatus klären |
+| 403 | 12 | `customer has reached the upload limit` | Belegkontingent des Mandanten erschöpft | Kontingent prüfen |
+| 400 | 13 | `invoice correction data is invalid` | Die übernommenen Rechnungsdaten sind nicht korrigierbar | Nicht verifiziert; Meldung dem Nutzer weitergeben |
+| 400 | 14 | `invalid invoicenumber specified` | Die eigene Rechnungsnummer wurde abgelehnt | Nummer weglassen oder korrigieren |
+| 400 | 23 | `no post and files content received or declined` | Kein verwertbarer Request-Body | Content-Type und JSON prüfen |
+| 504 | 30 | `a timeout occurred while processing the request` | Zeitüberschreitung | Nicht blind wiederholen; Ergebnis über die API nicht prüfbar |
+
+**Auffällig:** Anders als bei `/invoices/create` gibt es hier keinen Fehlercode für einen
+fehlenden Beleg mit „nicht gefunden“ im Wortlaut, sondern `no receipt found` (Code 6). Ebenso
+trägt Code 12 hier den Belegkontingent-Fehler, während `/invoices/create` ihn unter Code 33
+führt. Die Codes sind je Endpunkt eigenständig.
+
+### 6.4 Vollständiges curl-Beispiel
+
+```bash
+curl -sS -X POST "https://webapp.buchhaltungsbutler.de/api/v1/invoices/invoice_correction/create" \
+  -u "<API_CLIENT>:<API_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "api_key": "<API_KEY>",
+    "receipt_id_by_customer": 4711
+  }'
+```
+
+### 6.5 Fallstricke und Besonderheiten
+
+1. **Die Korrektur ist ein zusätzlicher Beleg, kein Ersatz.** Die Ursprungsrechnung bleibt
+   bestehen und wird nicht storniert. Im Rechnungsausgang stehen beide Rechnungen.
+2. **Die Positionspreise werden negiert.** Aus 100,00 wird -100,00. Ob damit der
+   Steuerausweis der Korrektur automatisch korrekt ist, ist **nicht verifiziert**.
+3. **Das Datum ist das aktuelle Datum**, nicht das der Ursprungsrechnung, und es lässt sich
+   nicht setzen. Die Spezifikation führt keinen Datumsparameter.
+4. **Ohne `invoicenumber` vergibt BuchhaltungsButler die Nummer selbst.** Der Nummernkreis
+   des Mandanten ist über die API nicht einsehbar; welche Nummer vergeben wird, bleibt
+   unbekannt.
+5. **Kein Leseweg.** Unterhalb von `/invoices/` gibt es keinen lesenden Pfad, und
+   `/receipts/get` liefert die **Ursprungsrechnung**, nicht die Korrektur. Nach einem Zeitlimit
+   bleibt die Weboberfläche.
+6. **Nicht rückgängig zu machen.** Eine Korrektur wird über eine weitere Korrektur korrigiert.
+
+### 6.6 Live-Verifikation
+
+**Nicht live aufgerufen**, weil der Endpunkt schreibend ist. Die Aufrufform folgt der
+Spezifikation.
+
+---
+
+## 7. E-Rechnung: Formate, Norm und Rechtslage
+
+### 7.1 Welches Format erzeugt BuchhaltungsButler
 
 Quelle: Hilfecenter-Artikel „E-Rechnungen (XRechnung und Zugferd)“ und „Rechnungen, Angebote und
 Gutschriften erstellen“, abgerufen 2026-09-12.
@@ -997,7 +1126,7 @@ Endpunkt, der ein Dokument zurückliefert; `/receipts/upload` geht nur in die Ge
 Rückgabewert `file_name` ist ein Name, kein Link. Damit ist der vollständige Ablauf „E-Rechnung
 erzeugen und an den Kunden übermitteln“ über die API v1 **nicht** abbildbar.
 
-### 6.2 Pflichtfelder nach EN 16931
+### 7.2 Pflichtfelder nach EN 16931
 
 Quelle: `https://kostenlose-erechnung.de/ratgeber/xrechnung-bt-felder-uebersicht/`, abgerufen
 2026-09-12. Das ist eine **Sekundärquelle**, nicht der Normtext. Die Norm EN 16931-1 selbst ist
@@ -1033,7 +1162,7 @@ je Position Menge, Einheit und Nettopreis (BT-129, BT-130, BT-146). Diese Angabe
 eine Rechnungssoftware üblicherweise selbst aus den Positionen. **Diese Aufzählung stammt aus
 der Sekundärquelle und allgemeinem Normwissen, nicht aus einer verifizierten Primärquelle.**
 
-### 6.3 Welche EN-16931-Pflichtfelder die API abbildet
+### 7.3 Welche EN-16931-Pflichtfelder die API abbildet
 
 | EN 16931 | Woher kommt der Wert bei BuchhaltungsButler | API-Parameter |
 | --- | --- | --- |
@@ -1073,7 +1202,7 @@ EN 16931 verlangt für BT-130 einen Code aus UN/ECE Recommendation 20 (zum Beisp
 Stunde, `H87` für Stück). Ob BuchhaltungsButler den Freitext auf einen Code abbildet, ist
 **nicht verifiziert** und eine der wahrscheinlichsten Bruchstellen bei der Validierung.
 
-### 6.4 Stand der gesetzlichen Pflicht in Deutschland
+### 7.4 Stand der gesetzlichen Pflicht in Deutschland
 
 Quelle: IHK Frankfurt am Main, „E-Rechnungspflicht ab 2025“,
 `https://www.frankfurt-main.ihk.de/recht/uebersicht-alle-rechtsthemen/steuerrecht/umsatzsteuer-national/e-rechnungspflicht-ab-2025-6055774`,
@@ -1112,9 +1241,9 @@ rechtlichen Aussagen im Produkt ist der Stand erneut zu prüfen.
 
 ---
 
-## 7. Was mit der erzeugten Rechnung passiert
+## 8. Was mit der erzeugten Rechnung passiert
 
-### 7.1 Wird sie automatisch zum Beleg
+### 8.1 Wird sie automatisch zum Beleg
 
 Ja, bei `/invoices/create`. Das Hilfecenter beschreibt den Vorgang für die Weboberfläche:
 „Mit Klick auf ‚Rechnung erstellen‘ öffnet sich Ihre neu erstellte Rechnung in einem neuen Tab
@@ -1149,7 +1278,7 @@ Weitere Wirkungen:
   `creditor_debtor`, die Invoice-Endpunkte haben es nicht. Das Hilfecenter erwähnt für die
   Weboberfläche eine Option „Neuen Debitor anlegen“, die die API nicht abbildet.
 
-### 7.2 Wird sie automatisch versendet
+### 8.2 Wird sie automatisch versendet
 
 **Nein.** Weder die Spezifikation noch das Hilfecenter beschreiben einen automatischen Versand.
 Das Feld `email` heißt in der Spezifikation „The email for sending the invoice“, das Hilfecenter
@@ -1167,7 +1296,7 @@ erzeugt, hat damit keinen Weg, sie dem Empfänger zuzustellen, und auch keinen W
 herunterzuladen und selbst zu versenden. Das ist die größte funktionale Lücke der API v1 im
 Bereich Rechnungsstellung.
 
-### 7.3 Was danach noch möglich ist, und was nicht
+### 8.3 Was danach noch möglich ist, und was nicht
 
 | Aktion | Über die API möglich |
 | --- | --- |
@@ -1177,6 +1306,7 @@ Bereich Rechnungsstellung.
 | Rechnung versenden | **nein** |
 | Rechnung ändern | **nein** |
 | Rechnung stornieren oder in eine Gutschrift umwandeln | **nein**, nur in der Weboberfläche |
+| Rechnungskorrektur zu einer Ausgangsrechnung erzeugen | ja, über `/invoices/invoice_correction/create` |
 | Angebot in eine Rechnung umwandeln | **nein**, nur in der Weboberfläche |
 | Beleg löschen | ja, über `/receipts/delete/id_by_customer`, **nicht verifiziert**, ob das auch das Rechnungsdokument entfernt |
 | Entwurf lesen, ändern, finalisieren oder löschen | **nein** |
@@ -1184,7 +1314,7 @@ Bereich Rechnungsstellung.
 
 ---
 
-## 8. Gesammelte Mängel der Spezifikation
+## 9. Gesammelte Mängel der Spezifikation
 
 Alle Punkte betreffen die Datei
 `docs/openapi/buchhaltungsbutler-v1.json`,
@@ -1216,12 +1346,12 @@ Datei fehlerhaften Code erzeugt.
 
 ---
 
-## 9. Durchgeführte Live-Verifikation
+## 10. Durchgeführte Live-Verifikation
 
 Gegen die echte API wurden ausschließlich lesende Endpunkte aufgerufen, 2026-09-12, drei
-Requests insgesamt. Die drei dokumentierten Invoice-Endpunkte wurden **nicht** aufgerufen.
+Requests insgesamt. Die vier dokumentierten Invoice-Endpunkte wurden **nicht** aufgerufen.
 
-### 9.1 `/receipts/get` mit `list_direction: "outbound"`
+### 10.1 `/receipts/get` mit `list_direction: "outbound"`
 
 Zweck: prüfen, wie eine erzeugte Rechnung anschließend sichtbar wird.
 
@@ -1268,7 +1398,7 @@ Beobachtetes Muster für `filename` (drei von drei Datensätzen):
 `JJJJ-MM-TT_Rechnung_<Rechnungsnummer>_<32 Hex-Zeichen>`. Ob diese Belege über die API oder die
 Weboberfläche entstanden sind, ist **nicht verifiziert**.
 
-### 9.2 `/settings/get/debtors`
+### 10.2 `/settings/get/debtors`
 
 Zweck: prüfen, ob sich Empfängerdaten für eine Rechnung aus vorhandenen Debitoren übernehmen
 lassen.
@@ -1298,7 +1428,7 @@ Das deckt **alle** Empfängerfelder der Invoice-Endpunkte ab. Die Zuordnung:
 **Nicht verifiziert**, ob die Wertebereiche exakt übereinstimmen, insbesondere beim Feld
 `country` (die Invoice-Endpunkte akzeptieren nur deutschen Ländernamen oder ISO-Code).
 
-### 9.3 Nicht durchgeführte Verifikationen
+### 10.3 Nicht durchgeführte Verifikationen
 
 - Kein Aufruf von `/invoices/create`, `/invoices/create/e-invoice`, `/invoices/create/draft`.
 - Damit unverifiziert: die tatsächliche Struktur der Erfolgsantwort, die tatsächlichen
@@ -1307,9 +1437,9 @@ Das deckt **alle** Empfängerfelder der Invoice-Endpunkte ab. Die Zuordnung:
 
 ---
 
-## 10. Hinweise für das MCP-Tool-Design
+## 11. Hinweise für das MCP-Tool-Design
 
-### 10.1 Welche Endpunkte fachlich zusammengehören
+### 11.1 Welche Endpunkte fachlich zusammengehören
 
 Aus Sicht eines Agenten bilden diese Endpunkte einen Arbeitsbereich „Ausgangsrechnung“:
 
@@ -1329,7 +1459,7 @@ Nachkontrolle (lesend)
   /receipts/assigned-transactions/get  prüfen, ob der Zahlungsabgleich gegriffen hat
 ```
 
-### 10.2 Mehrstufige Abläufe
+### 11.2 Mehrstufige Abläufe
 
 1. **Rechnung an einen Bestandskunden.** Erst `/settings/get/debtors` lesen und die Felder
    übernehmen, statt den Agenten Adressdaten erfinden zu lassen. Dann `/invoices/create`. Dann
@@ -1351,7 +1481,7 @@ Nachkontrolle (lesend)
    Herunterladen und Versenden nicht. Das Tool muss den Nutzer darauf hinweisen, dass der
    Versand in der Weboberfläche erfolgen muss.
 
-### 10.3 Parameter, die Agenten schwer erraten und die besonders gute Beschreibungen brauchen
+### 11.3 Parameter, die Agenten schwer erraten und die besonders gute Beschreibungen brauchen
 
 | Parameter | Warum schwierig | Was die Tool-Beschreibung leisten muss |
 | --- | --- | --- |
@@ -1370,7 +1500,7 @@ Nachkontrolle (lesend)
 | `type` | `offer` erzeugt ein Angebot, das vermutlich kein Beleg ist | Die drei Werte mit deutscher Bedeutung nennen |
 | `api_key` | Keine Agentenentscheidung | Sollte der MCP-Server aus der Konfiguration setzen und **nicht** als Tool-Parameter exponieren |
 
-### 10.4 Empfehlungen für den Zuschnitt der Tools
+### 11.4 Empfehlungen für den Zuschnitt der Tools
 
 1. **Positionen als Objektliste im Tool-Schema.** Ein Agent wird bei sechs parallelen Arrays
    früher oder später einen Index verschieben. Das Tool sollte
@@ -1418,7 +1548,7 @@ Nachkontrolle (lesend)
 
 ---
 
-## 11. Offene Punkte
+## 12. Offene Punkte
 
 Diese Fragen konnten mit den verfügbaren Quellen **nicht** geklärt werden. Sie sollten vor dem
 Produktiveinsatz beantwortet werden, am besten durch einen kontrollierten Testaufruf gegen einen

@@ -43,10 +43,10 @@ const EXPECTED_ANNOTATIONS = {
   B: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
 } as const satisfies Record<ToolClass, Record<string, boolean>>;
 
-/** Auszählung, Auslieferungszustand: AR 2 + M 4 + D 7 = 13 destruktive,
- *  R 15 + M 4 = 19 idempotente. */
-const DESTRUCTIVE_COUNT = 18;
-const IDEMPOTENT_COUNT = 19;
+/** Auszählung, Auslieferungszustand: AR 2 + M 5 + D 12 = 19 destruktive,
+ *  R 15 + M 5 = 20 idempotente. */
+const DESTRUCTIVE_COUNT = 19;
+const IDEMPOTENT_COUNT = 20;
 
 const HINTS = ["readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"] as const;
 
@@ -88,7 +88,7 @@ describe("P7 Annotationen", () => {
     expectNoIssues(problems);
   });
 
-  it("gibt jedem der 54 Werkzeuge die Annotationen seiner Klasse", () => {
+  it("gibt jedem der 56 Werkzeuge die Annotationen seiner Klasse", () => {
     const problems: string[] = [];
 
     for (const name of EXPECTED_TOOL_NAMES) {
@@ -118,7 +118,7 @@ describe("P7 Annotationen", () => {
     expectNoIssues(problems);
   });
 
-  it("setzt openWorldHint bei allen 54 Werkzeugen auf true", () => {
+  it("setzt openWorldHint bei allen 56 Werkzeugen auf true", () => {
     const problems = REGISTRY.filter((tool) => !annotationsOf(tool).openWorldHint).map(
       (tool) =>
         `${tool.name}: openWorldHint ist false. Der Datenbestand ändert sich unabhängig von uns.`,
@@ -127,7 +127,7 @@ describe("P7 Annotationen", () => {
     expectNoIssues(problems);
   });
 
-  it("zählt 18 destruktive und 19 idempotente Werkzeuge", () => {
+  it("zählt 19 destruktive und 20 idempotente Werkzeuge", () => {
     const destructiveTools = REGISTRY.filter((tool) => annotationsOf(tool).destructiveHint).map(
       (tool) => `${tool.name} (${tool.toolClass})`,
     );

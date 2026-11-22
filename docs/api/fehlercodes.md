@@ -113,6 +113,30 @@ Get all the accounts.
 | 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
 | 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
 
+### `/accounts/update`
+
+Update a basic account.
+
+| HTTP-Status | error_code | message (Original) | Bedeutung auf Deutsch |
+|---|---|---|---|
+| 400 | 5 | `no postingaccount_number specified` | Keine postingaccount_number angegeben. |
+| 400 | 6 | `invalid postingaccount_number specified` | Ungültige postingaccount_number angegeben. |
+| 400 | 7 | `account was not found` | Kein Basiskonto mit dieser Nummer gefunden. |
+| 400 | 8 | `the account name must be 2 to 120 characters long` | Der Kontoname muss 2 bis 120 Zeichen lang sein. |
+| 400 | 9 | `the specified name already exists` | Der angegebene name existiert bereits. |
+| 400 | 10 | `the account name may not be changed because the dropbox folder of the account is not empty` | Der Kontoname darf nicht geändert werden, weil der Dropbox-Ordner des Kontos nicht leer ist. |
+| 400 | 12 | `invalid name specified` | Ungültiger name angegeben. |
+| 400 | 13 | `invalid receipt_creates_transaction specified` | Ungültiger Wert für receipt_creates_transaction angegeben. |
+| 400 | 14 | `receipt_creates_transaction is only allowed for manual accounts` | receipt_creates_transaction ist nur bei manuell geführten Konten erlaubt. |
+| 400 | 16 | `invalid is_disabled_in_select specified` | Ungültiger Wert für is_disabled_in_select angegeben. |
+| 400 | 17 | `the account could not be validated` | Das Konto konnte nicht validiert werden. |
+| 400 | 23 | `no post and files content received or declined` | Kein verwertbarer Request-Body empfangen oder abgelehnt. |
+| 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
+| 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
+| 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
+| 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
+| 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
+
 ### `/comments/add`
 
 Add comment to transaction or receipt.
@@ -321,6 +345,27 @@ Create e-invoice.
 | 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
 | 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
 | 403 | 33 | `customer has reached the upload limit` | Der Mandant hat das Upload-Limit erreicht. |
+| 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
+| 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
+
+### `/invoices/invoice_correction/create`
+
+Create invoice correction.
+
+| HTTP-Status | error_code | message (Original) | Bedeutung auf Deutsch |
+|---|---|---|---|
+| 400 | 5 | `invalid receipt_id_by_customer specified` | Ungültige receipt_id_by_customer angegeben. |
+| 400 | 6 | `no receipt found` | Kein Beleg zu der angegebenen Nummer gefunden. |
+| 400 | 7 | `receipt is not an outbound invoice` | Der Beleg ist keine Ausgangsrechnung. |
+| 400 | 8 | `receipt is deleted` | Der Beleg ist als gelöscht markiert. |
+| 400 | 9 | `no invoice data found for the receipt` | Zum Beleg wurden keine Rechnungsdaten gefunden. |
+| 400 | 10 | `no invoice data items found for the receipt` | Zum Beleg wurden keine Rechnungspositionen gefunden. |
+| 400 | 13 | `invoice correction data is invalid` | Die Daten der Rechnungskorrektur sind ungültig. |
+| 400 | 14 | `invalid invoicenumber specified` | Ungültige Rechnungsnummer angegeben. |
+| 401 | 3 | `API credentials unknown or invalid` | API-Zugangsdaten unbekannt oder ungültig. |
+| 401 | 4 | `customer not found or insufficient privileges` | Mandant nicht gefunden oder unzureichende Rechte. |
+| 403 | 11 | `customer has no active status` | Der Mandant (customer) hat keinen aktiven Status. |
+| 403 | 12 | `customer has reached the upload limit` | Der Mandant hat das Upload-Kontingent erreicht. |
 | 500 | 0 | `error while processing the request` | Fehler bei der Verarbeitung des Requests. |
 | 504 | 30 | `a timeout occurred while processing the request` | Bei der Verarbeitung des Requests ist ein Timeout aufgetreten. |
 

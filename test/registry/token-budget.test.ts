@@ -50,8 +50,8 @@ import { EXPECTED_TOOL_NAMES } from "./class-list.js";
 
 const TIERS: readonly DescriptionTier[] = [1, 2, 3];
 
-/** Die Besetzung der drei Stufen, Prüfsumme 22 + 23 + 14 = 59. */
-const TIER_COUNTS: Readonly<Record<DescriptionTier, number>> = { 1: 22, 2: 23, 3: 14 };
+/** Die Besetzung der drei Stufen, Prüfsumme 22 + 25 + 14 = 61. */
+const TIER_COUNTS: Readonly<Record<DescriptionTier, number>> = { 1: 22, 2: 25, 3: 14 };
 
 function expectNoIssues(problems: readonly string[]): void {
   expect(problems.join("\n")).toBe("");
@@ -128,7 +128,7 @@ async function instructionsText(): Promise<string | undefined> {
 }
 
 describe("P11 Stufenbesetzung", () => {
-  it("erfüllt die Prüfsumme 22 + 23 + 14 = 59", () => {
+  it("erfüllt die Prüfsumme 22 + 25 + 14 = 61", () => {
     const problems: string[] = [];
 
     for (const tier of TIERS) {
@@ -152,7 +152,7 @@ describe("P11 Stufenbesetzung", () => {
     }
 
     expectNoIssues(problems);
-    expect(allNames).toHaveLength(59);
+    expect(allNames).toHaveLength(61);
     expect([...allNames].sort()).toEqual([...EXPECTED_TOOL_NAMES].sort());
   });
 
@@ -205,7 +205,7 @@ describe("P11 Zeichengrenzen je Stufe", () => {
 });
 
 describe("P11 Gesamtbudget", () => {
-  it("misst alle 59 Definitionen, meldet den Abstand zur Grenze und erzwingt sie", () => {
+  it("misst alle 61 Definitionen, meldet den Abstand zur Grenze und erzwingt sie", () => {
     const problems: string[] = [];
     const measured: { name: string; token: number; chars: number }[] = [];
 
@@ -229,7 +229,7 @@ describe("P11 Gesamtbudget", () => {
       .join(", ");
 
     const report =
-      `P11 Gesamtbudget: ${String(total)} Token für 59 Werkzeugdefinitionen, ` +
+      `P11 Gesamtbudget: ${String(total)} Token für 61 Werkzeugdefinitionen, ` +
       `Grenze ${String(TOTAL_TOOL_DEFINITION_TOKEN_BUDGET)}. ` +
       `Teuerste Werkzeuge: ${topExpensive}.`;
 

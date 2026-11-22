@@ -1,4 +1,4 @@
-// Werkzeug 31, `/postings/assign/receipt-to-free-posting`: bindet einen vorhandenen Beleg an
+// Werkzeug 32 von 61, `/postings/assign/receipt-to-free-posting`: bindet einen vorhandenen Beleg an
 // eine vorhandene freie Buchung.
 //
 // **Der Sonderfall innerhalb der Klasse B**: Es ist das einzige Werkzeug mit der
@@ -51,7 +51,7 @@ const POSTING_ID_DESCRIPTION =
   "dass receipt_id_by_customer und transaction_id_by_customer beide null sind, oder am Filter " +
   `account_filter mit dem Wert 'free booking'. ${ID_STRING_SENTENCE}`;
 
-/** Werkzeug 30: `/postings/assign/receipt-to-free-posting`. */
+/** Werkzeug 32: `/postings/assign/receipt-to-free-posting`. */
 export const bb_postings_assign_receipt: ToolEntry = {
   name: "bb_postings_assign_receipt",
   title: "Beleg an freie Buchung binden",

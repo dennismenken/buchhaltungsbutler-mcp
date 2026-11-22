@@ -1,4 +1,4 @@
-// Werkzeug 21, `/postings/get`: das einzige LESENDE der zwölf Buchungswerkzeuge.
+// Werkzeug 22 von 61, `/postings/get`: das einzige LESENDE der zwölf Buchungswerkzeuge.
 //
 // Drei Eigenheiten tragen diesen Eintrag:
 //
@@ -138,7 +138,7 @@ const POSTINGS_LIST_FIELDS: Readonly<Record<string, ContractFieldType>> = Object
   transactions_purpose: "null-or-string",
 });
 
-/** Werkzeug 20: `/postings/get`. */
+/** Werkzeug 22: `/postings/get`. */
 export const bb_postings_search: ToolEntry = {
   name: "bb_postings_search",
   title: "Buchungen suchen",

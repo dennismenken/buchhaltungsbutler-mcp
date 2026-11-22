@@ -1,4 +1,4 @@
-// Werkzeug 55: `/reports/get/bwa`, eine erzeugte BWA abholen.
+// Werkzeug 57 von 61: `/reports/get/bwa`, eine erzeugte BWA abholen.
 //
 // Lesend (Klasse R), deshalb kein Pflichtsatz und `response_format` als einziges
 // serverseitiges Feld. Zeitlimitstufe `long`: Die fünf Berichtswerkzeuge
@@ -37,7 +37,7 @@ const GET_FILES_DESCRIPTION =
   "Objekt files ganz. bb_reports_create_bwa kennt keinen Parameter, Dateien anzufordern; " +
   "dass beide deshalb immer null bleiben, ist nicht verifiziert.";
 
-/** Werkzeug 50: `/reports/get/bwa`. */
+/** Werkzeug 57: `/reports/get/bwa`. */
 export const bb_reports_get_bwa: ToolEntry = {
   name: "bb_reports_get_bwa",
   title: "BWA abholen",

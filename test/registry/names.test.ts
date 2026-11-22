@@ -34,16 +34,16 @@ const VERBS: readonly string[] = [
   "unassign",
 ];
 
-/** Die Auszählung nach Ressource, von Hand abgeschrieben. Summe 59. */
+/** Die Auszählung nach Ressource, von Hand abgeschrieben. Summe 61. */
 const TOOLS_BY_RESOURCE: Readonly<Record<string, number>> = {
   receipts: 8,
   transactions: 9,
-  invoices: 3,
+  invoices: 4,
   postings: 12,
   debtors: 5,
   creditors: 5,
   postingaccounts: 4,
-  payment_accounts: 3,
+  payment_accounts: 4,
   comments: 1,
   cost_locations: 4,
   reports: 5,
@@ -73,7 +73,7 @@ function parseName(name: string): { resource: string; verb?: string; verbIndex: 
 }
 
 describe("P4 Namensschema", () => {
-  it("führt jeden der 54 erwarteten Werkzeugnamen", () => {
+  it("führt jeden der 56 erwarteten Werkzeugnamen", () => {
     const problems = EXPECTED_TOOL_NAMES.filter((name) => entryByName(name) === undefined).map(
       (name) => missingEntry(name),
     );
@@ -145,7 +145,7 @@ describe("P4 Namensschema", () => {
     expectNoIssues(problems);
   });
 
-  it("verteilt die 59 Werkzeuge genau wie die Auszählung nach Ressource", () => {
+  it("verteilt die 61 Werkzeuge genau wie die Auszählung nach Ressource", () => {
     const problems: string[] = [];
     const countByResource = new Map<string, number>();
 
@@ -171,7 +171,7 @@ describe("P4 Namensschema", () => {
     }
 
     expectNoIssues(problems);
-    expect(Object.values(TOOLS_BY_RESOURCE).reduce((a, b) => a + b, 0)).toBe(59);
+    expect(Object.values(TOOLS_BY_RESOURCE).reduce((a, b) => a + b, 0)).toBe(61);
   });
 
   it("vergibt jeden Namen genau einmal", () => {

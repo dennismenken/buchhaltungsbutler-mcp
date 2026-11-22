@@ -19,7 +19,7 @@
 import type { ToolEffect } from "../../src/registry/types.js";
 
 /**
- * Spezifikationspfad zu Wirkung, alle 59 Endpunkte, in der Gliederung von
+ * Spezifikationspfad zu Wirkung, alle 61 Endpunkte, in der Gliederung von
  * grundlagen.md 7.3 (Receipts, Transactions, Invoices, Postings, Settings, Accounts und
  * Comments und Cost Locations, Reports).
  */
@@ -49,6 +49,7 @@ export const EXPECTED_ENDPOINT_EFFECTS = {
   "/invoices/create": "create",
   "/invoices/create/e-invoice": "create",
   "/invoices/create/draft": "create",
+  "/invoices/invoice_correction/create": "create",
 
   // Postings
   "/postings/get": "read",
@@ -84,6 +85,7 @@ export const EXPECTED_ENDPOINT_EFFECTS = {
   "/accounts/get": "read",
   "/accounts/add": "create",
   "/accounts/delete": "delete",
+  "/accounts/update": "modify",
   "/comments/add": "create",
   "/cost-locations/get": "read",
   "/cost-locations/add": "create",
@@ -100,17 +102,17 @@ export const EXPECTED_ENDPOINT_EFFECTS = {
 
 /**
  * Die Auszählung aus grundlagen.md 7.3, Abschnitt „Zusammenfassung für einen
- * Nur-Lesen-Modus", von Hand abgeschrieben. Summe 59. Sie ist die Quersumme zur Tabelle
+ * Nur-Lesen-Modus", von Hand abgeschrieben. Summe 61. Sie ist die Quersumme zur Tabelle
  * oben: Eine verrutschte Zeile dort fällt hier auf.
  */
 export const EXPECTED_EFFECT_COUNTS = {
   read: 15,
-  create: 24,
-  modify: 8,
+  create: 25,
+  modify: 9,
   delete: 12,
 } as const satisfies Record<ToolEffect, number>;
 
-/** Alle 59 Spezifikationspfade. Abgeleitet aus der Tabelle oben, keine zweite Quelle. */
+/** Alle 61 Spezifikationspfade. Abgeleitet aus der Tabelle oben, keine zweite Quelle. */
 export const EXPECTED_SPEC_PATHS: readonly string[] = Object.keys(EXPECTED_ENDPOINT_EFFECTS);
 
 /**

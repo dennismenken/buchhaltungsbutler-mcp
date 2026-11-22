@@ -37,7 +37,7 @@ der Auswertung.
 ### 1.1 Was die API leistet
 
 BuchhaltungsButler ist eine Buchhaltungsanwendung für kleine und mittlere Unternehmen
-sowie deren Steuerberater. Die API v1 stellt 54 Endpunkte bereit, mit denen ein
+sowie deren Steuerberater. Die API v1 stellt 61 Endpunkte bereit, mit denen ein
 externes System Belege, Zahlungen, Buchungssätze, Rechnungen, Stammdaten und
 Auswertungen eines Mandanten lesen und schreiben kann. Sie ist als Integrations- und
 Importschnittstelle konzipiert, nicht als vollständige Fernsteuerung der Oberfläche.
@@ -63,7 +63,7 @@ Quelle: SPEC (`host`, `basePath`, `schemes`, `produces`), DOC, LIVE.
 | Transport | HTTPS, in LIVE per HTTP/2 beantwortet |
 | Pflichtfeld in jedem Body | `api_key` (Mandantenauswahl) |
 
-Alle 54 Pfade definieren ausschließlich die Operation `post`. Es gibt keinen einzigen
+Alle 61 Pfade definieren ausschließlich die Operation `post`. Es gibt keinen einzigen
 `GET`-, `PUT`- oder `DELETE`-Endpunkt. Die Semantik steckt vollständig im Pfadnamen.
 Das ist für den MCP-Server relevant: Die HTTP-Methode taugt nicht als
 Sicherheitsindikator, ob ein Aufruf schreibt. Nur der Pfad taugt dafür.
@@ -938,7 +938,7 @@ Ausnahme in die andere Richtung: `/reports/get/sums/ledger` wird laut SPEC "on t
 erzeugt und benötigt keinen vorherigen Create-Aufruf. Es ist damit trotz der
 Berichtserzeugung ein lesender Endpunkt ohne persistente Nebenwirkung.
 
-### 7.3 Vollständige Tabelle aller 59 Endpunkte
+### 7.3 Vollständige Tabelle aller 61 Endpunkte
 
 Legende der Spalte **Wirkung**:
 
@@ -984,6 +984,7 @@ falschen oder versehentlichen Aufruf.
 | `/invoices/create` | anlegend | Sehr hoch. Erzeugt eine echte, nummerierte Ausgangsrechnung. Es gibt keinen Storno- und keinen Löschendpunkt für Rechnungen in dieser API. Verbraucht Kontingent (403/33). |
 | `/invoices/create/e-invoice` | anlegend | Sehr hoch. Wie oben, zusätzlich mit den strengeren Formatvorgaben der E-Rechnung. Hat mit 44 definierten Fehlercodes die größte Fehleroberfläche der gesamten API. |
 | `/invoices/create/draft` | anlegend | Hoch. Erzeugt einen Entwurf statt einer finalen Rechnung, also der am wenigsten riskante der drei. Trotzdem ein sichtbares Objekt in der Anwendung. |
+| `/invoices/invoice_correction/create` | anlegend | Sehr hoch. Erzeugt eine Rechnungskorrektur als **neue** Ausgangsrechnung mit negierten Positionspreisen. Die Ursprungsrechnung bleibt unverändert bestehen, beide laufen nebeneinander. Nicht rückgängig zu machen; korrigiert wird über eine weitere Korrektur. |
 
 #### Postings
 
@@ -1028,6 +1029,7 @@ falschen oder versehentlichen Aufruf.
 | `/accounts/get` | lesend | Gering. Kennt kein `limit`, liefert immer alle Basiskonten. |
 | `/accounts/add` | anlegend | Hoch. Legt ein Zahlungskonto an. Die Flags `receipt_creates_transaction` und `is_revision_safe` steuern dauerhaftes Verhalten. `is_revision_safe` betrifft die Revisionssicherheit, also einen Aspekt mit Aufbewahrungsrelevanz. |
 | `/accounts/delete` | löschend | Hoch. Entfernt ein Zahlungskonto, aber nur, wenn es keine festgeschriebenen Buchungen und keine revisionssicheren Transaktionen enthält. Ein revisionssicheres Konto kann damit unter Umständen gar nicht mehr gelöscht werden. |
+| `/accounts/update` | ändernd | Hoch. Ändert die Stammdaten eines Zahlungskontos. Nicht gesendete Felder behalten laut Spezifikation ihren Wert; `is_revision_safe` lässt sich über die API nicht ändern. Kein Endpunkt liefert den Zustand vor der Änderung zurück. |
 | `/comments/add` | anlegend | Gering bis mittel. Fügt einen Kommentar an einen Beleg oder eine Zahlung. Keine buchhalterische Wirkung, aber für andere Nutzer sichtbar und nicht über die API löschbar. |
 | `/cost-locations/get` | lesend | Gering. Maximal 1000 Kostenstellen pro Anfrage. |
 | `/cost-locations/add` | anlegend | Mittel. Neue Kostenstelle, wirkt auf die Kostenstellenauswertung. |
@@ -1049,10 +1051,10 @@ falschen oder versehentlichen Aufruf.
 | Wirkung | Anzahl |
 | --- | --- |
 | lesend | 15 |
-| anlegend | 24 |
-| ändernd | 8 |
+| anlegend | 25 |
+| ändernd | 9 |
 | löschend | 12 |
-| **Summe** | **59** |
+| **Summe** | **61** |
 
 Die 15 lesenden Endpunkte, und nur diese, dürfen in einem Nur-Lesen-Modus freigeschaltet
 sein:
@@ -1496,7 +1498,7 @@ Alle Auswertungen dieses Dokuments lassen sich gegen die SPEC nachvollziehen:
 ```bash
 SPEC=docs/openapi/buchhaltungsbutler-v1.json
 
-# Alle 54 Pfade
+# Alle 61 Pfade
 jq -r '.paths | keys[]' "$SPEC"
 
 # Parameter eines Endpunkts (flache Body-Feldliste)

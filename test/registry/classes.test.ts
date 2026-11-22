@@ -51,7 +51,7 @@ describe("P5 Klassen", () => {
     expectNoIssues(problems);
   });
 
-  it("stimmt bei allen 54 Werkzeugen mit der zweiten, unabhängig gepflegten Liste überein", () => {
+  it("stimmt bei allen 56 Werkzeugen mit der zweiten, unabhängig gepflegten Liste überein", () => {
     const problems: string[] = [];
 
     for (const name of EXPECTED_TOOL_NAMES) {
@@ -103,7 +103,7 @@ describe("P5 Klassen", () => {
     }
 
     expectNoIssues(problems);
-    expect(Object.values(EXPECTED_CLASS_COUNTS).reduce((a, b) => a + b, 0)).toBe(59);
+    expect(Object.values(EXPECTED_CLASS_COUNTS).reduce((a, b) => a + b, 0)).toBe(61);
   });
 });
 
@@ -117,7 +117,7 @@ describe("P6 Wirkungsabgleich", () => {
     expectNoIssues(problems);
   });
 
-  it("stimmt bei allen 54 Endpunkten mit grundlagen.md 7.3 überein", () => {
+  it("stimmt bei allen 56 Endpunkten mit grundlagen.md 7.3 überein", () => {
     const problems: string[] = [];
 
     for (const path of EXPECTED_SPEC_PATHS) {
@@ -168,7 +168,7 @@ describe("P6 Wirkungsabgleich", () => {
     }
 
     expectNoIssues(problems);
-    expect(Object.values(EXPECTED_EFFECT_COUNTS).reduce((a, b) => a + b, 0)).toBe(59);
+    expect(Object.values(EXPECTED_EFFECT_COUNTS).reduce((a, b) => a + b, 0)).toBe(61);
   });
 
   it("macht Klasse R exakt zur Menge der lesenden Endpunkte", () => {
@@ -201,8 +201,8 @@ describe("P6 Wirkungsabgleich", () => {
     expect(EXPECTED_READ_ONLY_SPEC_PATHS).toHaveLength(15);
   });
 
-  it("führt in der Wirkungstabelle alle 59 Pfade genau einmal", () => {
-    expect(Object.keys(EXPECTED_ENDPOINT_EFFECTS)).toHaveLength(59);
-    expect(new Set(Object.keys(EXPECTED_ENDPOINT_EFFECTS)).size).toBe(59);
+  it("führt in der Wirkungstabelle alle 61 Pfade genau einmal", () => {
+    expect(Object.keys(EXPECTED_ENDPOINT_EFFECTS)).toHaveLength(61);
+    expect(new Set(Object.keys(EXPECTED_ENDPOINT_EFFECTS)).size).toBe(61);
   });
 });

@@ -14,7 +14,7 @@ import {
 // gibt, und ausdrücklich dessen Fehlen, wo es keinen gibt". Die Tabelle folgt der
 // Werkzeugtabelle und dem Buchungswegweiser.
 
-/** Die 44 schreibenden Werkzeuge (24 anlegend, 8 ändernd, 12 löschend). */
+/** Die 46 schreibenden Werkzeuge (25 anlegend, 9 ändernd, 12 löschend). */
 const WRITING_TOOLS = [
   "bb_receipts_create",
   "bb_receipts_create_batch",
@@ -30,6 +30,7 @@ const WRITING_TOOLS = [
   "bb_invoices_create",
   "bb_invoices_create_draft",
   "bb_invoices_create_einvoice",
+  "bb_invoices_create_correction",
   "bb_postings_create_for_receipt",
   "bb_postings_create_for_receipt_batch",
   "bb_postings_create_for_transaction",
@@ -54,6 +55,7 @@ const WRITING_TOOLS = [
   "bb_postingaccounts_delete",
   "bb_payment_accounts_create",
   "bb_payment_accounts_delete",
+  "bb_payment_accounts_update",
   "bb_comments_create",
   "bb_cost_locations_create",
   "bb_cost_locations_update",
@@ -82,9 +84,9 @@ const READING_TOOLS = [
 ] as const;
 
 describe("Die Tabelle deckt alle schreibenden Werkzeuge ab", () => {
-  it("führt genau die 44 schreibenden Werkzeuge", () => {
+  it("führt genau die 46 schreibenden Werkzeuge", () => {
     expect(Object.keys(REVERSAL_BY_TOOL).sort()).toEqual([...WRITING_TOOLS].sort());
-    expect(WRITING_TOOLS).toHaveLength(44);
+    expect(WRITING_TOOLS).toHaveLength(46);
   });
 
   it("führt kein lesendes Werkzeug", () => {

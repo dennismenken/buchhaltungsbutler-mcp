@@ -29,14 +29,12 @@ import {
 
 // Prüfgrößen, maschinell ausgezählt und hier nicht gerundet.
 //
-// Die Zahlen zählen das **Register**, also die 59 Endpunktwerkzeuge dieses Pakets.
-// Die Spezifikation führt inzwischen 61 Pfade; die beiden noch nicht abgedeckten gehören zu
-// den Endpunkten `/accounts/update` und `/invoices/invoice_correction/create`, die andere
-// Pakete liefern. Der P1-Lauf nennt sie beim Namen.
-const PATH_COUNT = 59;
-const PARAMETERS_TOTAL = 381;
-const PARAMETER_API_KEY = 59;
-const PARAMETERS_DOMAIN = 322;
+// Die Zahlen zählen das **Register**, also die 61 Endpunktwerkzeuge dieses Pakets.
+// Die Spezifikation führt inzwischen 61 Pfade; alle sind abgedeckt.
+const PATH_COUNT = 61;
+const PARAMETERS_TOTAL = 389;
+const PARAMETER_API_KEY = 61;
+const PARAMETERS_DOMAIN = 328;
 
 /** Die vier Endpunkte mit Pfadvorlage. `id_by_customer` ist dort ein Platzhalter. */
 const PLACEHOLDER_PATHS: readonly string[] = [
@@ -183,14 +181,14 @@ describe("P1 Vollständigkeit: Pfadmenge des Registers gleich Pfadmenge des Gene
     expectNoIssues(problems);
   });
 
-  it("zählt 61 gegen 59", () => {
+  it("zählt 61 gegen 61", () => {
     expect(ENDPOINTS).toHaveLength(PATH_COUNT);
     expect(new Set(REGISTRY.map((tool) => specPathOf(tool))).size).toBe(PATH_COUNT);
   });
 });
 
 describe("P2 Eineindeutigkeit: kein Pfad zweimal, kein Name zweimal", () => {
-  it("führt 59 Einträge mit 59 verschiedenen Namen", () => {
+  it("führt 61 Einträge mit 61 verschiedenen Namen", () => {
     const names = REGISTRY.map((tool) => tool.name);
     const duplicates = names.filter((name, index) => names.indexOf(name) !== index);
 
@@ -389,7 +387,7 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
     expectNoIssues(problems);
   });
 
-  it("ergibt 381 Zuordnungen: 59 in omitted, 322 über die apiNames der fields", () => {
+  it("ergibt 389 Zuordnungen: 61 in omitted, 328 über die apiNames der fields", () => {
     const omittedTotal = REGISTRY.reduce((sum, tool) => sum + tool.omitted.length, 0);
     const fieldsTotal = REGISTRY.reduce((sum, tool) => sum + topLevelApiNames(tool).length, 0);
 
@@ -724,7 +722,7 @@ describe("Die vier Endpunkte mit Pfadvorlage", () => {
     expectNoIssues(problems);
   });
 
-  it("führt die übrigen 50 Endpunkte als literal", () => {
+  it("führt die übrigen 52 Endpunkte als literal", () => {
     const problems: string[] = [];
     const templatePaths = new Set(PLACEHOLDER_PATHS);
 

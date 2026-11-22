@@ -1,4 +1,4 @@
-// Werkzeug 26, `/postings/add/free`: die freie Buchung, ein vollständiger Buchungssatz ohne
+// Werkzeug 27 von 61, `/postings/add/free`: die freie Buchung, ein vollständiger Buchungssatz ohne
 // Beleg- und Zahlungsbezug.
 //
 // **Dieses Werkzeug trägt ausdrücklich KEINE Positionsliste.** Der Endpunkt führt acht rein
@@ -71,7 +71,7 @@ const CREDIT_DESCRIPTION =
   "unterscheiden. Nachschlagen mit bb_postingaccounts_search. In der Leseantwort von " +
   "bb_postings_search heißt dasselbe Konto credit_postingaccount_number.";
 
-/** Werkzeug 25: `/postings/add/free`. */
+/** Werkzeug 27: `/postings/add/free`. */
 export const bb_postings_create_free: ToolEntry = {
   name: "bb_postings_create_free",
   title: "Freie Buchung anlegen",

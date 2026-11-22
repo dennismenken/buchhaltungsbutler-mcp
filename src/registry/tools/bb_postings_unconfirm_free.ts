@@ -1,4 +1,4 @@
-// Werkzeug 30, `/postings/unconfirm/free`: entfernt eine einzelne, nicht festgeschriebene freie
+// Werkzeug 31 von 61, `/postings/unconfirm/free`: entfernt eine einzelne, nicht festgeschriebene freie
 // Buchung.
 //
 // **Dieses Werkzeug adressiert als einziges der drei `unconfirm`-Werkzeuge die Buchung selbst**
@@ -45,7 +45,7 @@ const POSTING_ID_DESCRIPTION =
   "freie Buchung erkennt man daran, dass receipt_id_by_customer und transaction_id_by_customer " +
   `beide null sind, oder am Filter account_filter mit dem Wert 'free booking'. ${ID_STRING_SENTENCE}`;
 
-/** Werkzeug 29: `/postings/unconfirm/free`. */
+/** Werkzeug 31: `/postings/unconfirm/free`. */
 export const bb_postings_unconfirm_free: ToolEntry = {
   name: "bb_postings_unconfirm_free",
   title: "Freie Buchung entfernen",

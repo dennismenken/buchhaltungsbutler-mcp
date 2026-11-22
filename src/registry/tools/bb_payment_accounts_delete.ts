@@ -1,4 +1,4 @@
-// Werkzeug 49 von 59: `/accounts/delete`.
+// Werkzeug 51 von 61: `/accounts/delete`.
 //
 // Klasse D, also `destructiveHint: true` und `idempotentHint: false` (die Begründung steht
 // bei `TOOL_CLASSES` in src/registry/classes.ts). Eine Wiederholung wäre plausibel
