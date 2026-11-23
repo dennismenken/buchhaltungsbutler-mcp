@@ -161,7 +161,7 @@ function toolWord(count: number): string {
 /**
  * Der Zustandsblock.
  *
- * Er nennt, was der Agent nicht erraten kann und was ihm sonst 54 Werkzeugbeschreibungen
+ * Er nennt, was der Agent nicht erraten kann und was ihm sonst 61 Werkzeugbeschreibungen
  * einzeln sagen müssten: ob der Server konfiguriert ist, ob der Nur-Lesen-Schalter greift,
  * welche Grenzen der Betreiber gesetzt hat, ob der Stammdatenspeicher läuft und ob die
  * Duplikatsprüfung ein zweites Token je anlegendem Aufruf verbraucht.

@@ -157,7 +157,7 @@ export async function runDoctor(options: RunDoctorOptions): Promise<number> {
   const activeGroups = new Set<ToolGroup>(config.toolGroups.active);
   const registered = entries.filter((entry) => activeGroups.has(entry.group));
   // Die Bündelwerkzeuge hängen an der Gruppe `bundles` und an keiner Endpunktgruppe. Sie
-  // stehen in derselben tools/list-Antwort wie die 54 Endpunktwerkzeuge und gehören deshalb in
+  // stehen in derselben tools/list-Antwort wie die 61 Endpunktwerkzeuge und gehören deshalb in
   // jede Zahl, die diese Diagnose nennt: Ohne sie meldete `doctor` unter
   // BB_MCP_TOOL_GROUPS=bundles „0 von 54", während der Client fünf Werkzeuge bekommt.
   const registeredBundles = registeredBundleCount(config.toolGroups);

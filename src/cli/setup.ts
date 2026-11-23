@@ -48,6 +48,12 @@ import {
   UsageError,
 } from "./run.js";
 import { printConnectionTest, runConnectionTest } from "./test.js";
+import {
+  BUNDLE_TOOL_TOTAL,
+  ENDPOINT_TOOL_COUNT,
+  READING_ENDPOINT_TOOL_COUNT,
+  WRITING_ENDPOINT_TOOL_COUNT,
+} from "./tool-counts.js";
 import { printOutcome } from "./uninstall.js";
 
 /** Wohin die Zugangsdaten gehen. */
@@ -262,13 +268,15 @@ export async function runSetup(options: RunSetupOptions): Promise<number> {
       : await terminal.confirm("Soll dieser Server zunächst nur lesen dürfen?", false);
   if (readOnly) {
     terminal.write(
-      "BB_MCP_READ_ONLY=true geht in die Konfiguration. Dann laufen die 15 lesenden Werkzeuge; " +
-        "die übrigen 39 lehnen ab, bevor ein Request abgeht. Folge für Berichte: Das Kontenblatt " +
+      `BB_MCP_READ_ONLY=true geht in die Konfiguration. Dann laufen die ${READING_ENDPOINT_TOOL_COUNT} lesenden Endpunktwerkzeuge; ` +
+        `die übrigen ${WRITING_ENDPOINT_TOOL_COUNT} lehnen ab, bevor ein Request abgeht. Folge für Berichte: Das Kontenblatt ` +
         "lässt sich abrufen, BWA und Summen- und Saldenliste nicht, weil deren erster Schritt " +
         "einen Bericht erzeugt und damit den Vorgängerbericht ersetzt.",
     );
   } else {
-    terminal.write("Alle 54 Werkzeuge bleiben aufrufbar. Die Freigabe liegt beim Client.");
+    terminal.write(
+      `Alle ${ENDPOINT_TOOL_COUNT} Endpunktwerkzeuge und ${BUNDLE_TOOL_TOTAL} Bündel bleiben aufrufbar. Die Freigabe liegt beim Client.`,
+    );
   }
 
   // --- Schritt 7: Clients auswählen und Vorschau ---------------------------------------

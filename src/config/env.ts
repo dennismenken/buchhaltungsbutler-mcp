@@ -80,7 +80,7 @@ function integerVar(options: { min: number; max: number; hint: string }) {
 /**
  * Prüft die Basis-URL: `https:` ist Pflicht, `http:` nur gegen `localhost`. Ein
  * Anmeldeteil in der URL ist verboten, weil er ein zweites, unbeachtetes Geheimnis wäre;
- * Abfrage und Fragment sind verboten, weil der Pfad der 54 Endpunkte hinten angehängt wird.
+ * Abfrage und Fragment sind verboten, weil der Pfad der 61 Endpunkte hinten angehängt wird.
  */
 export function checkBaseUrl(raw: string): string {
   let url: URL;

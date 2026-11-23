@@ -118,7 +118,7 @@ export function createServer(options: CreateServerOptions = {}): BuiltServer {
  * Die Zahl der Werkzeuge, die dieser Start angemeldet hat: Endpunktwerkzeuge **und** Bündel.
  *
  * Die Bündel gehören in jede genannte Zahl, denn sie stehen in derselben `tools/list`-Antwort
- * wie die 54 Endpunktwerkzeuge, die unverändert bestehen bleiben. Ohne sie meldete der
+ * wie die 61 Endpunktwerkzeuge, die unverändert bestehen bleiben. Ohne sie meldete der
  * Start unter
  * `BB_MCP_TOOL_GROUPS=bundles` „0 Werkzeuge", während der Client fünf bekommt — und das ist
  * das empfohlene Profil für Claude Desktop. Die Rückmeldung zum Gruppenschalter ist die

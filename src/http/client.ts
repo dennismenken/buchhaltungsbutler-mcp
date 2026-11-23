@@ -3,7 +3,7 @@
  *
  * | Aspekt | Festlegung |
  * | --- | --- |
- * | Methode | ausschließlich `POST`, bei allen 54 Endpunkten (maschinell bestätigt) |
+ * | Methode | ausschließlich `POST`, bei allen 61 Endpunkten (maschinell bestätigt, zuletzt 2026-11-23) |
  * | Authentifizierung | `Authorization: Basic …` über `Buffer.from` (`auth.ts`) |
  * | Header | `Content-Type: application/json`, `Accept: application/json`, `User-Agent` |
  * | Body | immer JSON, niemals formularkodiert — das erhält Booleans, `null` in Arrays und das `order`-Objekt |

@@ -1,7 +1,7 @@
 // Die vier MCP-Resources.
 //
 // Sie kosten nur dann Kontext, wenn der Agent sie liest, und nehmen genau die Inhalte auf, die
-// sonst 54-mal in Werkzeugbeschreibungen stünden. Drei der vier sind reiner Text und hängen
+// sonst 61-mal in Werkzeugbeschreibungen stünden. Drei der vier sind reiner Text und hängen
 // von nichts ab; die vierte liest den Stammdatenspeicher (`src/cache/store.ts`) und ist im
 // Auslieferungszustand abgeschaltet, weil der Speicher es ist.
 //

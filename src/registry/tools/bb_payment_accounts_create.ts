@@ -129,6 +129,7 @@ export const bb_payment_accounts_create: ToolEntry = {
     perBatch: true,
   },
   crossChecks: ["Q3"],
-  // Leer: `/accounts/get` wird nie zwischengespeichert.
+  // `/accounts/get` selbst wird nie zwischengespeichert, das Zahlungskonto steht aber auch in der
+  // vereinigten Kontenliste von `/settings/get/postingaccounts` (type 'account').
   invalidatesCache: ["bb_postingaccounts_search"],
 };

@@ -235,7 +235,7 @@ export interface MappedRequest {
   readonly toolName: string;
   /** Der unveränderte Spezifikationspfad: Nachschlagen und Protokollieren. */
   readonly specPath: string;
-  /** Der tatsächlich gesendete Pfad. Bei 50 der 54 Endpunkte gleich `specPath`. */
+  /** Der tatsächlich gesendete Pfad. Bei 57 der 61 Endpunkte gleich `specPath`. */
   readonly requestPath: string;
   /** Der Body **ohne** `api_key`; den setzt ausschließlich `src/http/client.ts` ein. */
   readonly body: Record<string, unknown>;

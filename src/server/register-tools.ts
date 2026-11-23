@@ -1,8 +1,8 @@
 // Die Registrierung aller Werkzeuge und der EINE generische Handler.
 //
-// Was 54-fach existiert, sind Daten und keine Ablaufpfade. Dieser Ausführungsweg wird genau
+// Was 61-fach existiert, sind Daten und keine Ablaufpfade. Dieser Ausführungsweg wird genau
 // einmal geschrieben und von jedem Werkzeug benutzt; ein Fehler in der Ablauflogik ist damit
-// ein Fehler und nicht potenziell 54. Die Reihenfolge der sechs Guards steht in `runTool` und
+// ein Fehler und nicht potenziell 61. Die Reihenfolge der sechs Guards steht in `runTool` und
 // ist die — sie ist nicht durch Disziplin eingehalten, sondern als einzige
 // Codefolge vorhanden, die es gibt.
 //

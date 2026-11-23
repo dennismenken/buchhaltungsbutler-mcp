@@ -1,5 +1,5 @@
 // Die geteilten Bausteine: Schemafragment und deutsches Beschreibungsmuster
-// immer zusammen, damit derselbe Sachverhalt an 54 Werkzeugen nicht 54-mal neu formuliert
+// immer zusammen, damit derselbe Sachverhalt an 61 Werkzeugen nicht 61-mal neu formuliert
 // wird. Das ist der größte Hebel gegen Wiederholung und trägt die Sparmaßnahmen S1, S3 und
 // S4.
 //

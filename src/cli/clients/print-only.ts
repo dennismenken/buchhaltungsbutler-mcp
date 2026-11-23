@@ -19,6 +19,7 @@
 import path from "node:path";
 
 import { CREDENTIAL_VARS } from "../../config/env.js";
+import { WRITING_TOOL_COUNT } from "../tool-counts.js";
 import {
   entryEnv,
   renderJson,
@@ -228,7 +229,7 @@ export const janAdapter: ClientAdapter = createPrintOnlyAdapter({
     "Die Angaben zu Jan stammen aus Suchtreffern, nicht aus einem direkten Abruf der " +
       "Primärquelle, und sind damit schwächer belegt als die übrigen.",
     'Die Einstellung "Allow All MCP Tool Permissions" gibt alle Werkzeuge ohne Rückfrage ' +
-      "frei. Für einen Server mit 39 schreibenden Werkzeugen ist das die falsche Einstellung; " +
+      `frei. Für einen Server mit ${WRITING_TOOL_COUNT} schreibenden Werkzeugen ist das die falsche Einstellung; ` +
       "wer sie braucht, setzt BB_MCP_READ_ONLY=true.",
   ],
   finishNote: "In Jan den Server nach dem Anlegen einschalten; die Anzeige wird dann grün.",

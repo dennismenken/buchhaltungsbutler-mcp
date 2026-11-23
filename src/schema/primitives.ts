@@ -126,7 +126,7 @@ export function stripInternalMeta(node: Record<string, unknown>): void {
  * Guard 3 verlangt strenge Validierung mit `additionalProperties: false`: Die
  * API ignoriert unbekannte Body-Felder kommentarlos, ohne strenge Prüfung wäre ein
  * Tippfehler im Feldnamen also ein stiller Datenfehler. Damit diese Entscheidung nicht an
- * 54 Registereinträgen hängt, gibt es genau diese eine Funktion; `src/schema/build.ts` ist
+ * 61 Registereinträgen hängt, gibt es genau diese eine Funktion; `src/schema/build.ts` ist
  * der einzige Ort, der damit das **Werkzeugobjekt** baut, und die geschachtelten Objekte in
  * `order.ts`, `line-items.ts` und `batch.ts` erben die Strenge über denselben Aufruf.
  *

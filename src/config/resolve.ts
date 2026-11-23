@@ -196,9 +196,9 @@ export const NOT_CONFIGURED_INSTRUCTIONS_PREFIX =
 /**
  * Die Absage eines Werkzeugaufrufs im Zustand „nicht konfiguriert", wörtlich
  * Punkt 4. `guards/configured.ts` gibt genau diesen Text zurück, damit er an einer
- * Stelle steht und nicht in 54 Werkzeugen neu formuliert wird.
+ * Stelle steht und nicht in 61 Werkzeugen neu formuliert wird.
  *
- * Der letzte Satz ist kein Beiwerk: Er hält einen hartnäckigen Agenten davon ab, alle 54
+ * Der letzte Satz ist kein Beiwerk: Er hält einen hartnäckigen Agenten davon ab, alle 61
  * Werkzeuge durchzuprobieren.
  */
 export function formatNotConfiguredToolError(toolName: string, config: ResolvedConfig): string {

@@ -29,6 +29,7 @@ import {
   type ClientPlan,
   type WriteOutcome,
 } from "./types.js";
+import { WRITING_TOOL_COUNT } from "../tool-counts.js";
 
 /** Zeitlimit für den Serverstart in Sekunden. */
 export const STARTUP_TIMEOUT_SEC = 30;
@@ -143,7 +144,7 @@ export const codexAdapter: ClientAdapter = {
         ...notes,
         `Aufruf: codex ${args.join(" ")}`,
         'Empfehlung für Codex: default_tools_approval_mode = "writes" fragt genau bei den ' +
-          "39 schreibenden Werkzeugen nach.",
+          `${WRITING_TOOL_COUNT} schreibenden Werkzeugen nach.`,
         LEGACY_ENTRY_NOTE,
       ],
     };
