@@ -48,6 +48,14 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
   sagten, die API biete keinen Endpunkt, sie rückgängig zu machen. Mit den neuen
   Löschendpunkten stimmt das nicht mehr; sie tragen jetzt den Pflichtsatz U1 mit dem passenden
   Löschwerkzeug.
+- **Der Stammdatenspeicher veraltete nach Änderungen an Zahlungskonten.** Zahlungskonten stehen
+  auch in der vereinigten Kontenliste von `/settings/get/postingaccounts`. Anlegen, Ändern und
+  Löschen eines Zahlungskontos verwerfen jetzt den gespeicherten Stand von
+  `bb_postingaccounts_search`; vorher blieben Liste und Kontobezeichnungen bei eingeschaltetem
+  Speicher (`BB_MCP_CACHE_TTL_MS` größer 0) bis zum Ablauf alt. Eine neue Prüfung hält jedes
+  Werkzeug gegen die Invalidierungstabelle.
+- Einrichtungsassistent und Client-Hinweise nannten feste Werkzeugzahlen („Alle 54 Werkzeuge“,
+  „39 schreibende Werkzeuge“, Windsurf „bringt 54 mit“). Sie zählen jetzt aus dem Register.
 - `pnpm measure-tokens` nannte im Bericht fest „54
   Werkzeugdefinitionen“, gleich wie viele es maß. Die Zahl wird jetzt gezählt.
 
