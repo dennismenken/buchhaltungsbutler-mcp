@@ -156,7 +156,7 @@ export function buildOutputSchema(entry: ToolEntry): Record<string, unknown> {
 /**
  * Der Schlüssel des aufgelösten Datensatzes einer Schreibantwort.
  *
- * Ein einheitlicher Schlüssel `created` für jede Schreibantwort träfe nur für 24 der 39
+ * Ein einheitlicher Schlüssel `created` für jede Schreibantwort träfe nur für 25 der 46
  * schreibenden Werkzeuge zu; für ein `update` oder ein `delete` wäre `created` schlicht
  * falsch, und ein falscher Schlüssel ist in einer Buchhaltung teurer als ein zusätzlicher.
  * Deshalb folgt der Name der Wirkung des Eintrags.

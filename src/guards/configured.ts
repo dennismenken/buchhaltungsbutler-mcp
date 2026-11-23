@@ -7,7 +7,7 @@
 //
 // Der Text ist nicht hier formuliert. Er steht wörtlich in
 // `config/resolve.ts#formatNotConfiguredToolError`, damit er genau einen Ort hat und nicht in
-// 54 Werkzeugen neu entsteht. Dieser Guard entscheidet nur, ob er greift.
+// 61 Werkzeugen neu entsteht. Dieser Guard entscheidet nur, ob er greift.
 
 import type { ResolvedConfig } from "../config/resolve.js";
 import { formatNotConfiguredToolError } from "../config/resolve.js";

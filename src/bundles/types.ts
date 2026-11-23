@@ -3,7 +3,7 @@
 // **Warum ein eigener Typ.** `ToolEntry` bindet genau einen Endpunkt: `path`,
 // `responseContract`, `concise`, `bucket` und `timeoutTier` sind allesamt Singular. Ein Bündel
 // in diesen Typ zu zwingen machte jedes dieser Felder mehrdeutig und brächte eine Verzweigung
-// in den EINEN generischen Handler. Die 54 Endpunktwerkzeuge bleiben unverändert bestehen;
+// in den EINEN generischen Handler. Die 61 Endpunktwerkzeuge bleiben unverändert bestehen;
 // dieser Typ liegt daneben und nicht darüber.
 //
 // Bezeichner und Aufzählungswerte sind englisch (CONTRIBUTING.md Abschnitt 5); deutsch sind
@@ -55,7 +55,7 @@ export type BundleStopReason =
 /**
  * Ein Schritt eines Bündels. Er trägt seinen eigenen Endpunkt und seinen eigenen Vertrag.
  *
- * `fallbackTool` ist Regel R7: Jede Lücke trägt den Einzelaufruf, der sie schließt. Die 54
+ * `fallbackTool` ist Regel R7: Jede Lücke trägt den Einzelaufruf, der sie schließt. Die 61
  * Endpunktwerkzeuge bleiben neben den Bündeln bestehen; ein Bündel ist nie die einzige Tür.
  */
 export interface BundleStep {

@@ -24,7 +24,7 @@ import { installTestConfig, mockApi, resetTestConfig, type ApiMock } from "../he
 /**
  * Die Werkzeugnamen einer Gruppe, aus dem echten Register.
  *
- * Beide Verzeichnisse werden gelesen: die 54 Endpunktwerkzeuge aus `index.generated.ts` und die
+ * Beide Verzeichnisse werden gelesen: die 61 Endpunktwerkzeuge aus `index.generated.ts` und die
  * Bündelwerkzeuge aus `src/bundles/index.ts`. Die Gruppe `bundles` führt ausschließlich Bündel,
  * jede andere ausschließlich Endpunktwerkzeuge; die Reihenfolge ist die der Registrierung
  * (erst die Endpunktwerkzeuge, dann die Bündel).
@@ -70,7 +70,7 @@ afterEach(() => {
 });
 
 describe("ohne die beiden Variablen", () => {
-  it("meldet alle 54 Endpunktwerkzeuge und die Bündel an", async () => {
+  it("meldet alle 61 Endpunktwerkzeuge und die Bündel an", async () => {
     const names = await listedTools(installTestConfig());
     expect(names).toHaveLength(ALL_NAMES.length);
     expect(names).toEqual(ALL_NAMES);

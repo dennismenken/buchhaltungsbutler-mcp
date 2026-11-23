@@ -82,7 +82,7 @@ export type {
 
 // --- Die Bündelwerkzeuge --------------------------------------------------------------
 
-// Das Verzeichnis der Bündel liegt neben dem Register und nicht darin (die 54
+// Das Verzeichnis der Bündel liegt neben dem Register und nicht darin (die 61
 // Endpunktwerkzeuge bleiben unverändert). Ausgeliefert werden beide Listen gemeinsam, und wer
 // die ausgelieferte Werkzeugmenge braucht, braucht deshalb beide: Die Werkzeugliste des
 // Bundle-Manifests entsteht in `scripts/build-mcpb.ts` aus genau diesen beiden Ausfuhren des

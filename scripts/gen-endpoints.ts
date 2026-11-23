@@ -7,7 +7,7 @@
 // den Beschreibungstexten wird ein Wertevorschlag gelesen, der ausdrücklich kein Schema ist.
 //
 // Was dieser Generator NICHT tut: Er erzeugt kein Zod-Schema und keinen Werkzeugeintrag.
-// Die 54 Registerdateien werden von Hand geschrieben und gegen dieses Generat geprüft.
+// Die 61 Registerdateien werden von Hand geschrieben und gegen dieses Generat geprüft.
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";

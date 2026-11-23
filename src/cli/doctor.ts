@@ -5,7 +5,7 @@
  * gesetzt ist und woher er kommt — nie ein Wert, auch nicht gekürzt und nicht maskiert.
  *
  * **`doctor` lädt keinen Tokenizer.** Ein Tokenizer im ausgelieferten Paket wäre eine vierte
- * Laufzeitabhängigkeit. Gezählt werden zur Laufzeit die **Zeichen** der 54
+ * Laufzeitabhängigkeit. Gezählt werden zur Laufzeit die **Zeichen** der 61
  * Definitionen — vollständig, einschließlich Annotationen, Eingabe- und Ausgabeschema, also
  * genau das, was `tools/list` ausliefert (`registry/definition.ts`). Die **Tokenzahl** daneben
  * ist die eingecheckte Messung von `pnpm measure-tokens`; nur wenn die Zeichenzahl nicht
@@ -49,7 +49,7 @@ function de(value: number): string {
 }
 
 /**
- * Eine gezählte Werkzeugmenge als deutscher Satzteil: „54 Endpunktwerkzeuge",
+ * Eine gezählte Werkzeugmenge als deutscher Satzteil: „61 Endpunktwerkzeuge",
  * „1 Bündelwerkzeug", „kein Bündelwerkzeug". Die Null bekommt ihr eigenes Wort, weil
  * „0 Bündelwerkzeuge" im Fließtext wie ein abgeschnittener Wert aussieht.
  */

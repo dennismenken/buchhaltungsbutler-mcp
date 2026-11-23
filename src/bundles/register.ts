@@ -81,7 +81,7 @@ function textResult(text: string, isError: boolean): CallToolResult {
 }
 
 /**
- * Die Audit-Zeile, in derselben Form wie bei den 54 Endpunktwerkzeugen. Als Endpunkt steht dort
+ * Die Audit-Zeile, in derselben Form wie bei den 61 Endpunktwerkzeugen. Als Endpunkt steht dort
  * `(bündel)` samt der Zahl der Teilaufrufe: Ein Bündel hat keinen einen Endpunkt, und der erste
  * seiner Schritte wäre eine Halbwahrheit. Welche Pfade liefen, steht in `bundle.steps`.
  */
@@ -116,7 +116,7 @@ function refuse(
 /**
  * Die Absage eines Schema- oder Querprüfungsverstoßes, im Vierblockaufbau.
  *
- * Die Befunde bereitet `errors/zod-issue.ts` auf, dieselbe Stelle, die auch die 54
+ * Die Befunde bereitet `errors/zod-issue.ts` auf, dieselbe Stelle, die auch die 61
  * Endpunktwerkzeuge benutzen. Eine eigene, knappere Fassung stand hier bis zur Zusammenlegung
  * und reichte `issue.message` unverändert durch; damit kam derselbe Fehler bei einem Bündel auf
  * Englisch heraus („Invalid input: expected number, received string") und bei einem

@@ -295,7 +295,7 @@ const EINVOICE_SPECIAL: SpecialDefinition = {
     {
       id: "einvoice-type",
       // Die Meldung nennt `e_invoice_type`. Ein Parameter dieses Namens existiert an diesem
-      // Endpunkt NICHT — maschinell geprüft über alle 54 Pfade und alle Definitionen der
+      // Endpunkt NICHT — maschinell geprüft über alle 61 Pfade (zuletzt 2026-11-23) und alle Definitionen der
       // Spezifikation; das einzige e_invoice-Feld im Rumpf ist `e_invoice_id`. Der Hinweis
       // nennt deshalb kein Feld, das es nicht gibt, sondern sagt genau das.
       patterns: ["e_invoice_type"],

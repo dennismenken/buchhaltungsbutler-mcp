@@ -19,11 +19,11 @@
 // Platzhalter nicht mehr trägt. `test/contract/mcpb-tools.test.ts` prüft das Ergebnis
 // anschließend gegen das Register.
 //
-// **Die Liste führt beide Werkzeugmengen: die 54 Endpunktwerkzeuge und die 5 Bündelwerkzeuge**
-// Die 54 bleiben neben den Bündeln unverändert bestehen. Das Manifest trägt
+// **Die Liste führt beide Werkzeugmengen: die 61 Endpunktwerkzeuge und die 5 Bündelwerkzeuge**
+// Die 61 bleiben neben den Bündeln unverändert bestehen. Das Manifest trägt
 // `tools_generated: false` und behauptet damit eine vollständige
 // Liste; führte sie nur `TOOL_ENTRIES`, läse der Nutzer im Installationsdialog von Claude
-// Desktop 54 Werkzeuge, während der Server 59 anmeldet. Registriert werden beide Mengen in
+// Desktop 61 Werkzeuge, während der Server 66 anmeldet. Registriert werden beide Mengen in
 // `src/server/create-server.ts`, und `dist/index.js` führt beide aus.
 //
 // Aufruf:

@@ -225,7 +225,7 @@ export function isCalendarDateTime(value: string): boolean {
  *
  * Im JSON Schema steht `format: "date"` neben dem kurzen Muster. Das ist bewusst nicht
  * `z.iso.date()`: Dessen erzeugtes Muster ist rund 250 Zeichen lang, es käme an jedem
- * Datumsfeld aller 54 Werkzeuge erneut vor und kostete das Kontextbudget
+ * Datumsfeld aller 61 Werkzeuge erneut vor und kostete das Kontextbudget
  * mehrere Tausend Zeichen, ohne dem Aufrufer etwas zu sagen, was `format: "date"` nicht
  * schon sagt. Die Schaltjahrprüfung geht dabei nicht verloren, sie läuft als Refine.
  */

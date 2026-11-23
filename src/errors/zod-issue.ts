@@ -1,7 +1,7 @@
 // Die deutsche Aufbereitung eines Zod-Befundes. Eine Stelle für beide Registrierpfade.
 //
 // **Warum das Modul existiert.** Der Text eines Schemaverstoßes entsteht an zwei Stellen: in
-// `src/server/register-tools.ts` für die 54 Endpunktwerkzeuge und in `src/bundles/register.ts`
+// `src/server/register-tools.ts` für die 61 Endpunktwerkzeuge und in `src/bundles/register.ts`
 // für die fünf Bündelwerkzeuge. Solange beide ihre eigene Fassung hatten, lieferte derselbe
 // Fehler zwei verschiedene Antworten: `bb_transactions_get` schrieb
 // „transaction_id_by_customer: erwartet wird number, übergeben wurde die Zeichenkette '930'.",
@@ -170,10 +170,10 @@ function describeUnionForms(errors: readonly (readonly z.core.$ZodIssue[])[]): s
  *
  * Die Bausteine der Schemaschicht tragen ihre Meldungen selbst und auf Deutsch; für die
  * Befunde, die Zod ohne eigenen Text erzeugt, steht der Text hier. Eine englische
- * Bibliotheksmeldung inmitten von 59 deutschen Beschreibungen wäre der größere Bruch.
+ * Bibliotheksmeldung inmitten von 66 deutschen Beschreibungen wäre der größere Bruch.
  *
  * Vier Codes werden deshalb selbst formuliert. `invalid_value` ist der Code, den Zod 4 an
- * jedem Enum erzeugt — 54 Enum-Felder in 31 der 54 Endpunktwerkzeuge, darunter
+ * jedem Enum erzeugt — am 2026-09-13 54 Enum-Felder in 31 der damals 54 Endpunktwerkzeuge, darunter
  * `list_direction`, `invoice_type`, `show_prices_type` und `order`, sowie `report_type`,
  * `resource`, `areas` und `base` in den Bündeln; ohne diesen Zweig fiele die Meldung dort auf
  * „Invalid option: expected one of …" zurück, und zwar **auch** dann, wenn das Pflichtfeld

@@ -1,6 +1,6 @@
 // Das Verzeichnis der Bündelwerkzeuge (Gruppe `bundles`, abschaltbar über `BB_MCP_TOOL_GROUPS`).
 //
-// Anders als das Register der 54 Endpunktwerkzeuge entsteht diese Liste nicht durch einen
+// Anders als das Register der 61 Endpunktwerkzeuge entsteht diese Liste nicht durch einen
 // Generator: Ein Bündel trägt seinen Ablauf als Code, es gibt also ohnehin eine Datei je
 // Bündel mit einer benannten Ausfuhr, und der Generator in `scripts/gen-registry-index.ts`
 // erwartet in `src/registry/tools/` ausschließlich `ToolEntry`. Die Liste ist kurz und

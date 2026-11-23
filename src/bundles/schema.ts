@@ -98,7 +98,7 @@ function describedField(field: FieldSpec): z.ZodType {
  * Querprüfungen.
  *
  * @param withChecks `false` liefert dasselbe Schema ohne jede Querprüfung. Damit melden
- *        Guard 3 und Guard 4 getrennt, genau wie bei den 54 Endpunktwerkzeugen.
+ *        Guard 3 und Guard 4 getrennt, genau wie bei den 61 Endpunktwerkzeugen.
  */
 export function buildBundleZodSchema(entry: BundleEntry, withChecks = true): z.ZodType {
   assertBundleConsistency(entry);

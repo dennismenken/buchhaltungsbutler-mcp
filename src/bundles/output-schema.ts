@@ -4,7 +4,7 @@
 // durch: `complete` und `stopped_because` sind Pflicht, `gaps` ist bei Vollständigkeit ein
 // leeres Array und niemals abwesend, und `api_calls` neben `api_calls_limit` macht sichtbar,
 // was der Aufruf am Minutenkontingent verbraucht hat. Feldbeschreibungen entfallen wie bei den
-// 54 Werkzeugen (Sparmaßnahme S6 in docs/entwicklung/tokenbudget.md).
+// 61 Werkzeugen (Sparmaßnahme S6 in docs/entwicklung/tokenbudget.md).
 
 /** Die Gründe, aus denen ein Bündel aufhört. Wortgleich mit {@link BundleStopReason}. */
 const STOP_REASONS = [

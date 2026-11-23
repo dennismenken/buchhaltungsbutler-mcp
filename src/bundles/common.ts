@@ -15,7 +15,7 @@ import { fitRows, type FitResult } from "../response/truncate.js";
 import { responseFormat } from "../schema/vocab.js";
 import type { FieldSpec } from "../registry/types.js";
 
-/** Das serverseitige Feld der Projektion, wortgleich mit dem der 54 Endpunktwerkzeuge. */
+/** Das serverseitige Feld der Projektion, wortgleich mit dem der 61 Endpunktwerkzeuge. */
 export function responseFormatField(): FieldSpec {
   const schema = responseFormat();
   return {
@@ -189,7 +189,7 @@ export interface ContractWarningBlock {
 /**
  * Die Vertragsverletzungen der gelesenen Zeilen, für Textblock und `structuredContent`.
  *
- * Ein Bündel darf nicht weniger melden als das Einzelwerkzeug, das es ersetzt: Die 54 legen
+ * Ein Bündel darf nicht weniger melden als das Einzelwerkzeug, das es ersetzt: Die 61 legen
  * dieselbe Meldung unter `_contract_warnings` ab und stellen sie VOR die Zahlen (R6).
  * Ohne sie verschwände eine Änderung der API in einer Bündelantwort spurlos.
  */

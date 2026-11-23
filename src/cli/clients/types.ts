@@ -33,7 +33,7 @@ import type { CredentialVarName } from "../../config/env.js";
  * 65 Zeichen und fiel in einem solchen Wirt aus, erfahrungsgemäß ohne sprechende Meldung.
  * `bbutler` ist derselbe Name, den das `.mcpb`-Bundle mit `bbutler-mcp` und der Binärname
  * ohnehin führen; das Präfix schrumpft damit auf 14 Zeichen. Am Werkzeugsatz ändert das nichts:
- * Gekürzt wurde der **Eintragsname**, kein einziger der 59 ausgelieferten Werkzeugnamen.
+ * Gekürzt wurde der **Eintragsname**, kein einziger der 66 ausgelieferten Werkzeugnamen.
  *
  * Die Grenze hängt seither nicht mehr an dieser Erklärung, sondern an
  * `test/registry/name-length.test.ts`: Die Prüfung rechnet sie für jedes Werkzeug aus

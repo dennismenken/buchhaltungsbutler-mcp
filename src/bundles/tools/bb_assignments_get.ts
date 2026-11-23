@@ -241,7 +241,7 @@ async function run(ctx: BundleContext, args: Record<string, unknown>): Promise<B
 
   // Erst die Zeilenzahl des Aufrufers, dann das Antwortbudget: 300 zugeordnete Belege sind
   // gemessen rund 12.400 Token und damit das Zweieinhalbfache der Vorgabe. Ein Betreiber, der
-  // BB_MCP_MAX_RESPONSE_TOKENS senkt, bekommt hier denselben Schutz wie bei den 54
+  // BB_MCP_MAX_RESPONSE_TOKENS senkt, bekommt hier denselben Schutz wie bei den 61
   // Endpunktwerkzeugen — samt Meldung, statt stillschweigend.
   const total = allRows === null ? 0 : allRows.length;
   const byRows = allRows === null ? null : allRows.slice(0, maxRowsOf(args));

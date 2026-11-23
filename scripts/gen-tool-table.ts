@@ -8,7 +8,7 @@
 // vergessener Lauf ist rot und nicht unsichtbar.
 //
 // **Die Bündelwerkzeuge werden mitgeführt.** Sie stehen nicht in `index.generated.ts`, weil
-// sie einen eigenen Eintragstyp tragen (die 54 Endpunktwerkzeuge bleiben
+// sie einen eigenen Eintragstyp tragen (die 61 Endpunktwerkzeuge bleiben
 // unverändert, die Bündel kommen daneben). Dieses Skript liest sie deshalb aus
 // `src/bundles/index.ts` und erzeugt daraus die Tabelle in Abschnitt 11.1 sowie die beiden
 // Bündelzeilen der Bereichsübersicht in Abschnitt 1. Ein sechstes Bündel macht damit dieselbe
