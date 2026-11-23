@@ -1,4 +1,4 @@
-// Die zentrale Datenstruktur des Projekts. Jede der 54 Dateien unter
+// Die zentrale Datenstruktur des Projekts. Jede der 61 Dateien unter
 // src/registry/tools/ exportiert genau ein Objekt vom Typ ToolEntry; der Typ ist die
 // verbindliche Antwort auf die Frage, was ein Werkzeug ausmacht.
 //
@@ -12,7 +12,7 @@ import type { ToolGroup } from "./groups.js";
 export type { ToolGroup } from "./groups.js";
 
 /**
- * Der Pfad eines Endpunkts. Vier der 54 Endpunkte tragen im
+ * Der Pfad eines Endpunkts. Vier der 61 Endpunkte tragen im
  * Spezifikationspfad das Segment `id_by_customer`; live gemessen ist das ein
  * Platzhalter für den Wert und kein literales Segment.
  *

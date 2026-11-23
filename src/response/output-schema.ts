@@ -1,6 +1,6 @@
 // Das `outputSchema` eines Werkzeugs, erzeugt aus dem Antwortvertrag.
 //
-// **Gesetzt bei allen 54 Werkzeugen, aber niemals geschlossen.** Jedes Ausgabeschema trägt
+// **Gesetzt bei allen 61 Werkzeugen, aber niemals geschlossen.** Jedes Ausgabeschema trägt
 // `additionalProperties: true`, und die Pflichtfelder beschränken sich auf `success` und den
 // Datenbehälter, bei einer Schreibantwort auf `success` und den aufgelösten Datensatz. Diese
 // Zusicherung ist hier begründet; andere Stellen verweisen auf sie.

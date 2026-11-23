@@ -135,7 +135,7 @@ export const TOTAL_TOOL_DEFINITION_TOKEN_BUDGET = 54_000;
 export const BUNDLE_DEFINITION_TOKEN_BUDGET = 6_950;
 
 /** Obergrenze für die instructions des Servers, in Token. Sie tragen alles
- *  Querschnittliche genau einmal statt 54-mal und sind deshalb getrennt budgetiert. */
+ *  Querschnittliche genau einmal statt 61-mal und sind deshalb getrennt budgetiert. */
 export const INSTRUCTIONS_TOKEN_BUDGET = 2_100;
 
 /**
@@ -246,9 +246,9 @@ export const TOOL_NAMES_BY_TIER = {
  * Zeichen je Token, Umrechnungsfaktor für die Laufzeit.
  *
  * **GEMESSEN**, nicht mehr angenommen. `scripts/measure-tokens.ts` hat mit dem echten
- * Tokenizer (`gpt-tokenizer@4.0.0`, Kodierung `o200k_base`) über die 54
+ * Tokenizer (`gpt-tokenizer@4.0.0`, Kodierung `o200k_base`) über die damals 54
  * ausgelieferten Werkzeugdefinitionen und die instructions zusammen **4,09 Zeichen je Token**
- * ermittelt; die Zahlen stehen in docs/entwicklung/tokenbudget.md und entstehen bei
+ * ermittelt, am 2026-11-23 über 61 Definitionen 4,08; die Zahlen stehen in docs/entwicklung/tokenbudget.md und entstehen bei
  * jedem Lauf neu. Der frühere Wert 3,2 war eine ausdrücklich gekennzeichnete Annahme und
  * lag zu niedrig: Eine Werkzeugdefinition ist zum größeren Teil JSON-Struktur
  * mit englischen Feldnamen und zerfällt in wenige, lange Token, und auch deutscher Fließtext

@@ -88,7 +88,7 @@ describe("P7 Annotationen", () => {
     expectNoIssues(problems);
   });
 
-  it("gibt jedem der 56 Werkzeuge die Annotationen seiner Klasse", () => {
+  it("gibt jedem der 61 Werkzeuge die Annotationen seiner Klasse", () => {
     const problems: string[] = [];
 
     for (const name of EXPECTED_TOOL_NAMES) {
@@ -118,7 +118,7 @@ describe("P7 Annotationen", () => {
     expectNoIssues(problems);
   });
 
-  it("setzt openWorldHint bei allen 56 Werkzeugen auf true", () => {
+  it("setzt openWorldHint bei allen 61 Werkzeugen auf true", () => {
     const problems = REGISTRY.filter((tool) => !annotationsOf(tool).openWorldHint).map(
       (tool) =>
         `${tool.name}: openWorldHint ist false. Der Datenbestand ändert sich unabhängig von uns.`,

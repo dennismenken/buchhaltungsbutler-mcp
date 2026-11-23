@@ -1,9 +1,9 @@
 // P8: Beschreibungen, Pflichtsätze, Stufen und Verweise.
 //
-// Für die zehn Werkzeuge der Klasse B und die sieben der Klasse D ist Punkt 5 des Aufbaus
+// Für die elf Werkzeuge der Klasse B und die zwölf der Klasse D ist Punkt 5 des Aufbaus
 // die wichtigste Zeile des ganzen Servers: Der Server sperrt nichts
-// (`docs/entwicklung/tool-design.md` 9.4), und der Pflichtsatz ist bei dreizehn Werkzeugen
-// die einzige Warnung, die vor dem Aufruf überhaupt erscheint. Deshalb wird er hier
+// (`docs/entwicklung/tool-design.md` 9.4), und der Pflichtsatz ist bei den sechs Werkzeugen
+// mit U4 die einzige Warnung, die vor dem Aufruf überhaupt erscheint. Deshalb wird er hier
 // zeichengenau gegen src/registry/mandatory-sentences.ts geprüft und nicht sinngemäß.
 //
 // Der Verweistest ist wichtiger, als er klingt: Ein Abgrenzungssatz, der auf ein nicht
@@ -441,7 +441,7 @@ describe("P8 Pflichtsätze", () => {
 describe("P8 Verweise", () => {
   it("nennt in jedem Verweis einen Werkzeugnamen, den es gibt", () => {
     const problems: string[] = [];
-    // Geprüft wird gegen die erwarteten 54 Namen und nicht gegen das Register: Sonst wäre
+    // Geprüft wird gegen die erwarteten 61 Namen und nicht gegen das Register: Sonst wäre
     // ein richtiger Verweis solange falsch, wie das Zielwerkzeug noch nicht geschrieben ist,
     // und die fünf Registerpakete müssten sich abstimmen.
     const knownNames = new Set(EXPECTED_TOOL_NAMES);

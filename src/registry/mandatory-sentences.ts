@@ -8,8 +8,8 @@
 //
 // Warum der Wortlaut hier eingefroren ist: Der Server sperrt keinen Aufruf, und der
 // Freigabedialog des Clients ist damit die einzige menschliche Kontrolle
-// (`docs/entwicklung/tool-design.md` 9.4). Für die 13 Werkzeuge mit U4 ist dieser Satz die einzige
-// Warnung, die vor dem Aufruf überhaupt erscheint, weil die API für diese acht Objektarten
+// (`docs/entwicklung/tool-design.md` 9.4). Für die sechs Werkzeuge mit U4 ist dieser Satz die einzige
+// Warnung, die vor dem Aufruf überhaupt erscheint, weil die API für diese Vorgänge
 // keinen Lösch-, Storno- oder Aufhebungsendpunkt kennt.
 //
 // Werkzeug- und Feldnamen stehen unverändert im Original und werden nicht eingedeutscht.

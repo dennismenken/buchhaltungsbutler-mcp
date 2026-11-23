@@ -50,7 +50,7 @@ const KEY_LIKE_PATTERN = /[A-Za-z0-9+/=_-]{32,}/g;
  *
  * Der Bezeichner als **Wert** (`{ apiName: "api_key", reason: … }`) ist dagegen
  * Registerbuchhaltung und keine Preisgabe — dieselbe Ausnahme, die der Kopf dieser Datei
- * für das Feld `omitted` schon benennt. Für die 54 **ausgelieferten** Definitionen bleibt
+ * für das Feld `omitted` schon benennt. Für die 61 **ausgelieferten** Definitionen bleibt
  * es bei der strengeren Regel: dort darf das Wort überhaupt nicht vorkommen.
  */
 const CREDENTIAL_IN_KEY_POSITION = new RegExp(
@@ -244,7 +244,7 @@ function isFileContent(path: string): boolean {
 }
 
 describe("P9 Geheimnisfreiheit", () => {
-  it("trägt in keiner der 54 Werkzeugdefinitionen ein Zugangsdatum", () => {
+  it("trägt in keiner der 61 Werkzeugdefinitionen ein Zugangsdatum", () => {
     const problems: string[] = [];
 
     for (const name of EXPECTED_TOOL_NAMES) {

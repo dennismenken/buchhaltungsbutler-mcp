@@ -1,6 +1,6 @@
 // P4: das Namensschema und die Prüfsätze.
 //
-// Der Name ist das Erste, was ein Agent sieht, und bei 54 Werkzeugen die einzige
+// Der Name ist das Erste, was ein Agent sieht, und bei 61 Werkzeugen die einzige
 // Navigationshilfe, die ohne Kontextkosten auskommt. Deshalb ist er hier vollständig
 // festgelegt und nicht dem Geschmack des jeweiligen Bearbeiters überlassen.
 //
@@ -73,7 +73,7 @@ function parseName(name: string): { resource: string; verb?: string; verbIndex: 
 }
 
 describe("P4 Namensschema", () => {
-  it("führt jeden der 56 erwarteten Werkzeugnamen", () => {
+  it("führt jeden der 61 erwarteten Werkzeugnamen", () => {
     const problems = EXPECTED_TOOL_NAMES.filter((name) => entryByName(name) === undefined).map(
       (name) => missingEntry(name),
     );

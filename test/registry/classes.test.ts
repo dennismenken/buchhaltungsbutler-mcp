@@ -51,7 +51,7 @@ describe("P5 Klassen", () => {
     expectNoIssues(problems);
   });
 
-  it("stimmt bei allen 56 Werkzeugen mit der zweiten, unabhängig gepflegten Liste überein", () => {
+  it("stimmt bei allen 61 Werkzeugen mit der zweiten, unabhängig gepflegten Liste überein", () => {
     const problems: string[] = [];
 
     for (const name of EXPECTED_TOOL_NAMES) {
@@ -117,7 +117,7 @@ describe("P6 Wirkungsabgleich", () => {
     expectNoIssues(problems);
   });
 
-  it("stimmt bei allen 56 Endpunkten mit grundlagen.md 7.3 überein", () => {
+  it("stimmt bei allen 61 Endpunkten mit grundlagen.md 7.3 überein", () => {
     const problems: string[] = [];
 
     for (const path of EXPECTED_SPEC_PATHS) {
