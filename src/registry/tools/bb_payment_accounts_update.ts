@@ -15,11 +15,9 @@
 //  3. `is_revision_safe` lässt sich über die API **nicht** ändern. Der Endpunkt führt den
 //     Parameter nicht; er bleibt, wie er ist.
 //
-// `invalidatesCache` ist leer, und das ist beabsichtigt:
-// `/accounts/get` wird nie zwischengespeichert, deshalb gibt es dort nichts zu verwerfen.
-// Zu bedenken bleibt, dass ein geändertes Zahlungskonto auch in der vereinigten Kontenliste
-// von `/settings/get/postingaccounts` erscheint; die Invalidierungstabelle führt diesen Fall
-// nicht, und er wird hier nicht eigenmächtig ergänzt.
+// `invalidatesCache` nennt `bb_postingaccounts_search`: `/accounts/get` selbst wird nie
+// zwischengespeichert, aber ein umbenanntes Zahlungskonto steht auch in der vereinigten
+// Kontenliste von `/settings/get/postingaccounts` (type 'account').
 
 import { z } from "zod";
 
@@ -109,5 +107,5 @@ export const bb_payment_accounts_update: ToolEntry = {
   },
   crossChecks: ["Q3"],
   // Leer: `/accounts/get` wird nie zwischengespeichert.
-  invalidatesCache: [],
+  invalidatesCache: ["bb_postingaccounts_search"],
 };

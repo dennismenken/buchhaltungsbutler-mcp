@@ -10,6 +10,7 @@ import {
   resetMasterDataStoreForTests,
   type CacheClock,
 } from "../../src/cache/store.js";
+import { TOOL_ENTRIES } from "../../src/registry/index.generated.js";
 import { installTestConfig, resetTestConfig } from "../helpers/mock-api.js";
 
 // Die Zusagen: „BB_MCP_CACHE_TTL_MS=0 liefert keinen Treffer, Ablauf nach TTL über eine
@@ -160,38 +161,52 @@ describe("Speicherfähig sind ausschließlich die vier Werkzeuge der Tabelle", (
   });
 });
 
-describe("Die Invalidierung kommt aus dem Register, nicht aus diesem Modul", () => {
-  /**
-   * Die Tabelle, so wie sie in den Feldern `invalidatesCache` der
-   * Registereinträge stehen wird. Der Speicher bekommt nur die
-   * Werkzeugnamen übergeben und kennt diese Zuordnung selbst nicht.
-   */
-  const INVALIDATED_BY: Readonly<Record<string, readonly string[]>> = {
-    bb_postingaccounts_search: [
-      "bb_postingaccounts_create",
-      "bb_postingaccounts_update",
-      // Die nicht offensichtliche Zeile: /settings/get/postingaccounts ist eine
-      // Vereinigungsliste und enthält Debitoren und Kreditoren.
-      "bb_debtors_create",
-      "bb_debtors_create_batch",
-      "bb_debtors_update",
-      "bb_creditors_create",
-      "bb_creditors_create_batch",
-      "bb_creditors_update",
-    ],
-    bb_debtors_search: ["bb_debtors_create", "bb_debtors_create_batch", "bb_debtors_update"],
-    bb_creditors_search: [
-      "bb_creditors_create",
-      "bb_creditors_create_batch",
-      "bb_creditors_update",
-    ],
-    bb_cost_locations_search: [
-      "bb_cost_locations_create",
-      "bb_cost_locations_update",
-      "bb_cost_locations_delete",
-    ],
-  };
+/**
+ * Die Tabelle, so wie sie in den Feldern `invalidatesCache` der
+ * Registereinträge stehen wird. Der Speicher bekommt nur die
+ * Werkzeugnamen übergeben und kennt diese Zuordnung selbst nicht.
+ */
+const INVALIDATED_BY: Readonly<Record<string, readonly string[]>> = {
+  bb_postingaccounts_search: [
+    "bb_postingaccounts_create",
+    "bb_postingaccounts_update",
+    // Die nicht offensichtliche Zeile: /settings/get/postingaccounts ist eine
+    // Vereinigungsliste und enthält Debitoren und Kreditoren.
+    "bb_debtors_create",
+    "bb_debtors_create_batch",
+    "bb_debtors_update",
+    "bb_creditors_create",
+    "bb_creditors_create_batch",
+    "bb_creditors_update",
+    // Seit der Spezifikation vom 2026-11-22: die Löschwerkzeuge, und die Zahlungskonten, die
+    // in derselben Vereinigungsliste als type 'account' stehen.
+    "bb_postingaccounts_delete",
+    "bb_debtors_delete",
+    "bb_creditors_delete",
+    "bb_payment_accounts_create",
+    "bb_payment_accounts_update",
+    "bb_payment_accounts_delete",
+  ],
+  bb_debtors_search: [
+    "bb_debtors_create",
+    "bb_debtors_create_batch",
+    "bb_debtors_update",
+    "bb_debtors_delete",
+  ],
+  bb_creditors_search: [
+    "bb_creditors_create",
+    "bb_creditors_create_batch",
+    "bb_creditors_update",
+    "bb_creditors_delete",
+  ],
+  bb_cost_locations_search: [
+    "bb_cost_locations_create",
+    "bb_cost_locations_update",
+    "bb_cost_locations_delete",
+  ],
+};
 
+describe("Die Invalidierung kommt aus dem Register, nicht aus diesem Modul", () => {
   /** Wessen Stand ein schreibendes Werkzeug invalidatorsFor: die Tabelle oben, umgedreht. */
   function invalidatorsFor(writingTool: string): string[] {
     return Object.entries(INVALIDATED_BY)
@@ -249,7 +264,7 @@ describe("Die Invalidierung kommt aus dem Register, nicht aus diesem Modul", () 
 
   it("invalidatorsFor nichts bei einem Werkzeug ohne invalidatesCache", () => {
     const store = filledStore();
-    // bb_payment_accounts_create trägt ein leeres invalidatesCache.
+    // bb_comments_create trägt ein leeres invalidatesCache.
     expect(store.invalidate([])).toEqual([]);
     expect(store.size()).toBe(CACHEABLE_TOOLS.length);
   });
@@ -266,5 +281,27 @@ describe("Die Invalidierung kommt aus dem Register, nicht aus diesem Modul", () 
     const store = filledStore();
     store.clear();
     expect(store.size()).toBe(0);
+  });
+});
+
+describe("Das Register verwirft genau, was die Tabelle nennt", () => {
+  // Die Tabelle oben beschreibt die Zuordnung von Hand; diese Prüfung hält jeden
+  // Registereintrag dagegen. Ohne sie fiel nicht auf, dass die Zahlungskontowerkzeuge den
+  // Sachkontenstand nicht verwarfen, obwohl Zahlungskonten in derselben Vereinigungsliste stehen.
+  it("führt bei jedem Registereintrag genau die Stände, die ihn in der Tabelle nennen", () => {
+    const problems: string[] = [];
+    for (const entry of TOOL_ENTRIES) {
+      const expected = Object.entries(INVALIDATED_BY)
+        .filter(([, triggers]) => triggers.includes(entry.name))
+        .map(([stored]) => stored)
+        .sort();
+      const actual = [...entry.invalidatesCache].sort();
+      if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+        problems.push(
+          `${entry.name}: invalidatesCache ${JSON.stringify(actual)}, erwartet ${JSON.stringify(expected)}`,
+        );
+      }
+    }
+    expect(problems).toEqual([]);
   });
 });

@@ -14,11 +14,11 @@
 // Stornozahlung verschwinden. Die Spezifikation schreibt ausdrücklich, dass die Angabe nur
 // bei Kassen wirkt.
 //
-// **`invalidatesCache` ist leer, und das ist beabsichtigt**:
-// `/accounts/get` wird nie zwischengespeichert, deshalb gibt es dort nichts zu verwerfen.
-// Zu bedenken bleibt, dass ein neues Zahlungskonto auch in der vereinigten Kontenliste von
-// `/settings/get/postingaccounts` erscheint (dort als type 'account'); die Invalidierungstabelle
-// führt diesen Fall nicht, und er wird hier nicht eigenmächtig ergänzt.
+// **`invalidatesCache` nennt `bb_postingaccounts_search`**: `/accounts/get` selbst wird nie
+// zwischengespeichert, aber ein neues Zahlungskonto erscheint auch in der vereinigten
+// Kontenliste von `/settings/get/postingaccounts` (dort als type 'account',
+// docs/api/stammdaten.md). Ohne Verwerfen lieferte der Stammdatenspeicher diese Liste und die
+// Kontobezeichnungen daraus bis zum Ablauf ohne das neue Konto.
 
 import { z } from "zod";
 
@@ -130,5 +130,5 @@ export const bb_payment_accounts_create: ToolEntry = {
   },
   crossChecks: ["Q3"],
   // Leer: `/accounts/get` wird nie zwischengespeichert.
-  invalidatesCache: [],
+  invalidatesCache: ["bb_postingaccounts_search"],
 };
