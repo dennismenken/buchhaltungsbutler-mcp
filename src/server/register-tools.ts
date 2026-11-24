@@ -47,7 +47,21 @@ import { isUploadSourceError } from "../upload/sniff.js";
 import { buildZodSchema, specPathOf, toJsonSchema } from "../schema/build.js";
 
 /** Die geprüften Argumente eines Werkzeugaufrufs. */
-type ToolArguments = Record<string, unknown>;
+export type ToolArguments = Record<string, unknown>;
+
+/**
+ * Der Kopf einer Audit-Zeile: Werkzeug, Klasse, Endpunkt und Uhr.
+ *
+ * Jede Laufzeit erfüllt ihn. Das Gateway baut ihn für seine fünf Werkzeuge aus dem
+ * Gateway-Namen, der Annotationsklasse und `(gateway)` als Endpunkt: Ein Gateway hat
+ * keinen Endpunkt, und der erste seiner Schritte wäre eine Halbwahrheit — dieselbe
+ * Begründung wie bei den Bündeln, die `(bündel)` führen.
+ */
+export interface AuditHead {
+  readonly entry: { readonly name: string; readonly toolClass: string };
+  readonly specPath: string;
+  readonly now: () => number;
+}
 
 /** Herkunftskennung der Schematräger. Sie erscheint in keinem ausgelieferten Text. */
 const SCHEMA_VENDOR = "buchhaltungsbutler-mcp";
@@ -98,8 +112,14 @@ export interface RegisterToolsOptions {
   readonly now?: () => number;
 }
 
-/** Was der Handler über sein Werkzeug wissen muss. Einmal beim Registrieren gebaut. */
-interface ToolRuntime {
+/**
+ * Was der Handler über sein Werkzeug wissen muss. Einmal beim Registrieren gebaut.
+ *
+ * Exportiert, weil das Gateway (`src/server/discovery.ts`) denselben Weg benutzt: Es
+ * baut zu jedem aktiven Eintrag dieselbe Laufzeit und führt denselben Aufruf aus. Eine
+ * zweite Ablaufkopie daneben wäre genau der Fehler, vor dem der Kopf dieser Datei warnt.
+ */
+export interface ToolRuntime {
   readonly entry: ToolEntry;
   /**
    * Guard 3: das Objektschema **ohne** die Querprüfungen. Es entsteht aus demselben Eintrag
@@ -137,30 +157,41 @@ function textResult(text: string, isError: boolean): CallToolResult {
  * durch die Schwärzung; stdout gehört dem Protokoll.
  */
 function audit(
-  runtime: ToolRuntime,
+  runtime: AuditHead,
   rawArgs: ToolArguments,
   startedAt: number,
   outcome: AuditOutcome,
+  gatewayName?: string,
 ): void {
   const durationMs = Math.round(runtime.now() - startedAt);
   const names = Object.keys(rawArgs).sort();
+  // Im Gateway-Fall steht das Gateway dabei: Die Zeile nennt das Zielwerkzeug und
+  // zusätzlich das Gateway, damit der Prüfpfad zeigt, über welchen Einstieg der Aufruf
+  // lief. Ohne Gateway entfällt der Zusatz, und die Zeile ist die von jeher.
+  const via = gatewayName === undefined ? "" : ` gateway=${gatewayName}`;
   writeStderrBlock(
-    `audit ${new Date().toISOString()} werkzeug=${runtime.entry.name} ` +
+    `audit ${new Date().toISOString()} werkzeug=${runtime.entry.name}${via} ` +
       `klasse=${runtime.entry.toolClass} endpunkt=${runtime.specPath} ` +
       `dauer=${String(durationMs)}ms ergebnis=${outcome} ` +
       `argumente=${names.length === 0 ? "keine" : names.join(",")}`,
   );
 }
 
-/** Eine Ablehnung vor dem Request: Audit-Zeile schreiben und das Ergebnis zurückgeben. */
-function refuse(
-  runtime: ToolRuntime,
+/**
+ * Eine Ablehnung vor dem Request: Audit-Zeile schreiben und das Ergebnis zurückgeben.
+ *
+ * Exportiert, weil das Gateway dieselben Absagen mit denselben Zeilen erteilt; der
+ * zusätzliche Gateway-Name hängt an der Audit-Zeile wie in {@link audit}.
+ */
+export function refuseCall(
+  runtime: AuditHead,
   rawArgs: ToolArguments,
   startedAt: number,
   outcome: AuditOutcome,
   text: string,
+  gatewayName?: string,
 ): CallToolResult {
-  audit(runtime, rawArgs, startedAt, `abgelehnt:${outcome}`);
+  audit(runtime, rawArgs, startedAt, `abgelehnt:${outcome}`, gatewayName);
   return textResult(text, true);
 }
 
@@ -173,18 +204,25 @@ function refuse(
 // und eine englische der Bibliothek.
 // ---------------------------------------------------------------------------------------
 
-function schemaRefusal(
-  entry: ToolEntry,
+/**
+ * Die Absage eines Schema- oder Querprüfungsverstoßes, im Vierblockaufbau.
+ *
+ * Exportiert, damit das Gateway dieselbe Darstellung liefert wie der direkte Modus: Es
+ * ruft denselben Satzbau mit demselben Befundtext auf und hängt nur sein Eingabeschema
+ * an. Der Werkzeugname steuert den Wie-Satz; das Gateway übergibt das Zielwerkzeug.
+ */
+export function schemaRefusalText(
+  toolName: string,
   issues: readonly z.core.$ZodIssue[],
   was: string,
   rawArgs: unknown,
 ): string {
   return renderRejectedBeforeRequest({
-    toolName: entry.name,
+    toolName,
     was,
     warum: joinIssues(issues, rawArgs),
     wie:
-      `Die genannten Felder korrigieren und ${entry.name} erneut aufrufen. Die Feldliste und ` +
+      `Die genannten Felder korrigieren und ${toolName} erneut aufrufen. Die Feldliste und ` +
       "die erlaubten Werte stehen in der Beschreibung dieses Werkzeugs.",
   }).text;
 }
@@ -339,72 +377,139 @@ async function runTool(
   }
 }
 
-async function runGuardedCall(
+/**
+ * Baut die Laufzeit eines Eintrags: beide Schemas und der Spezifikationspfad.
+ *
+ * Die beiden Schemas entstehen hier und nirgends sonst, damit Guard 3 und Guard 4 im
+ * direkten Modus und im Gateway über demselben Paar laufen: `baseSchema` ohne die
+ * Querprüfungen, `fullSchema` mit ihnen. Die Grenze `maxItems` kommt aus der
+ * übergebenen Konfiguration und nicht aus der prozessweiten, weil dieser Aufruf seine
+ * Konfiguration schon kennt.
+ */
+export function createToolRuntime(
+  entry: ToolEntry,
+  config: ResolvedConfig,
+  store: MasterDataStore,
+  resolveEntry: (name: string) => ToolEntry | undefined,
+  now: () => number,
+): ToolRuntime {
+  const schemaOptions = { maxItems: config.maxBatch };
+  return {
+    entry,
+    baseSchema: buildZodSchema({ ...entry, crossChecks: [] }, schemaOptions),
+    fullSchema: buildZodSchema(entry, schemaOptions),
+    specPath: specPathOf(entry),
+    config,
+    store,
+    resolveEntry,
+    now,
+  };
+}
+
+/**
+ * Guard 1 und Guard 2: Konfiguration und Nur-Lesen-Schalter.
+ *
+ * @returns Die Absage, oder `undefined`, wenn der Aufruf weiterlaufen darf.
+ */
+export function checkEarlyGuards(
   runtime: ToolRuntime,
   rawArgs: ToolArguments,
-  signal: AbortSignal,
   startedAt: number,
-): Promise<CallToolResult> {
+  gatewayName?: string,
+): CallToolResult | undefined {
   const { entry, config } = runtime;
 
   // --- Guard 1: Konfiguration ---------------------------------------------
   const notConfigured = checkConfigured(entry.name, config);
   if (notConfigured !== undefined) {
-    return refuse(runtime, rawArgs, startedAt, "konfiguration", notConfigured);
+    return refuseCall(runtime, rawArgs, startedAt, "konfiguration", notConfigured, gatewayName);
   }
 
   // --- Guard 2: Nur-Lesen-Schalter ----------------------------------------
   const readOnlyRefusal = checkReadOnly(entry, config);
   if (readOnlyRefusal !== undefined) {
-    return refuse(runtime, rawArgs, startedAt, "nur-lesen", readOnlyRefusal);
+    return refuseCall(runtime, rawArgs, startedAt, "nur-lesen", readOnlyRefusal, gatewayName);
   }
 
+  return undefined;
+}
+
+/** Eine festgestellte Schema- oder Querprüfungsverletzung, noch ohne Audit-Zeile. */
+export interface ArgsRefusal {
+  /** `schema` für Guard 3, `querprüfung` für Guard 4: derselbe Status wie im direkten Modus. */
+  readonly outcome: "schema" | "querprüfung";
+  readonly issues: readonly z.core.$ZodIssue[];
+  readonly was: string;
+}
+
+/**
+ * Guard 3 und Guard 4: Schema und Querprüfungen.
+ *
+ * Getrennt, damit beide getrennt melden: Guard 3 prüft das Objektschema **ohne** die
+ * Querprüfungen, Guard 4 dasselbe Schema **mit** ihnen. Dass die Feldprüfungen dabei ein
+ * zweites Mal laufen, ist der Preis dafür; er besteht aus einem Parse über ein kleines
+ * Objekt. Trägt der Eintrag keine Querprüfung, entfällt der Schritt vollständig.
+ *
+ * @returns Die geprüften Argumente, oder die Verletzung zur Darstellung beim Aufrufer.
+ */
+export function validateToolArgs(
+  runtime: ToolRuntime,
+  rawArgs: ToolArguments,
+): { readonly args: ToolArguments } | { readonly refusal: ArgsRefusal } {
   // --- Guard 3: Schema, streng ----------------------------------
   const parsed = runtime.baseSchema.safeParse(rawArgs);
   if (!parsed.success) {
-    return refuse(
-      runtime,
-      rawArgs,
-      startedAt,
-      "schema",
-      schemaRefusal(
-        entry,
-        parsed.error.issues,
-        "Die Argumente entsprechen nicht dem Eingabeschema dieses Werkzeugs.",
-        rawArgs,
-      ),
-    );
+    return {
+      refusal: {
+        outcome: "schema",
+        issues: parsed.error.issues,
+        was: "Die Argumente entsprechen nicht dem Eingabeschema dieses Werkzeugs.",
+      },
+    };
   }
   let args = parsed.data as ToolArguments;
 
   // --- Guard 4: Querprüfungen Q1 bis Q8 -----------------------------------
-  // Geprüft wird mit demselben Schema plus den Querprüfungen des Eintrags. Dass die
-  // Feldprüfungen dabei ein zweites Mal laufen, ist der Preis dafür, dass Guard 3 und Guard 4
-  // getrennt melden; er besteht aus einem Parse über ein kleines Objekt. Trägt der Eintrag
-  // keine Querprüfung, entfällt der Schritt vollständig.
-  if (entry.crossChecks.length > 0) {
+  if (runtime.entry.crossChecks.length > 0) {
     const crossChecked = runtime.fullSchema.safeParse(rawArgs);
     if (!crossChecked.success) {
-      return refuse(
-        runtime,
-        rawArgs,
-        startedAt,
-        "querprüfung",
-        schemaRefusal(
-          entry,
-          crossChecked.error.issues,
-          "Eine Querprüfung dieses Endpunkts ist nicht erfüllt.",
-          rawArgs,
-        ),
-      );
+      return {
+        refusal: {
+          outcome: "querprüfung",
+          issues: crossChecked.error.issues,
+          was: "Eine Querprüfung dieses Endpunkts ist nicht erfüllt.",
+        },
+      };
     }
     args = crossChecked.data as ToolArguments;
   }
 
+  return { args };
+}
+
+/**
+ * Der Weg eines Aufrufs ab geprüften Argumenten.
+ *
+ * Alles ab Guard 5 läuft hier: Betrags- und Stapelgrenze, Duplikatshinweis,
+ * Stammdatenspeicher, Belegquelle, Request, Antwortaufbau und die Audit-Zeile. Der
+ * direkte Modus und das Gateway teilen sich diesen Weg; Guard 1 bis Guard 4 laufen
+ * davor und sind in {@link checkEarlyGuards} und {@link validateToolArgs} ebenfalls
+ * geteilt. Der optionale Gateway-Name hängt an der Audit-Zeile wie in {@link audit}.
+ */
+export async function runAfterValidation(
+  runtime: ToolRuntime,
+  rawArgs: ToolArguments,
+  args: ToolArguments,
+  signal: AbortSignal,
+  startedAt: number,
+  gatewayName?: string,
+): Promise<CallToolResult> {
+  const { entry, config } = runtime;
+
   // --- Guard 5: Betrags- und Stapelgrenze ---------------------------------
   const limitRefusal = checkLimits(entry, args, config);
   if (limitRefusal !== undefined) {
-    return refuse(runtime, rawArgs, startedAt, "grenze", limitRefusal);
+    return refuseCall(runtime, rawArgs, startedAt, "grenze", limitRefusal, gatewayName);
   }
 
   // --- Guard 6: Duplikatshinweis --------------------------------
@@ -440,7 +545,7 @@ async function runGuardedCall(
       maxResponseTokens: config.maxResponseTokens,
       ...(duplicateHint === undefined ? {} : { duplicateHint }),
     });
-    audit(runtime, rawArgs, startedAt, "ok:speicher");
+    audit(runtime, rawArgs, startedAt, "ok:speicher", gatewayName);
     return { content: [...payload.content], structuredContent: payload.structuredContent };
   }
 
@@ -448,11 +553,12 @@ async function runGuardedCall(
   // Nur `/receipts/upload` tut hier etwas; jedes andere Werkzeug bekommt seine Argumente
   // unverändert zurück. Der Schritt liegt bewusst vor dem Request: Schlägt er fehl, ging
   // nichts hinaus, und die Meldung sagt genau das.
+  let currentArgs = args;
   try {
-    args = await resolveUploadArguments(entry, args, { signal });
+    currentArgs = await resolveUploadArguments(entry, args, { signal });
   } catch (error) {
     if (isUploadSourceError(error)) {
-      return refuse(
+      return refuseCall(
         runtime,
         rawArgs,
         startedAt,
@@ -465,17 +571,18 @@ async function runGuardedCall(
             "Das Feld file auf eine der erlaubten Formen bringen und " +
             `${entry.name} erneut aufrufen.`,
         }).text,
+        gatewayName,
       );
     }
-    return await handleCallFailure(runtime, rawArgs, args, startedAt, error);
+    return await handleCallFailure(runtime, rawArgs, currentArgs, startedAt, error, gatewayName);
   }
 
   // --- Schritt 8 bis 13: Abbildung, Request, Antwort ---------------------------------
   let sent: SentRequest;
   try {
-    sent = await sendRequest(entry, args, config, signal);
+    sent = await sendRequest(entry, currentArgs, config, signal);
   } catch (error) {
-    return await handleCallFailure(runtime, rawArgs, args, startedAt, error);
+    return await handleCallFailure(runtime, rawArgs, currentArgs, startedAt, error, gatewayName);
   }
 
   try {
@@ -488,17 +595,55 @@ async function runGuardedCall(
     const payload = buildToolResponse({
       entry,
       mapped,
-      args,
+      args: currentArgs,
       maxResponseTokens: config.maxResponseTokens,
       ...(duplicateHint === undefined ? {} : { duplicateHint }),
     });
-    audit(runtime, rawArgs, startedAt, "ok");
+    audit(runtime, rawArgs, startedAt, "ok", gatewayName);
     return { content: [...payload.content], structuredContent: payload.structuredContent };
   } catch (error) {
     // Die Antwort liegt vor, das Aufbereiten ist gescheitert. Der Aufruf hat gewirkt, und das
     // darf der Agent nicht als „nichts passiert" lesen.
-    return unexpectedFailure(runtime, rawArgs, startedAt, error, true);
+    return unexpectedFailure(runtime, rawArgs, startedAt, error, true, gatewayName);
   }
+}
+
+/**
+ * Die Guardkette eines Aufrufs in der festen Reihenfolge.
+ *
+ * Der direkte Modus läuft über diese Folge und sonst über nichts: Guard 1 und Guard 2,
+ * dann Guard 3 und Guard 4, dann der Weg ab geprüften Argumenten. Das Gateway ruft
+ * dieselben drei Schritte in derselben Reihenfolge auf und schiebt nur seine eigenen
+ * Prüfungen (bekannt, aktiv, zuständig) davor.
+ */
+async function runGuardedCall(
+  runtime: ToolRuntime,
+  rawArgs: ToolArguments,
+  signal: AbortSignal,
+  startedAt: number,
+): Promise<CallToolResult> {
+  const early = checkEarlyGuards(runtime, rawArgs, startedAt);
+  if (early !== undefined) {
+    return early;
+  }
+
+  const validated = validateToolArgs(runtime, rawArgs);
+  if ("refusal" in validated) {
+    return refuseCall(
+      runtime,
+      rawArgs,
+      startedAt,
+      validated.refusal.outcome,
+      schemaRefusalText(
+        runtime.entry.name,
+        validated.refusal.issues,
+        validated.refusal.was,
+        rawArgs,
+      ),
+    );
+  }
+
+  return runAfterValidation(runtime, rawArgs, validated.args, signal, startedAt);
 }
 
 /** Ein gescheiterter Aufruf: Fehlerschicht befragen, Speicher bei offenem Ausgang verwerfen. */
@@ -508,6 +653,7 @@ async function handleCallFailure(
   args: ToolArguments,
   startedAt: number,
   error: unknown,
+  gatewayName?: string,
 ): Promise<CallToolResult> {
   const { entry } = runtime;
 
@@ -521,14 +667,14 @@ async function handleCallFailure(
       // als ein Stand, der eine womöglich erfolgte Änderung nicht kennt.
       runtime.store.invalidate(entry.invalidatesCache);
     }
-    audit(runtime, rawArgs, startedAt, `fehler:${error.code}`);
+    audit(runtime, rawArgs, startedAt, `fehler:${error.code}`, gatewayName);
     return textResult(message.text, true);
   }
 
   // Der Request-Mapper. Seine Fehler entstehen **vor** dem ersten Byte,
   // tragen also wie jede Ablehnung eines Guards den Zustandssatz 1.
   if (error instanceof Error) {
-    return refuse(
+    return refuseCall(
       runtime,
       rawArgs,
       startedAt,
@@ -539,10 +685,11 @@ async function handleCallFailure(
         warum: error.message,
         wie: `Die genannte Stelle korrigieren und ${entry.name} erneut aufrufen.`,
       }).text,
+      gatewayName,
     );
   }
 
-  return unexpectedFailure(runtime, rawArgs, startedAt, error, false);
+  return unexpectedFailure(runtime, rawArgs, startedAt, error, false, gatewayName);
 }
 
 /**
@@ -551,22 +698,26 @@ async function handleCallFailure(
  * Zwei Dinge sind dabei Pflicht: Das Ergebnis ist `isError: true` und niemals ein
  * Protokollfehler, und die Diagnose geht nach stderr — stdout trägt ausschließlich JSON-RPC.
  *
+ * Exportiert, weil das Gateway denselben äußeren Fangarm braucht: Aus keinem Handler darf
+ * je eine Ausnahme entkommen, gleich über welchen Einstieg der Aufruf lief.
+ *
  * @param afterRequest `true`, wenn der Request schon hinausgegangen war. Dann darf der Text
  *        nicht behaupten, es sei nichts geschehen.
  */
-function unexpectedFailure(
-  runtime: ToolRuntime,
+export function unexpectedFailure(
+  runtime: AuditHead,
   rawArgs: ToolArguments,
   startedAt: number,
   error: unknown,
   afterRequest: boolean,
+  gatewayName?: string,
 ): CallToolResult {
   const detail = error instanceof Error ? error.message : String(error);
   logError(
     `${runtime.entry.name} ${runtime.specPath}: unerwarteter Fehler im Handler: ${detail}` +
       (error instanceof Error && error.stack !== undefined ? `\n${error.stack}` : ""),
   );
-  audit(runtime, rawArgs, startedAt, "fehler:unerwartet");
+  audit(runtime, rawArgs, startedAt, "fehler:unerwartet", gatewayName);
 
   const text = renderRejectedBeforeRequest({
     toolName: runtime.entry.name,
@@ -638,32 +789,17 @@ export function registerTools(
     if (!activeGroups.has(entry.group)) {
       continue;
     }
-    // `maxItems` wird ausdrücklich übergeben und nicht aus der prozessweiten Konfiguration
-    // geholt: Dieser Aufruf kennt seine Konfiguration schon, und ein Schema, das sich die
-    // Grenze woanders besorgt, wäre gegenüber der hier gültigen blind.
-    const schemaOptions = { maxItems: config.maxBatch };
-    const fullSchema = buildZodSchema(entry, schemaOptions);
-    // Dasselbe Schema ohne Querprüfungen, für Guard 3. Der Eintrag wird dafür nicht verändert,
-    // sondern eine Kopie mit leerer Prüfliste gebaut; der Bau läuft durch dieselbe Funktion,
-    // damit es keinen zweiten Weg von einem Eintrag zu einem Schema gibt.
-    const baseSchema = buildZodSchema({ ...entry, crossChecks: [] }, schemaOptions);
-    const runtime: ToolRuntime = {
-      entry,
-      baseSchema,
-      fullSchema,
-      specPath: specPathOf(entry),
-      config,
-      store,
-      resolveEntry,
-      now,
-    };
+    // Beide Schemas und der Spezifikationspfad entstehen in `createToolRuntime`, derselben
+    // Funktion, aus der das Gateway seine Laufzeiten baut: ein Weg von einem Eintrag zu
+    // einer Laufzeit und kein zweiter.
+    const runtime = createToolRuntime(entry, config, store, resolveEntry, now);
 
     server.registerTool(
       entry.name,
       {
         title: entry.title,
         description: entry.description,
-        inputSchema: advertise(toJsonSchema(fullSchema)),
+        inputSchema: advertise(toJsonSchema(runtime.fullSchema)),
         outputSchema: advertise(buildOutputSchema(entry)),
         annotations: { ...TOOL_CLASSES[entry.toolClass].annotations },
       },
