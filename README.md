@@ -585,8 +585,10 @@ derselben Antwort. Was sich ändert, ist allein die Liste.
 
 Der Modus lohnt sich dort, wo der Client jede Werkzeugdefinition in jede Anfrage legt. Dort
 kostet der volle Satz von 61 Endpunktwerkzeugen gemessen 53.086 Token je Anfrage
-(siehe Abschnitt 13). Wie viel die fünf Gatewaydefinitionen wiegen, steht nach der Messung
-in D3 an dieser Stelle.
+(siehe Abschnitt 13). Die fünf Gatewaydefinitionen wiegen gemessen 967 Token (Grenze 1.100),
+die Bündel wie im direkten Modus 6.852, die Serverbeschreibung im Modus `discovery` 930 Token.
+Die erste Antwort von `bb_tools_discover`, die Übersicht, kostet 768 Token. Gemessen mit
+`gpt-tokenizer` in der Kodierung `o200k_base`; `pnpm measure-tokens` weist alle Zahlen aus.
 
 Der Preis dafür ist dreifach: ein bis zwei Suchschritte mehr je Aufgabe, weil der Assistent
 erst suchen und nachlesen muss, was bei `direct` schon da liegt. Die Freigabe im Client wird

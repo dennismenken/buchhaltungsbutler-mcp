@@ -18,7 +18,10 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
   Einrichtungsassistent trägt `discovery` für Cursor, Windsurf, Cline und LM Studio ein, für
   Claude Desktop, Claude Code, Codex und VS Code setzt er nichts. `bbutler-mcp doctor` und
   `bbutler-mcp print-config` nennen die aktive Betriebsart; das `.mcpb`-Bundle führt sie als
-  Feld „Betriebsart" mit der Vorgabe `direct`.
+  Feld „Betriebsart" mit der Vorgabe `direct`. Gemessen: 967 Token für die fünf
+  Gatewaydefinitionen statt 53.086 für die 61 Endpunktwerkzeuge; eigene Grenzen von 1.100 Token
+  für die Gatewaydefinitionen und 1.000 für die Übersicht von `bb_tools_discover` (gemessen
+  768), die Grenze der Serverbeschreibung (2.100) gilt in beiden Betriebsarten.
 
 - **Der wöchentliche Lauf `drift.yml` gleicht die eingecheckte Spezifikationsdatei mit der
   Live-Spezifikation des Anbieters ab** (`pnpm check-spec-drift`). Anlass: BuchhaltungsButler
