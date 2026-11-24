@@ -220,12 +220,6 @@ function gatewayHead(gatewayName: string, now: () => number): AuditHead {
  *
  * Dieselbe Darstellung wie im direkten Modus: derselbe Satzbau, derselbe Befundtext aus
  * `errors/zod-issue.ts`. Der Werkzeugname ist das Gateway, dessen Schema verletzt ist.
- */
-/**
- * Die Absage einer gateway-eigenen Schemaverletzung, im selben Vierblock wie direkt.
- *
- * Dieselbe Darstellung wie im direkten Modus: derselbe Satzbau, derselbe Befundtext aus
- * `errors/zod-issue.ts`. Der Werkzeugname ist das Gateway, dessen Schema verletzt ist.
  * Das strukturierte Datum nennt den Misserfolg, damit auch eine Absage gegen das
  * Ausgabeschema prüft.
  */
@@ -257,8 +251,11 @@ function gatewaySchemaRefusal(
 /**
  * Eine Absage des Gateways selbst, mit Audit-Zeile wie jede Ablehnung vor dem Request.
  *
- * Das strukturierte Datum nennt den Misserfolg: Auch die Absage prüft gegen das offene
- * Ausgabeschema und bleibt damit für einen validierenden Client lesbar.
+ * Das strukturierte Datum `{ success: false, gateway }` tragen nur diese eigenen
+ * Absagen des Gateways — unbekanntes oder abgeschaltetes Ziel, Zuständigkeit —, damit
+ * auch sie gegen das offene Ausgabeschema prüfen. Absagen aus dem gemeinsamen Weg
+ * (Guard 1 und Guard 2, Grenzen, Abbrüche nach dem Request) erben das direkte
+ * Verhalten und tragen keins: Dort ändert der Gateway-Einstieg an der Antwort nichts.
  */
 function gatewayRefusal(
   head: AuditHead,
