@@ -640,7 +640,7 @@ BB_MCP_READ_ONLY=true
 
 Werkzeuge aufrufbar.
 
-Steht er auf `true`, führt der Server nur die 19 lesenden Werkzeuge aus. Die übrigen 45 lehnen
+Steht er auf `true`, führt der Server nur die 19 lesenden Werkzeuge aus. Die übrigen 47 lehnen
 ab, **bevor** ein Request an BuchhaltungsButler abgeht, und die Absage nennt die Variable und
 ihren Zielwert. Gesperrte Werkzeuge bleiben in der Werkzeugliste sichtbar: Ein Assistent, der
 ein Werkzeug nicht sieht, schließt auf eine fehlende Fähigkeit und sucht Umwege; einer, der eine
