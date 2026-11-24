@@ -690,13 +690,18 @@ function runDescribe(
       `${entry.name} — ${entry.title} (Gruppe ${entry.group}, Klasse ${entry.toolClass}, über ${invokeToolForClass(entry.toolClass)}):`,
       entry.description,
       ...(typeof described.readOnlyNote === "string" ? [described.readOnlyNote] : []),
+      // Das Eingabeschema gehört in den Textblock und nicht nur in structuredContent: Viele
+      // Clients reichen dem Modell allein den Text weiter, und die Spezifikation verlangt für
+      // strukturierte Ergebnisse ohnehin eine Textfassung. Ohne diese Zeile wüsste der Agent
+      // nach dem Beschreiben genau das nicht, wofür er beschrieben hat: die Parameter.
+      `Eingabeschema von ${entry.name} (JSON, als arguments an ${invokeToolForClass(entry.toolClass)}): ${JSON.stringify(described.inputSchema)}`,
     );
   }
 
   // Ganz oder gar nicht gescheitert trägt den Fehler; Teilerfolg ist kein Fehler, sondern
   // eine Antwort mit einem Fehlereintrag darin.
   const success = tools.some((tool) => !("error" in tool));
-  lines.push("Die Ein- und Ausgabeschemata stehen in structuredContent.");
+  lines.push("Die Ausgabeschemata stehen in structuredContent.");
   return {
     content: [{ type: "text", text: lines.join("\n\n") }],
     structuredContent: { success, tools },
@@ -956,6 +961,89 @@ const GATEWAY_TEXTS: Record<string, { readonly title: string; readonly descripti
     },
   });
 
+/**
+ * Was `tools/list` je Gateway ausliefert, ohne Handler.
+ *
+ * Eine Quelle für Anmeldung und Messung, wie `renderToolDefinition` bei den
+ * Endpunktwerkzeugen: `scripts/measure-tokens.ts` und P11 messen genau das, was
+ * `registerDiscoveryTools` anmeldet, und nicht eine zweite, nachgebaute Fassung.
+ */
+export interface GatewayDefinition {
+  readonly name: string;
+  readonly title: string;
+  readonly description: string;
+  readonly annotations: Record<string, boolean>;
+  readonly inputSchema: Record<string, unknown>;
+  readonly outputSchema: Record<string, unknown>;
+}
+
+/** Alle Endpunktgruppen, also der größte Zustand des Gruppenschalters. */
+const ALL_ENDPOINT_GROUPS: readonly ToolGroup[] = TOOL_GROUP_NAMES.filter(
+  (group) => group !== BUNDLE_TOOL_GROUP,
+);
+
+/** Name, Eingabe- und Ausgabeschema der fünf Gateways, in Anmeldereihenfolge. */
+function gatewaySchemas(discoverZod: z.ZodType): readonly {
+  readonly name: string;
+  readonly zodSchema: z.ZodType;
+  readonly outputSchema: Record<string, unknown>;
+}[] {
+  return [
+    { name: DISCOVER_TOOL, zodSchema: discoverZod, outputSchema: DISCOVER_OUTPUT_SCHEMA },
+    {
+      name: DESCRIBE_TOOL,
+      zodSchema: describeArgumentsSchema,
+      outputSchema: DESCRIBE_OUTPUT_SCHEMA,
+    },
+    { name: INVOKE_READ_TOOL, zodSchema: invokeArgumentsSchema, outputSchema: OPEN_OBJECT_SCHEMA },
+    { name: INVOKE_WRITE_TOOL, zodSchema: invokeArgumentsSchema, outputSchema: OPEN_OBJECT_SCHEMA },
+    {
+      name: INVOKE_DESTRUCTIVE_TOOL,
+      zodSchema: invokeArgumentsSchema,
+      outputSchema: OPEN_OBJECT_SCHEMA,
+    },
+  ];
+}
+
+function gatewayDefinition(
+  name: string,
+  zodSchema: z.ZodType,
+  outputSchema: Record<string, unknown>,
+): GatewayDefinition {
+  const texts = GATEWAY_TEXTS[name];
+  if (texts === undefined) {
+    throw new Error(`Kein Titel für das Gateway ${name} hinterlegt.`);
+  }
+  return {
+    name,
+    title: texts.title,
+    description: texts.description,
+    annotations: annotationsOfGateway(name),
+    inputSchema: toJsonSchema(zodSchema),
+    outputSchema,
+  };
+}
+
+/**
+ * Die fünf Gatewaydefinitionen für die übergebenen aktiven Endpunktgruppen.
+ *
+ * Ohne Argument im größten Zustand, also mit allen Endpunktgruppen: Nur das Eingabeschema
+ * von `bb_tools_discover` hängt an den Gruppen (die Aufzählung in `group`), und mit allen
+ * Gruppen ist es am längsten. Diesen Zustand misst das Budget.
+ */
+export function gatewayDefinitions(
+  activeEndpointGroups: readonly ToolGroup[] = ALL_ENDPOINT_GROUPS,
+): readonly GatewayDefinition[] {
+  return gatewaySchemas(discoverArgumentsSchema(activeEndpointGroups)).map((spec) =>
+    gatewayDefinition(spec.name, spec.zodSchema, spec.outputSchema),
+  );
+}
+
+/** Eine Gatewaydefinition als JSON-Text. Grundlage der Zeichen- und Tokenmessung. */
+export function gatewayDefinitionJson(definition: GatewayDefinition): string {
+  return JSON.stringify(definition);
+}
+
 interface GatewaySpec {
   readonly name: string;
   readonly zodSchema: z.ZodType;
@@ -1010,56 +1098,40 @@ export function registerDiscoveryTools(
   };
 
   const discoverZod = discoverArgumentsSchema(ctx.activeEndpointGroups);
-  const specs: readonly GatewaySpec[] = [
-    {
-      name: DISCOVER_TOOL,
-      zodSchema: discoverZod,
-      outputSchema: DISCOVER_OUTPUT_SCHEMA,
-      run: (rawArgs, startedAt) => runDiscover(ctx, discoverZod, rawArgs, startedAt),
-    },
-    {
-      name: DESCRIBE_TOOL,
-      zodSchema: describeArgumentsSchema,
-      outputSchema: DESCRIBE_OUTPUT_SCHEMA,
-      run: (rawArgs, startedAt) => runDescribe(ctx, describeArgumentsSchema, rawArgs, startedAt),
-    },
-    {
-      name: INVOKE_READ_TOOL,
-      zodSchema: invokeArgumentsSchema,
-      outputSchema: OPEN_OBJECT_SCHEMA,
-      run: (rawArgs, startedAt, signal) =>
-        runInvokeTarget(ctx, INVOKE_READ_TOOL, rawArgs, startedAt, signal),
-    },
-    {
-      name: INVOKE_WRITE_TOOL,
-      zodSchema: invokeArgumentsSchema,
-      outputSchema: OPEN_OBJECT_SCHEMA,
-      run: (rawArgs, startedAt, signal) =>
-        runInvokeTarget(ctx, INVOKE_WRITE_TOOL, rawArgs, startedAt, signal),
-    },
-    {
-      name: INVOKE_DESTRUCTIVE_TOOL,
-      zodSchema: invokeArgumentsSchema,
-      outputSchema: OPEN_OBJECT_SCHEMA,
-      run: (rawArgs, startedAt, signal) =>
-        runInvokeTarget(ctx, INVOKE_DESTRUCTIVE_TOOL, rawArgs, startedAt, signal),
-    },
-  ];
+  // Die Handler je Gateway. Name, Eingabe- und Ausgabeschema kommen aus `gatewaySchemas`,
+  // derselben Quelle, aus der auch `gatewayDefinitions` für die Messung baut.
+  const runs: Readonly<Record<string, GatewaySpec["run"]>> = {
+    [DISCOVER_TOOL]: (rawArgs, startedAt) => runDiscover(ctx, discoverZod, rawArgs, startedAt),
+    [DESCRIBE_TOOL]: (rawArgs, startedAt) =>
+      runDescribe(ctx, describeArgumentsSchema, rawArgs, startedAt),
+    [INVOKE_READ_TOOL]: (rawArgs, startedAt, signal) =>
+      runInvokeTarget(ctx, INVOKE_READ_TOOL, rawArgs, startedAt, signal),
+    [INVOKE_WRITE_TOOL]: (rawArgs, startedAt, signal) =>
+      runInvokeTarget(ctx, INVOKE_WRITE_TOOL, rawArgs, startedAt, signal),
+    [INVOKE_DESTRUCTIVE_TOOL]: (rawArgs, startedAt, signal) =>
+      runInvokeTarget(ctx, INVOKE_DESTRUCTIVE_TOOL, rawArgs, startedAt, signal),
+  };
+  const specs: readonly GatewaySpec[] = gatewaySchemas(discoverZod).map((schema) => {
+    const run = runs[schema.name];
+    if (run === undefined) {
+      throw new Error(`Kein Handler für das Gateway ${schema.name} hinterlegt.`);
+    }
+    return { ...schema, run };
+  });
 
   const registered: RegisteredGatewayInfo[] = [];
   for (const spec of specs) {
-    const texts = GATEWAY_TEXTS[spec.name];
-    if (texts === undefined) {
-      throw new Error(`Kein Titel für das Gateway ${spec.name} hinterlegt.`);
-    }
+    // Dieselbe Funktion wie in der Messung: Was hier angemeldet wird, ist genau das, was
+    // P11 und `scripts/measure-tokens.ts` zählen.
+    const definition = gatewayDefinition(spec.name, spec.zodSchema, spec.outputSchema);
     server.registerTool(
       spec.name,
       {
-        title: texts.title,
-        description: texts.description,
-        inputSchema: advertise(toJsonSchema(spec.zodSchema)),
-        outputSchema: advertise(spec.outputSchema),
-        annotations: annotationsOfGateway(spec.name),
+        title: definition.title,
+        description: definition.description,
+        inputSchema: advertise(definition.inputSchema),
+        outputSchema: advertise(definition.outputSchema),
+        annotations: definition.annotations,
       },
       (args, mcpCtx) => spec.run(args, now(), mcpCtx.mcpReq.signal),
     );
