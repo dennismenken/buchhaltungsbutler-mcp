@@ -50,6 +50,7 @@ import { toJsonSchema } from "../schema/build.js";
 import { strictObject } from "../schema/primitives.js";
 import { READ_ONLY_VAR } from "../guards/read-only.js";
 import {
+  audit,
   checkEarlyGuards,
   createToolRuntime,
   refuseCall,
@@ -553,10 +554,14 @@ function runDiscover(
             ),
             "Mit group das Verzeichnis einer Gruppe holen oder mit query suchen.",
           ];
-    return {
+    // Die Übersicht ist der erste Aufruf fast jeder Sitzung: Ihr Erfolg steht wie jeder
+    // andere im Prüfpfad, nicht nur ihre Absagen.
+    const overview: CallToolResult = {
       content: [{ type: "text", text: lines.join("\n") }],
       structuredContent: { success: true, mode: "overview", groups },
     };
+    audit(head, rawArgs, startedAt, "ok");
+    return overview;
   }
 
   // --- Das Gruppenverzeichnis: alle Werkzeuge der Gruppe ---------------------------
@@ -569,10 +574,12 @@ function runDiscover(
           `${tool.name} — ${tool.title} (Klasse ${tool.class}, über ${tool.invokeVia}): ${tool.summary}`,
       ),
     ];
-    return {
+    const directory: CallToolResult = {
       content: [{ type: "text", text: lines.join("\n") }],
       structuredContent: { success: true, mode: "group", group: onlyGroup, tools },
     };
+    audit(head, rawArgs, startedAt, "ok");
+    return directory;
   }
 
   // --- Die Suche -------------------------------------------------------------------
@@ -586,10 +593,12 @@ function runDiscover(
       ...groups.map((item) => `${item.group} (${item.label}): ${toolWord(item.tools)}.`),
       "Mit group das Verzeichnis einer Gruppe holen oder die Abfrage anders fassen.",
     ];
-    return {
+    const empty: CallToolResult = {
       content: [{ type: "text", text: lines.join("\n") }],
       structuredContent: { success: true, mode: "search", query, tools, groups },
     };
+    audit(head, rawArgs, startedAt, "ok");
+    return empty;
   }
   const lines = [
     `${toolWord(tools.length)} Treffer für "${query ?? ""}":`,
@@ -598,10 +607,12 @@ function runDiscover(
         `${tool.name} — ${tool.title} (Klasse ${tool.class}, über ${tool.invokeVia}): ${tool.summary}`,
     ),
   ];
-  return {
+  const hitsResult: CallToolResult = {
     content: [{ type: "text", text: lines.join("\n") }],
     structuredContent: { success: true, mode: "search", query, tools },
   };
+  audit(head, rawArgs, startedAt, "ok");
+  return hitsResult;
 }
 
 // ---------------------------------------------------------------------------------------
@@ -658,10 +669,15 @@ function runDescribe(
 
   const tools: Record<string, unknown>[] = [];
   const lines: string[] = [];
+  // Die Art des Scheiterns je Name: Der Prüfpfad nennt den Grund, wenn am Ende kein
+  // einziger Name beschreibbar war.
+  let sawUnknown = false;
+  let sawDeactivated = false;
   for (const name of names) {
     const entry = ctx.byName.get(name);
     const runtime = ctx.runtimes.get(name);
     if (entry === undefined) {
+      sawUnknown = true;
       // Unbekannter Name: Der Eintrag trägt den Fehlertext und den ähnlichsten Namen.
       // Die Ähnlichkeit liefert dieselbe Funktion wie jede andere „gemeint war"-Stelle.
       const suggestion = closestAllowedValue(name, [...ctx.runtimes.keys()]);
@@ -674,6 +690,7 @@ function runDescribe(
       continue;
     }
     if (runtime === undefined) {
+      sawDeactivated = true;
       // Bekannt, aber in dieser Installation abgeschaltet: Der Text nennt die Gruppe
       // und die Variable, wie es die Übersicht für Gruppen tut.
       const error =
@@ -699,14 +716,26 @@ function runDescribe(
   }
 
   // Ganz oder gar nicht gescheitert trägt den Fehler; Teilerfolg ist kein Fehler, sondern
-  // eine Antwort mit einem Fehlereintrag darin.
+  // eine Antwort mit einem Fehlereintrag darin. Derselbe Maßstab gilt für den Prüfpfad:
+  // Teilerfolg ist ein Erfolg, nur das vollständige Scheitern nennt seinen Grund.
   const success = tools.some((tool) => !("error" in tool));
   lines.push("Die Ausgabeschemata stehen in structuredContent.");
-  return {
+  const described: CallToolResult = {
     content: [{ type: "text", text: lines.join("\n\n") }],
     structuredContent: { success, tools },
     isError: !success,
   };
+  let outcome = "ok";
+  if (!success) {
+    outcome = "abgelehnt:gemischt";
+    if (!sawDeactivated) {
+      outcome = "abgelehnt:unbekannt";
+    } else if (!sawUnknown) {
+      outcome = "abgelehnt:deaktiviert";
+    }
+  }
+  audit(head, rawArgs, startedAt, outcome);
+  return described;
 }
 
 // ---------------------------------------------------------------------------------------

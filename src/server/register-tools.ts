@@ -156,7 +156,7 @@ function textResult(text: string, isError: boolean): CallToolResult {
  * abschaltet, ist keiner. Sie geht wie jede Ausgabe dieses Servers nach stderr und läuft dabei
  * durch die Schwärzung; stdout gehört dem Protokoll.
  */
-function audit(
+export function audit(
   runtime: AuditHead,
   rawArgs: ToolArguments,
   startedAt: number,
@@ -167,8 +167,14 @@ function audit(
   const names = Object.keys(rawArgs).sort();
   // Im Gateway-Fall steht das Gateway dabei: Die Zeile nennt das Zielwerkzeug und
   // zusätzlich das Gateway, damit der Prüfpfad zeigt, über welchen Einstieg der Aufruf
-  // lief. Ohne Gateway entfällt der Zusatz, und die Zeile ist die von jeher.
-  const via = gatewayName === undefined ? "" : ` gateway=${gatewayName}`;
+  // lief. Ohne Gateway entfällt der Zusatz, und die Zeile ist die von jeher. Ist das
+  // Gateway mit dem Werkzeug identisch — die eigene Absage eines Gateways —, entfällt
+  // er ebenfalls: Derselbe Name zweimal (`werkzeug=bb_tools_discover
+  // gateway=bb_tools_discover`) sagte nichts und füllte nur die Zeile.
+  const via =
+    gatewayName === undefined || gatewayName === runtime.entry.name
+      ? ""
+      : ` gateway=${gatewayName}`;
   writeStderrBlock(
     `audit ${new Date().toISOString()} werkzeug=${runtime.entry.name}${via} ` +
       `klasse=${runtime.entry.toolClass} endpunkt=${runtime.specPath} ` +
