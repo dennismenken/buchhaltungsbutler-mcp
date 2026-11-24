@@ -22,6 +22,7 @@ import path from "node:path";
 
 import { PACKAGE_NAME } from "../../generated/version.js";
 import type { CredentialVarName } from "../../config/env.js";
+import type { ToolMode } from "../../config/tool-mode.js";
 
 /**
  * Der Name, unter dem dieser Server in jeder Clientkonfiguration steht.
@@ -91,6 +92,33 @@ export function isClientKey(value: string): value is ClientKey {
   return (CLIENT_KEYS as readonly string[]).includes(value);
 }
 
+/**
+ * Die Clients, für die der Einrichtungsassistent `BB_MCP_TOOL_MODE=discovery` in den
+ * Eintrag schreibt: Cursor, Windsurf, Cline und LM Studio.
+ *
+ * Cursor sah 2025 höchstens 40 Werkzeuge, Windsurf höchstens 100; Cline und LM Studio legen
+ * jede Definition in jede Anfrage. Dort kostet der volle Satz von 61 Endpunktwerkzeugen
+ * Kontext, den der Discovery-Modus spart. Claude Code und Codex laden Definitionen erst bei
+ * Bedarf, Claude Desktop lädt sie in der Vorgabe Auto bei Bedarf nach, und VS Code bringt
+ * eine Werkzeugsuche mit, sofern das Modell sie trägt: Für diese vier setzt der Assistent
+ * nichts, und der Server startet im Modus `direct`. Zed, Continue und Jan werden nur
+ * ausgegeben und bekommen ebenfalls keinen Eintrag, nur einen Hinweis.
+ */
+export const DISCOVERY_DEFAULT_CLIENTS: readonly ClientKey[] = Object.freeze([
+  "cursor",
+  "windsurf",
+  "lmstudio",
+  "cline",
+]);
+
+/**
+ * Die Betriebsart, die der Einrichtungsassistent für diesen Client in den Eintrag schreibt,
+ * oder `null`, wenn er nichts schreibt und damit die Servervorgabe `direct` gilt.
+ */
+export function defaultToolModeForClient(key: ClientKey): ToolMode | null {
+  return (DISCOVERY_DEFAULT_CLIENTS as readonly string[]).includes(key) ? "discovery" : null;
+}
+
 export type ConfigScope = "user" | "project";
 
 /** Die beiden Startvarianten. */
@@ -137,7 +165,7 @@ export interface ClientPlan {
   readonly launch: ServerLaunch;
   readonly scope: ConfigScope;
   readonly credentials: CredentialPlacement;
-  /** Weitere Variablen des Eintrags, niemals geheim: `BB_MCP_READ_ONLY`, `BB_PROFILE`. */
+  /** Weitere Variablen des Eintrags, niemals geheim: `BB_MCP_READ_ONLY`, `BB_PROFILE`, `BB_MCP_TOOL_MODE`. */
   readonly extraEnv: Readonly<Record<string, string>>;
   /** `true` erlaubt, einen bestehenden Eintrag zu ersetzen. */
   readonly allowOverwrite: boolean;

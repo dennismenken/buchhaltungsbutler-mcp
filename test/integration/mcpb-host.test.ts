@@ -155,10 +155,18 @@ describe("der Server hinter einem .mcpb-Host", () => {
       BB_API_KEY: REQUIRED_ONLY.api_key,
       BB_MCP_READ_ONLY: "${user_config.read_only}",
       BB_MCP_TOOL_GROUPS: "${user_config.tool_groups}",
+      BB_MCP_TOOL_MODE: "${user_config.tool_mode}",
     });
 
     expect(result.exitCode, result.stderr).toBeNull();
     expect(result.initialized, result.stderr).toBe(true);
     expect(result.stderr).toContain("nicht ersetzten Platzhalter");
+  });
+
+  it("übergibt die Betriebsart mit der Vorgabe direct an den Server", async () => {
+    // Die Vorlage trägt die Vorgabe, also setzt der Host sie ein, statt den Platzhalter
+    // wörtlich zu übergeben (Lehre aus 0.1.2).
+    const env = await hostEnv();
+    expect(env["BB_MCP_TOOL_MODE"]).toBe("direct");
   });
 });

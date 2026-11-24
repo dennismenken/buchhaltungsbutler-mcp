@@ -32,6 +32,7 @@ import type { ToolEffect, ToolEntry, ToolGroup } from "../registry/types.js";
 import { CHATGPT_BROWSER_NOTE } from "./clients/print-only.js";
 import { BINARY_NAME, type ClientHost } from "./clients/types.js";
 import type { Terminal } from "./prompt.js";
+import { toolModeLines } from "./tool-mode-lines.js";
 import { ALL_ADAPTERS, loadCliConfig, parseArgs } from "./run.js";
 import { printConnectionTest, runConnectionTest } from "./test.js";
 
@@ -217,6 +218,13 @@ export async function runDoctor(options: RunDoctorOptions): Promise<number> {
   terminal.write(`  BB_MCP_RATE_LIMIT:      ${String(config.rateLimitPerMinute)} je Minute`);
   terminal.write(`  BB_MCP_TIMEOUT_MS:      ${String(config.timeoutMs)}`);
   terminal.write(`  BB_MCP_LOG_LEVEL:       ${config.logLevel}`);
+  terminal.write("");
+
+  // --- Betriebsart --------------------------------------------------------------------
+  terminal.write("Betriebsart");
+  for (const line of toolModeLines(config)) {
+    terminal.write(`  ${line}`);
+  }
   terminal.write("");
 
   // --- Werkzeuge ----------------------------------------------------------------------

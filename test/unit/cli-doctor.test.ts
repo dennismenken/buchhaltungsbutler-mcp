@@ -113,6 +113,50 @@ describe("runDoctor", () => {
     expect(text).toContain("BB_MCP_MAX_BATCH:       10");
   });
 
+  it("nennt die Betriebsart direct als Vorgabe", async () => {
+    const env = baseEnv();
+
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const text = terminal.text();
+    expect(text).toContain("Betriebsart");
+    expect(text).toContain("Betriebsart: direct (Vorgabe)");
+  });
+
+  it("nennt im Discovery-Modus die fünf Gateways und die aktiven Bündel", async () => {
+    const env = baseEnv({ BB_MCP_TOOL_MODE: "discovery" });
+
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const text = terminal.text();
+    expect(text).toContain("Betriebsart: discovery");
+    for (const name of [
+      "bb_tools_discover",
+      "bb_tools_describe",
+      "bb_tools_invoke_read",
+      "bb_tools_invoke_write",
+      "bb_tools_invoke_destructive",
+      "bb_masterdata_search",
+      "bb_reports_run",
+    ]) {
+      expect(text).toContain(name);
+    }
+  });
+
+  it("nennt im Discovery-Modus ohne Bündelgruppe, dass kein Bündel aktiv ist", async () => {
+    const env = baseEnv({
+      BB_MCP_TOOL_MODE: "discovery",
+      BB_MCP_TOOL_GROUPS_EXCLUDE: "bundles",
+    });
+
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const text = terminal.text();
+    expect(text).toContain("Betriebsart: discovery");
+    expect(text).toContain("bb_tools_discover");
+    expect(text).toContain("keine; die Gruppe bundles ist abgeschaltet");
+  });
+
   it("zählt die Werkzeuge nach Wirkung und nennt die Größe der Definitionen", async () => {
     const env = baseEnv();
 

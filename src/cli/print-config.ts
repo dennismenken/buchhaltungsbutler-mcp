@@ -14,17 +14,21 @@ import {
   TOOL_GROUPS_VAR,
   toolGroupReportLines,
 } from "../config/tool-groups.js";
+import { TOOL_MODE_VAR } from "../config/tool-mode.js";
 import { TOOL_ENTRIES } from "../registry/index.generated.js";
 import type { ToolGroup } from "../registry/types.js";
 import {
   buildPlan,
+  defaultToolModeForClient,
   placeholderCredentials,
   serverLaunch,
   type ClientAdapter,
   type ClientHost,
+  type ClientKey,
   type ClientPlan,
   type ClientPreview,
 } from "./clients/types.js";
+import { toolModeLines } from "./tool-mode-lines.js";
 import type { Terminal } from "./prompt.js";
 import {
   boolFlag,
@@ -74,6 +78,12 @@ export function previewPlan(options: {
   readonly withCredentials: boolean;
   /** Der Gruppenschalter dieser Umgebung. Ohne Angabe steht er im Block nicht. */
   readonly toolGroups?: ToolGroupSelection;
+  /**
+   * Der Client, für den der Block bestimmt ist. Cursor, Windsurf, Cline und LM Studio
+   * bekommen `BB_MCP_TOOL_MODE=discovery` in den Eintrag, wie in `setup`; alle übrigen
+   * nichts, also die Servervorgabe `direct`.
+   */
+  readonly clientKey?: ClientKey;
 }): ClientPlan {
   const extraEnv: Record<string, string> = {};
   if (options.readOnly) {
@@ -81,6 +91,9 @@ export function previewPlan(options: {
   }
   if (options.profile !== null && options.profile !== "default") {
     extraEnv.BB_PROFILE = options.profile;
+  }
+  if (options.clientKey !== undefined && defaultToolModeForClient(options.clientKey) !== null) {
+    extraEnv[TOOL_MODE_VAR] = "discovery";
   }
   // Der Gruppenschalter wandert in den Block, sobald er etwas bewirkt. Ohne diese Zeilen
   // erzeugte print-config eine Konfiguration, die einen anderen Werkzeugsatz anmeldet als die
@@ -129,6 +142,7 @@ export function runPrintConfig(options: RunPrintConfigOptions): Promise<number> 
     profile: stringFlag(args, "profile") ?? config.profile,
     withCredentials,
     toolGroups: config.toolGroups,
+    clientKey: adapter.key,
   });
 
   printPreview(terminal, adapter, adapter.preview(plan, host));
@@ -143,6 +157,11 @@ export function runPrintConfig(options: RunPrintConfigOptions): Promise<number> 
   const registeredTotal = registered.length + registeredBundleCount(config.toolGroups);
   terminal.write("Werkzeuggruppen");
   for (const line of toolGroupReportLines(config.toolGroups, registeredTotal)) {
+    terminal.write(`  ${line}`);
+  }
+  terminal.write("");
+  terminal.write("Betriebsart");
+  for (const line of toolModeLines(config)) {
     terminal.write(`  ${line}`);
   }
   terminal.write("");

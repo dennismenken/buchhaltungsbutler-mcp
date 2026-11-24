@@ -21,13 +21,16 @@ import { writeProfile } from "../config/credentials-file.js";
 import { CREDENTIAL_VARS } from "../config/env.js";
 import { registerSecrets } from "../config/redact.js";
 import { resolveConfig, type ResolvedConfig } from "../config/resolve.js";
+import { TOOL_MODE_VAR } from "../config/tool-mode.js";
 import {
   BINARY_NAME,
   buildPlan,
+  defaultToolModeForClient,
   placeholderCredentials,
   serverLaunch,
   type ClientAdapter,
   type ClientHost,
+  type ClientKey,
   type ClientPlan,
   type ConfigScope,
   type CredentialPlacement,
@@ -300,10 +303,19 @@ export async function runSetup(options: RunSetupOptions): Promise<number> {
 
   for (const adapter of chosen) {
     const scope = pickScope(adapter, args);
+    // Die Betriebsart hängt am Client, nicht an der Runde: Cursor, Windsurf, Cline und LM
+    // Studio bekommen discovery in den Eintrag (Werkzeuggrenzen und Ladeverhalten siehe
+    // `defaultToolModeForClient`); für alle übrigen gilt die Servervorgabe direct, und der
+    // Eintrag nennt sie nicht.
+    const adapterEnv: Record<string, string> = { ...extraEnv };
+    const discoveryDefault = defaultToolModeForClient(adapter.key);
+    if (discoveryDefault !== null) {
+      adapterEnv[TOOL_MODE_VAR] = discoveryDefault;
+    }
     const previewPlan = buildPlan({
       launch,
       scope,
-      extraEnv,
+      extraEnv: adapterEnv,
       // Die Vorschau bekommt **immer** Platzhalter. Ein echter Wert kann hier nicht
       // durchrutschen, weil er gar nicht erst in den Vorschauplan gelangt.
       credentials: credentialPlacement(target, null),
@@ -311,15 +323,32 @@ export async function runSetup(options: RunSetupOptions): Promise<number> {
     });
     terminal.write("");
     printPreview(terminal, adapter, adapter.preview(previewPlan, host));
-
-    if (printOnly) {
-      continue;
+    if (discoveryDefault !== null) {
+      const why = eagerLoadingNote(adapter.key) ?? "";
+      terminal.write(
+        `  Hinweis: ${why} ${TOOL_MODE_VAR}=discovery steht deshalb im Eintrag: Der Server ` +
+          "meldet nur fünf Gatewaywerkzeuge und die Bündel an, statt jede Endpunktdefinition " +
+          "vorzulegen. Zurück zu direct: die Zeile aus dem Eintrag entfernen.",
+      );
     }
+
     if (!adapter.automatic) {
       terminal.write(
         `  ${adapter.label} wird nicht automatisch konfiguriert; der Block oben ist von Hand ` +
           "einzufügen.",
       );
+      const why = eagerLoadingNote(adapter.key);
+      if (why !== null) {
+        terminal.write(
+          `  Hinweis: Der Block enthält kein ${TOOL_MODE_VAR}; der Server startet damit im ` +
+            `Modus direct. ${why} Wer dort Kontext sparen will, ergänzt ` +
+            `${TOOL_MODE_VAR}=discovery von Hand: Dann meldet der Server nur fünf ` +
+            "Gatewaywerkzeuge und die Bündel an.",
+        );
+      }
+      continue;
+    }
+    if (printOnly) {
       continue;
     }
     if (!nonInteractive && !assumeYes) {
@@ -333,7 +362,7 @@ export async function runSetup(options: RunSetupOptions): Promise<number> {
     const writePlan = buildPlan({
       launch,
       scope,
-      extraEnv,
+      extraEnv: adapterEnv,
       credentials: credentialPlacement(target, credentials),
       allowOverwrite: boolFlag(args, "overwrite"),
     });
@@ -377,6 +406,34 @@ export async function runSetup(options: RunSetupOptions): Promise<number> {
 }
 
 // --- Bausteine --------------------------------------------------------------------------
+
+/**
+ * Warum dieser Client jede Werkzeugdefinition in jede Anfrage legt, für den Hinweis beim
+ * Discovery-Eintrag. `null` bei den Clients, die Definitionen erst bei Bedarf laden
+ * (Claude Code, Codex, Claude Desktop in der Vorgabe Auto, VS Code mit Werkzeugsuche) und
+ * bei Grok, für das kein Ladeverhalten belegt ist: Dort setzt der Assistent nichts, und der
+ * Hinweis entfällt mit dem Eintrag.
+ */
+function eagerLoadingNote(key: ClientKey): string | null {
+  switch (key) {
+    case "cursor":
+      return "Cursor legt jede Werkzeugdefinition in jede Anfrage.";
+    case "windsurf":
+      return "Cascade begrenzt die Gesamtzahl der Werkzeuge auf 100.";
+    case "cline":
+      return "Cline legt jede Werkzeugdefinition in jede Anfrage.";
+    case "lmstudio":
+      return "LM Studio lädt jede Werkzeugdefinition in jede Anfrage.";
+    case "zed":
+      return "Zed legt jede Werkzeugdefinition in jede Anfrage.";
+    case "continue":
+      return "Continue legt jede Werkzeugdefinition in jede Anfrage.";
+    case "jan":
+      return "Jan legt jede Werkzeugdefinition in jede Anfrage.";
+    default:
+      return null;
+  }
+}
 
 function credentialPlacement(
   target: CredentialTarget,

@@ -135,7 +135,8 @@ describe("runSetup, interaktiv", () => {
       mcpServers: Record<string, Record<string, unknown>>;
     };
     expect(Object.keys(cursor.mcpServers).sort()).toEqual([SERVER_NAME, "fremd"].sort());
-    expect(cursor.mcpServers[SERVER_NAME]?.env).toBeUndefined();
+    // Cursor bekommt den Discovery-Modus in den Eintrag; Geheimnisse stehen dort nie.
+    expect(cursor.mcpServers[SERVER_NAME]?.env).toEqual({ BB_MCP_TOOL_MODE: "discovery" });
   });
 
   it("nennt den Pfad der Sicherung, bevor es eine bestehende Datei ändert", async () => {
@@ -213,8 +214,68 @@ describe("runSetup, interaktiv", () => {
     const cursor = JSON.parse(fs.readFileSync(cursorUserFile(), "utf8")) as {
       mcpServers: Record<string, { env?: Record<string, string> }>;
     };
-    expect(cursor.mcpServers[SERVER_NAME]?.env).toEqual({ BB_MCP_READ_ONLY: "true" });
+    expect(cursor.mcpServers[SERVER_NAME]?.env).toEqual({
+      BB_MCP_READ_ONLY: "true",
+      BB_MCP_TOOL_MODE: "discovery",
+    });
     expect(terminal.text()).toContain("BWA und Summen- und Saldenliste nicht");
+  });
+
+  it("trägt discovery für Cursor, Windsurf, Cline und LM Studio ein und begründet es", async () => {
+    for (const key of ["cursor", "windsurf", "cline", "lmstudio"] as const) {
+      api.post(TEST_ENDPOINT, { json: { success: true, rows: 2, data: ACCOUNTS } });
+      const terminal = createScriptedTerminal([], { interactive: false });
+      const variables = env(TEST_CREDENTIALS);
+
+      await runSetup({
+        argv: ["--client", key, "--non-interactive", "--print-only"],
+        terminal,
+        host: makeHost(variables),
+        env: variables,
+      });
+
+      const text = terminal.text();
+      expect(text, key).toContain("BB_MCP_TOOL_MODE");
+      expect(text, key).toContain("discovery");
+      // Der Hinweis nennt den Grund und den Weg zurück zu direct.
+      expect(text, key).toContain("Zurück zu direct");
+    }
+  });
+
+  it("trägt für Claude Code keinen Betriebsmodus ein", async () => {
+    api.post(TEST_ENDPOINT, { json: { success: true, rows: 2, data: ACCOUNTS } });
+    const terminal = createScriptedTerminal([], { interactive: false });
+    const variables = env(TEST_CREDENTIALS);
+
+    await runSetup({
+      argv: ["--client", "claude-code", "--non-interactive", "--print-only"],
+      terminal,
+      host: makeHost(variables),
+      env: variables,
+    });
+
+    const text = terminal.text();
+    expect(text).not.toContain("BB_MCP_TOOL_MODE");
+    expect(text).not.toContain("discovery");
+  });
+
+  it("gibt für Zed keinen Eintrag aus, sondern den Discovery-Hinweis", async () => {
+    api.post(TEST_ENDPOINT, { json: { success: true, rows: 2, data: ACCOUNTS } });
+    const terminal = createScriptedTerminal([], { interactive: false });
+    const variables = env(TEST_CREDENTIALS);
+
+    await runSetup({
+      argv: ["--client", "zed", "--non-interactive", "--print-only"],
+      terminal,
+      host: makeHost(variables),
+      env: variables,
+    });
+
+    const text = terminal.text();
+    // Die JSON-Form des Eintrags fehlt; der Hinweis selbst nennt die Variable natürlich.
+    expect(text).not.toContain('"BB_MCP_TOOL_MODE": "discovery"');
+    expect(text).toContain("Der Block enthält kein BB_MCP_TOOL_MODE");
+    expect(text).toContain("Kontext sparen");
   });
 });
 

@@ -161,6 +161,66 @@ describe("print-config", () => {
     expect(terminal.text()).not.toContain("BB_API_CLIENT");
   });
 
+  it("trägt discovery in die Blöcke von Cursor, Windsurf, Cline und LM Studio ein", async () => {
+    for (const key of ["cursor", "windsurf", "cline", "lmstudio"]) {
+      const localTerminal = createScriptedTerminal([], { interactive: false });
+      const variables = env();
+
+      await runCli(["print-config", "--client", key], {
+        terminal: localTerminal,
+        host: makeHost(variables),
+        env: variables,
+      });
+
+      expect(localTerminal.text(), key).toContain("BB_MCP_TOOL_MODE");
+      expect(localTerminal.text(), key).toContain("discovery");
+    }
+  });
+
+  it("trägt in die Blöcke der übrigen Clients keinen Betriebsmodus ein", async () => {
+    for (const key of ["claude-code", "claude-desktop", "codex", "vscode", "grok"]) {
+      const localTerminal = createScriptedTerminal([], { interactive: false });
+      const variables = env();
+
+      await runCli(["print-config", "--client", key], {
+        terminal: localTerminal,
+        host: makeHost(variables),
+        env: variables,
+      });
+
+      expect(localTerminal.text(), key).not.toContain("BB_MCP_TOOL_MODE");
+    }
+  });
+
+  it("zeigt die Betriebsart direct als Vorgabe", async () => {
+    const variables = env();
+
+    await runCli(["print-config", "--client", "claude-desktop"], {
+      terminal,
+      host: makeHost(variables),
+      env: variables,
+    });
+
+    expect(terminal.text()).toContain("Betriebsart");
+    expect(terminal.text()).toContain("Betriebsart: direct (Vorgabe)");
+  });
+
+  it("zeigt im Discovery-Modus die fünf Gateways und die aktiven Bündel", async () => {
+    const variables = env({ BB_MCP_TOOL_MODE: "discovery" });
+
+    await runCli(["print-config", "--client", "cursor"], {
+      terminal,
+      host: makeHost(variables),
+      env: variables,
+    });
+
+    const text = terminal.text();
+    expect(text).toContain("Betriebsart: discovery");
+    expect(text).toContain("bb_tools_discover");
+    expect(text).toContain("bb_tools_invoke_destructive");
+    expect(text).toContain("bb_masterdata_search");
+  });
+
   it("lehnt eine Ebene ab, die der Client nicht kennt", async () => {
     const variables = env();
 

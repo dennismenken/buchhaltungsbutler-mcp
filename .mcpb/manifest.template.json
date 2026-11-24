@@ -29,7 +29,8 @@
         "BB_API_SECRET": "${user_config.api_secret}",
         "BB_API_KEY": "${user_config.api_key}",
         "BB_MCP_READ_ONLY": "${user_config.read_only}",
-        "BB_MCP_TOOL_GROUPS": "${user_config.tool_groups}"
+        "BB_MCP_TOOL_GROUPS": "${user_config.tool_groups}",
+        "BB_MCP_TOOL_MODE": "${user_config.tool_mode}"
       }
     }
   },
@@ -70,6 +71,13 @@
       "description": "Kommaliste. Leer lassen für alle Gruppen. Gültig: bundles, receipts, transactions, postings, invoices, debtors, creditors, postingaccounts, payment_accounts, cost_locations, reports, comments. Empfehlung für Claude Desktop: bundles",
       "required": false,
       "default": ""
+    },
+    "tool_mode": {
+      "type": "string",
+      "title": "Betriebsart",
+      "description": "direct meldet jedes Endpunktwerkzeug einzeln an (Vorgabe). discovery meldet stattdessen die fünf Gatewaywerkzeuge bb_tools_discover, bb_tools_describe, bb_tools_invoke_read, bb_tools_invoke_write und bb_tools_invoke_destructive an und führt die Endpunktwerkzeuge über sie aus; die Bündel bleiben in beiden Modi direkt nutzbar. Vorgabe: direct.",
+      "required": false,
+      "default": "direct"
     }
   },
   "compatibility": {

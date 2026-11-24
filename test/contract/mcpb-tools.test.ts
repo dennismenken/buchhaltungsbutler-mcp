@@ -79,6 +79,30 @@ describe("Bundle-Manifest, Vorlage", () => {
     expect(template["version"]).toBe("0.0.0-vorlage");
   });
 
+  it("führt die Betriebsart als optionales Feld mit der Vorgabe direct", () => {
+    // Lehre aus 0.1.2: Ein optionales Feld ohne Vorgabe kommt als wörtlicher Platzhalter
+    // beim Server an. Die Vorgabe direct gehört deshalb ins Manifest, nicht nur in den Code.
+    const userConfig = template["user_config"] as Record<
+      string,
+      { type?: unknown; required?: unknown; default?: unknown; description?: unknown }
+    >;
+    const field = userConfig["tool_mode"] ?? {};
+    expect(field["type"]).toBe("string");
+    expect(field["required"]).toBe(false);
+    expect(field["default"]).toBe("direct");
+    expect(typeof field["description"]).toBe("string");
+    const description = field["description"] as string;
+    expect(description).toContain("direct");
+    expect(description).toContain("discovery");
+  });
+
+  it("bildet die Betriebsart auf BB_MCP_TOOL_MODE ab", () => {
+    const server = template["server"] as {
+      mcp_config: { env: Record<string, string> };
+    };
+    expect(server.mcp_config.env["BB_MCP_TOOL_MODE"]).toBe("${user_config.tool_mode}");
+  });
+
   it("beschreibt einen Node-Server, dessen Einstiegspunkt zum Aufrufbefehl passt", () => {
     const server = template["server"] as {
       type: string;
