@@ -17,7 +17,11 @@ import {
   toolGroupInstructionLines,
   toolGroupReportLines,
 } from "../../src/config/tool-groups.js";
-import { TOOL_GROUP_NAMES, TOOL_GROUPS } from "../../src/registry/groups.js";
+import {
+  GROUP_TOKENS_MEASURED_ON,
+  TOOL_GROUP_NAMES,
+  TOOL_GROUPS,
+} from "../../src/registry/groups.js";
 
 /** Zugangsdaten als Platzhalter: `resolveConfig` soll keine Datei des Betreibers lesen. */
 const CREDENTIALS = {
@@ -243,7 +247,7 @@ describe("die Rückmeldung", () => {
     const expected =
       (TOOL_GROUPS.receipts.measuredTokens ?? 0) + (TOOL_GROUPS.bundles.measuredTokens ?? 0);
     expect(lines).toContain(
-      `rund ${expected.toLocaleString("de-DE")} Token an Definitionen (gemessen, Stand 2026-09-13)`,
+      `rund ${expected.toLocaleString("de-DE")} Token an Definitionen (gemessen, Stand ${GROUP_TOKENS_MEASURED_ON})`,
     );
     expect(lines).not.toContain("noch keine Messung");
   });

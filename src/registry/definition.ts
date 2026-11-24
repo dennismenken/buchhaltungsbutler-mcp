@@ -123,3 +123,6 @@ export const MEASURED_GATEWAY_DEFINITION_CHARS = 4_084;
  * Nutzer.
  */
 export const MEASURED_GATEWAY_DEFINITION_TOKENS = 967;
+
+/** Der Tag der Messung von {@link MEASURED_GATEWAY_DEFINITION_TOKENS}, wie `doctor` ihn nennt. */
+export const MEASURED_GATEWAY_DEFINITION_DATE = "2026-11-24";

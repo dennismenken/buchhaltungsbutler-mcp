@@ -25,9 +25,13 @@
  */
 
 import { closestAllowedValue } from "../errors/render.js";
-import { MEASURED_GATEWAY_DEFINITION_TOKENS } from "../registry/definition.js";
+import {
+  MEASURED_GATEWAY_DEFINITION_DATE,
+  MEASURED_GATEWAY_DEFINITION_TOKENS,
+} from "../registry/definition.js";
 import {
   BUNDLE_TOOL_GROUP,
+  GROUP_TOKENS_MEASURED_ON,
   TOOL_GROUPS,
   TOOL_GROUP_NAMES,
   isToolGroup,
@@ -247,9 +251,9 @@ export function toolGroupReportLines(
       ? {
           tokens: MEASURED_GATEWAY_DEFINITION_TOKENS + (bundlesActive ? (bundleTokens ?? 0) : 0),
           unmeasured: bundlesActive && bundleTokens === null ? [BUNDLE_TOOL_GROUP] : [],
-          stand: "2026-11-24",
+          stand: MEASURED_GATEWAY_DEFINITION_DATE,
         }
-      : { ...measuredTokensOf(selection.active), stand: "2026-09-13" };
+      : { ...measuredTokensOf(selection.active), stand: GROUP_TOKENS_MEASURED_ON };
   const count = `${String(selection.active.length)} von ${String(TOOL_GROUP_NAMES.length)}`;
   const lines: string[] = [
     selection.restricted

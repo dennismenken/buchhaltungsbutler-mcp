@@ -28,7 +28,8 @@ export interface ToolGroupDefinition {
    */
   readonly withoutIt: string;
   /**
-   * Die gemessene Tokenzahl der Werkzeugdefinitionen dieser Gruppe, Stand 2026-09-13,
+   * Die gemessene Tokenzahl der Werkzeugdefinitionen dieser Gruppe, Stand
+   * {@link GROUP_TOKENS_MEASURED_ON},
    * `gpt-tokenizer@4.0.0` in der Kodierung `o200k_base`. Die elf Endpunktgruppen sind über
    * `TOOL_ENTRIES` gemessen, `bundles` über `BUNDLE_ENTRIES`.
    *
@@ -48,6 +49,13 @@ export interface ToolGroupDefinition {
  * Agent nebenbei einfügt: Jeder Name hier wird zum gültigen Wert zweier Umgebungsvariablen und
  * damit zu einer Zusage an jeden, der sie gesetzt hat.
  */
+/**
+ * Der Tag, an dem die Werte `measuredTokens` unten zuletzt gemessen wurden. Steht hier und nicht
+ * im Ausgabetext, damit er mit den Zahlen nachgezogen wird: Bis 2026-11-24 nannte `doctor` noch
+ * 2026-09-13, obwohl die Zahlen schon vom 2026-11-23 stammten.
+ */
+export const GROUP_TOKENS_MEASURED_ON = "2026-11-23";
+
 export const TOOL_GROUPS = {
   postings: {
     label: "Buchungen",
