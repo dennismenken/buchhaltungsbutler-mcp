@@ -295,7 +295,7 @@ function stateBlock(config: ResolvedConfig): string {
  * entfällt: Er nannte Endpunktwerkzeuge, die es hier nicht gibt.
  */
 function discoveryStateBlock(config: ResolvedConfig): string {
-  const lines: string[] = ["ZUSTAND DIESER SERVER"];
+  const lines: string[] = ["ZUSTAND DIESES SERVERS"];
 
   lines.push(
     config.configured

@@ -160,6 +160,21 @@ describe("der Werkzeugbestand im Servertext", () => {
     expect(own).toBeLessThan(allEndpoints + allBundles);
   });
 
+  it("hält im Discovery-Modus die Überschrift und den Bestand fest", async () => {
+    const started = await start(installTestConfig({ BB_MCP_TOOL_MODE: "discovery" }));
+
+    // Der Zustandsblock heißt wie im direkten Modus; ein Tippfehler hier stünde in jeder
+    // Sitzung, und kein Test hielt die Überschrift fest.
+    expect(started.instructions).toContain("ZUSTAND DIESES SERVERS");
+    expect(started.instructions).not.toContain("ZUSTAND DIESER SERVER");
+    // Fünf Gateways plus fünf Bündel zu je derselben Zahl in Liste und Text.
+    expect(started.listed.total).toBe(10);
+    expectInventory(started);
+    expect(started.instructions).toContain(
+      "Die Endpunktwerkzeuge stehen nicht in der Liste; sie laufen über die Gateways.",
+    );
+  });
+
   it("trägt auch das Profil mit genau einem Werkzeug in richtiger Zahlform", async () => {
     // `comments` führt ein einziges, schreibendes Werkzeug. Genau hier fiele eine
     // stillschweigend angenommene Mehrzahl auf, und „0 lesend" ist eine Angabe, die ein Agent
