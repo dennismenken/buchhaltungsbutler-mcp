@@ -33,10 +33,13 @@ import type { ResolvedConfig } from "../../src/config/resolve.js";
 import { resolveConfig } from "../../src/config/resolve.js";
 import {
   DESCRIPTION_CHAR_BUDGET_BY_TIER,
+  GATEWAY_DEFINITION_TOKEN_BUDGET,
   INSTRUCTIONS_TOKEN_BUDGET,
   TOOL_NAMES_BY_TIER,
   TOTAL_TOOL_DEFINITION_TOKEN_BUDGET,
 } from "../../src/registry/budget.js";
+import { gatewayDefinitionJson, gatewayDefinitions } from "../../src/server/discovery.js";
+import { buildInstructions } from "../../src/server/instructions.js";
 import type { DescriptionTier } from "../../src/registry/types.js";
 import {
   INSTRUCTIONS_MODULE,
@@ -73,9 +76,10 @@ function expectNoIssues(problems: readonly string[]): void {
  * Die Zugangsdaten sind Platzhalter. Sie stehen in keinem Ausgabetext; sie sorgen allein
  * dafür, dass die Auflösung keine Zugangsdatendatei des Betreibers liest.
  */
-function largestConfig(): ResolvedConfig {
+function largestConfig(toolMode: "direct" | "discovery" = "direct"): ResolvedConfig {
   return resolveConfig({
     env: {
+      BB_MCP_TOOL_MODE: toolMode,
       BB_API_CLIENT: "PLATZHALTER",
       BB_API_SECRET: "PLATZHALTER",
       BB_API_KEY: "PLATZHALTER",
@@ -262,6 +266,9 @@ describe("P11 Gesamtbudget", () => {
     // stilles Anheben auffällt.
     expect(TOTAL_TOOL_DEFINITION_TOKEN_BUDGET).toBe(54_000);
     expect(INSTRUCTIONS_TOKEN_BUDGET).toBe(2_100);
+    // 1.100 für die fünf Gateways des Modus discovery, gesetzt am 2026-11-24 nach dem Grundsatz
+    // aus F-1 (gemessen 967 plus Luft), begründet in src/registry/budget.ts.
+    expect(GATEWAY_DEFINITION_TOKEN_BUDGET).toBe(1_100);
   });
 
   it("zählt mit dem Tokenizer und nicht über einen Schätzfaktor", () => {
@@ -288,6 +295,29 @@ describe("P11 instructions", () => {
     expect(
       token,
       `${String(token)} Token in den instructions, erlaubt sind ${String(INSTRUCTIONS_TOKEN_BUDGET)}. Sie tragen alles Querschnittliche genau einmal; was nicht hineinpasst, gehört in eine Resource.`,
+    ).toBeLessThanOrEqual(INSTRUCTIONS_TOKEN_BUDGET);
+  });
+});
+
+describe("P11 Modus discovery", () => {
+  it("hält die fünf Gatewaydefinitionen unter ihrer Grenze", () => {
+    const definitions = gatewayDefinitions();
+    expect(definitions.map((definition) => definition.name)).toHaveLength(5);
+    const tokens = definitions.reduce(
+      (sum, definition) => sum + tokenCount(gatewayDefinitionJson(definition)),
+      0,
+    );
+    expect(
+      tokens,
+      `${String(tokens)} Token in den Gatewaydefinitionen, erlaubt sind ${String(GATEWAY_DEFINITION_TOKEN_BUDGET)}.`,
+    ).toBeLessThanOrEqual(GATEWAY_DEFINITION_TOKEN_BUDGET);
+  });
+
+  it("hält die instructions auch im größten Zustand des Modus discovery unter 2.100 Token", () => {
+    const token = tokenCount(buildInstructions(largestConfig("discovery")));
+    expect(
+      token,
+      `${String(token)} Token in den instructions im Modus discovery, erlaubt sind ${String(INSTRUCTIONS_TOKEN_BUDGET)}.`,
     ).toBeLessThanOrEqual(INSTRUCTIONS_TOKEN_BUDGET);
   });
 });

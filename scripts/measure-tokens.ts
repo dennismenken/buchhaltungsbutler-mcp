@@ -89,6 +89,9 @@ const bundleRegistry = (await import(
 const bundleSchema = (await import(
   moduleUrl("src/bundles/schema.ts")
 )) as typeof import("../src/bundles/schema.js");
+const discoveryModule = (await import(
+  moduleUrl("src/server/discovery.ts")
+)) as typeof import("../src/server/discovery.js");
 
 type ToolEntry = (typeof registry.TOOL_ENTRIES)[number];
 
@@ -333,7 +336,7 @@ function instructionsFor(env: Readonly<Record<string, string>>): Measurement {
 }
 
 const instructionsDefault = instructionsFor({});
-const instructionsMax = instructionsFor({
+const INSTRUCTIONS_MAX_ENV: Readonly<Record<string, string>> = {
   BB_MCP_READ_ONLY: "true",
   BB_MCP_DUPLICATE_CHECK: "on",
   BB_MCP_CACHE_TTL_MS: "60000",
@@ -347,7 +350,35 @@ const instructionsMax = instructionsFor({
   // alle 4.095 nichtleeren Gruppenmengen, zehn inaktive Gruppen plus den Wegweiser. Dieselbe
   // Wahl trifft `largestConfig()` in `test/registry/token-budget.test.ts`.
   BB_MCP_TOOL_GROUPS: "postings,bundles",
+};
+const instructionsMax = instructionsFor(INSTRUCTIONS_MAX_ENV);
+
+/**
+ * Der Servertext im Modus discovery, im Auslieferungszustand und im größten Zustand. Das
+ * Budget der instructions gilt in beiden Betriebsarten; maßgeblich ist der größere Wert.
+ */
+const instructionsDiscoveryDefault = instructionsFor({ BB_MCP_TOOL_MODE: "discovery" });
+const instructionsDiscoveryMax = instructionsFor({
+  ...INSTRUCTIONS_MAX_ENV,
+  BB_MCP_TOOL_MODE: "discovery",
 });
+const instructionsLargest =
+  instructionsDiscoveryMax.tokens > instructionsMax.tokens
+    ? instructionsDiscoveryMax
+    : instructionsMax;
+
+/**
+ * Die fünf Gatewaydefinitionen des Modus discovery, gemessen über `gatewayDefinitions` aus
+ * `src/server/discovery.ts`, also über dieselbe Funktion, mit der der Server sie anmeldet.
+ * Gemessen im größten Zustand (alle Endpunktgruppen aktiv), weil nur die Aufzählung `group`
+ * von `bb_tools_discover` an den Gruppen hängt.
+ */
+const gatewayMeasurements = discoveryModule.gatewayDefinitions().map((gateway) => ({
+  name: gateway.name,
+  ...measure(discoveryModule.gatewayDefinitionJson(gateway)),
+}));
+const gatewayDefinitions: Measurement = sumOf(gatewayMeasurements);
+const gatewayOverBudget = gatewayDefinitions.tokens > budget.GATEWAY_DEFINITION_TOKEN_BUDGET;
 
 /**
  * Die Grundlage des Zeichen-je-Token-Verhältnisses: alles, was der Client beim Verbinden
@@ -382,7 +413,7 @@ function row(label: string, measurement: Measurement): string {
 
 const overBudget = definitions.tokens > budget.TOTAL_TOOL_DEFINITION_TOKEN_BUDGET;
 const p11OverBudget = p11 !== undefined && p11.tokens > budget.TOTAL_TOOL_DEFINITION_TOKEN_BUDGET;
-const instructionsOverBudget = instructionsMax.tokens > budget.INSTRUCTIONS_TOKEN_BUDGET;
+const instructionsOverBudget = instructionsLargest.tokens > budget.INSTRUCTIONS_TOKEN_BUDGET;
 
 const dearest = [...tools].sort((a, b) => b.tokens - a.tokens).slice(0, 10);
 
@@ -487,6 +518,9 @@ function measurementTable(): string {
     row("instructions, Auslieferungszustand", instructionsDefault),
     row("instructions, alle Schalter an", instructionsMax),
     row("Was der Client beim Verbinden sieht", connectTotal),
+    row(`${gatewayMeasurements.length} Gatewaydefinitionen (Modus discovery)`, gatewayDefinitions),
+    row("instructions im Modus discovery, Auslieferungszustand", instructionsDiscoveryDefault),
+    row("instructions im Modus discovery, alle Schalter an", instructionsDiscoveryMax),
   ];
   if (p11 !== undefined) {
     rows.push(row(`${tools.length} Definitionen in der Rechenweise von P11`, p11));
@@ -528,12 +562,26 @@ function budgetVerdict(): string[] {
   paragraphs.push(
     instructionsOverBudget
       ? prose(
-          `**Das Budget der instructions ist gerissen**: ${de(instructionsMax.tokens)} Token im`,
-          `größten Zustand, erlaubt sind ${de(budget.INSTRUCTIONS_TOKEN_BUDGET)}.`,
+          `**Das Budget der instructions ist gerissen**: ${de(instructionsLargest.tokens)} Token im`,
+          `größten Zustand beider Betriebsarten, erlaubt sind ${de(budget.INSTRUCTIONS_TOKEN_BUDGET)}.`,
         )
       : prose(
-          `Das Budget der instructions ist eingehalten: ${de(instructionsMax.tokens)} von`,
-          `${de(budget.INSTRUCTIONS_TOKEN_BUDGET)} Token, gemessen im größten Zustand.`,
+          `Das Budget der instructions ist eingehalten: ${de(instructionsLargest.tokens)} von`,
+          `${de(budget.INSTRUCTIONS_TOKEN_BUDGET)} Token, gemessen im größten Zustand beider`,
+          "Betriebsarten.",
+        ),
+  );
+
+  paragraphs.push(
+    gatewayOverBudget
+      ? prose(
+          `**Das Budget der Gatewaydefinitionen ist gerissen**: ${de(gatewayDefinitions.tokens)}`,
+          `Token, erlaubt sind ${de(budget.GATEWAY_DEFINITION_TOKEN_BUDGET)}.`,
+        )
+      : prose(
+          `Das Budget der Gatewaydefinitionen (Modus discovery) ist eingehalten:`,
+          `${de(gatewayDefinitions.tokens)} von ${de(budget.GATEWAY_DEFINITION_TOKEN_BUDGET)} Token`,
+          `für ${gatewayMeasurements.map((gateway) => `\`${gateway.name}\``).join(", ")}.`,
         ),
   );
 
@@ -807,6 +855,10 @@ console.log(
       `${de(instructionsDefault.tokens)} Token im Auslieferungszustand, ` +
       `${de(instructionsMax.tokens)} Token im größten Zustand ` +
       `(Budget ${de(budget.INSTRUCTIONS_TOKEN_BUDGET)}).`,
+    `Modus discovery: ${gatewayMeasurements.length} Gatewaydefinitionen ${de(gatewayDefinitions.chars)} Zeichen, ` +
+      `${de(gatewayDefinitions.tokens)} Token (Grenze ${de(budget.GATEWAY_DEFINITION_TOKEN_BUDGET)}); ` +
+      `instructions ${de(instructionsDiscoveryDefault.tokens)} Token im Auslieferungszustand, ` +
+      `${de(instructionsDiscoveryMax.tokens)} im größten Zustand.`,
     `Zeichen je Token: ${deRatio(measuredRatio)} gemessen, ` +
       `${deExact(budget.CHARS_PER_TOKEN)} in CHARS_PER_TOKEN.`,
     `Werkzeuggruppen: ${groupMeasurements
@@ -839,7 +891,13 @@ if (staleGroups.length > 0) {
   );
 }
 
-if (overBudget || p11OverBudget || instructionsOverBudget || bundleOverBudget) {
+if (
+  overBudget ||
+  p11OverBudget ||
+  instructionsOverBudget ||
+  bundleOverBudget ||
+  gatewayOverBudget
+) {
   console.error(
     "\nEin Budget ist gerissen. Die Reihenfolge der Gegenmaßnahmen steht im Bericht. " +
       "Erzwungen wird in den Tests und nicht in diesem Skript: die Definitionen " +

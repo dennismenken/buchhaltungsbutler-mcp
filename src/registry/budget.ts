@@ -139,6 +139,39 @@ export const BUNDLE_DEFINITION_TOKEN_BUDGET = 6_950;
 export const INSTRUCTIONS_TOKEN_BUDGET = 2_100;
 
 /**
+ * Obergrenze für die fünf Gatewaydefinitionen des Modus discovery (`bb_tools_discover`,
+ * `bb_tools_describe`, `bb_tools_invoke_read`, `bb_tools_invoke_write`,
+ * `bb_tools_invoke_destructive`), in Token. Eine **dritte, getrennte, harte** Zahl neben
+ * {@link TOTAL_TOOL_DEFINITION_TOKEN_BUDGET} und {@link BUNDLE_DEFINITION_TOKEN_BUDGET}:
+ * Im Modus discovery ersetzen diese fünf Definitionen die 61 Endpunktwerkzeuge in `tools/list`,
+ * und genau ihre Kleinheit ist der Zweck des Modus.
+ *
+ * Gesetzt am 2026-11-24 nach demselben Grundsatz wie die Anhebung der Endpunktgrenze, die der
+ * Projektinhaber am 2026-11-22 entschieden hat (Board F-1): gemessener Stand nach der
+ * Umsetzung plus Luft. Gemessen sind 967 Token (4.084 Zeichen, `gpt-tokenizer@4.0.0`,
+ * `o200k_base`, alle Endpunktgruppen aktiv, weil nur die Aufzählung `group` von
+ * `bb_tools_discover` an den Gruppen hängt). Die Luft von 133 Token trägt eine
+ * Umformulierung, aber kein sechstes Gateway; ein weiteres Gateway wäre eine Entscheidung des
+ * Projektinhabers, keine, die dieses Budget nebenbei erlaubt.
+ *
+ * **Diese Zahl darf ein Agent senken, niemals anheben.** Gemessen wird in P11
+ * (`test/registry/token-budget.test.ts`) über `gatewayDefinitions` aus
+ * `src/server/discovery.ts`, also über dieselbe Funktion, mit der der Server anmeldet.
+ */
+export const GATEWAY_DEFINITION_TOKEN_BUDGET = 1_100;
+
+/**
+ * Obergrenze für die Antwort von `bb_tools_discover` ohne Suchbegriff (die Übersicht), in
+ * Token, Textblock und structuredContent zusammen. Die Übersicht ist im Modus discovery der
+ * erste Aufruf fast jeder Sitzung; wüchse sie, verlöre der Modus seinen Zweck.
+ *
+ * Gesetzt am 2026-11-24: gemessen 768 Token (393 Text, 375 strukturiert) bei allen
+ * Endpunktgruppen, dazu Luft für eine weitere Gruppe. **Diese Zahl darf ein Agent senken,
+ * niemals anheben.** Geprüft in `test/discovery/discovery-budget.test.ts`.
+ */
+export const DISCOVER_OVERVIEW_TOKEN_BUDGET = 1_000;
+
+/**
  * Obergrenze der Werkzeugbeschreibung je Stufe, in ZEICHEN. Zeichengrenzen
  * brauchen keinen Tokenizer; P11 prüft sie deshalb zusätzlich zum Gesamtbudget, damit eine
  * Überschreitung nicht erst in der Summe auffällt.

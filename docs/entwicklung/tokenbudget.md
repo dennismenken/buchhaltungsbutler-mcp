@@ -22,6 +22,9 @@ das: Sie kippt nicht an fünf Prozent Abweichung.
 | instructions, Auslieferungszustand | 5.694 | 1.407 | 4,05 |
 | instructions, alle Schalter an | 7.452 | 1.840 | 4,05 |
 | Was der Client beim Verbinden sieht | 222.514 | 54.493 | 4,08 |
+| 5 Gatewaydefinitionen (Modus discovery) | 4.084 | 967 | 4,22 |
+| instructions im Modus discovery, Auslieferungszustand | 3.687 | 930 | 3,96 |
+| instructions im Modus discovery, alle Schalter an | 5.274 | 1.314 | 4,01 |
 | 61 Definitionen in der Rechenweise von P11 | 216.820 | 53.086 | 4,08 |
 
 Die Zeile „wie ausgeliefert" misst genau das, was `server/register-tools.ts` an `registerTool`
@@ -59,7 +62,12 @@ Das Budget der Werkzeugdefinitionen ist eingehalten: 53.086 von 54.000 Token.
 In der Rechenweise von P11 sind es 53.086 Token. P11 bricht seit der Entscheidung vom 2026-09-13
 wieder hart an der Grenze von 54.000 Token ab: noch 914 Token Luft, der Testlauf ist grün.
 
-Das Budget der instructions ist eingehalten: 1.840 von 2.100 Token, gemessen im größten Zustand.
+Das Budget der instructions ist eingehalten: 1.840 von 2.100 Token, gemessen im größten Zustand
+beider Betriebsarten.
+
+Das Budget der Gatewaydefinitionen (Modus discovery) ist eingehalten: 967 von 1.100 Token für
+`bb_tools_discover`, `bb_tools_describe`, `bb_tools_invoke_read`, `bb_tools_invoke_write`,
+`bb_tools_invoke_destructive`.
 
 **Woher die Grenze von 54.000 Token kommt.** Vorgerechnet waren 32.000, und dieser Wert war
 gerissen: Die Messung vom 2026-09-12 kam auf 48.305 Token, ein Überschuss von 16.305. Die
