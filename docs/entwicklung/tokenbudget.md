@@ -1,6 +1,6 @@
 # Das Tokenbudget, gemessen
 
-**Stand: 2026-11-22 (UTC).** Diese Datei wird vollständig von `scripts/measure-tokens.ts` erzeugt
+**Stand: 2026-11-24 (UTC).** Diese Datei wird vollständig von `scripts/measure-tokens.ts` erzeugt
 (`pnpm measure-tokens`). Von Hand geänderte Zahlen sind beim nächsten Lauf wieder weg.
 
 Gemessen mit `gpt-tokenizer@4.0.0`, Kodierung `o200k_base`, unter Node 24.20.0. Es wurde nichts
@@ -98,26 +98,21 @@ Summe, sondern hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` ihre eigene Grenze.
 
 | Gruppe | Werkzeuge | Zeichen | Token | eingecheckt | Anteil |
 | --- | --- | --- | --- | --- | --- |
-| `postings` | 12 | 55.497 | 13.965 | 12.092 | 26,31 % |
+| `postings` | 12 | 55.497 | 13.965 | 13.965 | 26,31 % |
 | `receipts` | 8 | 34.504 | 8.474 | 8.474 | 15,96 % |
-| `transactions` | 9 | 28.490 | 7.024 | 6.606 | 13,23 % |
-| `invoices` | 4 | 25.209 | 6.215 | 5.733 | 11,71 % |
+| `transactions` | 9 | 28.490 | 7.024 | 7.024 | 13,23 % |
+| `invoices` | 4 | 25.209 | 6.215 | 6.215 | 11,71 % |
 | `reports` | 5 | 15.504 | 3.777 | 3.777 | 7,11 % |
-| `creditors` | 5 | 14.709 | 3.549 | 3.161 | 6,69 % |
-| `debtors` | 5 | 14.076 | 3.409 | 3.018 | 6,42 % |
-| `postingaccounts` | 4 | 9.573 | 2.229 | 1.825 | 4,20 % |
-| `payment_accounts` | 4 | 8.852 | 2.050 | 1.131 | 3,86 % |
+| `creditors` | 5 | 14.709 | 3.549 | 3.549 | 6,69 % |
+| `debtors` | 5 | 14.076 | 3.409 | 3.409 | 6,42 % |
+| `postingaccounts` | 4 | 9.573 | 2.229 | 2.229 | 4,20 % |
+| `payment_accounts` | 4 | 8.852 | 2.050 | 2.050 | 3,86 % |
 | `cost_locations` | 4 | 7.828 | 1.806 | 1.806 | 3,40 % |
 | `comments` | 1 | 2.578 | 588 | 588 | 1,11 % |
 | `bundles` | 5 | 28.165 | 6.852 | 6.852 | — |
 | **Summe der elf Endpunktgruppen** | 61 | 216.820 | 53.086 | | 100,00 % |
 
-**Die eingecheckte Tabelle in `src/registry/groups.ts` ist veraltet.** Abweichend sind: `postings`
-(eingecheckt 12.092, gemessen 13.965), `transactions` (eingecheckt 6.606, gemessen 7.024),
-`invoices` (eingecheckt 5.733, gemessen 6.215), `creditors` (eingecheckt 3.161, gemessen 3.549),
-`debtors` (eingecheckt 3.018, gemessen 3.409), `postingaccounts` (eingecheckt 1.825, gemessen
-2.229), `payment_accounts` (eingecheckt 1.131, gemessen 2.050). `test/registry/groups.test.ts`
-bricht daran ab; die Zahlen sind dort nachzutragen.
+Messung und eingecheckte Tabelle stimmen in jeder Gruppe mit Werkzeugen überein.
 
 Das Budget der Bündelgruppe (`BUNDLE_DEFINITION_TOKEN_BUDGET`) ist eingehalten: 6.852 von 6.950
 Token. Die Grenze steht seit dem 2026-09-13 auf dem gemessenen Stand zuzüglich einer kleinen
