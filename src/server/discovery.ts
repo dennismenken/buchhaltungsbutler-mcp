@@ -716,9 +716,9 @@ function runDescribe(
 /**
  * Führt ein Zielwerkzeug über das genannte Gateway aus.
  *
- * Die Gateway-Prüfungen stehen vor dem gemeinsamen Weg: bekannt, aktiv, zuständig.
- * Danach läuft derselbe Code wie im direkten Modus — frühe Guards, Schema und
- * Querprüfungen, dann der Weg ab geprüften Argumenten — mit dem Gateway-Namen an der
+ * Die Reihenfolge steht im Kopf dieser Datei: bekannt und aktiv, dann die Guards des
+ * gemeinsamen Wegs, dann die Zuständigkeit, dann das Schema des Ziels. Ab den geprüften
+ * Argumenten läuft derselbe Code wie im direkten Modus — mit dem Gateway-Namen an der
  * Audit-Zeile. Die Antwort eines erfolgreichen Aufrufs ist genau das `CallToolResult`
  * des Zielwerkzeugs.
  */
@@ -778,32 +778,34 @@ async function runInvokeTarget(
     );
   }
 
-  const correct = invokeToolForClass(entry.toolClass);
-  if (correct !== gatewayName) {
-    return gatewayRefusal(
-      head,
-      gatewayName,
-      rawArgs,
-      startedAt,
-      "zuständigkeit",
-      renderRejectedBeforeRequest({
-        toolName: gatewayName,
-        was: `Das Werkzeug "${name}" läuft nicht über ${gatewayName}.`,
-        warum:
-          `Es trägt die Klasse ${entry.toolClass} ("${TOOL_CLASSES[entry.toolClass].meaning}") ` +
-          `und ist über ${correct} aufzurufen.`,
-        wie: `${name} über ${correct} mit denselben Argumenten aufrufen.`,
-      }).text,
-    );
-  }
-
-  // Ab hier derselbe Weg wie im direkten Modus, mit denselben Texten: Guard 1 und
-  // Guard 2 zuerst, dann Schema und Querprüfungen, dann der Aufruf. Die Audit-Zeile nennt
-  // das Zielwerkzeug und zusätzlich das Gateway.
+  // Die Guards des gemeinsamen Wegs greifen vor der Zuständigkeit: Ein gesperrtes Ziel
+  // meldet die Sperre — fehlende Zugangsdaten, Nur-Lesen-Schalter — und nicht das falsche
+  // Gateway. Die Irreführung wäre teuer: Wer wegen der Zuständigkeit umsteigt, statt die
+  // Einrichtung zu befolgen, ruft das richtige Gateway in derselben Sperrlage erneut auf.
+  // Ohne Guard-Lage prüft danach die Zuständigkeit, dann das Schema des Ziels.
   try {
     const early = checkEarlyGuards(runtime, targetArgs, startedAt, gatewayName);
     if (early !== undefined) {
       return early;
+    }
+
+    const correct = invokeToolForClass(entry.toolClass);
+    if (correct !== gatewayName) {
+      return gatewayRefusal(
+        head,
+        gatewayName,
+        rawArgs,
+        startedAt,
+        "zuständigkeit",
+        renderRejectedBeforeRequest({
+          toolName: gatewayName,
+          was: `Das Werkzeug "${name}" läuft nicht über ${gatewayName}.`,
+          warum:
+            `Es trägt die Klasse ${entry.toolClass} ("${TOOL_CLASSES[entry.toolClass].meaning}") ` +
+            `und ist über ${correct} aufzurufen.`,
+          wie: `${name} über ${correct} mit denselben Argumenten aufrufen.`,
+        }).text,
+      );
     }
 
     const validated = validateToolArgs(runtime, targetArgs);

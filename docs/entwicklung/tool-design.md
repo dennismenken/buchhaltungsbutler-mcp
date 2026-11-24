@@ -1493,6 +1493,12 @@ Die Umsetzung antwortet auf jeden der drei Einwände:
    die der Klasse A, `invoke_destructive` die der Klasse D, die drei übrigen Gateways die der
    Klasse R.
 
+Die Prüfreihenfolge über ein Aufrufgateway steht in `src/server/discovery.ts`: bekannt und
+aktiv, dann Guard 1 und Guard 2 über den gemeinsamen Weg, dann die Zuständigkeit, dann das
+Schema des Ziels. Eine gesperrte Lage meldet deshalb die Sperre und nicht das falsche
+Gateway: Wer wegen der Zuständigkeit umstiege, statt der Einrichtungsanweisung zu folgen,
+liefe mit dem richtigen Gateway in dieselbe Sperre erneut.
+
 Was bleibt: ein bis zwei Suchschritte mehr je Aufgabe, die Freigabe je Gatewayklasse statt je
 Werkzeug und die Argumentprüfung beim Server statt beim Client. Die Bündel und die Resources
 sind in beiden Modi dieselben, und abgeschaltete Werkzeuge bleiben über die Gateways ebenso

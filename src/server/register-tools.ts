@@ -613,8 +613,8 @@ export async function runAfterValidation(
  *
  * Der direkte Modus läuft über diese Folge und sonst über nichts: Guard 1 und Guard 2,
  * dann Guard 3 und Guard 4, dann der Weg ab geprüften Argumenten. Das Gateway ruft
- * dieselben drei Schritte in derselben Reihenfolge auf und schiebt nur seine eigenen
- * Prüfungen (bekannt, aktiv, zuständig) davor.
+ * dieselben drei Schritte in derselben Reihenfolge auf; seine eigenen Prüfungen rahmen
+ * sie ein: bekannt und aktiv davor, die Zuständigkeit und das Schema des Ziels danach.
  */
 async function runGuardedCall(
   runtime: ToolRuntime,

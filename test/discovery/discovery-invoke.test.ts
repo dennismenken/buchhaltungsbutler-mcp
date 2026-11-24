@@ -199,6 +199,66 @@ describe("D1 f) Gleichheit mit dem direkten Modus", () => {
   }
 });
 
+describe("D1 d/g) falsches Gateway bei Guard-Lage", () => {
+  it("meldet bei Nur-Lesen die Guard-Absage statt der Zuständigkeit", async () => {
+    api = mockApi();
+    server = await startDiscoveryServer({ BB_MCP_READ_ONLY: "true" });
+
+    // Dasselbe Ziel über das falsche Gateway: Die Sperre meldet sich zuerst, mit
+    // demselben Text wie der direkte Aufruf — nicht die Zuständigkeitsabsage.
+    const result = await server.client.callTool({
+      name: INVOKE_READ_TOOL,
+      arguments: { name: "bb_cost_locations_create", arguments: {} },
+    });
+    const text = textOf(result);
+    expect(result.isError).toBe(true);
+    expect(text).toContain(`${READ_ONLY_VAR}=true`);
+    expect(text).toContain(STATE_NOTHING_SENT);
+    expect(text).not.toContain(`läuft nicht über ${INVOKE_READ_TOOL}`);
+    expect(api.count()).toBe(0);
+  });
+
+  it("meldet bei fehlender Konfiguration die Guard-Absage statt der Zuständigkeit", async () => {
+    api = mockApi();
+    server = await startDiscoveryServer({
+      BB_API_CLIENT: "",
+      BB_API_SECRET: "",
+      BB_API_KEY: "",
+    });
+
+    // Dasselbe Ziel über das falsche Gateway: Die fehlende Einrichtung meldet sich
+    // zuerst, mit der Einrichtungsanweisung von Guard 1 — nicht die Zuständigkeit.
+    const result = await server.client.callTool({
+      name: INVOKE_READ_TOOL,
+      arguments: { name: "bb_cost_locations_create", arguments: {} },
+    });
+    const text = textOf(result);
+    expect(result.isError).toBe(true);
+    expect(text).toContain("ist nicht ausführbar");
+    expect(text).toContain("Es fehlen: BB_API_CLIENT, BB_API_SECRET, BB_API_KEY.");
+    expect(text).not.toContain(`läuft nicht über ${INVOKE_READ_TOOL}`);
+    expect(api.count()).toBe(0);
+  });
+
+  it("meldet ohne Guard-Lage weiterhin die Zuständigkeit", async () => {
+    api = mockApi();
+    server = await startDiscoveryServer();
+
+    // Weder Guard 1 noch Guard 2 greift: Die Absage nennt das zuständige Gateway.
+    const result = await server.client.callTool({
+      name: INVOKE_READ_TOOL,
+      arguments: { name: "bb_cost_locations_create", arguments: {} },
+    });
+    const text = textOf(result);
+    expect(result.isError).toBe(true);
+    expect(text).toContain(`läuft nicht über ${INVOKE_READ_TOOL}`);
+    expect(text).toContain(INVOKE_WRITE_TOOL);
+    expect(text).not.toContain(`${READ_ONLY_VAR}=true`);
+    expect(text).not.toContain("ist nicht ausführbar");
+    expect(api.count()).toBe(0);
+  });
+});
+
 describe("D1 g) Nur-Lesen", () => {
   it("lehnt invoke_write mit demselben Text ab wie das Werkzeug im direkten Modus", async () => {
     api = mockApi();
