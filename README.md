@@ -583,6 +583,13 @@ Die fünf Bündelwerkzeuge bleiben daneben direkt nutzbar, in beiden Modi. Ein A
 Gateway läuft ab geprüften Argumenten durch denselben Code wie der direkte Aufruf, mit
 derselben Antwort. Was sich ändert, ist allein die Liste.
 
+Die Annotationen folgen derselben Teilung wie die Klassen: `invoke_write` trägt die der
+Klasse A, `invoke_destructive` die der Klasse D, die drei übrigen Gateways die der Klasse R.
+Bewusst abweichend meldet `bb_tools_invoke_destructive` `idempotentHint: false`, obwohl es
+auch die fünf überschreibenden Werkzeuge der Klasse M ausführt, die direkt `true` tragen:
+Das Gateway führt daneben löschende und auswertende Werkzeuge (D und AR) aus, und ein `true`
+lüde einen Client zum Wiederholen eines Löschens ein.
+
 Der Modus lohnt sich dort, wo der Client jede Werkzeugdefinition in jede Anfrage legt. Dort
 kostet der volle Satz von 61 Endpunktwerkzeugen gemessen 53.086 Token je Anfrage
 (siehe Abschnitt 13). Die fünf Gatewaydefinitionen wiegen gemessen 967 Token (Grenze 1.100),

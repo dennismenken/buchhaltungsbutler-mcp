@@ -1491,7 +1491,9 @@ Die Umsetzung antwortet auf jeden der drei Einwände:
    für Klasse R, `bb_tools_invoke_write` für die Klassen A und B, `bb_tools_invoke_destructive`
    für die Klassen M, D und AR. Die Annotationen folgen derselben Teilung: `invoke_write` trägt
    die der Klasse A, `invoke_destructive` die der Klasse D, die drei übrigen Gateways die der
-   Klasse R.
+   Klasse R. Bewusst abweichend trägt `invoke_destructive` `idempotentHint: false`, obwohl es
+   auch die fünf Werkzeuge der Klasse M ausführt, die direkt `true` tragen: Das Gateway führt
+   daneben D und AR aus, und ein `true` lüde einen Client zum Wiederholen eines Löschens ein.
 
 Die Prüfreihenfolge über ein Aufrufgateway steht in `src/server/discovery.ts`: bekannt und
 aktiv, dann Guard 1 und Guard 2 über den gemeinsamen Weg, dann die Zuständigkeit, dann das
