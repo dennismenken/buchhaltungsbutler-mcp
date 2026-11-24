@@ -41,6 +41,7 @@ import {
 } from "./credentials-file.js";
 import { registerSecrets } from "./redact.js";
 import { resolveToolGroups, type ToolGroupSelection } from "./tool-groups.js";
+import { resolveToolMode, type ToolMode } from "./tool-mode.js";
 
 export { ConfigError } from "./env.js";
 export type { CredentialVarName } from "./env.js";
@@ -99,6 +100,13 @@ export interface ResolvedConfig {
    * vollständig orthogonal.
    */
   readonly toolGroups: ToolGroupSelection;
+  /**
+   * Der Betriebsmodus aus `BB_MCP_TOOL_MODE`. Er entscheidet über die **Anmeldung**:
+   * `direct` meldet jedes Endpunktwerkzeug einzeln an (die Vorgabe), `discovery`
+   * stattdessen die fünf Gatewaywerkzeuge aus `src/server/discovery.ts`. Bündel und
+   * Resources sind in beiden Modi dieselben.
+   */
+  readonly toolMode: ToolMode;
   readonly maxBatch: number;
   /** Betragsgrenze als Dezimalzeichenkette, `null` wenn aus. */
   readonly maxAmount: string | null;
@@ -326,6 +334,11 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
     exclude: values.BB_MCP_TOOL_GROUPS_EXCLUDE,
   });
 
+  // Punkt 4c: der Betriebsmodus. Er steht hier, also vor dem Auflösen der Zugangsdaten:
+  // Ein unbrauchbarer Modus ist ein Abbruch, und ein Abbruch soll keine Zugangsdatendatei
+  // gelesen haben. Der Startfehler steht in `config/tool-mode.ts`.
+  const toolMode = resolveToolMode(values.BB_MCP_TOOL_MODE);
+
   // Punkt 5: Zugangsdaten auflösen, ohne zu mischen.
   const configDir = values.BB_CONFIG_DIR ?? defaultConfigDir(env, platform, homeDir);
   const credentialsFile = credentialsFilePath(configDir);
@@ -403,6 +416,7 @@ export function resolveConfig(options: ResolveOptions = {}): ResolveOutcome {
 
     readOnly,
     toolGroups,
+    toolMode,
     maxBatch: values.BB_MCP_MAX_BATCH,
     maxAmount,
     maxAmountCents: maxAmount === null ? null : amountToCents(maxAmount),

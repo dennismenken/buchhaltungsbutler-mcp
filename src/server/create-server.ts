@@ -17,6 +17,8 @@ import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
 
 import type { RegisteredBundleInfo } from "../bundles/register.js";
 import { registerBundles } from "../bundles/register.js";
+import type { RegisteredGatewayInfo } from "./discovery.js";
+import { registerDiscoveryTools } from "./discovery.js";
 import type { BundleEntry } from "../bundles/types.js";
 import type { MasterDataStore } from "../cache/store.js";
 import type { ResolvedConfig } from "../config/resolve.js";
@@ -55,8 +57,16 @@ export interface CreateServerOptions {
 
 export interface BuiltServer {
   readonly server: McpServer;
-  /** Eine Zeile je registriertem Werkzeug, in Registrierreihenfolge. */
+  /**
+   * Eine Zeile je registriertem Endpunktwerkzeug, in Registrierreihenfolge. Im Modus
+   * `discovery` leer: Dort melden die Gateways an, nicht die Endpunktwerkzeuge.
+   */
   readonly tools: readonly RegisteredToolInfo[];
+  /**
+   * Die fünf Gatewaywerkzeuge im Modus `discovery`; leer im Modus `direct`. Jede Zeile
+   * nennt das Gateway und seine Annotationsklasse.
+   */
+  readonly gateways: readonly RegisteredGatewayInfo[];
   /** Eine Zeile je registriertem Bündelwerkzeug; leer, wenn die Gruppe `bundles` aus ist. */
   readonly bundles: readonly RegisteredBundleInfo[];
   /** Die URIs der registrierten Resources. */
@@ -93,12 +103,27 @@ export function createServer(options: CreateServerOptions = {}): BuiltServer {
     capabilities: { tools: { listChanged: false }, resources: { listChanged: false } },
   });
 
-  const tools = registerTools(server, {
-    ...(options.entries === undefined ? {} : { entries: options.entries }),
-    config,
-    ...(options.store === undefined ? {} : { store: options.store }),
-    ...(options.now === undefined ? {} : { now: options.now }),
-  });
+  // Der Betriebsmodus steht je Serverstart fest: `direct` meldet jedes
+  // Endpunktwerkzeug einzeln an, `discovery` stattdessen die fünf Gatewaywerkzeuge. Die
+  // Bündel und die Resources sind in beiden Modi dieselben.
+  const tools =
+    config.toolMode === "discovery"
+      ? []
+      : registerTools(server, {
+          ...(options.entries === undefined ? {} : { entries: options.entries }),
+          config,
+          ...(options.store === undefined ? {} : { store: options.store }),
+          ...(options.now === undefined ? {} : { now: options.now }),
+        });
+  const gateways =
+    config.toolMode === "discovery"
+      ? registerDiscoveryTools(server, {
+          ...(options.entries === undefined ? {} : { entries: options.entries }),
+          config,
+          ...(options.store === undefined ? {} : { store: options.store }),
+          ...(options.now === undefined ? {} : { now: options.now }),
+        })
+      : [];
   // Die Bündelwerkzeuge hängen an der Gruppe `bundles` und an keiner Endpunktgruppe: Ein
   // Bündel ruft die HTTP-Schicht auf und nicht die Endpunktwerkzeuge.
   const bundles = registerBundles(server, {
@@ -111,11 +136,12 @@ export function createServer(options: CreateServerOptions = {}): BuiltServer {
     options.store === undefined ? {} : { store: options.store },
   );
 
-  return { server, tools, bundles, resources, instructions };
+  return { server, tools, gateways, bundles, resources, instructions };
 }
 
 /**
- * Die Zahl der Werkzeuge, die dieser Start angemeldet hat: Endpunktwerkzeuge **und** Bündel.
+ * Die Zahl der Werkzeuge, die dieser Start angemeldet hat: Endpunktwerkzeuge, Gateways
+ * **und** Bündel.
  *
  * Die Bündel gehören in jede genannte Zahl, denn sie stehen in derselben `tools/list`-Antwort
  * wie die 61 Endpunktwerkzeuge, die unverändert bestehen bleiben. Ohne sie meldete der
@@ -123,10 +149,11 @@ export function createServer(options: CreateServerOptions = {}): BuiltServer {
  * `BB_MCP_TOOL_GROUPS=bundles` „0 Werkzeuge", während der Client fünf bekommt — und das ist
  * das empfohlene Profil für Claude Desktop. Die Rückmeldung zum Gruppenschalter ist die
  * einzige Stelle, an der jemand nachsehen kann, was seine Einstellung bewirkt hat; eine Zahl,
- * die dort das Gegenteil der Wahrheit sagt, ist schlimmer als gar keine.
+ * die dort das Gegenteil der Wahrheit sagt, ist schlimmer als gar keine. Im Modus
+ * `discovery` stehen die fünf Gateways an der Stelle der Endpunktwerkzeuge.
  */
 export function registeredToolCount(built: BuiltServer): number {
-  return built.tools.length + built.bundles.length;
+  return built.tools.length + built.gateways.length + built.bundles.length;
 }
 
 /**
@@ -207,9 +234,16 @@ export async function runStdioServer(options: RunStdioServerOptions = {}): Promi
   await built.server.connect(transport);
   const registered = registeredToolCount(built);
   announceToolGroups(config, registered);
+  // Im Discovery-Modus stehen die Gateways an der Stelle der Endpunktwerkzeuge; die
+  // Meldung nennt, was dieser Start wirklich anmeldet, und keinen der beiden Modi als
+  // den anderen.
+  const endpointPart =
+    built.gateways.length > 0
+      ? `${String(built.gateways.length)} Gatewaywerkzeuge`
+      : `${String(built.tools.length)} Endpunktwerkzeuge`;
   logInfo(
     `${SERVER_INFO.name} ${SERVER_INFO.version} läuft auf stdio mit ` +
-      `${String(registered)} Werkzeugen: ${String(built.tools.length)} Endpunktwerkzeuge und ` +
+      `${String(registered)} Werkzeugen: ${endpointPart} und ` +
       `${String(built.bundles.length)} Bündel.`,
   );
 

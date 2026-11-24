@@ -246,6 +246,13 @@ export const envSchema = z.object({
   BB_MCP_TOOL_GROUPS: z.string().optional(),
   BB_MCP_TOOL_GROUPS_EXCLUDE: z.string().optional(),
 
+  // Der Betriebsmodus. Der Wert bleibt hier ROH: Er wird erst in `config/tool-mode.ts`
+  // zerlegt und geprüft, damit ein unbekannter Wert denselben ausdrücklichen Startfehler
+  // bekommt wie ein unbekannter Gruppenname und nicht den Sammelfehler des Feldschemas.
+  // Ein leerer Wert erreicht dieses Schema ohnehin nie — `parseEnv` behandelt ihn als
+  // nicht gesetzt.
+  BB_MCP_TOOL_MODE: z.string().optional(),
+
   BB_MCP_LOG_LEVEL: z
     .string()
     .trim()

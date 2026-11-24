@@ -53,6 +53,7 @@ import type { BundleEntry } from "../bundles/types.js";
 import type { ResolvedConfig } from "../config/resolve.js";
 import { NOT_CONFIGURED_INSTRUCTIONS_PREFIX } from "../config/resolve.js";
 import { toolGroupInstructionLines } from "../config/tool-groups.js";
+import { GATEWAY_TOOL_NAMES, gatewayToolClass } from "./discovery.js";
 import { TOOL_CLASSES } from "../registry/classes.js";
 import { BUNDLE_TOOL_GROUP, type ToolGroup } from "../registry/groups.js";
 import { TOOL_ENTRIES } from "../registry/index.generated.js";
@@ -198,6 +199,51 @@ function readOnlyReportsSentence(active: ReadonlySet<ToolGroup>): string {
   );
 }
 
+/**
+ * Die geräteübergreifenden Zeilen: Grenzen, Speicher und Duplikatsprüfung.
+ *
+ * Sie hängen an keinem Werkzeugnamen und stehen deshalb im direkten wie im
+ * Discovery-Text gleich; die Stelle ist eine, damit die Formulierungen nicht an zwei
+ * Stellen altern.
+ */
+function crossSectionLines(config: ResolvedConfig): string[] {
+  const lines: string[] = [];
+  if (typeof config.maxAmount === "string") {
+    lines.push(
+      `Betragsgrenze: ${config.maxAmount}. Ein anlegendes oder buchendes Werkzeug lehnt einen ` +
+        "größeren Betrag ab, bevor ein Request abgeht.",
+    );
+  }
+  if (config.maxBatch < API_MAX_BATCH) {
+    lines.push(
+      `Mengengrenze: ${String(config.maxBatch)} Einträge je Stapel- und Positionsliste, statt ` +
+        `der ${String(API_MAX_BATCH)} der API. Sie gilt je Liste und je Ebene; es wird nichts ` +
+        "aufsummiert.",
+    );
+  }
+
+  lines.push(
+    config.cacheTtlMs > 0
+      ? `Stammdatenspeicher: an (${String(config.cacheTtlMs)} ms). Vier Stammdatenabfragen können ` +
+          "aus dem Speicher dieses Serverprozesses kommen; eine solche Antwort weist das aus."
+      : "Stammdatenspeicher: aus. Jede Abfrage holt frische Daten.",
+  );
+
+  lines.push(
+    config.duplicateCheck === "on"
+      ? "Duplikatsprüfung: AN. Jeder anlegende Aufruf setzt vorher einen zusätzlichen lesenden " +
+          "Request ab und verbraucht damit ein zweites Token aus dem Minutenkontingent des " +
+          "Mandanten. Ein Treffer blockiert nicht, er steht in der Antwort."
+      : // Der frühere Wortlaut lautete „Ein Werkzeugaufruf ist genau ein Aufruf an
+        // BuchhaltungsButler" und war mit den Bündelwerkzeugen falsch. Gesagt wird jetzt, was
+        // der Schalter wirklich bedeutet: kein zusätzlicher Request vor dem Anlegen. Wie viele
+        // Requests ein Aufruf absetzt, sagt WAS DIESER SERVER IST.
+        "Duplikatsprüfung: aus. Kein anlegender Aufruf setzt vorher einen zusätzlichen lesenden " +
+          "Request ab.",
+  );
+  return lines;
+}
+
 function stateBlock(config: ResolvedConfig): string {
   const lines: string[] = ["ZUSTAND DIESES SERVERS"];
 
@@ -233,41 +279,97 @@ function stateBlock(config: ResolvedConfig): string {
           "Die Freigabe liegt beim Client, nicht bei diesem Server.",
   );
 
-  if (typeof config.maxAmount === "string") {
-    lines.push(
-      `Betragsgrenze: ${config.maxAmount}. Ein anlegendes oder buchendes Werkzeug lehnt einen ` +
-        "größeren Betrag ab, bevor ein Request abgeht.",
-    );
+  for (const line of crossSectionLines(config)) {
+    lines.push(line);
   }
-  if (config.maxBatch < API_MAX_BATCH) {
-    lines.push(
-      `Mengengrenze: ${String(config.maxBatch)} Einträge je Stapel- und Positionsliste, statt ` +
-        `der ${String(API_MAX_BATCH)} der API. Sie gilt je Liste und je Ebene; es wird nichts ` +
-        "aufsummiert.",
-    );
-  }
-
-  lines.push(
-    config.cacheTtlMs > 0
-      ? `Stammdatenspeicher: an (${String(config.cacheTtlMs)} ms). Vier Stammdatenabfragen können ` +
-          "aus dem Speicher dieses Serverprozesses kommen; eine solche Antwort weist das aus."
-      : "Stammdatenspeicher: aus. Jede Abfrage holt frische Daten.",
-  );
-
-  lines.push(
-    config.duplicateCheck === "on"
-      ? "Duplikatsprüfung: AN. Jeder anlegende Aufruf setzt vorher einen zusätzlichen lesenden " +
-          "Request ab und verbraucht damit ein zweites Token aus dem Minutenkontingent des " +
-          "Mandanten. Ein Treffer blockiert nicht, er steht in der Antwort."
-      : // Der frühere Wortlaut lautete „Ein Werkzeugaufruf ist genau ein Aufruf an
-        // BuchhaltungsButler" und war mit den Bündelwerkzeugen falsch. Gesagt wird jetzt, was
-        // der Schalter wirklich bedeutet: kein zusätzlicher Request vor dem Anlegen. Wie viele
-        // Requests ein Aufruf absetzt, sagt WAS DIESER SERVER IST.
-        "Duplikatsprüfung: aus. Kein anlegender Aufruf setzt vorher einen zusätzlichen lesenden " +
-          "Request ab.",
-  );
 
   return lines.join("\n");
+}
+
+/**
+ * Der Zustandsblock im Discovery-Modus.
+ *
+ * Wie `stateBlock`, aber gerechnet über das, was dieser Start wirklich anmeldet: die
+ * fünf Gateways und die aktiven Bündel. Die Endpunktwerkzeuge stehen nicht in
+ * `tools/list` und damit auch nicht in dieser Zahl. Der Nachsatz über die Berichte
+ * entfällt: Er nannte Endpunktwerkzeuge, die es hier nicht gibt.
+ */
+function discoveryStateBlock(config: ResolvedConfig): string {
+  const lines: string[] = ["ZUSTAND DIESER SERVER"];
+
+  lines.push(
+    config.configured
+      ? "Zugangsdaten: vorhanden. Sie wurden einmal beim Serverstart gelesen."
+      : // Der Wortlaut steht bereits als Vorspann am Anfang der instructions; hier genügt
+        // die Zustandszeile, damit der Block in sich vollständig bleibt.
+        "Zugangsdaten: fehlen. Siehe die Ansage am Anfang dieses Textes.",
+  );
+
+  const active = activeGroups(config);
+  const bundles = BUNDLE_ENTRIES.filter((entry) => active.has(entry.group));
+  const gatewayReadOnly = GATEWAY_TOOL_NAMES.filter(
+    (name) => TOOL_CLASSES[gatewayToolClass(name)].annotations.readOnlyHint,
+  ).length;
+  const bundleReadOnly = bundles.filter(
+    (entry) => TOOL_CLASSES[entry.toolClass].annotations.readOnlyHint,
+  ).length;
+  const total = GATEWAY_TOOL_NAMES.length + bundles.length;
+  const readOnly = gatewayReadOnly + bundleReadOnly;
+  const inventory =
+    `Angemeldet: ${toolWord(total)}, davon ${String(readOnly)} lesend und ` +
+    `${String(total - readOnly)} schreibend. ` +
+    "Die Endpunktwerkzeuge stehen nicht in der Liste; sie laufen über die Gateways. ";
+  lines.push(
+    config.readOnly
+      ? "Nur-Lesen-Schalter: AN (BB_MCP_READ_ONLY=true). " +
+          inventory +
+          "Nur die lesenden laufen; die schreibenden lehnen ab, bevor ein Request abgeht. " +
+          "Der Schalter nimmt kein Werkzeug aus der Liste."
+      : "Nur-Lesen-Schalter: aus. " +
+          inventory +
+          "Alle sind aufrufbar, die schreibenden eingeschlossen. " +
+          "Die Freigabe liegt beim Client, nicht bei diesem Server.",
+  );
+
+  for (const line of crossSectionLines(config)) {
+    lines.push(line);
+  }
+
+  return lines.join("\n");
+}
+
+/** Der Ablaufblock des Discovery-Modus: finden, verstehen, aufrufen. Kurz mit Absicht. */
+const DISCOVERY_FLOW_BLOCK = [
+  "DISCOVERY-MODUS DIESER INSTALLATION",
+  "Dieser Server meldet fünf Gatewaywerkzeuge und die Bündel an, nicht die Endpunktwerkzeuge.",
+  "Ablauf: Mit bb_tools_discover suchen, mit bb_tools_describe das Eingabeschema holen,",
+  "dann mit dem passenden Aufrufwerkzeug ausführen: bb_tools_invoke_read für lesende,",
+  "bb_tools_invoke_write für anlegende und buchende, bb_tools_invoke_destructive für",
+  "überschreibende, löschende und auswertende. Die Bündelwerkzeuge sind direkt nutzbar.",
+].join("\n");
+
+/**
+ * Die `instructions` im Discovery-Modus.
+ *
+ * Ohne Endpunktwerkzeuge in `tools/list` nennt dieser Text keine: Jeder Name hinge in
+ * der Luft und schickte den Agenten auf ein Werkzeug, das es hier nicht gibt. Es bleiben
+ * der Zustand, der Ablauf, die Gruppen, die Querschnittsregeln und die Resources — alle
+ * ohne einen einzigen Endpunktnamen. Der Verweis auf den Buchungswegweiser entfällt mit
+ * dem Block, auf den er zeigt („der Wegweiser oben"); die Resource selbst bleibt am
+ * Server angemeldet.
+ */
+function buildDiscoveryInstructions(config: ResolvedConfig): string {
+  const sections: string[] = [
+    config.configured ? "" : NOT_CONFIGURED_INSTRUCTIONS_PREFIX,
+    discoveryStateBlock(config),
+    DISCOVERY_FLOW_BLOCK,
+    toolGroupInstructionLines(config.toolGroups).join("\n"),
+    RULES_BLOCK,
+    PAGINATION_BLOCK,
+    WRITE_BLOCK,
+    resourcesBlock(new Set<ToolGroup>()),
+  ];
+  return sections.filter((section) => section !== "").join("\n\n");
 }
 
 /**
@@ -456,6 +558,11 @@ function resourcesBlock(active: ReadonlySet<ToolGroup>): string {
  * angemeldetes Werkzeug.
  */
 export function buildInstructions(config: ResolvedConfig): string {
+  // Im Discovery-Modus meldet der Server keine Endpunktwerkzeuge an; der Text, den jedes
+  // Modell liest, nennt deshalb auch keine. Der direkte Text darunter bleibt unverändert.
+  if (config.toolMode === "discovery") {
+    return buildDiscoveryInstructions(config);
+  }
   const active = activeGroups(config);
   const sections: string[] = [
     // Der Vorspann steht **vor** jeder Überschrift, nicht in der zweiten Zeile unter einer:
