@@ -5,18 +5,31 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { BUNDLE_TOOL_COUNT } from "../../src/bundles/register.js";
-import { countByEffect, definitionSizeLines, runDoctor } from "../../src/cli/doctor.js";
+import {
+  countByEffect,
+  definitionSizeLines,
+  gatewayDefinitionSizeLines,
+  runDoctor,
+} from "../../src/cli/doctor.js";
 import { createClientHost, type ClientHost } from "../../src/cli/clients/types.js";
 import { createScriptedTerminal, type ScriptedTerminal } from "../../src/cli/prompt.js";
 import { TEST_ENDPOINT } from "../../src/cli/test.js";
 import { CHARS_PER_TOKEN } from "../../src/registry/budget.js";
 import {
+  MEASURED_GATEWAY_DEFINITION_CHARS,
+  MEASURED_GATEWAY_DEFINITION_TOKENS,
   MEASURED_TOOL_DEFINITION_CHARS,
   MEASURED_TOOL_DEFINITION_TOKENS,
   measureToolDefinitionChars,
   toolDefinitionJson,
 } from "../../src/registry/definition.js";
 import { TOOL_ENTRIES } from "../../src/registry/index.generated.js";
+import {
+  GATEWAY_TOOL_NAMES,
+  gatewayDefinitionJson,
+  gatewayDefinitions,
+  measureGatewayDefinitionChars,
+} from "../../src/server/discovery.js";
 import {
   mockApi,
   resetTestConfig,
@@ -157,6 +170,64 @@ describe("runDoctor", () => {
     expect(text).toContain("keine; die Gruppe bundles ist abgeschaltet");
   });
 
+  it("zählt im Discovery-Modus Gateways und Bündel statt Endpunktwerkzeugen", async () => {
+    const env = baseEnv({ BB_MCP_TOOL_MODE: "discovery" });
+
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const text = terminal.text();
+    // Angemeldet sind fünf Gateways plus fünf Bündel, also zehn — dieselbe Zahl wie
+    // `registeredToolCount` über den angemeldeten Server nennt.
+    expect(text).toContain("Registriert: 10 — 5 Gatewaywerkzeuge und 5 Bündelwerkzeuge.");
+    expect(text).toContain("Registriert: 10 Werkzeuge, rund 7.819 Token an Definitionen");
+    expect(text).toContain("Die Endpunktwerkzeuge stehen nicht in der Liste");
+    // Die Bilanz des direkten Modus steht hier nicht: Weder die 61 Endpunktwerkzeuge noch
+    // ihre 53.086 Token sendet dieser Start.
+    expect(text).not.toContain("61 Endpunktwerkzeuge");
+    expect(text).not.toContain("53.086");
+    expect(text).not.toContain("Die Endpunktwerkzeuge nach Wirkung");
+  });
+
+  it("nennt im Discovery-Modus die gemessene Größe der Gatewaydefinitionen", async () => {
+    const env = baseEnv({ BB_MCP_TOOL_MODE: "discovery" });
+
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const text = terminal.text();
+    expect(text).toContain(MEASURED_GATEWAY_DEFINITION_CHARS.toLocaleString("de-DE"));
+    expect(text).toContain(MEASURED_GATEWAY_DEFINITION_TOKENS.toLocaleString("de-DE"));
+    expect(text).toContain("gemessen mit gpt-tokenizer");
+    expect(text).toContain("pnpm measure-tokens");
+  });
+
+  it("zählt im Discovery-Modus ohne Bündelgruppe fünf von zehn", async () => {
+    const env = baseEnv({
+      BB_MCP_TOOL_MODE: "discovery",
+      BB_MCP_TOOL_GROUPS_EXCLUDE: "bundles",
+    });
+
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const text = terminal.text();
+    expect(text).toContain("Registriert: 5 von 10 — 5 Gatewaywerkzeuge und kein Bündelwerkzeug.");
+    expect(text).toContain("Registriert: 5 Werkzeuge, rund 967 Token an Definitionen");
+  });
+
+  it("erklärt im Discovery-Modus bei eingeschränkten Endpunktgruppen den Messstand", async () => {
+    const env = baseEnv({
+      BB_MCP_TOOL_MODE: "discovery",
+      BB_MCP_TOOL_GROUPS_EXCLUDE: "receipts",
+    });
+
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const text = terminal.text();
+    // Die Gateways stehen auch hier alle fünf in der Liste; die Größenangabe misst den
+    // größten Zustand und sagt das, statt die kleinere Auswahl unkommentiert zu lassen.
+    expect(text).toContain("Registriert: 10 — 5 Gatewaywerkzeuge und 5 Bündelwerkzeuge.");
+    expect(text).toContain("die fünf Gatewaydefinitionen im größten Gruppenzustand");
+  });
+
   it("zählt die Werkzeuge nach Wirkung und nennt die Größe der Definitionen", async () => {
     const env = baseEnv();
 
@@ -282,6 +353,17 @@ describe("runDoctor", () => {
   });
 });
 
+describe("gatewayDefinitionSizeLines", () => {
+  it("zählt die fünf Gatewaydefinitionen und nennt die gemessene Tokenzahl", () => {
+    const [counted, tokenLine] = gatewayDefinitionSizeLines();
+
+    expect(counted).toContain(MEASURED_GATEWAY_DEFINITION_CHARS.toLocaleString("de-DE"));
+    expect(counted).toContain("Ein- und Ausgabeschema");
+    expect(tokenLine).toContain(MEASURED_GATEWAY_DEFINITION_TOKENS.toLocaleString("de-DE"));
+    expect(tokenLine).toContain("gemessen mit gpt-tokenizer");
+  });
+});
+
 describe("definitionSizeLines", () => {
   it("zählt die vollständige Definition und nennt die gemessene Tokenzahl", () => {
     const [counted, tokenLine] = definitionSizeLines(TOOL_ENTRIES);
@@ -352,5 +434,54 @@ describe("Zahlenabgleich der Tokenangaben", () => {
       readme,
       `README.md nennt nicht "rund ${rounded} Token". Abschnitt 16 und Abschnitt 17 führen die Kontextkosten; der gemessene Stand sind ${measured} Token.`,
     ).toContain(`rund ${rounded} Token`);
+  });
+});
+
+// Der Zahlenabgleich der Gatewayangaben. Er hält die eingecheckte Messung gegen dieselbe
+// Funktion, mit der der Server anmeldet: `gatewayDefinitions` und `gatewayDefinitionJson`
+// aus `src/server/discovery.ts`. Wächst ein Gateway, schlägt erst diese Prüfung fehl und
+// nicht der Nutzer mit vollem Kontextfenster.
+describe("Zahlenabgleich der Gatewayangaben", () => {
+  const definitions = gatewayDefinitions();
+  const chars = definitions.reduce(
+    (sum, definition) => sum + gatewayDefinitionJson(definition).length,
+    0,
+  );
+  const tokens = definitions.reduce(
+    (sum, definition) => sum + tokenCount(gatewayDefinitionJson(definition)),
+    0,
+  );
+
+  it("misst die fünf Gateways in Anmeldereihenfolge", () => {
+    expect(definitions.map((definition) => definition.name)).toEqual([...GATEWAY_TOOL_NAMES]);
+    expect(measureGatewayDefinitionChars()).toBe(chars);
+    expect(measureGatewayDefinitionChars(definitions)).toBe(chars);
+  });
+
+  it("hält die eingecheckten Werte auf dem gemessenen Stand", () => {
+    expect(
+      chars,
+      "Die Gatewaydefinitionen haben sich geändert. MEASURED_GATEWAY_DEFINITION_CHARS in src/registry/definition.ts nachziehen, pnpm measure-tokens laufen lassen und die Zahlen in README und docs/entwicklung/tokenbudget.md anpassen.",
+    ).toBe(MEASURED_GATEWAY_DEFINITION_CHARS);
+    expect(
+      tokens,
+      "Die Tokenzahl der Gatewaydefinitionen hat sich geändert. MEASURED_GATEWAY_DEFINITION_TOKENS in src/registry/definition.ts nachziehen, pnpm measure-tokens laufen lassen und die Zahlen in README und docs/entwicklung/tokenbudget.md anpassen.",
+    ).toBe(MEASURED_GATEWAY_DEFINITION_TOKENS);
+  });
+
+  it("nennt in doctor und README dieselbe Zahl", async () => {
+    const env = baseEnv({ BB_MCP_TOOL_MODE: "discovery" });
+    await runDoctor({ argv: ["--skip-connection-test"], terminal, host: makeHost(env), env });
+
+    const measured = tokens.toLocaleString("de-DE");
+
+    expect(terminal.text()).toContain(measured);
+
+    // Die README nennt die Gatewaylast in Abschnitt 7.5 als feste Zahl: „967 Token".
+    const readme = fs.readFileSync(path.join(PROJECT_ROOT, "README.md"), "utf8");
+    expect(
+      readme,
+      `README.md nennt die Gatewaylast nicht. Abschnitt 7.5 beziffert den Discovery-Modus; der gemessene Stand sind ${measured} Token.`,
+    ).toContain(`${measured} Token`);
   });
 });

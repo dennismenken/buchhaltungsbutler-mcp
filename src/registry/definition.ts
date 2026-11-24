@@ -94,3 +94,32 @@ export const MEASURED_TOOL_DEFINITION_CHARS = 216_820;
  * Nutzer.
  */
 export const MEASURED_TOOL_DEFINITION_TOKENS = 53_086;
+
+/**
+ * Die Zeichenzahl der fünf Gatewaydefinitionen des Modus `discovery`, wie sie am
+ * 2026-11-24 gemessen wurde: 4.084 Zeichen über `gatewayDefinitions` und
+ * `gatewayDefinitionJson` aus `src/server/discovery.ts`, also über dieselbe Funktion, mit
+ * der der Server sie anmeldet, im größten Zustand (alle Endpunktgruppen aktiv).
+ *
+ * Eingecheckt, damit `doctor` im Modus `discovery` erkennt, ob die Tokenmessung daneben
+ * noch zu diesem Stand gehört. Die Zahl wird nicht von Hand gepflegt:
+ * `test/unit/cli-doctor.test.ts` rechnet sie bei jedem Testlauf nach und schlägt fehl,
+ * sobald sich ein Gatewaytitel, eine Gatewaybeschreibung oder ein Gatewayschema ändert.
+ */
+export const MEASURED_GATEWAY_DEFINITION_CHARS = 4_084;
+
+/**
+ * Die Tokenzahl derselben fünf Gatewaydefinitionen, **gemessen** mit `gpt-tokenizer@4.0.0`
+ * in der Kodierung `o200k_base`, nicht über `CHARS_PER_TOKEN` geschätzt.
+ *
+ * Sie steht hier eingecheckt, weil ein Tokenizer im ausgelieferten Paket eine vierte
+ * Laufzeitabhängigkeit wäre: Die Gatewaydefinitionen liegen zum Auslieferungszeitpunkt
+ * fest, also ist ihre Tokenzahl eine Tatsache dieses Stands und keine Größe, die jeder
+ * Aufruf neu ausrechnen müsste. `doctor` nennt sie im Modus `discovery` anstelle der
+ * 61 Endpunktdefinitionen, die dort gar nicht angemeldet sind.
+ *
+ * Nachgerechnet wird sie in `test/unit/cli-doctor.test.ts` mit dem echten Tokenizer; ein
+ * Auseinanderlaufen von Messung, Ausgabe und Dokumentation fällt dort auf und nicht beim
+ * Nutzer.
+ */
+export const MEASURED_GATEWAY_DEFINITION_TOKENS = 967;

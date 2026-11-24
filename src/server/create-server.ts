@@ -153,7 +153,27 @@ export function createServer(options: CreateServerOptions = {}): BuiltServer {
  * `discovery` stehen die fünf Gateways an der Stelle der Endpunktwerkzeuge.
  */
 export function registeredToolCount(built: BuiltServer): number {
-  return built.tools.length + built.gateways.length + built.bundles.length;
+  return countRegisteredTools({
+    endpoints: built.tools.length,
+    gateways: built.gateways.length,
+    bundles: built.bundles.length,
+  });
+}
+
+/**
+ * Dieselbe Zählung ohne Server: Endpunktwerkzeuge, Gateways und Bündel zusammen.
+ *
+ * `doctor` und `print-config` bauen keinen Server, nennen aber dieselbe Zahl wie die
+ * Anmeldung — im Modus `discovery` fünf Gateways und die aktiven Bündel anstelle der
+ * Endpunktwerkzeuge. Eine zweite Formel daneben wäre eine zweite Wahrheit, die
+ * auseinanderläuft; deshalb rechnen alle drei Stellen über diese eine Funktion.
+ */
+export function countRegisteredTools(counts: {
+  readonly endpoints: number;
+  readonly gateways: number;
+  readonly bundles: number;
+}): number {
+  return counts.endpoints + counts.gateways + counts.bundles;
 }
 
 /**
@@ -169,7 +189,7 @@ export function registeredToolCount(built: BuiltServer): number {
  *   `tools/list`-Antwort dieses Starts. Siehe {@link registeredToolCount}.
  */
 function announceToolGroups(config: ResolvedConfig, registeredTools: number): void {
-  const lines = toolGroupReportLines(config.toolGroups, registeredTools);
+  const lines = toolGroupReportLines(config.toolGroups, registeredTools, config.toolMode);
   if (config.toolGroups.restricted) {
     writeStderrBlock(["", "WERKZEUGGRUPPEN", ...lines, ""].join("\n"));
     return;

@@ -221,6 +221,39 @@ describe("print-config", () => {
     expect(text).toContain("bb_masterdata_search");
   });
 
+  it("zählt im Discovery-Modus Gateways und Bündel statt Endpunktwerkzeugen", async () => {
+    const variables = env({ BB_MCP_TOOL_MODE: "discovery" });
+
+    await runCli(["print-config", "--client", "cursor"], {
+      terminal,
+      host: makeHost(variables),
+      env: variables,
+    });
+
+    const text = terminal.text();
+    // Angemeldet sind fünf Gateways plus fünf Bündel — dieselbe Zahl wie `doctor` nennt.
+    expect(text).toContain("Registriert: 10 Werkzeuge, rund 7.819 Token an Definitionen");
+    // Die Bilanz des direkten Modus steht hier nicht.
+    expect(text).not.toContain("Registriert: 66 Werkzeuge");
+    expect(text).not.toContain("59.938");
+  });
+
+  it("zählt im Discovery-Modus ohne Bündelgruppe fünf Werkzeuge und 967 Token", async () => {
+    const variables = env({
+      BB_MCP_TOOL_MODE: "discovery",
+      BB_MCP_TOOL_GROUPS_EXCLUDE: "bundles",
+    });
+
+    await runCli(["print-config", "--client", "cursor"], {
+      terminal,
+      host: makeHost(variables),
+      env: variables,
+    });
+
+    const text = terminal.text();
+    expect(text).toContain("Registriert: 5 Werkzeuge, rund 967 Token an Definitionen");
+  });
+
   it("lehnt eine Ebene ab, die der Client nicht kennt", async () => {
     const variables = env();
 

@@ -22,12 +22,17 @@ import {
 } from "../config/tool-groups.js";
 import { PACKAGE_NAME, VERSION } from "../generated/version.js";
 import { CHARS_PER_TOKEN } from "../registry/budget.js";
+import { BUNDLE_TOOL_GROUP } from "../registry/groups.js";
 import {
+  MEASURED_GATEWAY_DEFINITION_CHARS,
+  MEASURED_GATEWAY_DEFINITION_TOKENS,
   MEASURED_TOOL_DEFINITION_CHARS,
   MEASURED_TOOL_DEFINITION_TOKENS,
   measureToolDefinitionChars,
 } from "../registry/definition.js";
 import { TOOL_ENTRIES } from "../registry/index.generated.js";
+import { countRegisteredTools } from "../server/create-server.js";
+import { GATEWAY_TOOL_NAMES, measureGatewayDefinitionChars } from "../server/discovery.js";
 import type { ToolEffect, ToolEntry, ToolGroup } from "../registry/types.js";
 import { CHATGPT_BROWSER_NOTE } from "./clients/print-only.js";
 import { BINARY_NAME, type ClientHost } from "./clients/types.js";
@@ -103,6 +108,41 @@ export function definitionSizeLines(entries: readonly ToolEntry[]): readonly str
   ];
 }
 
+/**
+ * Die beiden Zeilen über die Größe der Gatewaydefinitionen, das Gegenstück zu
+ * {@link definitionSizeLines} für den Modus `discovery`.
+ *
+ * Gemessen wird der größte Zustand aus `gatewayDefinitions` — alle Endpunktgruppen
+ * aktiv —, nicht die Auswahl dieser Installation: Nur so bleiben die Zahlen vergleichbar,
+ * genau wie beim vollen Satz der Endpunktwerkzeuge. Die Bündeldefinitionen sind darin
+ * nicht enthalten, wie dort.
+ */
+export function gatewayDefinitionSizeLines(): readonly string[] {
+  const chars = measureGatewayDefinitionChars();
+  const estimated = Math.round(chars / CHARS_PER_TOKEN);
+  const counted =
+    `Gatewaydefinitionen: ${de(chars)} Zeichen — vollständig gezählt, also Titel, ` +
+    "Beschreibung, Annotationen, Ein- und Ausgabeschema, so wie tools/list sie ausliefert.";
+
+  if (chars === MEASURED_GATEWAY_DEFINITION_CHARS) {
+    return [
+      counted,
+      `Tokenzahl: ${de(MEASURED_GATEWAY_DEFINITION_TOKENS)}, gemessen mit gpt-tokenizer ` +
+        "(o200k_base) für genau diesen Stand; geschätzt über den Faktor " +
+        `${de(CHARS_PER_TOKEN)} aus budget.ts wären es rund ${de(estimated)}. doctor lädt ` +
+        "keinen Tokenizer; pnpm measure-tokens misst neu.",
+    ];
+  }
+
+  return [
+    counted,
+    `Tokenzahl: geschätzt rund ${de(estimated)} (Faktor ${de(CHARS_PER_TOKEN)} aus ` +
+      `budget.ts). Die eingecheckte Messung — ${de(MEASURED_GATEWAY_DEFINITION_TOKENS)} Token ` +
+      `bei ${de(MEASURED_GATEWAY_DEFINITION_CHARS)} Zeichen — gehört zu einem anderen ` +
+      "Stand; pnpm measure-tokens zieht sie nach.",
+  ];
+}
+
 /** Die Werkzeuge je Wirkung. */
 export function countByEffect(entries: readonly ToolEntry[]): Record<ToolEffect, number> {
   const counts: Record<ToolEffect, number> = { read: 0, create: 0, modify: 0, delete: 0 };
@@ -162,8 +202,20 @@ export async function runDoctor(options: RunDoctorOptions): Promise<number> {
   // jede Zahl, die diese Diagnose nennt: Ohne sie meldete `doctor` unter
   // BB_MCP_TOOL_GROUPS=bundles „0 von 54", während der Client fünf Werkzeuge bekommt.
   const registeredBundles = registeredBundleCount(config.toolGroups);
-  const registeredTotal = registered.length + registeredBundles;
-  const availableTotal = entries.length + BUNDLE_TOOL_COUNT;
+  // Im Modus `discovery` stehen die fünf Gateways an der Stelle der Endpunktwerkzeuge:
+  // Gezählt wird, was dieser Start wirklich anmeldet — dieselbe Zählung wie
+  // `registeredToolCount` in `server/create-server.ts`, ohne zweiten Rechenweg daneben.
+  const isDiscovery = config.toolMode === "discovery";
+  const registeredTotal = countRegisteredTools({
+    endpoints: isDiscovery ? 0 : registered.length,
+    gateways: isDiscovery ? GATEWAY_TOOL_NAMES.length : 0,
+    bundles: registeredBundles,
+  });
+  const availableTotal = countRegisteredTools({
+    endpoints: isDiscovery ? 0 : entries.length,
+    gateways: isDiscovery ? GATEWAY_TOOL_NAMES.length : 0,
+    bundles: BUNDLE_TOOL_COUNT,
+  });
   let healthy = true;
 
   terminal.write(`${BINARY_NAME} — Diagnose`);
@@ -228,41 +280,78 @@ export async function runDoctor(options: RunDoctorOptions): Promise<number> {
   terminal.write("");
 
   // --- Werkzeuge ----------------------------------------------------------------------
-  const counts = countByEffect(registered);
   terminal.write("Werkzeuge");
-  terminal.write(
-    `  Registriert: ${String(registeredTotal)}` +
-      (registeredTotal === availableTotal ? "" : ` von ${String(availableTotal)}`) +
-      ` — ${countedTools(registered.length, "Endpunktwerkzeug", "Endpunktwerkzeuge")} und ` +
-      `${countedTools(registeredBundles, "Bündelwerkzeug", "Bündelwerkzeuge")}.`,
-  );
-  // Die Aufschlüsselung nach Wirkung beschreibt ausdrücklich nur die Endpunktwerkzeuge: Ein
-  // Bündel fasst mehrere Endpunkte zusammen, und seine Wirkung ist die schärfste seiner
-  // Schritte. Die Zeile sagt das, statt die Zahlen stillschweigend zu vermischen.
-  terminal.write(
-    "  Die Endpunktwerkzeuge nach Wirkung: " +
-      (Object.keys(EFFECT_LABELS) as ToolEffect[])
-        .map((effect) => `${String(counts[effect])} ${EFFECT_LABELS[effect]}`)
-        .join(", ") +
-      ". Die Bündelwerkzeuge sind darin nicht enthalten.",
-  );
-  // Gezählt wird der volle Satz der Endpunktwerkzeuge, auch bei eingeschränkten Gruppen: Nur
-  // er ist mit der eingecheckten Messung vergleichbar. Was diese Installation wirklich sendet,
-  // steht im Abschnitt darunter — und die Zeile sagt es, statt die große Zahl unkommentiert
-  // danebenzustellen.
-  if (registeredTotal !== entries.length) {
+  if (isDiscovery) {
+    // Im Modus `discovery` stehen die Gateways in der Liste, nicht die Endpunktwerkzeuge:
+    // Gezählt wird, was tools/list wirklich ausliefert — fünf Gateways plus die aktiven
+    // Bündel —, und die Größenangabe misst die fünf Gatewaydefinitionen statt der 61
+    // Endpunktwerkzeuge, die hier niemand sendet.
     terminal.write(
-      `  Die folgenden beiden Zeilen messen den VOLLEN Satz aus ${String(entries.length)} ` +
-        "Endpunktwerkzeugen: nicht die Auswahl dieser Installation und ohne die " +
-        "Bündeldefinitionen, die in der eingecheckten Messung nicht enthalten sind. Nur so " +
-        "bleiben sie vergleichbar. Was hier wirklich gesendet wird, steht unter " +
-        "Werkzeuggruppen.",
+      `  Registriert: ${String(registeredTotal)}` +
+        (registeredTotal === availableTotal ? "" : ` von ${String(availableTotal)}`) +
+        ` — ${countedTools(GATEWAY_TOOL_NAMES.length, "Gatewaywerkzeug", "Gatewaywerkzeuge")} und ` +
+        `${countedTools(registeredBundles, "Bündelwerkzeug", "Bündelwerkzeuge")}.`,
     );
+    // Derselbe Satz wie im Servertext des Modus `discovery`: Er sagt, wo die
+    // Endpunktwerkzeuge geblieben sind, statt sie stillschweigend zu unterschlagen.
+    terminal.write(
+      "  Die Endpunktwerkzeuge stehen nicht in der Liste; sie laufen über die Gateways.",
+    );
+    // Wie im direkten Modus misst die Größenangabe den größten Zustand und nicht die
+    // Auswahl dieser Installation: Die Aufzählung `group` von `bb_tools_discover` hängt
+    // an den Endpunktgruppen, und nur mit allen ist sie am längsten.
+    const endpointRestricted = config.toolGroups.inactive.some(
+      (entry) => entry.group !== BUNDLE_TOOL_GROUP,
+    );
+    if (endpointRestricted) {
+      terminal.write(
+        "  Die folgenden beiden Zeilen messen die fünf Gatewaydefinitionen im größten " +
+          "Gruppenzustand (alle Endpunktgruppen aktiv): nicht die Auswahl dieser Installation " +
+          "und ohne die Bündeldefinitionen, die in der eingecheckten Messung nicht enthalten " +
+          "sind. Nur so bleiben sie vergleichbar. Was hier wirklich gesendet wird, steht " +
+          "unter Werkzeuggruppen.",
+      );
+    }
+    for (const line of gatewayDefinitionSizeLines()) {
+      terminal.write(`  ${line}`);
+    }
+    terminal.write("");
+  } else {
+    const counts = countByEffect(registered);
+    terminal.write(
+      `  Registriert: ${String(registeredTotal)}` +
+        (registeredTotal === availableTotal ? "" : ` von ${String(availableTotal)}`) +
+        ` — ${countedTools(registered.length, "Endpunktwerkzeug", "Endpunktwerkzeuge")} und ` +
+        `${countedTools(registeredBundles, "Bündelwerkzeug", "Bündelwerkzeuge")}.`,
+    );
+    // Die Aufschlüsselung nach Wirkung beschreibt ausdrücklich nur die Endpunktwerkzeuge: Ein
+    // Bündel fasst mehrere Endpunkte zusammen, und seine Wirkung ist die schärfste seiner
+    // Schritte. Die Zeile sagt das, statt die Zahlen stillschweigend zu vermischen.
+    terminal.write(
+      "  Die Endpunktwerkzeuge nach Wirkung: " +
+        (Object.keys(EFFECT_LABELS) as ToolEffect[])
+          .map((effect) => `${String(counts[effect])} ${EFFECT_LABELS[effect]}`)
+          .join(", ") +
+        ". Die Bündelwerkzeuge sind darin nicht enthalten.",
+    );
+    // Gezählt wird der volle Satz der Endpunktwerkzeuge, auch bei eingeschränkten Gruppen: Nur
+    // er ist mit der eingecheckten Messung vergleichbar. Was diese Installation wirklich sendet,
+    // steht im Abschnitt darunter — und die Zeile sagt es, statt die große Zahl unkommentiert
+    // danebenzustellen.
+    if (registeredTotal !== entries.length) {
+      terminal.write(
+        `  Die folgenden beiden Zeilen messen den VOLLEN Satz aus ${String(entries.length)} ` +
+          "Endpunktwerkzeugen: nicht die Auswahl dieser Installation und ohne die " +
+          "Bündeldefinitionen, die in der eingecheckten Messung nicht enthalten sind. Nur so " +
+          "bleiben sie vergleichbar. Was hier wirklich gesendet wird, steht unter " +
+          "Werkzeuggruppen.",
+      );
+    }
+    for (const line of definitionSizeLines(entries)) {
+      terminal.write(`  ${line}`);
+    }
+    terminal.write("");
   }
-  for (const line of definitionSizeLines(entries)) {
-    terminal.write(`  ${line}`);
-  }
-  terminal.write("");
 
   // --- Werkzeuggruppen ------------------------------------------------------------------
   terminal.write("Werkzeuggruppen");
@@ -272,7 +361,7 @@ export async function runDoctor(options: RunDoctorOptions): Promise<number> {
   terminal.write(
     `  ${TOOL_GROUPS_EXCLUDE_VAR}: ${config.toolGroups.exclude.length === 0 ? "nicht gesetzt" : config.toolGroups.exclude.join(", ")}`,
   );
-  for (const line of toolGroupReportLines(config.toolGroups, registeredTotal)) {
+  for (const line of toolGroupReportLines(config.toolGroups, registeredTotal, config.toolMode)) {
     terminal.write(`  ${line}`);
   }
   terminal.write("");

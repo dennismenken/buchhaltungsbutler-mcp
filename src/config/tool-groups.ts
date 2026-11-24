@@ -25,6 +25,7 @@
  */
 
 import { closestAllowedValue } from "../errors/render.js";
+import { MEASURED_GATEWAY_DEFINITION_TOKENS } from "../registry/definition.js";
 import {
   BUNDLE_TOOL_GROUP,
   TOOL_GROUPS,
@@ -34,6 +35,7 @@ import {
   type ToolGroup,
 } from "../registry/groups.js";
 import { ConfigError } from "./env.js";
+import type { ToolMode } from "./tool-mode.js";
 
 /** Die beiden Variablennamen. Sie stehen genau hier und werden nirgends neu geschrieben. */
 export const TOOL_GROUPS_VAR = "BB_MCP_TOOL_GROUPS";
@@ -224,12 +226,30 @@ export const ALL_TOOL_GROUPS: ToolGroupSelection = resolveToolGroups();
  * die Startmeldung, `doctor` und `print-config`; drei Stellen, ein Wortlaut.
  *
  * @param registeredTools Die Zahl der tatsächlich registrierten Werkzeuge, nicht geschätzt.
+ * @param toolMode Im Modus `discovery` stehen die Gateways in `tools/list`, nicht die
+ *   Endpunktwerkzeuge: Die Tokenlast ist dann die der fünf Gatewaydefinitionen im größten
+ *   Zustand plus der Bündel, sobald sie aktiv sind. Die Endpunktgruppen tragen dort nichts
+ *   bei. Vorgabe ist `direct`, also das bisherige Verhalten.
  */
 export function toolGroupReportLines(
   selection: ToolGroupSelection,
   registeredTools: number,
+  toolMode: ToolMode = "direct",
 ): readonly string[] {
-  const { tokens, unmeasured } = measuredTokensOf(selection.active);
+  // Im Modus `discovery` hängt nichts an den Endpunktgruppen: Die Aufzählung `group` von
+  // `bb_tools_discover` wird mit allen Gruppen am längsten, und genau diesen größten
+  // Zustand misst die eingecheckte Zahl. „Unvermessene" Gruppen gibt es in diesem Modus
+  // nicht; fehlt die Bündelmessung, sagt die Zeile das wie im direkten Modus.
+  const bundleTokens = TOOL_GROUPS[BUNDLE_TOOL_GROUP].measuredTokens;
+  const bundlesActive = selection.active.includes(BUNDLE_TOOL_GROUP);
+  const { tokens, unmeasured, stand } =
+    toolMode === "discovery"
+      ? {
+          tokens: MEASURED_GATEWAY_DEFINITION_TOKENS + (bundlesActive ? (bundleTokens ?? 0) : 0),
+          unmeasured: bundlesActive && bundleTokens === null ? [BUNDLE_TOOL_GROUP] : [],
+          stand: "2026-11-24",
+        }
+      : { ...measuredTokensOf(selection.active), stand: "2026-09-13" };
   const count = `${String(selection.active.length)} von ${String(TOOL_GROUP_NAMES.length)}`;
   const lines: string[] = [
     selection.restricted
@@ -237,7 +257,7 @@ export function toolGroupReportLines(
       : `Aktive Gruppen: alle ${String(TOOL_GROUP_NAMES.length)} — ${selection.active.join(", ")}`,
     `Registriert: ${String(registeredTools)} Werkzeuge, rund ${tokens.toLocaleString("de-DE")} Token an Definitionen` +
       (unmeasured.length === 0
-        ? " (gemessen, Stand 2026-09-13)."
+        ? ` (gemessen, Stand ${stand}).`
         : `, ohne ${unmeasured.join(", ")} — für diese Gruppe liegt noch keine Messung vor.`),
   ];
 

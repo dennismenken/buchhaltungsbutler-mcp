@@ -17,6 +17,8 @@ import {
 import { TOOL_MODE_VAR } from "../config/tool-mode.js";
 import { TOOL_ENTRIES } from "../registry/index.generated.js";
 import type { ToolGroup } from "../registry/types.js";
+import { countRegisteredTools } from "../server/create-server.js";
+import { GATEWAY_TOOL_NAMES } from "../server/discovery.js";
 import {
   buildPlan,
   defaultToolModeForClient,
@@ -150,13 +152,20 @@ export function runPrintConfig(options: RunPrintConfigOptions): Promise<number> 
 
   // Dieselbe Angabe wie in der Startmeldung und in doctor: Der Gruppenschalter meldet an genau
   // diesen drei Stellen zurück, was er bewirkt hat.
-  // Gezählt werden Endpunktwerkzeuge und Bündel zusammen, also genau das, was tools/list
-  // ausliefert; die Bündel hängen an der Gruppe `bundles` und an keiner Endpunktgruppe.
+  // Gezählt wird, was tools/list wirklich ausliefert: im Modus `discovery` die fünf
+  // Gateways und die aktiven Bündel statt der Endpunktwerkzeuge — dieselbe Zählung wie
+  // `registeredToolCount` in `server/create-server.ts`, ohne zweiten Rechenweg daneben.
+  // Die Bündel hängen an der Gruppe `bundles` und an keiner Endpunktgruppe.
+  const isDiscovery = config.toolMode === "discovery";
   const activeGroups = new Set<ToolGroup>(config.toolGroups.active);
   const registered = TOOL_ENTRIES.filter((entry) => activeGroups.has(entry.group));
-  const registeredTotal = registered.length + registeredBundleCount(config.toolGroups);
+  const registeredTotal = countRegisteredTools({
+    endpoints: isDiscovery ? 0 : registered.length,
+    gateways: isDiscovery ? GATEWAY_TOOL_NAMES.length : 0,
+    bundles: registeredBundleCount(config.toolGroups),
+  });
   terminal.write("Werkzeuggruppen");
-  for (const line of toolGroupReportLines(config.toolGroups, registeredTotal)) {
+  for (const line of toolGroupReportLines(config.toolGroups, registeredTotal, config.toolMode)) {
     terminal.write(`  ${line}`);
   }
   terminal.write("");

@@ -1044,6 +1044,17 @@ export function gatewayDefinitionJson(definition: GatewayDefinition): string {
   return JSON.stringify(definition);
 }
 
+/** Die Zeichenzahl der übergebenen Gatewaydefinitionen zusammen, vollständig serialisiert. */
+export function measureGatewayDefinitionChars(
+  definitions: readonly GatewayDefinition[] = gatewayDefinitions(),
+): number {
+  let total = 0;
+  for (const definition of definitions) {
+    total += gatewayDefinitionJson(definition).length;
+  }
+  return total;
+}
+
 interface GatewaySpec {
   readonly name: string;
   readonly zodSchema: z.ZodType;
