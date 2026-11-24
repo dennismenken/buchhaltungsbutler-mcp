@@ -21,6 +21,7 @@ Adressat ist ein Implementierungs-Agent, der ohne Rückfragen arbeiten soll.
 10. [Evaluierung](#10-evaluierung)
 11. [Verbindliche Vorgaben für unseren Server](#11-verbindliche-vorgaben-für-unseren-server)
 12. [Offene Punkte und Annahmen](#12-offene-punkte-und-annahmen)
+13. [Discovery als zweite Betriebsart](#13-discovery-als-zweite-betriebsart)
 
 ---
 
@@ -1455,3 +1456,45 @@ Zwei sind aufgefallen und werden hier nicht geglättet:
 ### Gefundene Ungereimtheit in `SPEC-BB`
 
 Beim Auswerten der OpenAPI-Datei ist aufgefallen, dass sie `servers`, `security` und `components.securitySchemes` nicht setzt und Body-Parameter im Swagger-2.0-Stil (`"in": "body"` als Einzelparameter) deklariert, während die Datei ansonsten wie ein OpenAPI-Dokument aufgebaut ist. Außerdem enthalten viele `description`-Felder HTML (`<br/>`, `<i>`, HTML-Entities wie `&ldquo;`). Beides ist für die Implementierung relevant: Die Beschreibungen müssen vor der Übernahme in Tool-Schemata von HTML befreit werden, und ein generischer OpenAPI-Codegenerator wird an dieser Datei vermutlich scheitern. Das ist kein Befund dieses Auftrags, sondern eine Beobachtung am Rande, und gehört an die Stelle, an der die API-Dokumentation des Projekts gepflegt wird.
+
+---
+
+## 13. Discovery als zweite Betriebsart
+
+**Entscheidung des Projektinhabers vom 2026-11-23.** Der Server kennt zwei Betriebsarten,
+`direct` und `BB_MCP_TOOL_MODE=discovery`. Die Vorgabe des Servers ist `direct`. Der
+Einrichtungsassistent trägt `discovery` für Cursor, Windsurf, Cline und LM Studio ein; für
+Claude Desktop, Claude Code, Codex (auch ChatGPT-Desktop über Codex) und VS Code setzt er
+nichts.
+
+Dieselbe Idee war zuvor ausdrücklich abgelehnt: `docs/entwicklung/werkzeugkontext-clients.md:1363-1370`
+riet, kein Meta- oder Katalogwerkzeug nach dem Dreischichtmuster zu bauen. Drei Einwände
+standen dort: Die Werkzeugauswahl verlagere sich in den Server, die Schema-Validierung auf
+Clientseite gehe verloren, und der Weg breche mit dem Muster, das alle Clients erwarten.
+Der Preis dafür hieß dort ein eigener, unvalidierter Dispatcher. Der letzte Satz legte fest,
+dass dieser Weg als eigene Entscheidung dem Projektinhaber gehört. Diese Entscheidung liegt
+hiermit vor.
+
+Die Umsetzung antwortet auf jeden der drei Einwände:
+
+1. **Kein zweiter Ausführungsweg.** Ab geprüften Argumenten läuft ein Aufruf über das Gateway
+   durch denselben Code wie der direkte Aufruf: Guard 1 und Guard 2, Schema und
+   Querprüfungen, Grenze, Duplikatshinweis, Speicher, Request, Antwort und Audit. Eine zweite
+   Kopie daneben wäre ein zweiter Weg, der auseinanderläuft. Die Antwort ist dieselbe wie im
+   direkten Aufruf, weder Text noch `structuredContent` werden umgeschrieben.
+2. **Kein unvalidierter Dispatcher.** Die Gateway-Prüfungen validieren mit denselben Zod-Schemata,
+   aus denen die angekündigten JSON-Schemata erzeugt sind, und die Schemameldung hat dieselbe
+   Darstellung wie im direkten Modus. Was der Client nicht sieht, ist allein das Zielschema;
+   das liefert `bb_tools_describe` vor dem Aufruf.
+3. **Kein Lesen und Schreiben in einem Werkzeug.** Die drei Aufrufwerkzeuge trennen nach
+   Risiko, entlang der Klassen aus [9.3](#93-klassifikation-unserer-tools): `bb_tools_invoke_read`
+   für Klasse R, `bb_tools_invoke_write` für die Klassen A und B, `bb_tools_invoke_destructive`
+   für die Klassen M, D und AR. Die Annotationen folgen derselben Teilung: `invoke_write` trägt
+   die der Klasse A, `invoke_destructive` die der Klasse D, die drei übrigen Gateways die der
+   Klasse R.
+
+Was bleibt: ein bis zwei Suchschritte mehr je Aufgabe, die Freigabe je Gatewayklasse statt je
+Werkzeug und die Argumentprüfung beim Server statt beim Client. Die Bündel und die Resources
+sind in beiden Modi dieselben, und abgeschaltete Werkzeuge bleiben über die Gateways ebenso
+unerreichbar wie direkt. Beleg ist `src/server/discovery.ts` samt den Prüfungen in
+`test/discovery/`.

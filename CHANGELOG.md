@@ -10,6 +10,16 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
 
 ### Hinzugefügt
 
+- **Discovery-Modus als zweite Betriebsart (`BB_MCP_TOOL_MODE`).** Die Vorgabe bleibt
+  `direct`: Der Server meldet jedes Endpunktwerkzeug einzeln an. Mit `discovery` meldet er
+  stattdessen fünf Gatewaywerkzeuge an (`bb_tools_discover`, `bb_tools_describe`,
+  `bb_tools_invoke_read`, `bb_tools_invoke_write`, `bb_tools_invoke_destructive`) und führt
+  die Endpunktwerkzeuge über sie aus; die Bündel bleiben in beiden Modi direkt nutzbar. Der
+  Einrichtungsassistent trägt `discovery` für Cursor, Windsurf, Cline und LM Studio ein, für
+  Claude Desktop, Claude Code, Codex und VS Code setzt er nichts. `bbutler-mcp doctor` und
+  `bbutler-mcp print-config` nennen die aktive Betriebsart; das `.mcpb`-Bundle führt sie als
+  Feld „Betriebsart" mit der Vorgabe `direct`.
+
 - **Der wöchentliche Lauf `drift.yml` gleicht die eingecheckte Spezifikationsdatei mit der
   Live-Spezifikation des Anbieters ab** (`pnpm check-spec-drift`). Anlass: BuchhaltungsButler
   hat die Spezifikation geändert, sieben neue Pfade und geänderte Parameter, ohne die

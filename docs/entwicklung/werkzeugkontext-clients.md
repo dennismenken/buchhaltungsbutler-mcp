@@ -1724,3 +1724,91 @@ Jeder Punkt mit dem Weg, wie man ihn messen würde.
   damaligen Stand vom 2026-09-12 in `docs/entwicklung/tokenbudget.md`; der Bericht weist
   inzwischen 197.802 Zeichen und 48.368 Token für die Endpunktwerkzeuge aus, dazu 28.165 Zeichen
   und 6.852 Token für die fünf Bündelwerkzeuge
+
+---
+
+## 10. Nachtrag vom 2026-11-23: neues Ladeverhalten in drei Clients
+
+Dieser Abschnitt hängt an, nichts oben ist überschrieben. Anlass ist die Nachanalyse vom
+2026-11-23: Claude Desktop 6.28899.6 zeigt eine Einstellung zum Werkzeugzugriff, der
+ChatGPT-Chat kennt nur HTTPS und Tunnel, und der Codex-Bereich der ChatGPT-App lädt bei
+Bedarf. Belegstufen wie im übrigen Dossier: GEMESSEN heißt an einer Datei oder einem Lauf auf
+diesem Rechner abgelesen, BELEGT heißt aus einer Herstellerquelle zitiert, VERMUTUNG heißt
+abgeleitet und nicht verifiziert.
+
+### 10.1 Claude Desktop 6.28899.6: die Einstellung „Tool access"
+
+**BELEGT** (Hilfedokument von Anthropic, abgerufen 2026-11-23, Artikel datiert März 2026): Die
+Einstellung heißt „Tool access" und gilt je Konversation. Drei Modi: „Auto" (Vorgabe):
+„Claude decides dynamically which connectors to load based on what you're working on. This is
+the best starting point for most users." „Always available": „All your connectors are loaded
+at the start of every conversation." „On demand": „Connectors aren't loaded until Claude
+searches for the right one based on your request."
+
+**GEMESSEN** (Paketanalyse, nur lesend): Der Client kennt den Wert `tool_search_mode` mit
+`auto`, `on` und `off`. Die Anzeige nennt `on` „Load tools when needed" und `off` „Tools
+already loaded". Der gespeicherte Wert `auto` wird vom Client wie `on` behandelt. Nur der
+ausdrückliche Wert `off` lädt alle Definitionen vorab. Ob Anthropic serverseitig zwischen
+`auto` und `on` unterscheidet, ist von außen nicht belegbar.
+
+Was „Auto" genau tut, ist **NICHT BELEGT**: keine Schwelle, keine Anzahl, kein Modell ist
+dazu dokumentiert. Der Befund aus der Ersterhebung, dass dieser Punkt undokumentiert ist,
+gilt unverändert.
+
+Neu und **GEMESSEN** ist eine Kontextanzeige mit Aufschlüsselung nach Kategorien, darunter
+`tool_definitions` mit den Stufen „measured" und „estimated". Die offene Frage, ob der
+Kontextverbrauch ohne Proxy messbar ist, ist damit teilweise beantwortet.
+
+**GEMESSEN** ist außerdem die Freigaberegel: je Server und je Werkzeug eine Richtlinie aus
+„allow", „ask", „ask-session" und „blocked". Ein Werkzeug mit `readOnlyHint: true` ist aus der
+Nachfragepflicht herausgenommen; fehlt das Annotation, gilt das Werkzeug als schreibend. Im
+Auto-Modus werden lesende Werkzeuge ohne Rückfrage freigegeben.
+
+### 10.2 ChatGPT-Chat: nur HTTPS oder Tunnel, kein lokaler stdio-Start
+
+**BELEGT** (Entwicklerdokumentation von OpenAI, abgerufen 2026-11-23): Ein eigener Server im
+ChatGPT-Chat braucht eine Server-URL oder einen Tunnel („Tunnel" für Secure MCP Tunnel).
+Unterstützte Protokolle sind SSE und Streaming HTTP. Der Dialog kennt genau diese beiden
+Verbindungsvarianten; eine lokale stdio-Verbindung bietet er nicht an (**GEMESSEN** im
+Paket der ChatGPT-Desktop-App).
+
+**BELEGT** (Dokumentation zu Secure MCP Tunnel): Der Tunnel ist eine ausgehende Verbindung
+vom eigenen Netz zu einem OpenAI-Endpunkt. Ein lokaler stdio-Server ist über den
+Tunnel-Client erreichbar, der die Anfragen lokal weiterreicht. Das setzt Tunnel-Kennung,
+Laufzeit-Schlüssel und den Entwicklermodus im Arbeitsbereich voraus.
+
+Für Rückfragen gilt **BELEGT** aus derselben Dokumentation: „Write actions by default require
+confirmation." Und: „We respect the `readOnlyHint` tool annotation. Tools without this hint
+are treated as write actions." Ob `destructiveHint` im Chat eine eigene Kategorie auslöst,
+ist **nicht belegt**.
+
+Folgerung: Der normale ChatGPT-Chat nutzt diesen stdio-Server nicht. Das wird nicht
+verfolgt.
+
+### 10.3 Der Codex-Bereich der ChatGPT-App: lädt bei Bedarf
+
+**GEMESSEN** (Programmdatei von Codex 0.171.0-alpha.13 und Konfiguration auf diesem Rechner):
+Die Codex-Konfiguration trägt lokale stdio-Server (`command`, `args`, `cwd`) neben entfernten
+(`url`). Das Programm kennt die Werkzeugsuche über verzögerte Metadaten, und die
+Desktop-Brücke der ChatGPT-App erzeugt ihre Serverkonfiguration mit
+`omit_tools_from: ["deferred"]`. Das ist ein Beleg für Deferral im Desktop-Codex-Pfad. Die
+Anforderungen an die Freigabe (Genehmigungsmodus, `read_only_hint`) sind im Programm
+vorhanden; die genaue Freigaberegel dieses Bereichs ist nicht getrennt gemessen, sondern vom
+Codex-CLI-Befund übertragen (**VERMUTUNG**).
+
+Feststellung der Voraussetzung, keine Aussage über eine Einrichtung: Der stdio-Server dieses
+Projekts ist im Codex-Bereich der ChatGPT-Desktop-App grundsätzlich anbindbar, über einen
+Eintrag in `~/.codex/config.toml`. Getestet ist die Verbindung damit nicht.
+
+### 10.4 Folgerung für die Betriebsart
+
+Entscheidung des Projektinhabers vom 2026-11-23: Die Server-Vorgabe ist `direct`. Der
+Einrichtungsassistent trägt `BB_MCP_TOOL_MODE=discovery` für Cursor, Windsurf, Cline und
+LM Studio ein. Für Claude Desktop, Claude Code, Codex (auch ChatGPT-Desktop über Codex) und
+VS Code setzt er nichts. Der normale ChatGPT-Chat kann diesen stdio-Server nicht nutzen und
+bleibt außen vor.
+
+Der Preis von `discovery` ist festgehalten: ein bis zwei Suchschritte mehr je Aufgabe, die
+Freigabe im Client dreistufig (lesen, anlegen/buchen, überschreiben/löschen) statt je Werkzeug
+und die Argumentprüfung im Server statt im Client. Was ein Gateway kostet, misst D3; bis
+dahin steht an der Stelle in der README ein Satz ohne Zahl.

@@ -8,7 +8,8 @@
 >
 > Nach der Installation sind alle 66 Werkzeuge sofort aufrufbar. Welche Ihr Assistent benutzen
 
-> darf, entscheiden Sie in Ihrem Client.
+> darf, entscheiden Sie in Ihrem Client. Im Discovery-Modus sind es die fünf Gateways und
+> die Bündel ([7.5](#75-betriebsart-direct-oder-discovery)).
 
 Dieser Server verbindet einen KI-Assistenten über das Model Context Protocol (MCP) mit Ihrem
 BuchhaltungsButler-Mandanten. Er läuft auf Ihrem Rechner; Ihre Zugangsdaten gehen an niemanden
@@ -423,6 +424,7 @@ niemandem weiter.
 | `BB_MCP_READ_ONLY` | `true` beschränkt den Server auf die 19 lesenden Werkzeuge | `false`, also aus |
 | `BB_MCP_TOOL_GROUPS` | Kommaliste von Werkzeuggruppen. Gesetzt: **nur** diese Gruppen werden angemeldet (siehe 7.4) | nicht gesetzt, also alle zwölf |
 | `BB_MCP_TOOL_GROUPS_EXCLUDE` | Kommaliste von Werkzeuggruppen, die abgezogen werden | nicht gesetzt |
+| `BB_MCP_TOOL_MODE` | `direct` oder `discovery`: was der Server anmeldet (siehe 7.5) | `direct` |
 | `BB_MCP_MAX_BATCH` | Obergrenze je Aufruf für jedes Stapel- und Positionsarray, zulässig 1 bis 50 | `50` |
 | `BB_MCP_MAX_AMOUNT` | Betragsgrenze für buchende und anlegende Werkzeuge mit Betragsfeld | nicht gesetzt, also aus |
 | `BB_MCP_RATE_LIMIT` | Nachfüllrate des Standardeimers je Minute, 10 bis 100 | `60` |
@@ -564,6 +566,58 @@ nach Werkzeugen sucht, die diese Installation nicht anbietet.
 
 Im Desktop-Bundle (`.mcpb`) heißt das Feld **Werkzeuggruppen**; leer lassen heißt alle Gruppen.
 Der Schalter wird nur beim Start gelesen und wirkt erst nach einem Neustart des Clients.
+
+### 7.5 Betriebsart: direct oder discovery
+
+Die Variable `BB_MCP_TOOL_MODE` wählt, was der Server anmeldet. Zwei Werte, zwei Listen.
+
+Bei `direct` (Vorgabe) meldet der Server jedes Endpunktwerkzeug einzeln an. Das ist das
+Verhalten seit der ersten Fassung: 61 Definitionen plus die fünf Bündel, alle auf einmal in
+`tools/list`.
+
+Bei `discovery` meldet er stattdessen fünf Gatewaywerkzeuge an: `bb_tools_discover` zum
+Suchen im Katalog, `bb_tools_describe` für das Eingabeschema eines Werkzeugs,
+`bb_tools_invoke_read` für lesende Aufrufe, `bb_tools_invoke_write` für anlegende und
+buchende, `bb_tools_invoke_destructive` für überschreibende, löschende und auswertende.
+Die fünf Bündelwerkzeuge bleiben daneben direkt nutzbar, in beiden Modi. Ein Aufruf über das
+Gateway läuft ab geprüften Argumenten durch denselben Code wie der direkte Aufruf, mit
+derselben Antwort. Was sich ändert, ist allein die Liste.
+
+Der Modus lohnt sich dort, wo der Client jede Werkzeugdefinition in jede Anfrage legt. Dort
+kostet der volle Satz von 61 Endpunktwerkzeugen gemessen 53.086 Token je Anfrage
+(siehe Abschnitt 13). Wie viel die fünf Gatewaydefinitionen wiegen, steht nach der Messung
+in D3 an dieser Stelle.
+
+Der Preis dafür ist dreifach: ein bis zwei Suchschritte mehr je Aufgabe, weil der Assistent
+erst suchen und nachlesen muss, was bei `direct` schon da liegt. Die Freigabe im Client wird
+dreistufig (lesen, anlegen/buchen, überschreiben/löschen) statt einer Entscheidung je
+Werkzeug. Und die Argumentprüfung liegt beim Server statt beim Client, weil der Client das
+Zielschema erst über `bb_tools_describe` sieht.
+
+Die Voreinstellung je Client:
+
+| Client | Betriebsart nach `setup` | Begründung |
+| --- | --- | --- |
+| Claude Code, Codex CLI, ChatGPT-Desktop-App (über Codex) | `direct`, der Assistent setzt nichts | laden Definitionen erst bei Bedarf (belegt, siehe `docs/entwicklung/werkzeugkontext-clients.md`) |
+| Claude Desktop | `direct`, der Assistent setzt nichts | die Vorgabe Auto lädt bei Bedarf nach (clientseitig belegt, serverseitig undokumentiert) |
+| VS Code | `direct`, der Assistent setzt nichts | bringt eine Werkzeugsuche mit, sofern das Modell sie trägt |
+| Cursor, Windsurf, Cline, LM Studio | `discovery`, der Assistent trägt sie ein | legen jede Definition in jede Anfrage; Cursor sah 2025 höchstens 40 Werkzeuge, Windsurf höchstens 100 |
+| Zed, Continue, Jan | `direct`, nur ein Hinweis | werden nur ausgegeben, kein Eintrag; der Hinweis nennt `discovery` als Weg, Kontext zu sparen |
+
+Der normale ChatGPT-Chat kann diesen stdio-Server nicht nutzen (nur HTTPS oder Secure
+MCP Tunnel); das wird nicht verfolgt.
+
+Umstellen geht über die Variable, in der Clientkonfiguration oder in der Umgebung:
+
+```bash
+BB_MCP_TOOL_MODE=discovery
+```
+
+Zurück zu `direct`: die Zeile entfernen, nicht auf einen anderen Wert setzen. Ein
+unbrauchbarer Wert bricht den Start ab, statt still auf die Vorgabe zurückzufallen. Die
+Variable wird wie alle anderen nur beim Start gelesen; danach den Client neu starten.
+`bbutler-mcp doctor` und `bbutler-mcp print-config` nennen die aktive Betriebsart, und im
+Modus `discovery` zusätzlich die fünf Gateways und die aktiven Bündel.
 
 ---
 
@@ -859,6 +913,12 @@ So vergeben Sie Leserechte getrennt von Schreibrechten:
 Wenn Ihr Client keine Unterscheidung anbietet, benutzen Sie
 [`BB_MCP_READ_ONLY`](#8-nur-lesen-lassen) und starten den Server für Schreibarbeiten getrennt.
 
+Im Discovery-Modus gelten dieselben Annotationen, nur gebündelt: `bb_tools_invoke_write`
+trägt die Annotationen der Klasse A, `bb_tools_invoke_destructive` die der Klasse D, und die
+drei übrigen Gateways die der Klasse R. Die Freigabe im Client ist damit dreistufig (lesen,
+anlegen/buchen, überschreiben/löschen) statt einer Entscheidung je Werkzeug; Näheres in
+[7.5](#75-betriebsart-direct-oder-discovery).
+
 ---
 
 ## 12. Bekannte Eigenheiten der API
@@ -906,12 +966,13 @@ Der Server reicht sie sichtbar durch, statt sie zu verstecken.
 - **Protokolliert wird auf stderr**, nie auf stdout, weil stdout dem MCP-Protokoll gehört. Die
   Stufe stellen Sie mit `BB_MCP_LOG_LEVEL` ein.
 - **Kontextkosten.** Die Definitionen der 61 Endpunktwerkzeuge sind rund **53.000 Token** groß,
-
   die der fünf Bündelwerkzeuge weitere 6.852, die Serverbeschreibung rund 1.400. Gemessen mit
   `gpt-tokenizer` in der Kodierung `o200k_base`; für andere Modellfamilien ist das eine
   Größenordnung und keine exakte Zahl. Das ist der Preis
   dafür, dass jeder Endpunkt ein eigenes Werkzeug mit allen Parametern hat. Wer viele Server
-  gleichzeitig betreibt, sollte das einplanen.
+  gleichzeitig betreibt, sollte das einplanen. Legt der Client jede Definition in jede
+  Anfrage, schaltet man mit dem Discovery-Modus auf fünf Gatewaywerkzeuge und die Bündel um
+  ([7.5](#75-betriebsart-direct-oder-discovery)).
 - **Werkzeugargumente können von Inhalten beeinflusst sein, die Ihr Assistent gelesen hat.**
   Verwendungszwecke, Gegenparteien, Buchungstexte und Dateinamen stammen von Dritten. Ein
   präparierter Text kann versuchen, Ihren Assistenten zu einer Handlung zu bewegen. Der Server
@@ -981,6 +1042,7 @@ Für Skripte gibt es `bbutler-mcp test`: nur der Verbindungstest, Rückgabewert 
 | `401`, `error_code` 4: `customer not found …` | Client und Secret stimmen, aber der **API Key** gehört nicht dazu, oder dieser Client darf diesen Mandanten nicht bedienen | API Key prüfen und die Zuordnung des Clients zum Mandanten |
 | Die Antwort ist HTML statt JSON | Falsche Basis-URL, oder ein Proxy oder Anmeldeportal sitzt davor | `BB_BASE_URL` prüfen, `HTTPS_PROXY` prüfen, Zieldomain freigeben |
 | Werkzeuge antworten mit einer Nur-Lesen-Absage | `BB_MCP_READ_ONLY` steht auf `true` | Variable entfernen oder auf `false` setzen und den Client neu starten. Aus dem Gespräch heraus ist das nicht möglich |
+| Nur etwa zehn Werkzeuge statt 66, darunter `bb_tools_discover` | `BB_MCP_TOOL_MODE=discovery` ist gesetzt | Bei Cursor, Windsurf, Cline und LM Studio so gewollt ([7.5](#75-betriebsart-direct-oder-discovery)). Sonst: Variable aus der Konfiguration entfernen und den Client neu starten |
 | Die Debitorenliste zeigt nur 25 Einträge | Die API liefert an `/settings/get/debtors` und `/settings/get/creditors` ohne ausdrückliches `limit` nur 25 Zeilen | Den Assistenten bitten, `limit` zu setzen und mit `offset` weiterzublättern |
 | Die Kontenliste scheint unvollständig | Zahlungskonten und Sachkonten sind zwei verschiedene Listen | `bb_payment_accounts_list` liefert die Zahlungskonten, `bb_postingaccounts_search` den Kontenrahmen einschließlich Debitoren und Kreditoren |
 | Codex meldet einen Zeitablauf beim Start | Der `npx`-Kaltstart dauert länger als die Vorgabe von 10 Sekunden | `startup_timeout_sec = 30` setzen ([5.3](#53-openai-codex-cli)) oder fest installieren ([Abschnitt 6](#6-statt-npx-feste-installation)) |
@@ -1001,6 +1063,10 @@ Diese Punkte sind bekannt, benannt und nicht wegkonstruierbar.
   aktiven Servern kann die Trefferquote eines Assistenten darunter leiden. Wer nur einen Teil
   braucht, meldet mit `BB_MCP_TOOL_GROUPS` nur diesen an ([7.4](#74-werkzeuggruppen-abschalten)). In Claude Code und
   der Codex CLI erübrigt sich das: Dort werden Definitionen erst bei Bedarf geladen.
+- **Der Discovery-Modus kostet Suchschritte.** Im Modus `discovery` ([7.5](#75-betriebsart-direct-oder-discovery))
+  sieht der Assistent zunächst nur fünf Gateways und die Bündel. Je Aufgabe kommen ein bis
+  zwei Suchschritte hinzu, die Freigabe erfolgt je Gatewayklasse statt je Werkzeug, und die
+  Argumentprüfung liegt beim Server. Das ist der bewusste Preis für den gesparten Kontext.
 - **Buchungen und Rechnungen sind über die API nicht löschbar.** Eine Buchung wird storniert,
   eine festgeschriebene erzeugt dabei eine dauerhaft sichtbare Stornobuchung. Für Rechnungen
   gibt es über die API gar keinen Weg zurück.
