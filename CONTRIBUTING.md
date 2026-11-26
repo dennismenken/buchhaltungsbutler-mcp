@@ -90,7 +90,11 @@ Ein neues oder geändertes Werkzeug entsteht in fünf Schritten; sie stehen in d
 Beim Füllen eines Eintrags gelten diese Regeln:
 
 - **Jeder Parameter des Endpunkts kommt genau einmal vor**, entweder in `fields` oder mit
-  Begründung in `omitted`. Erfundene Felder gibt es nicht. Das prüft P3.
+  Begründung in `omitted`. Erfundene Felder gibt es nicht. Das prüft P3. Einzige Ausnahme: ein
+  Parameter, den die Spezifikation nicht führt, den die API aber nachweislich annimmt. Er trägt
+  im Feld `undocumented` seinen Befund aus `docs/api/live-befunde.md`, seine Beschreibung sagt
+  „live belegt“, und er steht in der Ausnahmeliste von P3. Jeder Eintrag dort ist eine
+  Entscheidung des Projektinhabers.
 - **Jede Beschreibung ist deutsch**, mit echten Umlauten. API-Feldnamen, Werkzeugnamen und
   Enum-Werte stehen unverändert im Original.
 - **Jedes schreibende Werkzeug trägt genau einen der Pflichtsätze U1 bis U7** aus

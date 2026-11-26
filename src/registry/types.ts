@@ -79,6 +79,13 @@ export interface FieldSpec {
   //   Array-Parameter des Endpunkts
   transform?: "parallel-arrays" | "object-list" | "none"; // Umformung, in der
   //   Werkzeugbeschreibung wörtlich deklariert
+  undocumented?: {
+    readonly finding: string; // Kennung des Befunds in docs/api/live-befunde.md, z. B. "L9"
+    readonly measuredOn: string; // Tag der Messung, YYYY-MM-DD
+  }; // Nur für einen Parameter, den die Spezifikation an diesem Endpunkt NICHT führt, den die
+  //   API aber nachweislich annimmt und anwendet. P3 lässt ein solches Feld nur zu, wenn es in
+  //   der Ausnahmeliste von test/registry/coverage.test.ts steht und sein Befund existiert;
+  //   die Feldbeschreibung muss das sagen.
 }
 
 /** Was dieser eine Endpunkt zurückliefert. Gilt je Endpunkt, nie je Fachobjekt. */

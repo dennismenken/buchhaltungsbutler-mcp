@@ -235,7 +235,7 @@ describe("print-config", () => {
     expect(text).toContain("Registriert: 10 Werkzeuge, rund 7.819 Token an Definitionen");
     // Die Bilanz des direkten Modus steht hier nicht.
     expect(text).not.toContain("Registriert: 66 Werkzeuge");
-    expect(text).not.toContain("60.018");
+    expect(text).not.toContain("60.080");
   });
 
   it("zählt im Discovery-Modus ohne Bündelgruppe fünf Werkzeuge und 967 Token", async () => {

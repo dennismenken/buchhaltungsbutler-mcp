@@ -14,8 +14,9 @@
 // das übergebene Rechnungsdatum, anders als das Hilfecenter schreibt; ein Freitext-Zeitraum in
 // `date_of_supply`, der nach dem Rechnungsdatum endet, wird übernommen; `customer_number`
 // erscheint im Entwurf, eine Zuordnung zum Debitor ist damit nicht belegt. Die API nimmt
-// außerdem das hier nicht geführte `due_days` an (Zahlungsziel im Entwurf); ob dieses Werkzeug
-// es anbietet, entscheidet der Projektinhaber.
+// außerdem das in der Spezifikation nicht geführte `due_days` an (Zahlungsziel im Entwurf). Auf
+// Entscheidung des Projektinhabers vom 2026-11-26 führt dieses Werkzeug es als belegte Ausnahme
+// (`undocumented` im Feld, Ausnahmeliste in P3).
 
 import { z } from "zod";
 
@@ -47,6 +48,7 @@ function field(spec: {
   required?: boolean;
   apiName?: string;
   description?: string;
+  undocumented?: FieldSpec["undocumented"];
 }): FieldSpec {
   const described = unwrapSchema(spec.schema) ?? spec.schema;
   const description = spec.description ?? described.description;
@@ -62,6 +64,7 @@ function field(spec: {
     required: spec.required ?? false,
     description,
     schema: spec.schema,
+    ...(spec.undocumented === undefined ? {} : { undocumented: spec.undocumented }),
   };
 }
 
@@ -98,8 +101,8 @@ export const bb_invoices_create_draft: ToolEntry = {
     "bb_invoices_create erzeugt die endgültige, nummerierte Rechnung, " +
     "bb_invoices_create_einvoice die E-Rechnung. Die Antwort trägt ausschließlich success " +
     "und message: keine id_by_customer, keine invoicenumber, und die API kennt keinen Pfad, " +
-    "den Entwurf später zu lesen. Die Felder invoicenumber, due_days und payment_reference " +
-    "führt dieser Endpunkt nicht. Schreibt in die echten Buchhaltungsdaten von " +
+    "den Entwurf später zu lesen. invoicenumber und payment_reference führt dieser Endpunkt " +
+    "nicht; due_days ist nicht dokumentiert, aber live belegt. Schreibt in die echten Buchhaltungsdaten von " +
     "BuchhaltungsButler. Die API bietet keinen Endpunkt, das rückgängig zu machen.",
   mandatorySentence: "U4",
   fields: [
@@ -163,8 +166,22 @@ export const bb_invoices_create_draft: ToolEntry = {
       name: "payment_conditions",
       description:
         "Zahlungsbedingungen als Text auf dem Dokument. Ein Fälligkeitsdatum entsteht daraus " +
-        "nicht; das Feld due_days führt dieser Endpunkt nicht.",
+        "nicht; das Zahlungsziel setzt due_days.",
       schema: boundedText("Zahlungsbedingungen als Text auf dem Dokument."),
+    }),
+    // Nicht in der Spezifikation dieses Endpunkts, aber live belegt (Befund L9): Die API nahm
+    // due_days am 2026-11-26 an, und der Entwurf zeigte danach „Zahlungsziel 14 Tage“. Schema
+    // und Wortlaut wie bei bb_invoices_create, wo das Feld dokumentiert ist.
+    field({
+      name: "due_days",
+      description:
+        "Zahlungsziel in Tagen, Ziffernfolge, zum Beispiel 14. Nicht in der Spezifikation des " +
+        "Entwurfs, aber live belegt: Der Entwurf übernimmt es als Zahlungsziel.",
+      schema: z
+        .string()
+        .regex(/^\d+$/, { error: "erwartet wird eine Ziffernfolge, zum Beispiel 14" })
+        .describe("Tage zwischen Rechnungsdatum und Fälligkeit, zum Beispiel 14."),
+      undocumented: { finding: "L9", measuredOn: "2026-11-26" },
     }),
     field({
       name: "correspondence",

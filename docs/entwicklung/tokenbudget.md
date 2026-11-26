@@ -18,14 +18,14 @@ das: Sie kippt nicht an fünf Prozent Abweichung.
 
 | Größe | Zeichen | Token | Zeichen je Token |
 | --- | --- | --- | --- |
-| 61 Werkzeugdefinitionen, wie ausgeliefert | 217.134 | 53.166 | 4,08 |
+| 61 Werkzeugdefinitionen, wie ausgeliefert | 217.370 | 53.228 | 4,08 |
 | instructions, Auslieferungszustand | 5.694 | 1.407 | 4,05 |
 | instructions, alle Schalter an | 7.452 | 1.840 | 4,05 |
-| Was der Client beim Verbinden sieht | 222.828 | 54.573 | 4,08 |
+| Was der Client beim Verbinden sieht | 223.064 | 54.635 | 4,08 |
 | 5 Gatewaydefinitionen (Modus discovery) | 4.084 | 967 | 4,22 |
 | instructions im Modus discovery, Auslieferungszustand | 3.688 | 930 | 3,97 |
 | instructions im Modus discovery, alle Schalter an | 5.275 | 1.314 | 4,01 |
-| 61 Definitionen in der Rechenweise von P11 | 217.134 | 53.166 | 4,08 |
+| 61 Definitionen in der Rechenweise von P11 | 217.370 | 53.228 | 4,08 |
 
 Die Zeile „wie ausgeliefert" misst genau das, was `server/register-tools.ts` an `registerTool`
 übergibt: Name, Titel, Beschreibung, Annotationen, das JSON Schema aus `schema/build.ts` und das
@@ -57,10 +57,10 @@ eigenen Gegenstand eher zu groß ist — auch deshalb die Abrundung.
 
 ## 4. Das Budget
 
-Das Budget der Werkzeugdefinitionen ist eingehalten: 53.166 von 54.000 Token.
+Das Budget der Werkzeugdefinitionen ist eingehalten: 53.228 von 54.000 Token.
 
-In der Rechenweise von P11 sind es 53.166 Token. P11 bricht seit der Entscheidung vom 2026-09-13
-wieder hart an der Grenze von 54.000 Token ab: noch 834 Token Luft, der Testlauf ist grün.
+In der Rechenweise von P11 sind es 53.228 Token. P11 bricht seit der Entscheidung vom 2026-09-13
+wieder hart an der Grenze von 54.000 Token ab: noch 772 Token Luft, der Testlauf ist grün.
 
 Das Budget der instructions ist eingehalten: 1.840 von 2.100 Token, gemessen im größten Zustand
 beider Betriebsarten.
@@ -106,23 +106,23 @@ Summe, sondern hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` ihre eigene Grenze.
 
 | Gruppe | Werkzeuge | Zeichen | Token | eingecheckt | Anteil |
 | --- | --- | --- | --- | --- | --- |
-| `postings` | 12 | 55.691 | 14.012 | 14.012 | 26,36 % |
-| `receipts` | 8 | 34.504 | 8.474 | 8.474 | 15,94 % |
-| `transactions` | 9 | 28.490 | 7.024 | 7.024 | 13,21 % |
-| `invoices` | 4 | 25.295 | 6.240 | 6.215 | 11,74 % |
+| `postings` | 12 | 55.691 | 14.012 | 14.012 | 26,32 % |
+| `receipts` | 8 | 34.504 | 8.474 | 8.474 | 15,92 % |
+| `transactions` | 9 | 28.490 | 7.024 | 7.024 | 13,20 % |
+| `invoices` | 4 | 25.531 | 6.302 | 6.240 | 11,84 % |
 | `reports` | 5 | 15.504 | 3.777 | 3.777 | 7,10 % |
-| `creditors` | 5 | 14.709 | 3.549 | 3.549 | 6,68 % |
-| `debtors` | 5 | 14.066 | 3.407 | 3.409 | 6,41 % |
+| `creditors` | 5 | 14.709 | 3.549 | 3.549 | 6,67 % |
+| `debtors` | 5 | 14.066 | 3.407 | 3.407 | 6,40 % |
 | `postingaccounts` | 4 | 9.617 | 2.239 | 2.239 | 4,21 % |
-| `payment_accounts` | 4 | 8.852 | 2.050 | 2.050 | 3,86 % |
-| `cost_locations` | 4 | 7.828 | 1.806 | 1.806 | 3,40 % |
-| `comments` | 1 | 2.578 | 588 | 588 | 1,11 % |
+| `payment_accounts` | 4 | 8.852 | 2.050 | 2.050 | 3,85 % |
+| `cost_locations` | 4 | 7.828 | 1.806 | 1.806 | 3,39 % |
+| `comments` | 1 | 2.578 | 588 | 588 | 1,10 % |
 | `bundles` | 5 | 28.165 | 6.852 | 6.852 | — |
-| **Summe der elf Endpunktgruppen** | 61 | 217.134 | 53.166 | | 100,00 % |
+| **Summe der elf Endpunktgruppen** | 61 | 217.370 | 53.228 | | 100,00 % |
 
 **Die eingecheckte Tabelle in `src/registry/groups.ts` ist veraltet.** Abweichend sind: `invoices`
-(eingecheckt 6.215, gemessen 6.240), `debtors` (eingecheckt 3.409, gemessen 3.407).
-`test/registry/groups.test.ts` bricht daran ab; die Zahlen sind dort nachzutragen.
+(eingecheckt 6.240, gemessen 6.302). `test/registry/groups.test.ts` bricht daran ab; die Zahlen
+sind dort nachzutragen.
 
 Das Budget der Bündelgruppe (`BUNDLE_DEFINITION_TOKEN_BUDGET`) ist eingehalten: 6.852 von 6.950
 Token. Die Grenze steht seit dem 2026-09-13 auf dem gemessenen Stand zuzüglich einer kleinen
@@ -144,11 +144,11 @@ auf die sich die Tabelle unten mit S1 bis S6 bezieht. Sie lauten:
 
 | Posten | vorgerechnet (Zeichen) | gemessen (Zeichen) | Abweichung |
 | --- | --- | --- | --- |
-| Werkzeugbeschreibungen nach Stufenbudget (S2) | 39.120 | 37.462 | −1.658 |
-| Parameterbeschreibungen, reiner Text (S1, S3, S4, S5) | 38.400 | 72.404 | +34.004 |
+| Werkzeugbeschreibungen nach Stufenbudget (S2) | 39.120 | 37.492 | −1.628 |
+| Parameterbeschreibungen, reiner Text (S1, S3, S4, S5) | 38.400 | 72.545 | +34.145 |
 | `outputSchema` ohne Feldbeschreibungen (S6) | 14.040 | 43.795 | +29.755 |
-| Name, Titel, Annotationen, Schemarümpfe | 5.238 | 63.473 | +58.235 |
-| Summe | 96.798 | 217.134 | +120.336 |
+| Name, Titel, Annotationen, Schemarümpfe | 5.238 | 63.538 | +58.300 |
+| Summe | 96.798 | 217.370 | +120.572 |
 
 Die Spalte „vorgerechnet" ist die Endabrechnung der Vorkalkulation nach den sechs Sparmaßnahmen.
 Gemessen wird in derselben Abgrenzung wie dort: „Parameterbeschreibungen" sind die Summe aller
@@ -178,8 +178,8 @@ zu Buche.
 | `bb_invoices_create_einvoice` | 1 | 8.452 | 2.108 |
 | `bb_postings_search` | 1 | 7.931 | 1.984 |
 | `bb_invoices_create` | 1 | 7.599 | 1.885 |
+| `bb_invoices_create_draft` | 1 | 7.401 | 1.827 |
 | `bb_postings_create_for_receipt_batch` | 1 | 6.912 | 1.775 |
-| `bb_invoices_create_draft` | 1 | 7.165 | 1.765 |
 | `bb_receipts_search` | 1 | 6.817 | 1.733 |
 | `bb_postings_create_for_receipt` | 1 | 6.487 | 1.672 |
 | `bb_postings_create_for_transaction_batch` | 1 | 6.561 | 1.660 |

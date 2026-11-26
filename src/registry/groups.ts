@@ -75,7 +75,7 @@ export const TOOL_GROUPS = {
   invoices: {
     label: "Ausgangsrechnungen",
     withoutIt: "Ausgangsrechnungen, Entwürfe und E-Rechnungen schreiben",
-    measuredTokens: 6_240,
+    measuredTokens: 6_302,
   },
   creditors: {
     label: "Kreditoren",

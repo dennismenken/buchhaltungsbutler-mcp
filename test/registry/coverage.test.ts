@@ -11,6 +11,9 @@
 // betroffenen Pfad und die noch nicht abgedeckten Parameternamen. Das ist beabsichtigt: Die
 // rote Ausgabe ist die Arbeitsliste beim Nachrüsten.
 
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -256,6 +259,9 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
       const knownParamNames = new Set(endpoint.parameters.map((parameter) => parameter.name));
 
       for (const field of tool.fields) {
+        // Ein belegt undokumentierter Parameter zeigt absichtlich ins Leere der Spezifikation;
+        // dafür gilt die eigene Prüfung „lässt nicht dokumentierte Parameter nur mit Beleg zu“.
+        if (field.undocumented !== undefined) continue;
         for (const apiName of field.apiNames) {
           if (!knownParamNames.has(apiName)) {
             problems.push(
@@ -389,7 +395,15 @@ describe("P3 Parameterdeckung, erste Stufe", () => {
 
   it("ergibt 398 Zuordnungen: 61 in omitted, 337 über die apiNames der fields", () => {
     const omittedTotal = REGISTRY.reduce((sum, tool) => sum + tool.omitted.length, 0);
-    const fieldsTotal = REGISTRY.reduce((sum, tool) => sum + topLevelApiNames(tool).length, 0);
+    // Belegt undokumentierte Felder sind keine Parameter der Spezifikation und zählen hier nicht.
+    const fieldsTotal = REGISTRY.reduce(
+      (sum, tool) =>
+        sum +
+        tool.fields
+          .filter((field) => field.undocumented === undefined)
+          .flatMap((field) => [...field.apiNames]).length,
+      0,
+    );
 
     expect(omittedTotal).toBe(PARAMETER_API_KEY);
     expect(fieldsTotal).toBe(PARAMETERS_DOMAIN);
@@ -754,5 +768,62 @@ describe("Die vier Endpunkte mit Pfadvorlage", () => {
     }
 
     expectNoIssues(problems);
+  });
+});
+
+/**
+ * Die Ausnahmeliste: Parameter, die die Spezifikation am Endpunkt nicht führt, die die API aber
+ * nachweislich annimmt. Jeder Eintrag ist eine Entscheidung des Projektinhabers und belegt
+ * durch einen Befund in docs/api/live-befunde.md. Ein neues Feld mit `undocumented` scheitert
+ * hier, bis es ausdrücklich in dieser Liste steht.
+ *
+ * - bb_invoices_create_draft.due_days: Befund L9, Entscheidung vom 2026-11-26 (Board F-13).
+ */
+const EXPECTED_UNDOCUMENTED_FIELDS: Readonly<Record<string, readonly string[]>> = {
+  bb_invoices_create_draft: ["due_days"],
+};
+
+const LIVE_FINDINGS = readFileSync(
+  fileURLToPath(new URL("../../docs/api/live-befunde.md", import.meta.url)),
+  "utf8",
+);
+
+describe("P3 Parameterdeckung, belegte Ausnahmen", () => {
+  it("lässt nicht dokumentierte Parameter nur mit Beleg zu", () => {
+    const problems: string[] = [];
+    const actual: Record<string, string[]> = {};
+
+    for (const tool of REGISTRY) {
+      const endpoint = endpointOf(specPathOf(tool));
+      const specNames = new Set(endpoint?.parameters.map((parameter) => parameter.name) ?? []);
+      for (const field of tool.fields) {
+        const marker = field.undocumented;
+        if (marker === undefined) continue;
+        (actual[tool.name] ??= []).push(field.name);
+        if (!new RegExp(`^## ${marker.finding}: `, "m").test(LIVE_FINDINGS)) {
+          problems.push(
+            `${tool.name}.${field.name}: Befund ${marker.finding} steht nicht in docs/api/live-befunde.md.`,
+          );
+        }
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(marker.measuredOn)) {
+          problems.push(
+            `${tool.name}.${field.name}: measuredOn ${marker.measuredOn} ist kein Datum.`,
+          );
+        }
+        for (const apiName of field.apiNames) {
+          if (specNames.has(apiName)) {
+            problems.push(
+              `${tool.name}.${field.name}: ${apiName} steht in der Spezifikation; die Markierung undocumented ist falsch.`,
+            );
+          }
+        }
+        if (!field.description.includes("live belegt")) {
+          problems.push(`${tool.name}.${field.name}: Die Beschreibung muss „live belegt“ nennen.`);
+        }
+      }
+    }
+
+    expectNoIssues(problems);
+    expect(actual).toEqual(EXPECTED_UNDOCUMENTED_FIELDS);
   });
 });
