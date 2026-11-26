@@ -493,7 +493,7 @@ BB_MCP_TOOL_GROUPS=bundles
 
 **Der Gruppenschalter spart Kontext, nicht Zugriff.** Die 61 Werkzeugdefinitionen wiegen
 
-zusammen gemessen **53.143 Token**, und Claude Desktop legt sie in seinem ungünstigsten Modus in
+zusammen gemessen **53.166 Token**, und Claude Desktop legt sie in seinem ungünstigsten Modus in
 **jede** Anfrage. Wer Buchhaltung auswertet und nicht erfasst, bezahlt davon den größten Teil
 umsonst. Claude Code und die Codex CLI laden Werkzeugdefinitionen dagegen erst bei Bedarf; dort
 kostet ein Werkzeug im Leerlauf nur seinen Namen, und der Schalter lohnt sich nicht.
@@ -511,27 +511,27 @@ nicht diesen Schalter.
 | `postings` | 12 | 14.012 | Buchungen suchen, anlegen, stornieren, Belege an Buchungen binden |
 | `receipts` | 8 | 8.474 | Belege suchen, hochladen, anlegen, löschen, wiederherstellen |
 | `transactions` | 9 | 7.024 | Zahlungen suchen und anlegen, Belege an Zahlungen binden |
-| `invoices` | 4 | 6.215 | Ausgangsrechnungen, Entwürfe, E-Rechnungen und Rechnungskorrekturen schreiben |
+| `invoices` | 4 | 6.240 | Ausgangsrechnungen, Entwürfe, E-Rechnungen und Rechnungskorrekturen schreiben |
 | `creditors` | 5 | 3.549 | Lieferanten nachschlagen, anlegen, ändern |
 | `reports` | 5 | 3.777 | BWA, Summen- und Saldenliste, Kontenblatt |
-| `debtors` | 5 | 3.409 | Kunden nachschlagen, anlegen, ändern |
+| `debtors` | 5 | 3.407 | Kunden nachschlagen, anlegen, ändern |
 | `postingaccounts` | 4 | 2.239 | Sachkonten nachschlagen, anlegen, ändern |
 | `cost_locations` | 4 | 1.806 | Kostenstellen nachschlagen, anlegen, ändern, löschen |
 | `payment_accounts` | 4 | 2.050 | Zahlungskonten auflisten, anlegen, ändern und löschen |
 | `comments` | 1 | 588 | Kommentar an Beleg oder Zahlung hängen |
 | `bundles` | 5 | 6.852 | Bündelwerkzeuge: mehrere Endpunkte in einem Aufruf |
-| **Summe der elf Endpunktgruppen** | **61** | **53.143** | |
+| **Summe der elf Endpunktgruppen** | **61** | **53.166** | |
 
 Die Tokenzahlen sind mit `gpt-tokenizer` (Kodierung `o200k_base`) an den ausgelieferten
 Definitionen gemessen, nicht geschätzt; `pnpm measure-tokens` weist sie je Gruppe neu aus. Die
-Gruppe `bundles` steht nicht in der Summe darüber: Ihre 6.852 Token kommen zu den 53.143 hinzu,
+Gruppe `bundles` steht nicht in der Summe darüber: Ihre 6.852 Token kommen zu den 53.166 hinzu,
 sie hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` eine eigene Grenze und ist als Ganzes abschaltbar.
 
 #### Empfohlene Profile
 
 | Zweck | Einstellung | Werkzeuge | Token |
 | --- | --- | --- | --- |
-| Claude Desktop, Buchhaltung ohne Erfassung | `BB_MCP_TOOL_GROUPS=bundles` | nur die Bündel | 6.852 statt 59.995 |
+| Claude Desktop, Buchhaltung ohne Erfassung | `BB_MCP_TOOL_GROUPS=bundles` | nur die Bündel | 6.852 statt 60.018 |
 | Claude Desktop, mit Belegerfassung | `BB_MCP_TOOL_GROUPS=bundles,receipts,payment_accounts` | 12 plus die Bündel | 17.376 |
 | Nur auswerten | `BB_MCP_TOOL_GROUPS=bundles,reports` plus `BB_MCP_READ_ONLY=true` | 5 plus die Bündel | 10.629 |
 | Claude Code, Codex CLI | alles an, also nichts setzen | 61 plus die Bündel | im Leerlauf rund 2.000, nur die Namen |
@@ -591,7 +591,7 @@ Das Gateway führt daneben löschende und auswertende Werkzeuge (D und AR) aus, 
 lüde einen Client zum Wiederholen eines Löschens ein.
 
 Der Modus lohnt sich dort, wo der Client jede Werkzeugdefinition in jede Anfrage legt. Dort
-kostet der volle Satz von 61 Endpunktwerkzeugen gemessen 53.143 Token je Anfrage
+kostet der volle Satz von 61 Endpunktwerkzeugen gemessen 53.166 Token je Anfrage
 (siehe Abschnitt 13). Die fünf Gatewaydefinitionen wiegen gemessen 967 Token (Grenze 1.100),
 die Bündel wie im direkten Modus 6.852, die Serverbeschreibung im Modus `discovery` 930 Token.
 Die erste Antwort von `bb_tools_discover`, die Übersicht, kostet 768 Token. Gemessen mit
@@ -1068,7 +1068,7 @@ Diese Punkte sind bekannt, benannt und nicht wegkonstruierbar.
   Annotationen ([11.2](#112-was-die-annotationen-bedeuten)), die Freigabe in Ihrem Client, der
   Nur-Lesen-Schalter und die Betrags- und Mengengrenzen.
 - **Die Werkzeuge kosten Kontext.** Die 61 Endpunktwerkzeuge wiegen rund 53.000 Token (gemessen
-  53.143), die fünf Bündelwerkzeuge weitere 6.852, zusammen 59.995. Bei vielen gleichzeitig
+  53.166), die fünf Bündelwerkzeuge weitere 6.852, zusammen 60.018. Bei vielen gleichzeitig
   aktiven Servern kann die Trefferquote eines Assistenten darunter leiden. Wer nur einen Teil
   braucht, meldet mit `BB_MCP_TOOL_GROUPS` nur diesen an ([7.4](#74-werkzeuggruppen-abschalten)). In Claude Code und
   der Codex CLI erübrigt sich das: Dort werden Definitionen erst bei Bedarf geladen.

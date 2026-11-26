@@ -63,7 +63,7 @@ als eigener Vorgang daneben. Auch die Korrektur selbst ist nicht rückgängig zu
 | Rechnungsnummer wird vergeben | ja | ja | nein (Antwort enthält keine) |
 | Antwort enthält `id_by_customer`, `invoicenumber`, `file_name` | ja | ja | **nein**, nur `success` und `message` |
 | Parameter `invoicenumber` setzbar | ja | ja | **nein** |
-| Parameter `due_days` setzbar | ja | ja (Default `0`) | **nein** |
+| Parameter `due_days` setzbar | ja | ja (Default `0`) | **nicht dokumentiert**, live angenommen: Zahlungsziel 14 Tage im Entwurf (Befund L9, 2026-11-26) |
 | Parameter `payment_reference` setzbar | ja | ja | **nein** |
 | Steuerangabe je Position | `item_vat` (Prozentsatz) | `item_tax_type` (Steuerkategorie) **und** `item_tax_amount` (Prozentsatz) | `item_vat` (Prozentsatz) |
 | Empfängeradresse | optional | **Pflicht** (street, zip, city, country, email) | optional |
@@ -79,8 +79,9 @@ Pflichtfeldern und einem normkonformen Steuermodell.
 zu Entwürfen wörtlich „Bitte beachten Sie, dass Entwürfe **ohne Rechnungsdatum und -nummer**
 gespeichert werden. Diese Daten werden erst mit dem Erstellen der Rechnung final vergeben.“
 Die API verlangt für `/invoices/create/draft` jedoch `date` als Pflichtfeld. Ob das übergebene
-Datum im Entwurf gespeichert, ignoriert oder erst beim Finalisieren überschrieben wird, ist
-**nicht verifiziert**.
+Datum im Entwurf gespeichert, ignoriert oder erst beim Finalisieren überschrieben wird, war
+**nicht verifiziert**. **Gemessen am 2026-11-26 (Befund L9 in live-befunde.md):** Ein über die
+API angelegter Entwurf trägt das übergebene Rechnungsdatum.
 
 ---
 

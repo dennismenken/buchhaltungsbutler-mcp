@@ -1,9 +1,11 @@
 # Live-Befunde: eigene Messungen gegen die API
 
-Eigene Messungen gegen die echte Schnittstelle, **ausschließlich lesende Aufrufe**. Sie
-korrigieren die OpenAPI-Datei `docs/openapi/buchhaltungsbutler-v1.json` an Stellen, an denen
-diese falsch ist. Gegen schreibende Endpunkte wurde **kein einziger** Aufruf ausgeführt; der
-Abschnitt „Was hier ausdrücklich nicht gemessen ist" sagt, warum und was dadurch offen bleibt.
+Eigene Messungen gegen die echte Schnittstelle, bis 2026-11-25 **ausschließlich lesende
+Aufrufe**. Sie korrigieren die OpenAPI-Datei `docs/openapi/buchhaltungsbutler-v1.json` an
+Stellen, an denen diese falsch ist. Bis dahin wurde gegen schreibende Endpunkte **kein einziger**
+Aufruf ausgeführt; der Abschnitt „Was hier ausdrücklich nicht gemessen ist" sagt, warum und was
+dadurch offen bleibt. **Nachtrag 2026-11-26:** Mit ausdrücklicher Freigabe des Projektinhabers
+liefen drei schreibende Aufrufe, beschrieben in Befund L9.
 
 Basis-URL `https://webapp.buchhaltungsbutler.de/api/v1`, Methode ausnahmslos `POST`,
 JSON-Body. Die Zugangsdaten (API Client, API Secret, `api_key`) stehen in keiner Aufrufform
@@ -82,6 +84,7 @@ Platzhalter, sondern die oben genannten strukturellen Messwerte.
 | **L5** | `rows` ist die Zeilenzahl **dieser Antwort** und keine Gesamttrefferzahl. | 2026-09-13 | hoch |
 | **L6** | Zu `error_code` 15 liefert `/receipts/get` den Text `invalid field specified`, der **weder** dem `message`-Enum **noch** der `description` des `responses`-Eintrags entspricht. | 2026-09-13 | mittel |
 | **L7** | Die drei Berichte kommen ohne `data`-Hülle als verschachteltes Objekt, jeder in eigener Form: Kontenblatt als Liste, Summen- und Saldenliste als Objekt je Konto, BWA als Baum. Beträge dort als Zahl. Die Kontenliste einer BWA-Klasse ist gefüllt ein Objekt, leer ein Array. | 2026-09-14, für September 2026 und das Jahr 2024 | hoch |
+| **L9** | Drei freigegebene schreibende Aufrufe: `/invoices/create/draft` nimmt das undokumentierte `due_days` an (Zahlungsziel 14 Tage im Entwurf), übernimmt einen Freitext-Leistungszeitraum über das Rechnungsdatum hinaus und speichert das Rechnungsdatum; `/settings/add/debtor` und `/settings/delete/debtor` antworten wie dokumentiert. | 2026-11-26 | mittel |
 | **L8** | Die Felder der stillen Spezifikationsänderung vom 2026-11-22 kommen tatsächlich: `/postings/get` führt in jeder Zeile `oss_country_origin`, `oss_country_destination`, `oss_revenue_type`, `oss_vat_rate_type` (ohne OSS leere Zeichenkette), `/settings/get/postingaccounts` in jeder Zeile `standard_chart`. | 2026-11-26 | mittel |
 
 ---
@@ -605,7 +608,56 @@ entsteht daraus keine Vertragswarnung; eine leere Zeichenkette ist eine gültige
 
 ---
 
+## L9: Erste schreibende Aufrufe: Entwurf, Debitor anlegen und löschen
+
+Betrifft `/invoices/create/draft`, `/settings/add/debtor` und `/settings/delete/debtor`.
+
+### Was gemessen wurde
+
+Ein Agent hatte gemeldet, dass ein Rechnungsentwurf kein Zahlungsziel tragen könne, nicht mit dem
+Debitor verknüpft werde und dass offen sei, ob ein Freitext-Leistungszeitraum die DATEV-Regel
+auslöst. Das ließ sich nur schreibend klären. Der Projektinhaber hat dafür am 2026-11-22 einen
+Entwurf und am 2026-11-26 einen Test-Debitor freigegeben, der danach wieder gelöscht wird.
+
+### Wie gemessen wurde und was herauskam
+
+Am **2026-11-26**, Produktivbuchhaltung, direkt gegen die API (nicht über das MCP, weil dessen
+Schema `due_days` beim Entwurf nicht kennt). Die Weboberfläche hat der Projektinhaber selbst
+abgelesen.
+
+| Schritt | Aufruf | Ergebnis |
+| --- | --- | --- |
+| 1 | `POST /settings/add/debtor` mit Name „TEST MCP, bitte löschen“, `customer_number` TEST-0001, Anschrift | HTTP 200, `{"success":true,"message":"","postingaccount_number":"10023"}`; Form wie `SettingsAddDebitor_Success` |
+| 2 | `POST /invoices/create/draft` mit `type` invoice, `date` 2026-11-26, `date_of_supply` „November bis Dezember 2026“, `customer_number` TEST-0001, Anschrift, eine Position, **`due_days` 14** | HTTP 200, `{"success":true,"message":""}`; `due_days` wurde **nicht** abgewiesen |
+| 3 | Weboberfläche, Entwurf | Kundennummer TEST-0001 steht im Entwurf; Zahlungsziel **14 Tage**; Liefer-/Leistungsdatum „November bis Dezember 2026“; Rechnungsdatum **26.11.2026 gesetzt**; „Neuen Debitor anlegen“ nicht angehakt. Ob der Entwurf dem Debitor 10023 zugeordnet ist, ließ sich in der Oberfläche nicht ablesen. |
+| 4 | `POST /settings/delete/debtor` mit `postingaccount_number` 10023 | HTTP 200, `{"success":true,"message":""}`; danach führt `/settings/get/debtors` 22 statt 23 Debitoren, 10023 fehlt. Das Löschen gelang, obwohl der Entwurf noch die Kundennummer trug. |
+
+Der Entwurf selbst ließ sich nicht über die API löschen (kein Endpunkt); der Projektinhaber
+löscht ihn in der Weboberfläche.
+
+### Was daraus für den Server folgt
+
+- `due_days` wirkt beim Entwurf, obwohl die Spezifikation es dort nicht führt. Ob das MCP das
+  Feld anbietet, ist eine Entscheidung des Projektinhabers (Registerprüfung P3 kennt nur
+  Parameter der Spezifikation).
+- Ein Freitext-Leistungszeitraum, der nach dem Rechnungsdatum endet, wird übernommen; die
+  DATEV-Regel der Spezifikation („date_of_supply after the invoice date … will be ignored“)
+  traf hier nicht zu. Gemessen ist nur dieser Fall, kein Datum im Format YYYY-MM-DD.
+- Der Entwurf speichert das Rechnungsdatum. Die Aussage des Hilfecenters, Entwürfe würden ohne
+  Rechnungsdatum gespeichert, trifft für über die API angelegte Entwürfe nicht zu.
+- Eine Verknüpfung mit dem Debitor über `customer_number` ist **nicht belegt**: Die Kundennummer
+  erscheint, eine Zuordnung zeigte die Oberfläche nicht, und der Debitor ließ sich trotz Entwurf
+  löschen.
+- `/settings/add/debtor` und `/settings/delete/debtor` verhalten sich wie dokumentiert; die
+  Antwortverträge von `bb_debtors_create` und `bb_debtors_delete` stimmen.
+
+---
+
 ## Was hier ausdrücklich nicht gemessen ist
+
+**Nachtrag 2026-11-26:** Der folgende Abschnitt beschreibt den Stand bis 2026-11-25. Seither
+gibt es mit Freigabe des Projektinhabers drei schreibende Aufrufe (Befund L9); die übrigen
+Punkte bleiben offen.
 
 **Kein einziger schreibender Aufruf wurde gegen die BuchhaltungsButler-API ausgeführt** — weder
 gegen die Produktivumgebung noch gegen eine andere, weil keine andere existiert. Die einzigen

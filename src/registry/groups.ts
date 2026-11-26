@@ -75,7 +75,7 @@ export const TOOL_GROUPS = {
   invoices: {
     label: "Ausgangsrechnungen",
     withoutIt: "Ausgangsrechnungen, Entwürfe und E-Rechnungen schreiben",
-    measuredTokens: 6_215,
+    measuredTokens: 6_240,
   },
   creditors: {
     label: "Kreditoren",
@@ -90,7 +90,7 @@ export const TOOL_GROUPS = {
   debtors: {
     label: "Debitoren",
     withoutIt: "Kunden nachschlagen, anlegen und ändern",
-    measuredTokens: 3_409,
+    measuredTokens: 3_407,
   },
   postingaccounts: {
     label: "Sachkonten",

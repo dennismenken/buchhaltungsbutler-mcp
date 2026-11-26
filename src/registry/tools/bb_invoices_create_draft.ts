@@ -10,9 +10,12 @@
 // `verifyWith` trägt `{ kind: "none" }`, weil die API unterhalb von `/invoices/` keinen
 // lesenden Pfad führt.
 //
-// **Nicht verifiziert:** Das Hilfecenter schreibt, Entwürfe würden ohne Rechnungsdatum
-// gespeichert, die API verlangt `date` aber als Pflichtfeld. Ob das Datum gespeichert,
-// verworfen oder beim Finalisieren überschrieben wird, ist offen (rechnungen.md 1.1).
+// **Gemessen am 2026-11-26 (Befund L9 in docs/api/live-befunde.md):** Der Entwurf speichert
+// das übergebene Rechnungsdatum, anders als das Hilfecenter schreibt; ein Freitext-Zeitraum in
+// `date_of_supply`, der nach dem Rechnungsdatum endet, wird übernommen; `customer_number`
+// erscheint im Entwurf, eine Zuordnung zum Debitor ist damit nicht belegt. Die API nimmt
+// außerdem das hier nicht geführte `due_days` an (Zahlungsziel im Entwurf); ob dieses Werkzeug
+// es anbietet, entscheidet der Projektinhaber.
 
 import { z } from "zod";
 
@@ -152,7 +155,8 @@ export const bb_invoices_create_draft: ToolEntry = {
       description:
         "Liefer- oder Leistungsdatum, freier Text oder YYYY-MM-DD. Nur im Format YYYY-MM-DD " +
         "wird der Wert zusätzlich date_delivery des entstehenden Belegs. Ein Datum nach date " +
-        "verwirft BuchhaltungsButler wegen der DATEV-Regel stillschweigend.",
+        "verwirft BuchhaltungsButler wegen der DATEV-Regel stillschweigend; ein Freitext-" +
+        "Zeitraum wie „November bis Dezember 2026“ wird übernommen (live belegt).",
       schema: boundedText("Liefer- oder Leistungsdatum, als Text oder als YYYY-MM-DD."),
     }),
     field({

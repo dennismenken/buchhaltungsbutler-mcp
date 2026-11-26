@@ -9,8 +9,9 @@
 // nur löschen, wenn für das Konto keine Buchungen existieren. Diese Bedingung prüft die API,
 // nicht dieses Werkzeug.
 //
-// **Der Aufruf ist nicht live verifiziert.** Die Beschreibung, die Fehlerfälle und die
-// Antwortform sind aus der Spezifikation abgeleitet, nicht gemessen.
+// **Live geprüft am 2026-11-26 (Befund L9 in docs/api/live-befunde.md):** Ein Test-Debitor
+// ließ sich löschen, die Antwort trug genau `success` und `message`. Die Fehlerfälle sind
+// weiterhin aus der Spezifikation abgeleitet, nicht gemessen.
 //
 // Die Antwort trägt ausschließlich `success` und `message`.
 
@@ -33,7 +34,7 @@ export const bb_debtors_delete: ToolEntry = {
     "Löscht ein Debitorenkonto in BuchhaltungsButler, etwa einen Kunden, den es nicht mehr " +
     "gibt. Möglich ist das nur, wenn für das Konto keine Buchungen existieren; die Bedingung " +
     "prüft die API selbst. Die postingaccount_number ist der Identifikator des Kontos, zu " +
-    "finden mit bb_debtors_search. Nicht live verifiziert. Entfernt Daten aus dem echten " +
+    "finden mit bb_debtors_search. Live geprüft. Entfernt Daten aus dem echten " +
     "Mandanten von BuchhaltungsButler: das Debitorenkonto. Die betroffenen Datensätze vorher " +
     "lesen und dem Nutzer vorlegen.",
   mandatorySentence: "U6",
