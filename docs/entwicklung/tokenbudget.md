@@ -109,7 +109,7 @@ Summe, sondern hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` ihre eigene Grenze.
 | `postings` | 12 | 55.691 | 14.012 | 14.012 | 26,32 % |
 | `receipts` | 8 | 34.504 | 8.474 | 8.474 | 15,92 % |
 | `transactions` | 9 | 28.490 | 7.024 | 7.024 | 13,20 % |
-| `invoices` | 4 | 25.531 | 6.302 | 6.240 | 11,84 % |
+| `invoices` | 4 | 25.531 | 6.302 | 6.302 | 11,84 % |
 | `reports` | 5 | 15.504 | 3.777 | 3.777 | 7,10 % |
 | `creditors` | 5 | 14.709 | 3.549 | 3.549 | 6,67 % |
 | `debtors` | 5 | 14.066 | 3.407 | 3.407 | 6,40 % |
@@ -120,9 +120,7 @@ Summe, sondern hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` ihre eigene Grenze.
 | `bundles` | 5 | 28.165 | 6.852 | 6.852 | — |
 | **Summe der elf Endpunktgruppen** | 61 | 217.370 | 53.228 | | 100,00 % |
 
-**Die eingecheckte Tabelle in `src/registry/groups.ts` ist veraltet.** Abweichend sind: `invoices`
-(eingecheckt 6.240, gemessen 6.302). `test/registry/groups.test.ts` bricht daran ab; die Zahlen
-sind dort nachzutragen.
+Messung und eingecheckte Tabelle stimmen in jeder Gruppe mit Werkzeugen überein.
 
 Das Budget der Bündelgruppe (`BUNDLE_DEFINITION_TOKEN_BUDGET`) ist eingehalten: 6.852 von 6.950
 Token. Die Grenze steht seit dem 2026-09-13 auf dem gemessenen Stand zuzüglich einer kleinen
