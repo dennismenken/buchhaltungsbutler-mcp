@@ -81,6 +81,18 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
 
 ### Geändert
 
+- **Abhängigkeiten aktualisiert.** `@modelcontextprotocol/server` und `-client` gemeinsam von
+  2.0.0 auf 2.4.0 (Release Notes 2.1.0 bis 2.4.0 gelesen; für diesen stdio-Server ohne Bruch),
+  `zod` 4.6.7, `undici` 8.13.1, Biome 2.6.9, Vitest und `@vitest/coverage-v8` 5.1.2, ESLint
+  10.15.0, `typescript-eslint` 8.74.0, `@types/node` 22.20.7, `tsdown` 0.23.7; in den Workflows
+  `actions/setup-node` v7.1.0 und `pnpm/action-setup` v6.1.1 (SHA gegen Tag und Release
+  geprüft). Bewusst nicht angehoben: TypeScript bleibt auf 6.0.3, weil `typescript-eslint` 8.74.0
+  weiter `typescript <6.1.0` verlangt; `@types/node` bleibt bei Hauptversion 22 (`engines.node`);
+  `gpt-tokenizer` bleibt exakt 4.0.0, weil die eingecheckten Tokenmessungen an dieser Fassung
+  hängen.
+- Biome 2.6 formatiert auch Markdown; `biome.json` schaltet das ab, damit Tabellen in README,
+  CHANGELOG und Dossiers unverändert bleiben, und lässt Biome die `.gitignore` beachten.
+
 - **Erste schreibende Live-Messung mit Freigabe (Befund L9).** Ein Rechnungsentwurf über
   `/invoices/create/draft` speichert das Rechnungsdatum, übernimmt einen Freitext-Leistungszeitraum
   über das Rechnungsdatum hinaus und nimmt das nicht dokumentierte `due_days` an. Eine Zuordnung

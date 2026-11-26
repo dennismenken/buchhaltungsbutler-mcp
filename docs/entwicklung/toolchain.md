@@ -298,10 +298,10 @@ ausgelieferten 2.0.0 ist ungeklärt). Solange diese Freigabe nicht erteilt ist, 
 
 | Festlegung | Wert |
 |---|---|
-| MCP-Paket (`dependencies`) | `@modelcontextprotocol/server` `2.0.0`, exakt, kein Caret |
-| MCP-Paket (`devDependencies`) | `@modelcontextprotocol/client` `2.0.0`, exakt, ausschließlich für den Integrationstest aus `mcp-sdk-typescript.md` 10.4 Punkt 12 |
+| MCP-Paket (`dependencies`) | `@modelcontextprotocol/server` `2.4.0`, exakt, kein Caret (seit 2026-11-27, vorher `2.0.0`) |
+| MCP-Paket (`devDependencies`) | `@modelcontextprotocol/client` `2.4.0`, exakt (seit 2026-11-27, vorher `2.0.0`), ausschließlich für den Integrationstest aus `mcp-sdk-typescript.md` 10.4 Punkt 12 |
 | Importpfade | `@modelcontextprotocol/server`, `@modelcontextprotocol/server/stdio`, **ohne** `.js`-Endung |
-| `zod` | `^4.6.2` als direkte `dependency` (siehe 3.4) |
+| `zod` | `^4.6.7` als direkte `dependency` (siehe 3.4; seit 2026-11-27, vorher `^4.6.2`) |
 | `engines.node` der Projekt-`package.json` | `>=22.12.0` |
 | `typescript` (devDependency) | `6.0.3`, exakt, kein Caret |
 | Build | `tsdown`, Skript `"build": "tsdown"`, dazu `tsc --noEmit` als getrennter Typecheck |
@@ -314,7 +314,7 @@ ausgelieferten 2.0.0 ist ungeklärt). Solange diese Freigabe nicht erteilt ist, 
 | MCP-Paket (`dependencies`) | `@modelcontextprotocol/sdk` `1.30.0`, exakt, kein Caret |
 | MCP-Paket (`devDependencies`) | keines; die Client-Klasse für den Integrationstest liegt im selben Paket |
 | Importpfade | ausschließlich Subpfade **mit** `.js`-Endung, z. B. `@modelcontextprotocol/sdk/server/mcp.js`. Der Wurzelimport `@modelcontextprotocol/sdk` ist verboten, weil die Datei `dist/esm/index.js` im veröffentlichten Tarball fehlt und der Import mit `ERR_MODULE_NOT_FOUND` scheitert (Q10). |
-| `zod` | `^4.6.2` als direkte `dependency` (siehe 3.4) |
+| `zod` | `^4.6.7` als direkte `dependency` (siehe 3.4; seit 2026-11-27, vorher `^4.6.2`) |
 | `engines.node` der Projekt-`package.json` | `>=22.12.0` |
 | `typescript` (devDependency) | `6.0.3`, exakt, kein Caret |
 | Build | `tsdown`, Skript `"build": "tsdown"`, dazu `tsc --noEmit` als getrennter Typecheck |
@@ -997,9 +997,9 @@ bleiben unverändert. Teile beider Varianten zu mischen ist nach 3.2 verboten.
 
 | Paket | Version | Zweck | Begründung |
 |---|---|---|---|
-| `@modelcontextprotocol/server` | `2.0.0` (exakt, nicht `^`) | MCP-Protokoll-Implementierung (Server, Transport, Typen) | Stabile SDK-Linie laut README (Q11), offizieller Quickstart installiert sie (Q16); Version per `npm view` verifiziert. Exakt statt Bereichsangabe gemäß `mcp-sdk-typescript.md` 10.2. Bei Variante B stattdessen `@modelcontextprotocol/sdk` `1.30.0` exakt. |
-| `@modelcontextprotocol/client` | `2.0.0` (exakt, nicht `^`) | Client für den Integrationstest der CI (`initialize`, `tools/list`, `tools/call` gegen den gebauten Server) | `devDependency`, nicht produktiv. Nur in Variante A nötig; in Variante B liegt die Client-Klasse im selben Paket `@modelcontextprotocol/sdk`. |
-| `zod` | `^4.6.2` | Tool-Input-Schemas, Konfigurationsvalidierung | Liegt im Bereich beider SDK-Linien (v1 Peer `^3.25 \|\| ^4.0`, v2 Abhängigkeit `^4.2.0`); deckt Abschnitt 8 ohne weitere Abhängigkeit ab. Explizit als eigene `dependency`, siehe 3.4 |
+| `@modelcontextprotocol/server` | `2.4.0` (exakt, nicht `^`; seit 2026-11-27, vorher `2.0.0`) | MCP-Protokoll-Implementierung (Server, Transport, Typen) | Stabile SDK-Linie laut README (Q11), offizieller Quickstart installiert sie (Q16); Version per `npm view` verifiziert. Exakt statt Bereichsangabe gemäß `mcp-sdk-typescript.md` 10.2. Bei Variante B stattdessen `@modelcontextprotocol/sdk` `1.30.0` exakt. |
+| `@modelcontextprotocol/client` | `2.4.0` (exakt, nicht `^`; seit 2026-11-27, vorher `2.0.0`) | Client für den Integrationstest der CI (`initialize`, `tools/list`, `tools/call` gegen den gebauten Server) | `devDependency`, nicht produktiv. Nur in Variante A nötig; in Variante B liegt die Client-Klasse im selben Paket `@modelcontextprotocol/sdk`. |
+| `zod` | `^4.6.7` | Tool-Input-Schemas, Konfigurationsvalidierung | Liegt im Bereich beider SDK-Linien (v1 Peer `^3.25 \|\| ^4.0`, v2 Abhängigkeit `^4.2.0`); deckt Abschnitt 8 ohne weitere Abhängigkeit ab. Explizit als eigene `dependency`, siehe 3.4 |
 | `undici` | `^8.10.2` | Proxy-Unterstützung (`EnvHttpProxyAgent`) und Keep-Alive-Tuning für das eingebaute `fetch`; in Tests zusätzlich `MockAgent` | Offiziell dokumentierter Weg, das globale `fetch` zu konfigurieren/mocken (siehe Abschnitt 5.2, 7); kein Ersatz für `fetch` selbst, nur Ergänzung |
 | `typescript` | `6.0.3` (exakt, nicht `^`) | Type-Checking, `.d.ts`-Emission | **Bewusst nicht 7.0.2** – TypeScript 7 hat keine programmatische API und ist mit `typescript-eslint` inkompatibel (peer `<6.1.0`), siehe Abschnitt 2.1. Exakt statt Bereichsangabe, um ein unbeabsichtigtes Auto-Update auf 7.x zu verhindern. |
 | `tsdown` | `^0.23.0` | Build/Bundling der CLI-Ausgabe | Aktivste Pflege (2026-09-03), auf TypeScript-7-Kompatibilität vorbereitet, siehe Abschnitt 4 |

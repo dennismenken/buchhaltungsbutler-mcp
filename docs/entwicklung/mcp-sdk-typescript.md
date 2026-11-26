@@ -2,6 +2,14 @@
 
 Stand und Abrufdatum aller Angaben: **2026-09-12**.
 
+**Nachtrag 2026-11-27:** Das Projekt führt inzwischen `@modelcontextprotocol/server` und
+`-client` in **2.4.0**, beide gemeinsam angehoben nach Lektüre der Release Notes 2.1.0 bis
+2.4.0. Die Änderungen dort betreffen vor allem HTTP-Transporte, OAuth, Skills über MCP und das
+vollständige Blättern in Listen auf Clientseite; für diesen stdio-Server mit einer Verbindung je
+Prozess war kein Bruch zu erkennen, und die vollständige Testsuite läuft unverändert. Neu ist
+seit 2.3.0, dass `Server.connect()` ablehnt, solange die Instanz schon verbunden ist. Die
+Messungen und Beispiele unten beziehen sich weiterhin auf 2.0.0 und bleiben als solche stehen.
+
 Dieses Dokument ist das Nachschlagewerk für die Implementierung des BuchhaltungsButler-MCP-Servers.
 Jede Aussage trägt eine Quelle. Wo etwas nicht belegt werden konnte, steht das ausdrücklich dabei.
 

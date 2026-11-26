@@ -53,28 +53,28 @@
     "build-mcpb": "node scripts/build-mcpb.ts",
     "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build"
   },
-  "//format": "pnpm format formatiert, pnpm format --check prüft nur. Der Umweg über node -e ist nötig, weil biome format den Schalter --check nicht kennt und pnpm angehängte Argumente unverändert weiterreicht; das abschließende -- trennt die Skriptargumente von den Optionen von node selbst.",
+  "//format": "pnpm format formatiert, pnpm format --check prüft nur. Seit Biome 2.6 formatiert Biome auch Markdown; biome.json schaltet das ab, damit README, CHANGELOG und die Dossiers ihre Tabellen behalten, und lässt Biome die .gitignore beachten, damit lokale Dateien wie .vord/ oder .claude/ nicht mitgeprüft werden. Der Umweg über node -e ist nötig, weil biome format den Schalter --check nicht kennt und pnpm angehängte Argumente unverändert weiterreicht; das abschließende -- trennt die Skriptargumente von den Optionen von node selbst.",
   "//generate": "build und typecheck rufen pnpm generate als ersten Schritt im Skript selbst auf, nicht über pre-Lebenszyklusskripte: pnpm führt pre- und post-Skripte nur bei gesetztem enable-pre-post-scripts aus. src/registry/index.generated.ts wird nicht eingecheckt und muss vor jedem Lauf entstehen. test ruft pnpm build statt pnpm generate, weil test/integration/server.test.ts und test/integration/package-smoke.test.ts das GEBAUTE Paket prüfen und in einem frischen Klon sonst mit 'dist/cli.js fehlt' abbrechen. test:coverage baut aus demselben Grund ebenfalls selbst.",
   "//coverage": "test:coverage ist der einzige Lauf, in dem die Abdeckungsschwellen aus vitest.config.ts überhaupt geprüft werden: vitest wertet coverage.thresholds nur mit --coverage aus. Deshalb steht es als eigener Schritt in .github/workflows/ci.yml und .github/workflows/publish.yml hinter den Tests. Ohne diesen Schritt wären die Schwellen tote Konfiguration.",
-  "//typescript": "typescript ist exakt auf 6.0.3 gepinnt. typescript-eslint@8.70.0 führt die Peer-Range '>=4.8.4 <6.1.0', und typescript@7.x liefert keine programmatische Compiler-API mehr, auf die typgestütztes Linting angewiesen ist. Aktualisierungs-Pull-Requests auf 7.x werden abgelehnt, solange die Peer-Range sie ausschließt.",
+  "//typescript": "typescript ist exakt auf 6.0.3 gepinnt. typescript-eslint@8.74.0 führt die Peer-Range '>=4.8.4 <6.1.0', und typescript@7.x liefert keine programmatische Compiler-API mehr, auf die typgestütztes Linting angewiesen ist. Aktualisierungs-Pull-Requests auf 7.x werden abgelehnt, solange die Peer-Range sie ausschließt.",
   "//mcp": "@modelcontextprotocol/server und -client stehen exakt und ohne Caret. Beide führen dieselbe Fassung, werden nur gemeinsam angehoben und nur, nachdem jemand die Änderungsliste gelesen hat; ein Caret könnte eines der beiden Pakete allein anheben. Bei einem Rückfall auf die v1-Linie werden beide durch @modelcontextprotocol/sdk@1.30.0 ersetzt, ohne jede Mischung; zod bleibt in beiden Fällen direkte Laufzeitabhängigkeit.",
   "dependencies": {
-    "@modelcontextprotocol/server": "2.0.0",
-    "undici": "^8.10.2",
-    "zod": "^4.6.2"
+    "@modelcontextprotocol/server": "2.4.0",
+    "undici": "^8.13.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2",
-    "@biomejs/biome": "^2.5.13",
-    "@modelcontextprotocol/client": "2.0.0",
-    "@types/node": "^22.20.2",
-    "@vitest/coverage-v8": "^5.0.0",
-    "eslint": "^10.10.0",
+    "@biomejs/biome": "^2.6.9",
+    "@modelcontextprotocol/client": "2.4.0",
+    "@types/node": "^22.20.7",
+    "@vitest/coverage-v8": "^5.1.2",
+    "eslint": "^10.15.0",
     "gpt-tokenizer": "4.0.0",
-    "tsdown": "0.23.0",
+    "tsdown": "0.23.7",
     "typescript": "6.0.3",
-    "typescript-eslint": "^8.70.0",
-    "vitest": "^5.0.0"
+    "typescript-eslint": "^8.74.0",
+    "vitest": "^5.1.2"
   },
   "publishConfig": {
     "access": "public",

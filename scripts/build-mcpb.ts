@@ -161,7 +161,7 @@ export function renderManifest(
  * nach oben geht — also genau so, wie Node selbst auflöst.
  *
  * Warum nicht `require.resolve`: Ein Paket mit `exports`-Feld muss `./package.json` nicht
- * freigeben, und `@modelcontextprotocol/server@2.0.0` tut es nicht. Über den Verzeichnisweg
+ * freigeben, und `@modelcontextprotocol/server` tut es nicht (geprüft für 2.0.0 und 2.4.0). Über den Verzeichnisweg
  * ist das Paketverzeichnis unabhängig von der Exportkarte zu finden, und der Weg funktioniert
  * sowohl bei der verschachtelten Ablage von pnpm als auch bei der flachen von npm.
  */
