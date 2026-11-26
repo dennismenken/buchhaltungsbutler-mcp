@@ -182,9 +182,9 @@ describe("runDoctor", () => {
     expect(text).toContain("Registriert: 10 Werkzeuge, rund 7.819 Token an Definitionen");
     expect(text).toContain("Die Endpunktwerkzeuge stehen nicht in der Liste");
     // Die Bilanz des direkten Modus steht hier nicht: Weder die 61 Endpunktwerkzeuge noch
-    // ihre 53.086 Token sendet dieser Start.
+    // ihre 53.143 Token sendet dieser Start.
     expect(text).not.toContain("61 Endpunktwerkzeuge");
-    expect(text).not.toContain("53.086");
+    expect(text).not.toContain("53.143");
     expect(text).not.toContain("Die Endpunktwerkzeuge nach Wirkung");
   });
 

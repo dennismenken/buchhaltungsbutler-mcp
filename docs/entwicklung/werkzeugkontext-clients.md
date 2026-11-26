@@ -1811,7 +1811,7 @@ bleibt außen vor.
 Der Preis von `discovery` ist festgehalten: ein bis zwei Suchschritte mehr je Aufgabe, die
 Freigabe im Client dreistufig (lesen, anlegen/buchen, überschreiben/löschen) statt je Werkzeug
 und die Argumentprüfung im Server statt im Client. GEMESSEN am 2026-11-24 mit `gpt-tokenizer`
-(`o200k_base`): Die fünf Gatewaydefinitionen wiegen 967 Token (4.084 Zeichen) statt 53.086 für
+(`o200k_base`): Die fünf Gatewaydefinitionen wiegen 967 Token (4.084 Zeichen) statt 53.143 für
 die 61 Endpunktwerkzeuge; die Serverbeschreibung im Modus `discovery` 930 Token, im größten
 Zustand 1.314; die Übersicht von `bb_tools_discover` 768 Token. Mit den Bündeln (6.852) liegt
-der Leerlauf damit bei rund 8.700 Token statt rund 61.300 im direkten Modus.
+der Leerlauf damit bei rund 8.700 Token statt rund 61.400 im direkten Modus.

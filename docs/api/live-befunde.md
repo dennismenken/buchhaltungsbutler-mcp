@@ -11,7 +11,7 @@ dieses Dokuments; wo sie im Body stünden, steht `"api_key": "…"`.
 
 ## Die Kennungen L1 bis L7 sind stabil
 
-Jeder Befund trägt eine Kennung von **L1** bis **L7**. Diese Kennungen sind hier definiert und
+Jeder Befund trägt eine Kennung ab **L1**, inzwischen bis **L8**. Diese Kennungen sind hier definiert und
 **werden im Quelltext zitiert** — in Kommentaren, Werkzeugbeschreibungen und Tests. Ein Satz
 wie „gemessen (Befund L5)" im Code ist ein Verweis auf genau diese Datei und auf genau diesen
 Abschnitt. Deshalb gilt:
@@ -82,6 +82,7 @@ Platzhalter, sondern die oben genannten strukturellen Messwerte.
 | **L5** | `rows` ist die Zeilenzahl **dieser Antwort** und keine Gesamttrefferzahl. | 2026-09-13 | hoch |
 | **L6** | Zu `error_code` 15 liefert `/receipts/get` den Text `invalid field specified`, der **weder** dem `message`-Enum **noch** der `description` des `responses`-Eintrags entspricht. | 2026-09-13 | mittel |
 | **L7** | Die drei Berichte kommen ohne `data`-Hülle als verschachteltes Objekt, jeder in eigener Form: Kontenblatt als Liste, Summen- und Saldenliste als Objekt je Konto, BWA als Baum. Beträge dort als Zahl. Die Kontenliste einer BWA-Klasse ist gefüllt ein Objekt, leer ein Array. | 2026-09-14, für September 2026 und das Jahr 2024 | hoch |
+| **L8** | Die Felder der stillen Spezifikationsänderung vom 2026-11-22 kommen tatsächlich: `/postings/get` führt in jeder Zeile `oss_country_origin`, `oss_country_destination`, `oss_revenue_type`, `oss_vat_rate_type` (ohne OSS leere Zeichenkette), `/settings/get/postingaccounts` in jeder Zeile `standard_chart`. | 2026-11-26 | mittel |
 
 ---
 
@@ -568,6 +569,39 @@ Liste. Die BWA wird dabei bis auf die Konten flach gelegt, in beiden Formen der 
 `bb_reports_run` zeigt denselben Bericht mit derselben Umformung als Tabelle. Die Kopfangaben stehen in `summary`, die Berichtsdateien ebenfalls dort, mit
 Base64-Ersetzung. Hat eine Antwort nicht die gemessene Form, geht sie unverändert hinaus, mit
 einer einzigen Meldung statt einer Reihe erfundener Vertragsverletzungen.
+
+---
+
+## L8: Die neuen Antwortfelder der Spezifikation vom 2026-11-22 kommen tatsächlich
+
+Betrifft `/postings/get` und `/settings/get/postingaccounts`.
+
+### Was gemessen wurde
+
+Der Anbieter hat die Spezifikation am 2026-11-22 ohne neue Versionsnummer erweitert. Seither
+führt `PostingsGet_Success` vier OSS-Felder und `SettingsPostingaccountsGet_Success` das Feld
+`standard_chart`. Bevor diese Felder in die Antwortverträge kommen, war zu klären, ob sie
+tatsächlich in jeder Zeile stehen: Ein Vertragsfeld, das fehlt, löst bei jedem Aufruf eine
+Vertragswarnung aus (`src/mapping/coerce.ts`).
+
+### Wie gemessen wurde und was herauskam
+
+Am **2026-11-26**, ausschließlich lesend, mit den Zugangsdaten der Produktivbuchhaltung.
+
+| Aufruf | Ergebnis |
+| --- | --- |
+| `POST /postings/get` mit `date_from` 2025-01-01, `date_to` 2026-11-26, `limit` 500 | HTTP 200, 223 Zeilen, 42 Felder je Zeile. `oss_country_origin`, `oss_country_destination`, `oss_revenue_type` und `oss_vat_rate_type` stehen in **allen 223** Zeilen, in allen als **leere Zeichenkette**; keine dieser Buchungen ist ein OSS-Fall. |
+| `POST /settings/get/postingaccounts` mit `limit` 500 | HTTP 200, 500 Zeilen. `standard_chart` steht in **allen 500** Zeilen, als Zeichenkette mit genau einem Wert (`skr03`). |
+| `POST /postings/get` ohne `date_from` | HTTP 400, `error_code` 5, `invalid date_from specified`; wie dokumentiert sind `date_from` und `date_to` Pflicht. |
+
+Nicht gemessen: der Inhalt der OSS-Felder bei einer echten OSS-Buchung. Der Mandant hat keine,
+und schreibend wurde dafür nichts angelegt.
+
+### Was daraus für den Server folgt
+
+Die vier OSS-Felder stehen im Antwortvertrag von `bb_postings_search`, `standard_chart` in dem
+von `bb_postingaccounts_search`, jeweils als `string`. Weil sie in jeder gemessenen Zeile stehen,
+entsteht daraus keine Vertragswarnung; eine leere Zeichenkette ist eine gültige Zeichenkette.
 
 ---
 

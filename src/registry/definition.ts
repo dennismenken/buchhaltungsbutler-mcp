@@ -69,14 +69,14 @@ export function measureToolDefinitionChars(entries: readonly ToolEntry[]): numbe
 }
 
 /**
- * Die Zeichenzahl der 61 ausgelieferten Definitionen, wie sie am 2026-11-23 gemessen wurde.
+ * Die Zeichenzahl der 61 ausgelieferten Definitionen, wie sie am 2026-11-26 gemessen wurde.
  *
  * Eingecheckt, damit `doctor` erkennt, ob die Tokenmessung daneben noch zu diesem
  * Registerstand gehört. Die Zahl wird nicht von Hand gepflegt: `test/unit/cli-doctor.test.ts`
  * rechnet sie bei jedem Testlauf nach und schlägt fehl, sobald sich eine Beschreibung oder
  * ein Schema ändert.
  */
-export const MEASURED_TOOL_DEFINITION_CHARS = 216_820;
+export const MEASURED_TOOL_DEFINITION_CHARS = 217_058;
 
 /**
  * Die Tokenzahl derselben 61 Definitionen, **gemessen** mit `gpt-tokenizer@4.0.0` in der
@@ -93,7 +93,7 @@ export const MEASURED_TOOL_DEFINITION_CHARS = 216_820;
  * Auseinanderlaufen von Messung, Ausgabe und Dokumentation fällt dort auf und nicht beim
  * Nutzer.
  */
-export const MEASURED_TOOL_DEFINITION_TOKENS = 53_086;
+export const MEASURED_TOOL_DEFINITION_TOKENS = 53_143;
 
 /**
  * Die Zeichenzahl der fünf Gatewaydefinitionen des Modus `discovery`, wie sie am

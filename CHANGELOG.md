@@ -19,7 +19,7 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
   Claude Desktop, Claude Code, Codex und VS Code setzt er nichts. `bbutler-mcp doctor` und
   `bbutler-mcp print-config` nennen die aktive Betriebsart; das `.mcpb`-Bundle führt sie als
   Feld „Betriebsart" mit der Vorgabe `direct`. Gemessen: 967 Token für die fünf
-  Gatewaydefinitionen statt 53.086 für die 61 Endpunktwerkzeuge; eigene Grenzen von 1.100 Token
+  Gatewaydefinitionen statt 53.143 für die 61 Endpunktwerkzeuge; eigene Grenzen von 1.100 Token
   für die Gatewaydefinitionen und 1.000 für die Übersicht von `bb_tools_discover` (gemessen
   768), die Grenze der Serverbeschreibung (2.100) gilt in beiden Betriebsarten.
 
@@ -76,10 +76,10 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
 
 - **Die Grenze für die Endpunktwerkzeuge steigt von 49.000 auf 54.000 Token**, auf Entscheidung
   des Projektinhabers vom 2026-11-22: gemessener Stand nach Umsetzung plus rund 1.000 Token
-  Luft. Die 61 Endpunktwerkzeuge wiegen **53.086 Token** (216.820 Zeichen); vorher waren es 54
+  Luft. Die 61 Endpunktwerkzeuge wiegen **53.143 Token** (217.058 Zeichen, gemessen am 2026-11-26 mit den gemessenen Antwortfeldern aus Befund L8; bei der Entscheidung 53.086); vorher waren es 54
   mit 48.964 Token. Zuwachs aus den sieben neuen Werkzeugen und den OSS-Feldern, abzüglich der
   Ersparnis aus den Ausgabeschemata der Schreibwerkzeuge, die kein ungenutztes Feld `data` mehr
-  ankündigen. Die Bündel bleiben bei 6.852 Token, zusammen 59.938.
+  ankündigen. Die Bündel bleiben bei 6.852 Token, zusammen 59.995.
 - Der Fehlerkatalog führt 899 Paare über 61 Pfade (vorher 786 über 54). Die zwei
   Einstellungstexte des One-Stop-Shops stehen in der Klasse `config`, damit der Rat auf die
   Steuereinstellungen zeigt.

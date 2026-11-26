@@ -123,6 +123,12 @@ const POSTINGS_LIST_FIELDS: Readonly<Record<string, ContractFieldType>> = Object
   comment: "null-or-string",
   receipt_id_by_customer: "null-or-string",
   transaction_id_by_customer: "null-or-string",
+  // Die vier OSS-Felder der Spezifikation vom 2026-11-22. Gemessen am 2026-11-26 (Befund L8 in
+  // docs/api/live-befunde.md): in allen 223 Zeilen vorhanden, ohne OSS als leere Zeichenkette.
+  oss_country_origin: "string",
+  oss_country_destination: "string",
+  oss_revenue_type: "string",
+  oss_vat_rate_type: "string",
   // Die acht Felder, die die Spezifikation nicht führt (docs/api/buchungen.md 9.2). Sie
   // stehen im Vertrag, damit sie nicht als unbekanntes Feld in den Vertragswarnungen
   // auftauchen — dieselbe Behandlung wie `amount_paid` an den Belegendpunkten, wo sie

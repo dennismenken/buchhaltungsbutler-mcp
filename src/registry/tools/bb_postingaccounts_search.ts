@@ -124,6 +124,9 @@ export const bb_postingaccounts_search: ToolEntry = {
       subtype: "null-or-string",
       parent_postingaccount_number: "id-string",
       parent_name: "null-or-string",
+      // Seit der Spezifikation vom 2026-11-22. Gemessen am 2026-11-26 (Befund L8): in allen 500
+      // Zeilen vorhanden, eine Zeichenkette wie `skr03`.
+      standard_chart: "string",
     },
     source: "dokumentiert",
   },

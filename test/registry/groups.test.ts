@@ -210,10 +210,10 @@ describe("die eingecheckte Tokenmessung je Gruppe", () => {
   it("addiert sich über die elf Endpunktgruppen zur gemessenen Gesamtzahl", () => {
     const expected: Record<string, number> = EXPECTED_GROUP_TOKENS;
     const sum = Object.values(expected).reduce((total, value) => total + value, 0);
-    // 53.086 ist die Zahl aus docs/entwicklung/tokenbudget.md und aus
+    // 53.143 ist die Zahl aus docs/entwicklung/tokenbudget.md und aus
     // src/registry/definition.ts. Die Gruppensummen sind kein eigener Gegenstand: Sie zerlegen
     // dieselbe Messung.
-    expect(sum).toBe(53_086);
+    expect(sum).toBe(53_143);
 
     const problems: string[] = [];
     for (const [group, wanted] of Object.entries(expected)) {

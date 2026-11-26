@@ -1,5 +1,5 @@
 {
-  "_herkunft": "Endpunkt /settings/get/postingaccounts | dokumentiert, teils live belegt | Quelle: Spezifikation SettingsPostingaccountsGet_Success und docs/api/stammdaten.md (Verteilung von type und subtype, live am 2026-09-12) | Struktur gemessen, Geschäftsdaten erfunden",
+  "_herkunft": "Endpunkt /settings/get/postingaccounts | dokumentiert, teils live belegt | Quelle: Spezifikation SettingsPostingaccountsGet_Success und docs/api/stammdaten.md (Verteilung von type und subtype, live am 2026-09-12) | standard_chart live gemessen am 2026-11-26 (Befund L8) | Struktur gemessen, Geschäftsdaten erfunden",
   "_zweck": "die Vereinigungsliste aus Sachkonten, Zahlungskonten, Debitoren und Kreditoren mit type und subtype und die Auflösung sprechender Kontobezeichnungen aus dem Stammdatenspeicher",
   "http": {
     "status": 200,
@@ -14,25 +14,29 @@
         "postingaccount_number": "1200",
         "name": "Bank (erfunden)",
         "type": "account",
-        "subtype": "bank/institution"
+        "subtype": "bank/institution",
+        "standard_chart": "skr03"
       },
       {
         "postingaccount_number": "4980",
         "name": "Sonstiger Betriebsbedarf",
         "type": "postingaccount",
-        "subtype": "default chart"
+        "subtype": "default chart",
+        "standard_chart": "skr03"
       },
       {
         "postingaccount_number": "10001",
         "name": "Erfundene Kundschaft AG",
         "type": "debtor",
-        "subtype": null
+        "subtype": null,
+        "standard_chart": "skr03"
       },
       {
         "postingaccount_number": "70150",
         "name": "Erfundene Bürobedarf GmbH",
         "type": "creditor",
-        "subtype": null
+        "subtype": null,
+        "standard_chart": "skr03"
       }
     ]
   }

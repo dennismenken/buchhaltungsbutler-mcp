@@ -93,8 +93,8 @@ Projektinhaber sie getroffen hat. Genau diese Bestätigung gehört vor die Verö
         damit zur Deckung gebracht. **Offen bleibt genau eine Sache, und die kann diese Liste
         nicht abnehmen:** Ein Eintrag im Änderungsprotokoll belegt, dass die Anhebung
         dokumentiert ist, nicht, dass der Projektinhaber sie getroffen hat. Diese Bestätigung
-        gehört vor die Veröffentlichung. Gegenprobe, zuletzt am 2026-11-23:
-        `pnpm measure-tokens` meldet `61 Werkzeugdefinitionen: 216.820 Zeichen, 53.086 Token
+        gehört vor die Veröffentlichung. Gegenprobe, zuletzt am 2026-11-26:
+        `pnpm measure-tokens` meldet `61 Werkzeugdefinitionen: 217.058 Zeichen, 53.143 Token
         (Grenze 54.000).` **Die 61 in dieser Zeile ist gezählt, nicht eingetragen:**
         Gemeldet werden die 61 Endpunktdefinitionen, die zusammen unter
         `TOTAL_TOOL_DEFINITION_TOKEN_BUDGET` fallen. Die fünf Bündel haben mit

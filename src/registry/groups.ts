@@ -54,13 +54,13 @@ export interface ToolGroupDefinition {
  * im Ausgabetext, damit er mit den Zahlen nachgezogen wird: Bis 2026-11-24 nannte `doctor` noch
  * 2026-09-13, obwohl die Zahlen schon vom 2026-11-23 stammten.
  */
-export const GROUP_TOKENS_MEASURED_ON = "2026-11-23";
+export const GROUP_TOKENS_MEASURED_ON = "2026-11-26";
 
 export const TOOL_GROUPS = {
   postings: {
     label: "Buchungen",
     withoutIt: "Buchungen suchen, anlegen, stornieren und Belege an Buchungen binden",
-    measuredTokens: 13_965,
+    measuredTokens: 14_012,
   },
   receipts: {
     label: "Belege",
@@ -95,7 +95,7 @@ export const TOOL_GROUPS = {
   postingaccounts: {
     label: "Sachkonten",
     withoutIt: "Sachkonten des Kontenrahmens nachschlagen, anlegen und ändern",
-    measuredTokens: 2_229,
+    measuredTokens: 2_239,
   },
   cost_locations: {
     label: "Kostenstellen",

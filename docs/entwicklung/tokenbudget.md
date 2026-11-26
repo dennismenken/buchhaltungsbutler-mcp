@@ -1,6 +1,6 @@
 # Das Tokenbudget, gemessen
 
-**Stand: 2026-11-24 (UTC).** Diese Datei wird vollständig von `scripts/measure-tokens.ts` erzeugt
+**Stand: 2026-11-26 (UTC).** Diese Datei wird vollständig von `scripts/measure-tokens.ts` erzeugt
 (`pnpm measure-tokens`). Von Hand geänderte Zahlen sind beim nächsten Lauf wieder weg.
 
 Gemessen mit `gpt-tokenizer@4.0.0`, Kodierung `o200k_base`, unter Node 24.20.0. Es wurde nichts
@@ -18,14 +18,14 @@ das: Sie kippt nicht an fünf Prozent Abweichung.
 
 | Größe | Zeichen | Token | Zeichen je Token |
 | --- | --- | --- | --- |
-| 61 Werkzeugdefinitionen, wie ausgeliefert | 216.820 | 53.086 | 4,08 |
+| 61 Werkzeugdefinitionen, wie ausgeliefert | 217.058 | 53.143 | 4,08 |
 | instructions, Auslieferungszustand | 5.694 | 1.407 | 4,05 |
 | instructions, alle Schalter an | 7.452 | 1.840 | 4,05 |
-| Was der Client beim Verbinden sieht | 222.514 | 54.493 | 4,08 |
+| Was der Client beim Verbinden sieht | 222.752 | 54.550 | 4,08 |
 | 5 Gatewaydefinitionen (Modus discovery) | 4.084 | 967 | 4,22 |
-| instructions im Modus discovery, Auslieferungszustand | 3.687 | 930 | 3,96 |
-| instructions im Modus discovery, alle Schalter an | 5.274 | 1.314 | 4,01 |
-| 61 Definitionen in der Rechenweise von P11 | 216.820 | 53.086 | 4,08 |
+| instructions im Modus discovery, Auslieferungszustand | 3.688 | 930 | 3,97 |
+| instructions im Modus discovery, alle Schalter an | 5.275 | 1.314 | 4,01 |
+| 61 Definitionen in der Rechenweise von P11 | 217.058 | 53.143 | 4,08 |
 
 Die Zeile „wie ausgeliefert" misst genau das, was `server/register-tools.ts` an `registerTool`
 übergibt: Name, Titel, Beschreibung, Annotationen, das JSON Schema aus `schema/build.ts` und das
@@ -57,10 +57,10 @@ eigenen Gegenstand eher zu groß ist — auch deshalb die Abrundung.
 
 ## 4. Das Budget
 
-Das Budget der Werkzeugdefinitionen ist eingehalten: 53.086 von 54.000 Token.
+Das Budget der Werkzeugdefinitionen ist eingehalten: 53.143 von 54.000 Token.
 
-In der Rechenweise von P11 sind es 53.086 Token. P11 bricht seit der Entscheidung vom 2026-09-13
-wieder hart an der Grenze von 54.000 Token ab: noch 914 Token Luft, der Testlauf ist grün.
+In der Rechenweise von P11 sind es 53.143 Token. P11 bricht seit der Entscheidung vom 2026-09-13
+wieder hart an der Grenze von 54.000 Token ab: noch 857 Token Luft, der Testlauf ist grün.
 
 Das Budget der instructions ist eingehalten: 1.840 von 2.100 Token, gemessen im größten Zustand
 beider Betriebsarten.
@@ -106,21 +106,23 @@ Summe, sondern hat mit `BUNDLE_DEFINITION_TOKEN_BUDGET` ihre eigene Grenze.
 
 | Gruppe | Werkzeuge | Zeichen | Token | eingecheckt | Anteil |
 | --- | --- | --- | --- | --- | --- |
-| `postings` | 12 | 55.497 | 13.965 | 13.965 | 26,31 % |
-| `receipts` | 8 | 34.504 | 8.474 | 8.474 | 15,96 % |
-| `transactions` | 9 | 28.490 | 7.024 | 7.024 | 13,23 % |
-| `invoices` | 4 | 25.209 | 6.215 | 6.215 | 11,71 % |
+| `postings` | 12 | 55.691 | 14.012 | 13.965 | 26,37 % |
+| `receipts` | 8 | 34.504 | 8.474 | 8.474 | 15,95 % |
+| `transactions` | 9 | 28.490 | 7.024 | 7.024 | 13,22 % |
+| `invoices` | 4 | 25.209 | 6.215 | 6.215 | 11,69 % |
 | `reports` | 5 | 15.504 | 3.777 | 3.777 | 7,11 % |
-| `creditors` | 5 | 14.709 | 3.549 | 3.549 | 6,69 % |
-| `debtors` | 5 | 14.076 | 3.409 | 3.409 | 6,42 % |
-| `postingaccounts` | 4 | 9.573 | 2.229 | 2.229 | 4,20 % |
+| `creditors` | 5 | 14.709 | 3.549 | 3.549 | 6,68 % |
+| `debtors` | 5 | 14.076 | 3.409 | 3.409 | 6,41 % |
+| `postingaccounts` | 4 | 9.617 | 2.239 | 2.229 | 4,21 % |
 | `payment_accounts` | 4 | 8.852 | 2.050 | 2.050 | 3,86 % |
 | `cost_locations` | 4 | 7.828 | 1.806 | 1.806 | 3,40 % |
 | `comments` | 1 | 2.578 | 588 | 588 | 1,11 % |
 | `bundles` | 5 | 28.165 | 6.852 | 6.852 | — |
-| **Summe der elf Endpunktgruppen** | 61 | 216.820 | 53.086 | | 100,00 % |
+| **Summe der elf Endpunktgruppen** | 61 | 217.058 | 53.143 | | 100,00 % |
 
-Messung und eingecheckte Tabelle stimmen in jeder Gruppe mit Werkzeugen überein.
+**Die eingecheckte Tabelle in `src/registry/groups.ts` ist veraltet.** Abweichend sind: `postings`
+(eingecheckt 13.965, gemessen 14.012), `postingaccounts` (eingecheckt 2.229, gemessen 2.239).
+`test/registry/groups.test.ts` bricht daran ab; die Zahlen sind dort nachzutragen.
 
 Das Budget der Bündelgruppe (`BUNDLE_DEFINITION_TOKEN_BUDGET`) ist eingehalten: 6.852 von 6.950
 Token. Die Grenze steht seit dem 2026-09-13 auf dem gemessenen Stand zuzüglich einer kleinen
@@ -144,9 +146,9 @@ auf die sich die Tabelle unten mit S1 bis S6 bezieht. Sie lauten:
 | --- | --- | --- | --- |
 | Werkzeugbeschreibungen nach Stufenbudget (S2) | 39.120 | 37.472 | −1.648 |
 | Parameterbeschreibungen, reiner Text (S1, S3, S4, S5) | 38.400 | 72.318 | +33.918 |
-| `outputSchema` ohne Feldbeschreibungen (S6) | 14.040 | 43.557 | +29.517 |
+| `outputSchema` ohne Feldbeschreibungen (S6) | 14.040 | 43.795 | +29.755 |
 | Name, Titel, Annotationen, Schemarümpfe | 5.238 | 63.473 | +58.235 |
-| Summe | 96.798 | 216.820 | +120.022 |
+| Summe | 96.798 | 217.058 | +120.260 |
 
 Die Spalte „vorgerechnet" ist die Endabrechnung der Vorkalkulation nach den sechs Sparmaßnahmen.
 Gemessen wird in derselben Abgrenzung wie dort: „Parameterbeschreibungen" sind die Summe aller
@@ -174,7 +176,7 @@ zu Buche.
 | Werkzeug | Stufe | Zeichen | Token |
 | --- | --- | --- | --- |
 | `bb_invoices_create_einvoice` | 1 | 8.452 | 2.108 |
-| `bb_postings_search` | 1 | 7.737 | 1.937 |
+| `bb_postings_search` | 1 | 7.931 | 1.984 |
 | `bb_invoices_create` | 1 | 7.599 | 1.885 |
 | `bb_postings_create_for_receipt_batch` | 1 | 6.912 | 1.775 |
 | `bb_invoices_create_draft` | 1 | 7.079 | 1.740 |
