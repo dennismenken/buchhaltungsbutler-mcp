@@ -52,6 +52,12 @@ gepflegt, und jede Veröffentlichung bekommt einen Eintrag.
 
 ### Behoben
 
+- **Der Release-Schritt von `publish.yml` übersteht einen Serverfehler von GitHub.** Bei v0.1.2
+  antwortete die Release-Schnittstelle am 2026-09-15 mit HTTP 500; Lauf und Deployment `npm`
+  blieben rot, obwohl `npm publish` gelungen war und Release und Bundle danach vorlagen. Der
+  Schritt versucht es jetzt bis zu dreimal und lädt, wenn das Release schon steht, nur das Bundle
+  nach, statt ein zweites anzulegen.
+
 - **`bb_debtors_update`, `bb_creditors_update` und `bb_postingaccounts_update` meldeten eine
   erfolgreiche Änderung als Fehler.** Das Ausgabeschema der drei Werkzeuge verlangte das Feld
   `data`, weil ihr Eintrag die Form `object` hat. Die Antwort dieses Servers legt den

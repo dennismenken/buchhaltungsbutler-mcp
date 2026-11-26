@@ -65,9 +65,11 @@ jobs:
             echo "::error::Der Tag ${TAG} nennt die Version ${VERSION}, package.json nennt ${PAKET}. Entweder ist der Tag falsch gesetzt oder die Versionserhöhung fehlt. Es wird nichts veröffentlicht."
             exit 1
           fi
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "bundle=bbutler-mcp-${VERSION}.mcpb" >> "$GITHUB_OUTPUT"
+          {
+            echo "tag=${TAG}"
+            echo "version=${VERSION}"
+            echo "bundle=bbutler-mcp-${VERSION}.mcpb"
+          } >> "$GITHUB_OUTPUT"
           echo "Tag und package.json nennen übereinstimmend ${VERSION}."
 
       # Der Vertragslauf gegen die echte API ist Pflicht vor jeder Veröffentlichung. Hier kann
@@ -254,13 +256,33 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
           BUNDLE: ${{ steps.version.outputs.bundle }}
+        # Ein Aufruf an die Release-Schnittstelle kann mit HTTP 5xx scheitern, obwohl GitHub das
+        # Release trotzdem anlegt: So am 2026-09-15 bei v0.1.2 (HTTP 500, Lauf und Deployment rot,
+        # Release und Bundle standen danach dennoch). npm ist an dieser Stelle schon
+        # veröffentlicht, ein zweites `gh release create` scheiterte am vorhandenen Release.
+        # Deshalb bis zu drei Versuche, und vor jedem nachsehen, ob das Release schon steht: Steht
+        # es, wird nur das Bundle mit --clobber nachgeladen und die Beschreibung gesetzt.
         run: |
           set -euo pipefail
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --notes-file release-notes.md \
-            --verify-tag \
-            "$BUNDLE"
+          for versuch in 1 2 3; do
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              if gh release upload "$TAG" "$BUNDLE" --clobber &&
+                gh release edit "$TAG" --title "$TAG" --notes-file release-notes.md --draft=false; then
+                echo "Release ${TAG} stand bereits; Bundle und Beschreibung nachgezogen."
+                exit 0
+              fi
+            elif gh release create "$TAG" \
+              --title "$TAG" \
+              --notes-file release-notes.md \
+              --verify-tag \
+              "$BUNDLE"; then
+              exit 0
+            fi
+            echo "::warning::Versuch ${versuch} für das Release ${TAG} ist gescheitert."
+            sleep $((versuch * 20))
+          done
+          echo "::error::Das Release ${TAG} ließ sich nach drei Versuchen nicht anlegen. Auf npm ist ${TAG} bereits veröffentlicht; das Release von Hand mit dem Bundle aus diesem Lauf nachziehen."
+          exit 1
 
       # Berichtet, prüft aber nicht scharf: Veröffentlicht ist zu diesem Zeitpunkt bereits,
       # und ein roter Lauf hinter einem erfolgreichen `npm publish` behauptete etwas Falsches.
